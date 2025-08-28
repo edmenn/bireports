@@ -29,7 +29,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($companies as $c)
+                    @forelse($empresas as $c)
                         <tr>
                             <td>{{ $c->name }}</td>
                             <td>{{ $c->subdomain ?? '—' }}</td>
@@ -59,9 +59,9 @@
                 </tbody>
             </table>
         </div>
-        @if($companies->hasPages())
+        @if($empresas->hasPages())
             <div class="card-footer">
-                {{ $companies->links() }}
+                {{ $empresas->links() }}
             </div>
         @endif
     </div>

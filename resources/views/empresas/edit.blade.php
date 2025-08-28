@@ -8,35 +8,35 @@
 
 @section('content')
     <div class="card">
-        <form action="{{ route('empresas.update', $company) }}" method="POST">
+        <form action="{{ route('empresas.update', $empresa) }}" method="POST">
             @csrf @method('PUT')
             <div class="card-body">
                 <div class="form-group">
                     <label>Nombre *</label>
                     <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                           value="{{ old('name', $company->name) }}" required>
+                           value="{{ old('name', $empresa->name) }}" required>
                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Subdominio</label>
                     <input type="text" name="subdomain" class="form-control @error('subdomain') is-invalid @enderror"
-                           value="{{ old('subdomain', $company->subdomain) }}">
+                           value="{{ old('subdomain', $empresa->subdomain) }}">
                     @error('subdomain') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Descripción</label>
                     <textarea name="description" rows="3"
-                              class="form-control @error('description') is-invalid @enderror">{{ old('description', $company->description) }}</textarea>
+                              class="form-control @error('description') is-invalid @enderror">{{ old('description', $empresa->description) }}</textarea>
                     @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Activa</label>
                     <select name="is_active" class="form-control">
-                        <option value="1" {{ old('is_active', (int)$company->is_active) === 1 ? 'selected' : '' }}>Sí</option>
-                        <option value="0" {{ old('is_active', (int)$company->is_active) === 0 ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('is_active', (int)$empresa->is_active) === 1 ? 'selected' : '' }}>Sí</option>
+                        <option value="0" {{ old('is_active', (int)$empresa->is_active) === 0 ? 'selected' : '' }}>No</option>
                     </select>
                 </div>
             </div>
