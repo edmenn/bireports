@@ -16,7 +16,7 @@
             </ul>
 
             <a href="{{ route('workspaces.index') }}" class="btn btn-primary">Ir a “Espacios de trabajo”</a>
-            <a href="{{ route('dashboards.index') }}" class="btn btn-secondary">Ir a “Informes”</a>
+            <a href="{{ route('reports.index') }}" class="btn btn-secondary">Ir a “Informes”</a>
         </div>
     </div>
 @stop

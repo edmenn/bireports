@@ -10,6 +10,8 @@ use App\Http\Controllers\ConfiguracionesController;
 use App\Http\Controllers\PowerBiImportController;
 use App\Http\Controllers\WorkspacesController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\ReportViewerController;
+use App\Http\Controllers\AuditAnalyticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,12 +34,18 @@ Route::middleware(['auth'])->group(function () {
     // Menú principal (views placeholder o controllers)
     Route::view('/conjuntos-datos', 'datasets.index')->name('datasets.index');
     Route::view('/aplicaciones',    'apps.index')->name('apps.index');
-    Route::view('/capacidades', 'capacities.index')->name('capacities.index');
-    // Workspaces + Reports
+    Route::view('/capacidades',     'capacities.index')->name('capacities.index');
+
+    // Workspaces + Reports (vista pública interna por workspace)
     Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])->name('workspaces.index');
     Route::get('/espacios-trabajo/{workspace}', [WorkspacesController::class, 'show'])->name('workspaces.show');
     Route::get('/espacios-trabajo/{workspace}/reportes/{report}', [ReportsController::class, 'show'])
         ->name('reports.show');
+
+    // 🚀 NUEVO: vista embebida con powerbi-client + auditoría
+    Route::get('/reports/{report_uuid}', [ReportViewerController::class, 'show'])
+        ->whereUuid('report_uuid')
+        ->name('reports.viewer');
 
     // Empresas (resource limitado)
     Route::resource('empresas', EmpresasController::class)->parameters([
@@ -55,7 +63,8 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/usuarios',  'users.index')->name('users.index');
     Route::view('/grupos',    'grupos.index')->name('grupos.index');
     Route::view('/carpetas',  'folders.index')->name('folders.index');
-    Route::view('/auditoria', 'auditoria.index')->name('auditoria.index');
+    Route::get('/auditoria', [AuditAnalyticsController::class, 'index'])
+    ->name('auditoria.index');
 
     // Configuraciones (controller)
     Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
@@ -80,7 +89,17 @@ Route::prefix('admin')
 
         // Listado global de reportes
         Route::get('/reportes', [ReportsController::class, 'index'])
-            ->name('reports.index');    
+            ->name('reports.index');
+
+        /*
+         * NUEVO: CRUD de imagen/descripcion de Report
+         * - /admin/reportes/{report}/edit -> formulario
+         * - /admin/reportes/{report}      -> update (PUT)
+         */
+        Route::get('/reportes/{report}/edit', [ReportsController::class, 'edit'])
+            ->name('reports.edit');
+        Route::put('/reportes/{report}', [ReportsController::class, 'update'])
+            ->name('reports.update');
 
         // Diagnóstico rápido del token/alcance
         Route::get('dev/powerbi/ping', function (\App\Services\PowerBiService $svc) {
