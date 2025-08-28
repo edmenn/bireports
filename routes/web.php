@@ -8,36 +8,40 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\ConfiguracionesController;
 use App\Http\Controllers\PowerBiImportController;
+use App\Http\Controllers\WorkspacesController;
+use App\Http\Controllers\ReportsController;
 
 /*
 |--------------------------------------------------------------------------
-| Rutas web
+| Rutas web (AdminLTE + Breeze)
 |--------------------------------------------------------------------------
-| Usamos AdminLTE para todas las pantallas internas.
-| Las rutas se protegen con el middleware 'auth' (Breeze).
-|
 */
 
-// Home -> Informes (AdminLTE)
+// Home -> Informes
 Route::get('/', [DashboardController::class, 'index'])
     ->middleware(['auth'])
     ->name('dashboards.index');
 
-// /dashboard (compatibilidad con Breeze), también AdminLTE
+// /dashboard (compatibilidad Breeze)
 Route::get('/dashboard', function () {
-    return view('dashboard'); // resources/views/dashboard.blade.php (AdminLTE)
+    return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Grupo de rutas internas protegidas
+// Grupo interno protegido
 Route::middleware(['auth'])->group(function () {
-    // Rutas con nombre que usa el menú de AdminLTE (todas existen)
-    Route::view('/conjuntos-datos',  'datasets.index')->name('datasets.index');
-    Route::view('/aplicaciones',     'apps.index')->name('apps.index');
-    Route::view('/espacios-trabajo', 'workspaces.index')->name('workspaces.index');
-    Route::view('/capacidades',      'capacities.index')->name('capacities.index');
+    // Menú principal (views placeholder o controllers)
+    Route::view('/conjuntos-datos', 'datasets.index')->name('datasets.index');
+    Route::view('/aplicaciones',    'apps.index')->name('apps.index');
+    Route::view('/capacidades', 'capacities.index')->name('capacities.index');
+    // Workspaces + Reports
+    Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])->name('workspaces.index');
+    Route::get('/espacios-trabajo/{workspace}', [WorkspacesController::class, 'show'])->name('workspaces.show');
+    Route::get('/espacios-trabajo/{workspace}/reportes/{report}', [ReportsController::class, 'show'])
+        ->name('reports.show');
 
+    // Empresas (resource limitado)
     Route::resource('empresas', EmpresasController::class)->parameters([
-        'empresas' => 'empresa'
+        'empresas' => 'empresa',
     ])->only(['index','create','store','edit','update','destroy'])->names([
         'index'   => 'empresas.index',
         'create'  => 'empresas.create',
@@ -47,24 +51,23 @@ Route::middleware(['auth'])->group(function () {
         'destroy' => 'empresas.destroy',
     ]);
 
-    Route::view('/usuarios', 'users.index')->name('users.index');
-    Route::view('/grupos',   'grupos.index')->name('grupos.index');
-    Route::view('/carpetas', 'folders.index')->name('folders.index');
-
+    // Otras vistas
+    Route::view('/usuarios',  'users.index')->name('users.index');
+    Route::view('/grupos',    'grupos.index')->name('grupos.index');
+    Route::view('/carpetas',  'folders.index')->name('folders.index');
     Route::view('/auditoria', 'auditoria.index')->name('auditoria.index');
 
-    // ✅ Configuraciones (controlador, no Route::view)
+    // Configuraciones (controller)
     Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
         ->name('configuraciones.index');
     Route::put('/configuraciones/{configuracion}', [ConfiguracionesController::class, 'update'])
         ->name('configuraciones.update');
 
     // Perfil (Breeze)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile',[ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 
 // Área ADMIN (solo super_admin)
 Route::prefix('admin')
@@ -73,15 +76,21 @@ Route::prefix('admin')
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
 
         Route::resource('clients', ClientController::class)
-            ->names('admin.clients'); // admin.clients.index, create, store, etc.
-        Route::get('/dev/powerbi/ping', function (\App\Services\PowerBiService $svc) {
+            ->names('admin.clients');
+
+        // Listado global de reportes
+        Route::get('/reportes', [ReportsController::class, 'index'])
+            ->name('reports.index');    
+
+        // Diagnóstico rápido del token/alcance
+        Route::get('dev/powerbi/ping', function (\App\Services\PowerBiService $svc) {
             return response()->json($svc->ping());
-        })->name('powerbi.ping')->middleware(['auth','role:super_admin']);
-        // 👇 OJO: SIN barra inicial y SIN repetir "admin"
-        Route::get('dev/import/powerbi/workspaces', [PowerBiImportController::class, 'importWorkspaces'])
-            ->name('powerbi.import.workspaces.dev');
+        })->name('powerbi.ping');
+
+        // Importación Workspaces + Reports desde Power BI
+        Route::get('dev/import/powerbi/run', [PowerBiImportController::class, 'importWorkspacesAndReports'])
+            ->name('powerbi.import.run');
     });
-    
 
 // Idiomas
 Route::get('/lang/{locale}', function (string $locale) {
@@ -90,5 +99,5 @@ Route::get('/lang/{locale}', function (string $locale) {
     return back();
 })->name('lang.switch');
 
-// Rutas de autenticación (login/register/etc.)
+// Auth (Breeze)
 require __DIR__.'/auth.php';

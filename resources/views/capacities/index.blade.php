@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <div class="card"><div class="card-body">
-        Listado de capacidades (placeholder).
-    </div></div>
+    <div class="alert alert-info">
+        Pantalla de Capacidades (pendiente de implementar).
+    </div>
 @stop

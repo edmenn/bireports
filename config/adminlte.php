@@ -233,7 +233,7 @@ return [
         [
             'text'  => 'Informes',
             'icon'  => 'fas fa-chart-bar',
-            'route' => 'dashboards.index',
+            'route' => 'reports.index',
         ],
         [
             'text'  => 'Conjuntos de datos',

@@ -20,7 +20,9 @@ class PowerBiService
         $this->config = Configuracion::firstOrFail(); // fila única
     }
 
-    /* ================== Auth ================== */
+    /* =========================================================
+     * Auth
+     * ========================================================= */
 
     /** Access token (Client Credentials / Service Principal). */
     public function getAccessToken(): string
@@ -48,10 +50,16 @@ class PowerBiService
 
     private function authHeaders(string $token): array
     {
-        return ['Authorization' => "Bearer {$token}", 'Accept' => 'application/json', 'Content-Type' => 'application/json'];
+        return [
+            'Authorization' => "Bearer {$token}",
+            'Accept'        => 'application/json',
+            'Content-Type'  => 'application/json',
+        ];
     }
 
-    /* ================== Diagnóstico ================== */
+    /* =========================================================
+     * Diagnóstico
+     * ========================================================= */
 
     /** Ping rápido contra la API para validar credenciales. */
     public function ping(): array
@@ -66,13 +74,14 @@ class PowerBiService
                 'body'   => json_decode((string) $resp->getBody(), true),
             ];
         } catch (ClientException $e) {
-            $body = (string) $e->getResponse()->getBody();
-            Log::error('PowerBI ping 4xx', ['status' => $e->getResponse()->getStatusCode(), 'body' => $body]);
+            $this->logHttpError('GET /availableFeatures', $e);
             throw $e;
         }
     }
 
-    /* ================== Lectura (Workspaces/Reports/Dashboards) ================== */
+    /* =========================================================
+     * Lectura (Workspaces / Reports / Dashboards)
+     * ========================================================= */
 
     /** @return array<int, array<string,mixed>> */
     public function listWorkspaces(): array
@@ -122,95 +131,111 @@ class PowerBiService
         }
     }
 
-    /* ================== GenerateToken universal (report|dashboard) ================== */
+    /* =========================================================
+     * Info puntual
+     * ========================================================= */
+
+    public function getReportInfo(string $workspaceId, string $reportId): array
+    {
+        $token = $this->getAccessToken();
+        $resp  = $this->http->get("{$this->base}/groups/{$workspaceId}/reports/{$reportId}", [
+            'headers' => $this->authHeaders($token),
+        ]);
+        return json_decode((string) $resp->getBody(), true) ?? [];
+    }
+
+    /* =========================================================
+     * GenerateToken: REPORT (con RLS/cross-workspace)
+     * ========================================================= */
 
     /**
-     * Genera embed token para report o dashboard. Soporta:
-     * - cross-workspace (targetWorkspaces)
-     * - RLS (identities) si pasás datasetId + rlsUser/rlsRoles.
+     * Genera un Embed Token universal para REPORT.
+     * - Soporta dataset explícito y targetWorkspaces (cross-workspace).
+     * - Soporta RLS opcional (identities).
+     *
+     * Devuelve: ['embedUrl' => string, 'token' => string, 'expiration' => string|null, ...]
      */
-    public function generateEmbedToken(
-        string $type,                  // 'report' | 'dashboard'
-        string $id,                    // reportId o dashboardId
-        ?string $workspaceId = null,   // workspace donde está el item (opcional)
-        ?string $datasetId   = null,   // dataset explícito para reportes (opcional)
-        ?string $rlsUser     = null,   // opcional
-        array $rlsRoles      = []      // opcional
+    public function generateReportEmbedToken(
+        string $workspaceId,
+        string $reportId,
+        ?string $datasetId = null,
+        ?string $rlsUser   = null,
+        array $rlsRoles    = []
     ): array {
-        $token = $this->getAccessToken();
-        $H     = $this->authHeaders($token);
+        $access = $this->getAccessToken();
+        $H      = $this->authHeaders($access);
 
-        // 1) Info del item para embedUrl (y dataset si es report)
-        $infoUrl = $type === 'dashboard'
-            ? ($workspaceId ? "{$this->base}/groups/{$workspaceId}/dashboards/{$id}" : "{$this->base}/dashboards/{$id}")
-            : ($workspaceId ? "{$this->base}/groups/{$workspaceId}/reports/{$id}"    : "{$this->base}/reports/{$id}");
+        // 1) Info del reporte (embedUrl + datasetId si no vino)
+        $info               = $this->getReportInfo($workspaceId, $reportId);
+        $embedUrl           = $info['embedUrl'] ?? '';
+        $reportDatasetId    = $info['datasetId'] ?? null;
+        $datasetWorkspaceId = $info['datasetWorkspaceId'] ?? $workspaceId;
 
-        try {
-            $infoResp = $this->http->get($infoUrl, ['headers' => $H]);
-        } catch (ClientException $e) {
-            $this->logHttpError("GET item info: {$infoUrl}", $e);
-            throw $e;
+        if (!$embedUrl) {
+            throw new RuntimeException('Power BI no devolvió embedUrl del reporte.');
         }
 
-        $info      = json_decode((string) $infoResp->getBody(), true);
-        $embedUrl  = $info['embedUrl'] ?? '';
-        $reportDs  = $type === 'report' ? ($info['datasetId'] ?? '') : '';
-        $dsWsId    = $type === 'report' ? ($info['datasetWorkspaceId'] ?? $workspaceId) : $workspaceId;
-        $finalDsId = $datasetId ?: $reportDs;
+        $finalDatasetId = $datasetId ?: $reportDatasetId;
 
         // 2) Payload GenerateToken
         $payload = [
             'accessLevel' => 'View',
             'allowSaveAs' => false,
+            'reports'     => [['id' => $reportId]],
         ];
 
-        if ($type === 'report') {
-            $payload['reports'] = [['id' => $id]];
-            if ($finalDsId) {
-                $payload['datasets'] = [['id' => $finalDsId]];
-            }
-            $tw = [];
-            if ($workspaceId) $tw[] = ['id' => $workspaceId];
-            if ($dsWsId && $dsWsId !== $workspaceId) $tw[] = ['id' => $dsWsId];
-            if ($tw) $payload['targetWorkspaces'] = $tw;
-
-            // RLS
-            if ($finalDsId && ($rlsUser || !empty($rlsRoles))) {
-                $ident = [
-                    'username' => $rlsUser ?: 'anonymous@local',
-                    'datasets' => [['id' => $finalDsId]],
-                ];
-                if (!empty($rlsRoles)) $ident['roles'] = array_values(array_unique($rlsRoles));
-                $payload['identities'] = [$ident];
-            }
-        } else {
-            // dashboard
-            $payload['dashboards'] = [['id' => $id]];
-            if ($workspaceId) $payload['targetWorkspaces'] = [['id' => $workspaceId]];
+        if ($finalDatasetId) {
+            $payload['datasets'] = [['id' => $finalDatasetId]];
         }
 
-        // 3) POST GenerateToken
-        try {
-            $tokResp = $this->http->post("{$this->base}/GenerateToken", [
-                'headers' => $H,
-                'json'    => $payload,
-            ]);
-        } catch (ClientException $e) {
-            $this->logHttpError('POST /GenerateToken', $e, ['payload' => $payload]);
-            throw $e;
+        // cross-workspace (reporte en un WS y dataset en otro)
+        $tw = [];
+        if ($workspaceId) $tw[] = ['id' => $workspaceId];
+        if ($datasetWorkspaceId && $datasetWorkspaceId !== $workspaceId) {
+            $tw[] = ['id' => $datasetWorkspaceId];
+        }
+        if (!empty($tw)) {
+            $payload['targetWorkspaces'] = $tw;
         }
 
+        // RLS opcional
+        $roles = array_values(array_filter(array_unique(array_map('trim', $rlsRoles))));
+        if ($finalDatasetId && ($rlsUser || !empty($roles))) {
+            $ident = [
+                'username' => $rlsUser ?: 'anonymous@local',
+                'datasets' => [['id' => $finalDatasetId]],
+            ];
+            if (!empty($roles)) {
+                $ident['roles'] = $roles;
+            }
+            $payload['identities'] = [$ident];
+        }
+
+        // 3) GenerateToken
+        $tokResp = $this->http->post("{$this->base}/GenerateToken", [
+            'headers' => $H,
+            'json'    => $payload,
+        ]);
         $tok = json_decode((string) $tokResp->getBody(), true);
+
+        if (empty($tok['token'])) {
+            Log::error('GenerateToken sin token', ['payload' => $payload, 'response' => $tok]);
+            throw new RuntimeException('No se pudo obtener el embed token (GenerateToken).');
+        }
+
         return [
-            'type'       => $type,
-            'id'         => $id,
             'embedUrl'   => $embedUrl,
-            'embedToken' => $tok['token'] ?? '',
-            'expiration' => $tok['expiration'] ?? '',
+            'token'      => $tok['token'],
+            'expiration' => $tok['expiration'] ?? null,
+            'reportId'   => $reportId,
+            'workspaceId'=> $workspaceId,
+            'datasetId'  => $finalDatasetId,
         ];
     }
 
-    /* ================== Helpers ================== */
+    /* =========================================================
+     * Helpers
+     * ========================================================= */
 
     private function logHttpError(string $where, ClientException $e, array $extra = []): void
     {

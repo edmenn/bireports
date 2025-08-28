@@ -2,38 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Workspace;
 use App\Services\PowerBiService;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Workspace;
+use App\Models\Report;
+use Illuminate\Http\Request;
 
 class PowerBiImportController extends Controller
 {
-    /**
-     * Importa/actualiza Workspaces desde la API y guarda en BD.
-     * - Por ahora dejamos esto accesible solo para super_admin.
-     */
-    public function importWorkspaces(PowerBiService $pbi): RedirectResponse
+    public function importWorkspacesAndReports(PowerBiService $powerBi)
     {
-        $items = $pbi->listWorkspaces();
+        // 1) Traer workspaces
+        $groups = $powerBi->listWorkspaces();
 
-        foreach ($items as $g) {
-            // Campos típicos que devuelve la API:
-            // id, name, capacityId, isOnDedicatedCapacity, isOnPremiumPerUserWorkspace
+        $wsCount = 0;
+        $rpCount = 0;
+
+        foreach ($groups as $g) {
+            // Normalizar campos que usamos en tu migración
+            $workspaceData = [
+                'id'           => (string)($g['id'] ?? ''),
+                'name'         => (string)($g['name'] ?? '(sin nombre)'),
+                'type'         => (string)($g['type'] ?? null),
+                'is_read_only' => (bool)  ($g['isReadOnly'] ?? false),
+                'capacity_id'  => isset($g['capacityId']) ? (string)$g['capacityId'] : null,
+            ];
+
+            if (!$workspaceData['id']) {
+                continue; // sin ID no guardamos
+            }
+
             Workspace::updateOrCreate(
-                ['id' => (string) ($g['id'] ?? '')],
+                ['id' => $workspaceData['id']],
                 [
-                    'name'                     => (string) ($g['name'] ?? '(sin nombre)'),
-                    'capacity_id'              => $g['capacityId']            ?? null,
-                    'is_on_dedicated_capacity' => (bool)   ($g['isOnDedicatedCapacity']        ?? false),
-                    'is_on_premium_per_user'   => (bool)   ($g['isOnPremiumPerUserWorkspace']   ?? false),
-                    // si luego querés asociar al cliente logueado:
-                    // 'client_id' => auth()->user()->client_id ?? null,
+                    'name'         => $workspaceData['name'],
+                    'type'         => $workspaceData['type'],
+                    'is_read_only' => $workspaceData['is_read_only'],
+                    'capacity_id'  => $workspaceData['capacity_id'],
                 ]
             );
+            $wsCount++;
+
+            // 2) Por cada workspace, traer reports y guardarlos
+            $reports = $powerBi->listReports($workspaceData['id']);
+            foreach ($reports as $r) {
+                $reportData = [
+                    'id'           => (string)($r['id'] ?? ''),
+                    'name'         => (string)($r['name'] ?? '(sin nombre)'),
+                    'workspace_id' => $workspaceData['id'],
+                    'dataset_id'   => isset($r['datasetId']) ? (string)$r['datasetId'] : null,
+                    'web_url'      => isset($r['webUrl']) ? (string)$r['webUrl'] : null,
+                ];
+
+                if (!$reportData['id']) {
+                    continue;
+                }
+
+                Report::updateOrCreate(
+                    ['id' => $reportData['id']],
+                    [
+                        'name'         => $reportData['name'],
+                        'workspace_id' => $reportData['workspace_id'],
+                        'dataset_id'   => $reportData['dataset_id'],
+                        'web_url'      => $reportData['web_url'],
+                    ]
+                );
+                $rpCount++;
+            }
         }
 
-        return redirect()
-            ->route('workspaces.index')
-            ->with('status', 'Workspaces importados/actualizados correctamente.');
+        // 3) Mostrar un resumen simple
+        return view('admin.dev.powerbi_import_result', [
+            'wsCount' => $wsCount,
+            'rpCount' => $rpCount,
+        ]);
     }
 }

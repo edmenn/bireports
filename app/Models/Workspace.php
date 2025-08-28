@@ -4,42 +4,43 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Workspace extends Model
 {
     use HasFactory;
 
     /**
-     * Tabla y PK
+     * La PK es UUID (string) provista por Power BI.
      */
-    protected $table = 'workspaces';
     protected $primaryKey = 'id';
-    public $incrementing = false;     // el id viene de Power BI (string/uuid)
+    public $incrementing = false;
     protected $keyType = 'string';
 
     /**
-     * Campos asignables en masa
+     * Columnas asignables (coinciden con tu migración de workspaces).
      */
     protected $fillable = [
         'id',
         'name',
+        'type',
+        'is_read_only',
         'capacity_id',
-        'is_on_premium_capacity',
-        // si tu migración tiene más columnas, agrégalas aquí
     ];
 
     /**
-     * Casts
+     * Casts de atributos.
      */
     protected $casts = [
-        'is_on_premium_capacity' => 'boolean',
+        'is_read_only' => 'boolean',
     ];
 
     /**
      * Relaciones
      */
-    public function reports()
+    public function reports(): HasMany
     {
+        // FK: reports.workspace_id -> workspaces.id
         return $this->hasMany(Report::class, 'workspace_id', 'id');
     }
 }

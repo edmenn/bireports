@@ -4,25 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Report extends Model
 {
     use HasFactory;
 
     /**
-     * Tabla y PK
+     * La PK es UUID (string) provista por Power BI.
      */
-    protected $table = 'reports';
     protected $primaryKey = 'id';
-    public $incrementing = false;   // el id viene de Power BI (string/uuid)
+    public $incrementing = false;
     protected $keyType = 'string';
 
     /**
-     * Campos asignables
-     *
-     * Deben coincidir con las columnas de tu migración de reports:
-     * id (string, PK), name, workspace_id (string, FK), dataset_id (string, nullable),
-     * web_url (string, nullable), embed_url (string, nullable), is_rdl (bool, default false)
+     * Columnas asignables (coinciden con tu migración de reports).
      */
     protected $fillable = [
         'id',
@@ -30,22 +26,14 @@ class Report extends Model
         'workspace_id',
         'dataset_id',
         'web_url',
-        'embed_url',
-        'is_rdl',
-    ];
-
-    /**
-     * Casts
-     */
-    protected $casts = [
-        'is_rdl' => 'boolean',
     ];
 
     /**
      * Relaciones
      */
-    public function workspace()
+    public function workspace(): BelongsTo
     {
+        // FK: reports.workspace_id -> workspaces.id
         return $this->belongsTo(Workspace::class, 'workspace_id', 'id');
     }
 }
