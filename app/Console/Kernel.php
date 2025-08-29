@@ -4,35 +4,21 @@ declare(strict_types=1);
 
 namespace App\Console;
 
-use App\Console\Commands\EvaluateCapacities;
-use App\Console\Commands\ImportCapacities;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
     /**
-     * Registra los comandos de Artisan de la aplicación.
-     *
-     * @var array<int, class-string>
-     */
-    protected $commands = [
-        ImportCapacities::class,
-        EvaluateCapacities::class,
-    ];
-
-    /**
-     * Define el scheduler (cron) de la aplicación.
+     * Definición de tareas programadas (puedes moverlas a routes/console.php si prefieres).
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Importar/actualizar capacidades cada hora
         $schedule->command('powerbi:capacities:import')
             ->hourly()
             ->withoutOverlapping()
             ->onOneServer();
 
-        // Evaluar horarios e inactividad cada 5 minutos
         $schedule->command('powerbi:capacities:evaluate')
             ->everyFiveMinutes()
             ->withoutOverlapping()
@@ -40,11 +26,14 @@ class Kernel extends ConsoleKernel
     }
 
     /**
-     * Registro adicional de comandos (si luego agregas routes/console.php).
+     * Registro de comandos y rutas de consola.
      */
     protected function commands(): void
     {
-        // $this->load(__DIR__ . '/Commands');
-        // require base_path('routes/console.php');
+        // Autocargar todos los comandos del directorio App\Console\Commands
+        $this->load(__DIR__ . '/Commands');
+
+        // Si usas rutas de consola (opcional, por claridad de schedule)
+        require base_path('routes/console.php');
     }
 }

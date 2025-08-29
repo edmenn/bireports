@@ -23,23 +23,21 @@ class PowerBiCapacityService
 
     public function __construct()
     {
+        // Leemos credenciales desde tu tabla configuraciones (o .env como fallback)
         /** @var Configuracion|null $cfg */
         $cfg = Configuracion::query()->first();
 
-        // Si preferís, podés forzar que exista:
-        // $cfg = Configuracion::query()->firstOrFail();
-
-        $this->tenantId     = trim((string) ($cfg->powerbi_tenant_id     ?? ''));
-        $this->clientId     = trim((string) ($cfg->powerbi_client_id     ?? ''));
-        $this->clientSecret = trim((string) ($cfg->powerbi_client_secret ?? ''));
+        $this->tenantId     = (string) ($cfg->powerbi_tenant_id ?? env('POWERBI_TENANT_ID', ''));
+        $this->clientId     = (string) ($cfg->powerbi_client_id ?? env('POWERBI_CLIENT_ID', ''));
+        $this->clientSecret = (string) ($cfg->powerbi_client_secret ?? env('POWERBI_CLIENT_SECRET', ''));
 
         if ($this->tenantId === '' || $this->clientId === '' || $this->clientSecret === '') {
-            throw new RuntimeException('Faltan credenciales de Power BI en Configuración (tenant/client/secret).');
+            throw new RuntimeException('Power BI credentials missing (tenant/client/secret).');
         }
 
         $this->http = new Client([
             'timeout'     => 30,
-            'http_errors' => false, // manejamos manualmente
+            'http_errors' => false,
         ]);
     }
 
@@ -54,17 +52,17 @@ class PowerBiCapacityService
                 'client_id'     => $this->clientId,
                 'client_secret' => $this->clientSecret,
                 'grant_type'    => 'client_credentials',
+                // Scope para API de Power BI (myorg)
                 'scope'         => 'https://analysis.windows.net/powerbi/api/.default',
             ],
         ]);
 
-        $code = $resp->getStatusCode();
-        if ($code !== 200) {
+        if ($resp->getStatusCode() !== 200) {
             Log::error('PowerBi OAuth failed', [
-                'code' => $code,
+                'code' => $resp->getStatusCode(),
                 'body' => (string) $resp->getBody(),
             ]);
-            throw new RuntimeException("PowerBi OAuth failed: HTTP {$code}");
+            throw new RuntimeException('PowerBi OAuth failed');
         }
 
         $json  = json_decode((string) $resp->getBody(), true, 512, JSON_THROW_ON_ERROR);
@@ -77,7 +75,7 @@ class PowerBiCapacityService
     }
 
     /**
-     * Llamada genérica a la API con reintentos exponenciales para 429/5xx.
+     * Helper para llamar a la API Power BI (myorg).
      *
      * @return array<string,mixed>|null
      */
@@ -93,12 +91,8 @@ class PowerBiCapacityService
             $attempts++;
 
             try {
-                $resp = $this->http->request(
-                    $method,
-                    rtrim($this->base, '/') . '/' . ltrim($path, '/'),
-                    $opts
-                );
-
+                $url = rtrim($this->base, '/') . '/' . ltrim($path, '/');
+                $resp = $this->http->request($method, $url, $opts);
                 $code = $resp->getStatusCode();
 
                 if ($code >= 200 && $code < 300) {
@@ -106,17 +100,32 @@ class PowerBiCapacityService
                     return $body !== '' ? json_decode($body, true) : null;
                 }
 
+                // Reintentos en errores transitorios
                 if (in_array($code, [429, 500, 502, 503, 504], true) && $attempts < 4) {
                     sleep(2 ** $attempts); // 2,4,8
                     continue;
                 }
 
+                $bodyStr = (string) $resp->getBody();
                 Log::error('PowerBi API error', [
                     'method' => $method,
                     'path'   => $path,
+                    'url'    => $url,
                     'code'   => $code,
-                    'body'   => (string) $resp->getBody(),
+                    'body'   => $bodyStr,
                 ]);
+
+                if ($code === 405) {
+                    // Mensaje claro para diagnóstico
+                    throw new RuntimeException('PowerBi API 405 (Method Not Allowed). Para pausar/reanudar usa los endpoints /admin/capacities/{id}/(suspend|resume) y verifica que el Service Principal tenga rol de Power BI/Fabric Admin.');
+                }
+                if ($code === 403) {
+                    throw new RuntimeException('PowerBi API 403 (Forbidden). El Service Principal no tiene permisos suficientes (requiere permisos de admin en el tenant y acceso a la capacidad).');
+                }
+                if ($code === 401) {
+                    throw new RuntimeException('PowerBi API 401 (Unauthorized). Token inválido o sin alcance; revisa el scope del cliente app y los consentimientos.');
+                }
+
                 throw new RuntimeException("PowerBi API error {$code}");
             } catch (GuzzleException $e) {
                 if ($attempts < 4) {
@@ -132,6 +141,7 @@ class PowerBiCapacityService
     /* ================== Capacidades ================== */
 
     /**
+     * Lista capacidades (myorg).
      * @return array<int, array<string,mixed>>
      */
     public function listCapacities(): array
@@ -141,6 +151,7 @@ class PowerBiCapacityService
     }
 
     /**
+     * Obtiene una capacidad por ID (UUID de myorg).
      * @return array<string,mixed>
      */
     public function getCapacity(string $capacityId): array
@@ -148,21 +159,27 @@ class PowerBiCapacityService
         return (array) $this->api('GET', "capacities/{$capacityId}");
     }
 
-    /** Pausar (suspend) una capacidad. */
+    /**
+     * Pausa una capacidad usando los endpoints de admin.
+     * Requiere que el Service Principal sea Power BI/Fabric Admin.
+     */
     public function pause(string $capacityId): void
     {
-        $this->api('POST', "capacities/{$capacityId}/suspend");
-    }
-
-    /** Reanudar (resume) una capacidad. */
-    public function resume(string $capacityId): void
-    {
-        $this->api('POST', "capacities/{$capacityId}/resume");
+        // /v1.0/myorg/admin/capacities/{id}/suspend
+        $this->api('POST', "admin/capacities/{$capacityId}/suspend");
     }
 
     /**
-     * Importa/actualiza capacidades en la BD.
-     *
+     * Reanuda una capacidad usando los endpoints de admin.
+     */
+    public function resume(string $capacityId): void
+    {
+        // /v1.0/myorg/admin/capacities/{id}/resume
+        $this->api('POST', "admin/capacities/{$capacityId}/resume");
+    }
+
+    /**
+     * Importa/actualiza capacidades en DB desde myorg.
      * @return array{created:int, updated:int}
      */
     public function importCapacities(): array
@@ -183,6 +200,7 @@ class PowerBiCapacityService
             $state   = (string) ($r['state'] ?? ''); // Active | Suspended
             $type    = (string) ($r['type'] ?? 'Fabric');
 
+            // PPU no soporta pause/resume
             $supportsPause = ! str_contains(strtoupper($sku), 'PPU');
 
             /** @var Capacity|null $cap */
@@ -221,7 +239,7 @@ class PowerBiCapacityService
     }
 
     /**
-     * Marca actividad cuando alguien usa la capacidad (abrir embed, etc.).
+     * Marca actividad de una capacidad.
      */
     public function markActivity(Capacity $capacity): void
     {
