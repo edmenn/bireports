@@ -4,20 +4,22 @@
 @section('title', 'Capacidades')
 
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between">
-        <h1 class="h4 mb-0">Capacidades</h1>
-
-        <form action="{{ route('capacities.refresh') }}" method="POST" class="mb-0">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1 class="h4 mb-0">Capacidades</h1>
+            <small class="text-muted">Fabric / Power BI Capacities</small>
+        </div>
+        <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
             @csrf
-            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-sync-alt mr-1"></i> Recargar
+            <button class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sync-alt mr-1"></i> Refrescar
             </button>
         </form>
     </div>
 @stop
 
 @section('content')
-    {{-- Mensajes flash --}}
+    {{-- Alerts --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
@@ -31,124 +33,340 @@
         </div>
     @endif
 
-    <div class="card">
-        <div class="card-header">
-            <form method="GET" action="{{ route('capacities.index') }}" class="mb-0">
-                <div class="input-group input-group-sm" style="max-width: 380px;">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+    @php
+        $total = $caps->count();
+        $activos = $caps->where('is_active', true)->count();
+        $pausados = $total - $activos;
+        $pausables = $caps->where('supports_pause', true)->count();
+        $regiones = $caps->pluck('region')->filter()->unique()->sort()->values();
+        $skus = $caps->pluck('sku')->filter()->unique()->sort()->values();
+    @endphp
+
+    @if($total === 0)
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-server fa-3x text-muted mb-3"></i>
+                <h5 class="mb-2">Sin capacidades</h5>
+                <p class="text-muted">Ejecuta “Refrescar” para traer las capacidades desde Fabric.</p>
+                <form action="{{ route('capacities.refresh') }}" method="POST">
+                    @csrf
+                    <button class="btn btn-primary">
+                        <i class="fas fa-sync-alt mr-1"></i> Refrescar
+                    </button>
+                </form>
+            </div>
+        </div>
+    @else
+        {{-- Métricas superiores --}}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="small-box bg-primary">
+                    <div class="inner">
+                        <h3 class="mb-0">{{ $total }}</h3>
+                        <p class="mb-0">Capacidades totales</p>
                     </div>
-                    <input type="text" name="q" value="{{ request('q','') }}" class="form-control"
-                           placeholder="Buscar por nombre, SKU o tipo…">
-                    <div class="input-group-append">
-                        <button class="btn btn-primary">Buscar</button>
-                    </div>
+                    <div class="icon"><i class="fas fa-layer-group"></i></div>
                 </div>
-            </form>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3 class="mb-0">{{ $activos }}</h3>
+                        <p class="mb-0">Activas</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-play"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3 class="mb-0">{{ $pausados }}</h3>
+                        <p class="mb-0">Pausadas</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-pause"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="small-box bg-secondary">
+                    <div class="inner">
+                        <h3 class="mb-0">{{ $pausables }}</h3>
+                        <p class="mb-0">Soportan pausa</p>
+                    </div>
+                    <div class="icon"><i class="fas fa-stopwatch"></i></div>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body p-0">
+        {{-- Filtros rápidos (cliente) + filtros de servidor (opcional) --}}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="mb-1">Buscar</label>
+                        <input id="cap-search" type="text" class="form-control" placeholder="Nombre, GUID, región, SKU…">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">Estado</label>
+                        <select id="cap-state" class="form-control">
+                            <option value="all" selected>Todos</option>
+                            <option value="active">Activos</option>
+                            <option value="paused">Pausados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">SKU</label>
+                        <select id="cap-sku" class="form-control">
+                            <option value="all" selected>Todos</option>
+                            @foreach($skus as $s)
+                                <option value="{{ $s }}">{{ $s }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="mb-1">Región</label>
+                        <select id="cap-region" class="form-control">
+                            <option value="all" selected>Todas</option>
+                            @foreach($regiones as $r)
+                                <option value="{{ $r }}">{{ $r }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center mt-2 small text-muted">
+                    <i class="far fa-lightbulb mr-1"></i> Los filtros se aplican en el navegador (sin recarga).
+                    <span id="cap-visible-counter" class="ml-2"></span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tabla --}}
+        <div class="card">
             <div class="table-responsive">
-                <table class="table table-hover table-striped table-sm mb-0">
-                    <thead class="thead-light">
-                        <tr class="text-nowrap">
-                            <th>Nombre de Capacidad</th>
-                            <th>SKU</th>
-                            <th>Tipo</th>
-                            <th>Optimización</th>
-                            <th>Tiempo de espera</th>
-                            <th>Horarios</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-center">Controlar</th>
-                        </tr>
+                <table id="cap-table" class="table table-striped table-hover mb-0">
+                    <thead class="thead-light sticky-thead">
+                    <tr>
+                        <th class="sortable" data-sort="name">Nombre <i class="fas fa-sort text-muted ml-1"></i></th>
+                        <th>GUID</th>
+                        <th class="sortable" data-sort="sku">SKU <i class="fas fa-sort text-muted ml-1"></i></th>
+                        <th class="sortable" data-sort="region">Región <i class="fas fa-sort text-muted ml-1"></i></th>
+                        <th class="sortable" data-sort="pause">Soporta pausa <i class="fas fa-sort text-muted ml-1"></i></th>
+                        <th class="sortable" data-sort="state">Estado <i class="fas fa-sort text-muted ml-1"></i></th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        @forelse ($caps as $cap)
-                            @php
-                                $estado   = $cap->is_active ? 'Activo' : 'Pausado';
-                                $badge    = $cap->is_active ? 'badge-success' : 'badge-secondary';
-                                $btnText  = $cap->is_active ? 'Pausar' : 'Reanudar';
-                                $btnClass = $cap->is_active ? 'btn-outline-danger' : 'btn-outline-success';
-                                $btnIcon  = $cap->is_active ? 'fa-pause' : 'fa-play';
-                                $opt      = $cap->cost_optimization_enabled ? 'Sí' : 'No';
-                                $timeout  = $cap->inactivity_timeout_minutes ?? 0;
-                                $hasSched = $cap->schedules->count() > 0;
-                            @endphp
-                            <tr>
-                                <td>
-                                    <div class="font-weight-bold">{{ $cap->display_name }}</div>
-                                    <div class="text-muted small">UUID: {{ $cap->capacity_uuid }}</div>
-                                </td>
-                                <td>{{ $cap->sku }}</td>
-                                <td>{{ $cap->type }}</td>
-                                <td>
-                                    <span class="badge {{ $cap->cost_optimization_enabled ? 'badge-info' : 'badge-light border' }}">
-                                        {{ $opt }}
-                                    </span>
-                                </td>
-                                <td>{{ $timeout }} min</td>
-                                <td style="min-width:220px;">
-                                    @if ($hasSched)
-                                        <ul class="mb-0 pl-3 small">
-                                            @foreach ($cap->schedules as $s)
-                                                <li>
-                                                    <span class="badge badge-light border mr-1">
-                                                        {{ ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][$s->weekday] ?? $s->weekday }}
-                                                    </span>
-                                                    {{ $s->start_time->format('H:i') }}–{{ $s->end_time->format('H:i') }}
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <span class="text-muted">Sin horarios</span>
+                    @foreach ($caps as $c)
+                        @php
+                            $isActive = (bool) $c->is_active;
+                            $supports = (bool) $c->supports_pause;
+                            $name = (string) ($c->display_name ?? '');
+                            $guid = (string) ($c->capacity_uuid ?? '');
+                            $skuVal = (string) ($c->sku ?? '');
+                            $regionVal = (string) ($c->region ?? '');
+                            $searchBlob = \Illuminate\Support\Str::lower(trim($name.' '.$guid.' '.$skuVal.' '.$regionVal));
+                        @endphp
+                        <tr
+                            data-name="{{ \Illuminate\Support\Str::lower($name) }}"
+                            data-guid="{{ \Illuminate\Support\Str::lower($guid) }}"
+                            data-sku="{{ \Illuminate\Support\Str::lower($skuVal) }}"
+                            data-region="{{ \Illuminate\Support\Str::lower($regionVal) }}"
+                            data-state="{{ $isActive ? 'active' : 'paused' }}"
+                            data-pause="{{ $supports ? 'yes' : 'no' }}"
+                            data-search="{{ $searchBlob }}"
+                        >
+                            <td class="align-middle">
+                                <div class="font-weight-bold">{{ $c->display_name }}</div>
+                                <small class="text-muted">{{ $c->type }}</small>
+                            </td>
+                            <td class="align-middle">
+                                @if($guid)
+                                    <code class="mr-2">{{ \Illuminate\Support\Str::limit($guid, 22) }}</code>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary js-copy" data-copy="{{ $guid }}" title="Copiar GUID">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td class="align-middle">{{ $c->sku }}</td>
+                            <td class="align-middle">{{ $c->region }}</td>
+                            <td class="align-middle">
+                                @if ($supports)
+                                    <span class="badge badge-success">Sí</span>
+                                @else
+                                    <span class="badge badge-secondary">No</span>
+                                @endif
+                            </td>
+                            <td class="align-middle">
+                                @if ($isActive)
+                                    <span class="badge badge-success"><i class="fas fa-play mr-1"></i> Activo</span>
+                                @else
+                                    <span class="badge badge-warning"><i class="fas fa-pause mr-1"></i> Pausado</span>
+                                @endif
+                                @if ($c->last_state_change_at)
+                                    <div>
+                                        <small class="text-muted">
+                                            Último cambio:
+                                            {{ \Illuminate\Support\Carbon::parse($c->last_state_change_at)->diffForHumans() }}
+                                        </small>
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="align-middle text-right">
+                                <div class="btn-group" role="group">
+                                    @if ($supports)
+                                        @if ($isActive)
+                                            <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('¿Pausar esta capacidad?');">
+                                                @csrf
+                                                <button class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-pause mr-1"></i> Pausar
+                                                </button>
+                                            </form>
+                                        @else
+                                            <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('¿Reanudar esta capacidad?');">
+                                                @csrf
+                                                <button class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-play mr-1"></i> Reanudar
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge {{ $badge }}">{{ $estado }}</span>
-                                    @unless ($cap->isPausable())
-                                        <div class="small text-muted">No pausable</div>
-                                    @endunless
-                                </td>
-                                <td class="text-center" style="width:120px;">
-                                    <form method="POST" action="{{ route('capacities.toggle', $cap) }}" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm {{ $btnClass }}" {{ $cap->isPausable() ? '' : 'disabled' }}>
-                                            <i class="fas {{ $btnIcon }} mr-1"></i>{{ $btnText }}
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center text-muted py-5">
-                                    <i class="far fa-folder-open fa-lg mb-2 d-block"></i>
-                                    No hay capacidades para mostrar.
-                                    <form action="{{ route('capacities.refresh') }}" method="POST" class="d-inline-block ml-2">
-                                        @csrf
-                                        <button class="btn btn-link p-0 align-baseline">Recargar desde Power BI</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforelse
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
                     </tbody>
                 </table>
             </div>
+
+            @if ($caps->hasPages())
+                <div class="card-footer">
+                    {{ $caps->links() }}
+                </div>
+            @endif
         </div>
-
-        @if ($caps->hasPages())
-            <div class="card-footer">
-                {{-- Si usas Bootstrap para la paginación: --}}
-                {{ $caps->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
-                {{-- O default: {{ $caps->links() }} --}}
-            </div>
-        @endif
-    </div>
+    @endif
 @stop
 
-@section('css')
-    {{-- CSS extra opcional --}}
-@stop
+@push('css')
+<style>
+    .sticky-thead th { position: sticky; top: 0; z-index: 2; }
+    .table tbody tr { transition: background-color .12s ease; }
+    .table tbody tr:hover { background: #fafafa; }
+    .sortable { cursor: pointer; user-select: none; }
+    .sortable .fa-sort { opacity: .6; }
+</style>
+@endpush
 
-@section('js')
-    {{-- JS extra opcional --}}
-@stop
+@push('js')
+<script>
+(function(){
+    const table = document.getElementById('cap-table');
+    if(!table) return;
+
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const search = document.getElementById('cap-search');
+    const state  = document.getElementById('cap-state');
+    const sku    = document.getElementById('cap-sku');
+    const region = document.getElementById('cap-region');
+    const counter= document.getElementById('cap-visible-counter');
+
+    let sortKey = null;
+    let sortDir = 'asc';
+
+    function norm(s){ return (s||'').toString().trim().toLowerCase(); }
+
+    function applyFilters(){
+        const q = norm(search?.value || '');
+        const st= state?.value || 'all';   // all|active|paused
+        const sk= norm(sku?.value || 'all');
+        const rg= norm(region?.value || 'all');
+
+        let visible = 0;
+        rows.forEach(tr=>{
+            const sb = tr.dataset.search || '';
+            const ds = tr.dataset.state || 'paused';
+            const dsku = tr.dataset.sku || '';
+            const drg  = tr.dataset.region || '';
+
+            const okText = (q === '' || sb.includes(q));
+            const okState = (st === 'all') || (st === ds);
+            const okSku   = (sk === 'all') || (sk === dsku);
+            const okReg   = (rg === 'all') || (rg === drg);
+
+            const show = okText && okState && okSku && okReg;
+            tr.style.display = show ? '' : 'none';
+            if(show) visible++;
+        });
+
+        if(counter){
+            counter.textContent = `— ${visible} visibles`;
+        }
+    }
+
+    function getKey(tr, key){
+        switch(key){
+            case 'name':   return tr.dataset.name || '';
+            case 'sku':    return tr.dataset.sku || '';
+            case 'region': return tr.dataset.region || '';
+            case 'pause':  return tr.dataset.pause || 'no';
+            case 'state':  return tr.dataset.state || 'paused';
+            default:       return '';
+        }
+    }
+
+    function applySort(){
+        if(!sortKey) return;
+        const tbody = table.querySelector('tbody');
+        const visible = rows.filter(tr => tr.style.display !== 'none');
+
+        visible.sort((a,b)=>{
+            const va = getKey(a, sortKey);
+            const vb = getKey(b, sortKey);
+            if(va < vb) return sortDir === 'asc' ? -1 : 1;
+            if(va > vb) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        visible.forEach(tr => tbody.appendChild(tr));
+    }
+
+    // Eventos filtros
+    [search, state, sku, region].forEach(el=>{
+        if(!el) return;
+        const evt = el.tagName === 'INPUT' ? 'input' : 'change';
+        el.addEventListener(evt, ()=>{ applyFilters(); applySort(); });
+    });
+
+    // Orden por columnas
+    table.querySelectorAll('thead th.sortable').forEach(th=>{
+        th.addEventListener('click', ()=>{
+            const key = th.dataset.sort;
+            if(sortKey === key){ sortDir = (sortDir === 'asc' ? 'desc' : 'asc'); }
+            else { sortKey = key; sortDir = 'asc'; }
+
+            table.querySelectorAll('thead th.sortable i').forEach(i=> i.className = 'fas fa-sort text-muted ml-1');
+            th.querySelector('i').className = (sortDir === 'asc' ? 'fas fa-sort-up ml-1' : 'fas fa-sort-down ml-1');
+
+            applySort();
+        });
+    });
+
+    // Copiar GUID
+    table.addEventListener('click', (e)=>{
+        const btn = e.target.closest('.js-copy');
+        if(!btn) return;
+        const text = btn.dataset.copy || '';
+        if(!text) return;
+        navigator.clipboard.writeText(text).then(()=>{
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success');
+            setTimeout(()=>{ btn.classList.add('btn-outline-secondary'); btn.classList.remove('btn-success'); }, 900);
+        }).catch(()=> alert('No se pudo copiar'));
+    });
+
+    // Inicial
+    applyFilters();
+})();
+</script>
+@endpush

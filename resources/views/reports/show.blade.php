@@ -1,170 +1,272 @@
+{{-- resources/views/reports/show.blade.php --}}
 @extends('adminlte::page')
 
-@section('title', 'Reporte: '.$report->name)
+@section('title', $report->name ?? 'Reporte')
+
+@section('css')
+<style>
+    html, body, .wrapper, .content-wrapper, .content, .container-fluid {
+        height: 100%;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .content-header { padding: .75rem 1rem; }
+
+    #reportContainer {
+        position: relative;
+        width: 100%;
+        background: transparent;
+        overflow: hidden;
+    }
+
+    #reportLoading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        background: transparent;
+        z-index: 2;
+    }
+
+    #reportError {
+        position: absolute;
+        left: 1rem; right: 1rem; top: 1rem;
+        z-index: 3;
+    }
+
+    .content { padding: 0 1rem 1rem; }
+</style>
+@endsection
 
 @section('content_header')
-    <h1>{{ $report->name }}</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h5 mb-0">
+            {{ $report->name ?? 'Reporte' }}
+            @if(!empty($workspace?->name))
+                <small class="text-muted">/ {{ $workspace->name }}</small>
+            @endif
+        </h1>
+        <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left mr-1"></i> Volver
+        </a>
+    </div>
 @stop
 
 @section('content')
-    @if(empty($embed['token'] ?? null) || empty($embed['embedUrl'] ?? null))
+    {{-- Banner de error corto (si el controller capturó una excepción) --}}
+    @if(!empty($error))
         <div class="alert alert-danger">
-            No se pudo generar el token de incrustación.
-            @isset($embed)
-                <pre style="white-space: pre-wrap">{{ json_encode($embed, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) }}</pre>
-            @endisset
+            <div class="d-flex align-items-start">
+                <i class="fas fa-exclamation-triangle mr-2 mt-1"></i>
+                <div>
+                    <strong>{{ $error }}</strong>
+                    @if(!empty($error_debug))
+                        <details class="mt-2">
+                            <summary>Ver detalle técnico</summary>
+                            <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap; max-height: 45vh; overflow:auto;">{{ $error_debug }}</pre>
+                        </details>
+                    @endif
+                </div>
+            </div>
         </div>
-    @else
-        <div id="pbi-container" style="width:100%; height: calc(100vh - 160px); border:0; border-radius:8px; overflow:hidden;"></div>
+    @endif
+
+    {{-- Diagnóstico de embed si faltan campos críticos --}}
+    @php
+        $embedUrl    = $embed['embedUrl']    ?? null;
+        $accessToken = $embed['accessToken'] ?? null;
+        $reportId    = $embed['reportId']    ?? ($report->id ?? null);
+        $tokenType   = $embed['tokenType']   ?? 'Embed';
+        $hasCritical = $embedUrl && $accessToken && $reportId;
+    @endphp
+
+    @if (!$hasCritical)
+        <div class="alert alert-warning">
+            <h5 class="mb-2"><i class="fas fa-info-circle mr-2"></i>No se pudo preparar el embed del reporte.</h5>
+            <ul class="mb-2">
+                <li>embedUrl: {!! $embedUrl ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
+                <li>accessToken: {!! $accessToken ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
+                <li>reportId: {!! $reportId ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
+            </ul>
+            <details>
+                <summary>Ver payload recibido</summary>
+                <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ json_encode($embed ?? [], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) }}</pre>
+            </details>
+        </div>
+        @php return; @endphp
+    @endif
+
+    <div id="reportContainer">
+        <div id="reportLoading">
+            <div class="text-center">
+                <div class="spinner-border" role="status"></div>
+                <div class="mt-2">Cargando reporte...</div>
+            </div>
+        </div>
+        <div id="reportError" class="alert alert-danger d-none"></div>
+    </div>
+
+    @if(!empty($report->description))
+        <div class="mt-3">
+            <small class="text-muted">{{ $report->description }}</small>
+        </div>
+    @endif
+
+    @if (! request()->hasCookie('XSRF-TOKEN'))
+        <meta name="csrf-token" content="{{ csrf_token() }}">
     @endif
 @stop
 
-@push('js')
-{{-- SDK oficial de Power BI --}}
-<script src="https://cdn.jsdelivr.net/npm/powerbi-client@2.23.1/dist/powerbi.js"></script>
-<script>
-(function () {
-    // ===== Datos provistos por el controlador =====
-    const embedUrl    = @json($embed['embedUrl'] ?? '');
-    const accessToken = @json($embed['token'] ?? '');
-    const reportId    = @json($report->id); // GUID del reporte
-    // Opcionales (si tu controlador los pasa)
-    const workspaceId = @json($workspaceId ?? null);
-    const datasetId   = @json($datasetId ?? null);
-    const rlsRole     = @json($rlsRole ?? null);
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/powerbi-client@2/dist/powerbi.js"></script>
+    <script>
+    (function () {
+        'use strict';
 
-    if (!embedUrl || !accessToken || !reportId) return;
+        // ====== Elementos UI ======
+        const container = document.getElementById('reportContainer');
+        const loading   = document.getElementById('reportLoading');
+        const errorBox  = document.getElementById('reportError');
 
-    // ===== Helper: POST a /api/audit =====
-    async function sendAudit(payload) {
-        try {
-            await fetch(@json(route('api.audit.store')), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': @json(csrf_token()),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(Object.assign({
-                    report_uuid: reportId,
-                    workspace_uuid: workspaceId || null,
-                    dataset_uuid: datasetId || null,
-                }, payload))
-            });
-        } catch (e) {
-            console.warn('Audit send failed', e);
+        // ====== Altura dinámica para que se vea todo (incl. navegación) ======
+        const NAV_RESERVED_PX = 64; // ajusta si fuera necesario
+
+        function h(el){ return el ? (el.offsetHeight||0) : 0; }
+        function setReportHeight() {
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            const headerH = h(document.querySelector('.content-header'));
+            const footerH = h(document.querySelector('.main-footer'));
+            const paddingB = 16;
+            const target = Math.max(240, vh - headerH - footerH - paddingB - NAV_RESERVED_PX);
+            container.style.height = target + 'px';
         }
-    }
+        setReportHeight();
+        window.addEventListener('resize', setReportHeight);
+        setTimeout(setReportHeight, 0);
+        setTimeout(setReportHeight, 250);
+        setTimeout(setReportHeight, 1000);
 
-    // ===== Configuración de embed (TokenType.Embed) =====
-    const models = window['powerbi-client'].models;
-    const config = {
-        type: 'report',
-        id: reportId,
-        embedUrl: embedUrl,
-        accessToken: accessToken,
-        tokenType: models.TokenType.Embed,
-        settings: {
-            panes: {
-                filters: { visible: true, expanded: false },
-                pageNavigation: { visible: true }
-            },
-            navContentPaneEnabled: true
+        // ====== Config embed desde servidor ======
+        const EMBED = {
+            embedUrl:    @json($embedUrl),
+            accessToken: @json($accessToken),
+            reportId:    @json($reportId),
+            tokenType:   @json($tokenType),
+        };
+        const REPORT_UUID    = @json($report->id);
+        const WORKSPACE_UUID = @json($workspace->id ?? null);
+
+        function showError(msg) {
+            if (!errorBox) return;
+            errorBox.classList.remove('d-none');
+            errorBox.innerText = typeof msg === 'string' ? msg : (msg?.message ?? JSON.stringify(msg));
+            if (loading) loading.remove();
         }
-    };
 
-    // ===== Render =====
-    const container = document.getElementById('pbi-container');
-    try { window.powerbi.reset(container); } catch (e) {}
+        if (!EMBED.embedUrl || !EMBED.accessToken || !EMBED.reportId) {
+            return showError('Faltan datos de embedUrl / accessToken / reportId.');
+        }
 
-    const report = window.powerbi.embed(container, config);
+        const models = window['powerbi-client']?.models;
+        if (!window.powerbi || !models) {
+            return showError('No se pudo cargar powerbi-client.');
+        }
 
-    // Primer registro: llegada a la vista
-    sendAudit({
-        action: 'view',
-        rls_role: rlsRole || null,
-        occurred_at: new Date().toISOString()
-    });
+        try { powerbi.reset(container); } catch (_) {}
 
-    // loaded
-    report.on('loaded', function () {
-        sendAudit({
-            action: 'loaded',
-            rls_role: rlsRole || null,
-            occurred_at: new Date().toISOString()
+        const config = {
+            type: 'report',
+            id: EMBED.reportId,
+            embedUrl: EMBED.embedUrl,
+            accessToken: EMBED.accessToken,
+            tokenType: (EMBED.tokenType && models.TokenType[EMBED.tokenType]) ? models.TokenType[EMBED.tokenType] : models.TokenType.Embed,
+            permissions: models.Permissions.All,
+            settings: {
+                background: models.BackgroundType.Default,
+                panes: { filters: { visible: true, expanded: false }, pageNavigation: { visible: true } },
+                displayOption: models.DisplayOption.FitToPage
+            }
+        };
+
+        // ====== Embebido + watchdog (10s) ======
+        const report = powerbi.embed(container, config);
+        window.report = report;
+
+        let loaded = false;
+        const LOAD_TIMEOUT_MS = 10000;
+        const loadTimer = setTimeout(() => {
+            if (loaded) return;
+            try { powerbi.reset(container); } catch (_) {}
+            showError('El reporte tardó demasiado en cargar (timeout 10s). Verifica la red, el token o la capacidad.');
+        }, LOAD_TIMEOUT_MS);
+
+        report.on('loaded', () => {
+            loaded = true;
+            clearTimeout(loadTimer);
+            if (loading) loading.remove();
+            setReportHeight();
         });
-    });
 
-    // rendered
-    report.on('rendered', async function () {
-        try {
-            const pages = await report.getPages();
-            const active = pages.find(p => p.isActive);
-            sendAudit({
-                action: 'render',
-                page_name: active ? (active.displayName || active.name) : null,
-                rls_role: rlsRole || null,
-                occurred_at: new Date().toISOString()
-            });
-        } catch (e) {
-            sendAudit({
-                action: 'error',
-                success: false,
-                error_message: 'rendered handler failed: ' + (e?.message || e),
-                occurred_at: new Date().toISOString()
-            });
-        }
-    });
+        report.on('rendered', () => setReportHeight());
 
-    // pageChanged
-    report.on('pageChanged', function (evt) {
-        try {
-            const info = evt?.detail?.newPage;
-            sendAudit({
-                action: 'page_change',
-                page_name: info ? (info.displayName || info.name) : null,
-                occurred_at: new Date().toISOString()
-            });
-        } catch (e) { /* silencioso */ }
-    });
-
-    // filtersApplied
-    report.on('filtersApplied', async function () {
-        try {
-            const filters = await report.getFilters();
-            sendAudit({
-                action: 'filter_change',
-                filters: filters || null,
-                occurred_at: new Date().toISOString()
-            });
-        } catch (e) { /* silencioso */ }
-    });
-
-    // buttonClicked (detección básica de export)
-    report.on('buttonClicked', function (evt) {
-        try {
-            const btn = evt?.detail?.title || evt?.detail?.reportObjectId || 'button';
-            const knownExports = ['Export', 'Export to file', 'Export data', 'Exportar', 'Exportar a archivo', 'Exportar datos'];
-            const isExport = knownExports.some(x => String(btn).toLowerCase().includes(x.toLowerCase()));
-
-            sendAudit({
-                action: isExport ? 'export' : 'button_click',
-                bookmark: !isExport ? String(btn) : null,
-                occurred_at: new Date().toISOString()
-            });
-        } catch (e) { /* silencioso */ }
-    });
-
-    // error
-    report.on('error', function (evt) {
-        const msg = evt?.detail;
-        sendAudit({
-            action: 'error',
-            success: false,
-            error_message: (typeof msg === 'string') ? msg : JSON.stringify(msg),
-            occurred_at: new Date().toISOString()
+        report.on('error', (event) => {
+            clearTimeout(loadTimer);
+            const detail = event?.detail;
+            const msg = (typeof detail === 'string') ? detail : (detail?.message || 'Error al renderizar el reporte');
+            showError(msg);
         });
-    });
-})();
-</script>
-@endpush
+
+        // ====== Auditoría mínima con timeout 5s ======
+        async function postAudit(action, extra = {}) {
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), 5000);
+            try {
+                await fetch(@json(route('api.audit.store')), {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token())),
+                    },
+                    body: JSON.stringify({
+                        report_uuid:    REPORT_UUID,
+                        workspace_uuid: WORKSPACE_UUID,
+                        action,
+                        success: action !== 'error',
+                        occurred_at: new Date().toISOString(),
+                        ...extra
+                    })
+                });
+            } catch (_) {
+                // no bloquear UI
+            } finally {
+                clearTimeout(t);
+            }
+        }
+
+        window.addEventListener('load', () => postAudit('open'), { once: true });
+        window.addEventListener('beforeunload', () => {
+            try {
+                const payload = {
+                    report_uuid: REPORT_UUID,
+                    workspace_uuid: WORKSPACE_UUID,
+                    action: 'close',
+                    success: true,
+                    occurred_at: new Date().toISOString()
+                };
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                    navigator.sendBeacon(@json(route('api.audit.store')), blob);
+                } else {
+                    postAudit('close');
+                }
+            } catch (_) {}
+        });
+    })();
+    </script>
+@stop

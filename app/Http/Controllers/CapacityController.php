@@ -12,66 +12,79 @@ use Illuminate\View\View;
 
 class CapacityController extends Controller
 {
-    public function __construct(private readonly PowerBiCapacityService $svc)
-    {
-    }
-
+    /**
+     * Listado con filtros simples.
+     */
     public function index(Request $request): View
     {
-        $q = trim((string) $request->get('q', ''));
+        $q     = trim((string) $request->input('q', ''));
+        $state = (string) $request->input('state', ''); // active|suspended|all
+        $sku   = trim((string) $request->input('sku', ''));
 
         $caps = Capacity::query()
-            ->when($q !== '', function ($query) use ($q) {
-                $query->where('display_name', 'like', "%{$q}%")
-                      ->orWhere('sku', 'like', "%{$q}%")
-                      ->orWhere('type', 'like', "%{$q}%");
-            })
+            ->when($q !== '', fn($qr) => $qr->where(function ($w) use ($q) {
+                $w->where('display_name', 'ilike', "%{$q}%")
+                  ->orWhere('capacity_uuid', 'ilike', "%{$q}%")
+                  ->orWhere('region', 'ilike', "%{$q}%")
+                  ->orWhere('sku', 'ilike', "%{$q}%");
+            }))
+            ->when($state === 'active', fn($qr) => $qr->where('is_active', true))
+            ->when($state === 'suspended', fn($qr) => $qr->where('is_active', false))
+            ->when($sku !== '', fn($qr) => $qr->where('sku', 'ilike', "%{$sku}%"))
             ->orderBy('display_name')
-            ->with('schedules')
             ->paginate(20)
-            ->withQueryString();
+            ->appends($request->query());
 
-        return view('capacities.index', ['caps' => $caps, 'q' => $q]);
+        return view('capacities.index', [
+            'caps'  => $caps,
+            'q'     => $q,
+            'state' => $state,
+            'sku'   => $sku,
+        ]);
     }
 
-    public function toggle(Request $request, Capacity $capacity): RedirectResponse
-    {
-        $request->validate(['_token' => ['required']]);
-
-        if (! $capacity->isPausable()) {
-            return back()->with('error', 'Esta capacidad no soporta pausa/reanudación.');
-        }
-
-        try {
-            if ($capacity->is_active) {
-                $this->svc->pause($capacity->capacity_uuid);
-                $capacity->is_active = false;
-            } else {
-                $this->svc->resume($capacity->capacity_uuid);
-                $capacity->is_active = true;
-            }
-
-            $capacity->last_state_change_at = now();
-            $capacity->save();
-
-            return back()->with('success', 'Acción ejecutada correctamente.');
-        } catch (\Throwable $e) {
-            report($e);
-            return back()->with('error', 'No se pudo completar la acción: ' . $e->getMessage());
-        }
-    }
-
-    public function refresh(): RedirectResponse
+    /**
+     * Re-sincroniza con Power BI (myorg).
+     */
+    public function refresh(PowerBiCapacityService $svc): RedirectResponse
     {
         try {
-            $res = $this->svc->importCapacities();
-            return back()->with(
-                'success',
-                "Capacidades sincronizadas. Nuevas: {$res['created']} | Actualizadas: {$res['updated']}"
-            );
+            $res = $svc->importCapacities();
+            return back()->with('success', "Refrescado: nuevas {$res['created']}, actualizadas {$res['updated']}.");
         } catch (\Throwable $e) {
-            report($e);
-            return back()->with('error', 'No se pudo sincronizar: ' . $e->getMessage());
+            return back()->with('error', 'Error al refrescar: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Pausar capacidad via ARM.
+     */
+    public function pause(Capacity $capacity, PowerBiCapacityService $svc): RedirectResponse
+{
+    try {
+        $svc->pause($capacity);  // <— ahora pasa el modelo
+        $capacity->is_active = false;
+        $capacity->last_state_change_at = now();
+        $capacity->save();
+        return back()->with('success', "Capacidad '{$capacity->display_name}' pausada.");
+    } catch (\Throwable $e) {
+        return back()->with('error', "No se pudo pausar: {$e->getMessage()}");
+    }
+}
+
+    /**
+     * Reanudar capacidad via ARM.
+     */
+    public function resume(Capacity $capacity, PowerBiCapacityService $svc): RedirectResponse
+{
+    try {
+        $svc->resume($capacity); // <— ahora pasa el modelo
+        $capacity->is_active = true;
+        $capacity->last_state_change_at = now();
+        $capacity->save();
+        return back()->with('success', "Capacidad '{$capacity->display_name}' reanudada.");
+    } catch (\Throwable $e) {
+        return back()->with('error', "No se pudo reanudar: {$e->getMessage()}");
+    }
+}
 }

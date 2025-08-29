@@ -10,30 +10,54 @@ use Illuminate\Console\Command;
 
 class PauseCapacity extends Command
 {
-    protected $signature = 'powerbi:capacities:pause {id : GUID de la capacidad (columna ID del listado)}';
-    protected $description = 'Pausa una capacidad por su GUID usando los endpoints de admin.';
+    protected $signature = 'powerbi:capacity:pause {id_or_name : GUID (capacity_uuid) o arm_resource_name}';
+    protected $description = 'Pausa una capacidad via ARM usando el modelo Capacity (GUID o ARM name).';
 
     public function handle(PowerBiCapacityService $svc): int
     {
-        $id = (string) $this->argument('id');
-        $this->info("Pausando capacidad {$id}…");
+        $key = (string) $this->argument('id_or_name');
 
-        try {
-            $svc->pause($id);
+        /** @var Capacity|null $cap */
+        $cap = Capacity::query()
+            ->where(function ($q) use ($key) {
+                // si es UUID válido, permitimos buscar por capacity_uuid
+                if ($this->isUuid($key)) {
+                    $q->where('capacity_uuid', $key);
+                }
+                // siempre buscamos por nombre ARM (case-insensitive)
+                $q->orWhereRaw('LOWER(arm_resource_name) = ?', [mb_strtolower($key)]);
+            })
+            ->first();
 
-            /** @var Capacity|null $cap */
-            $cap = Capacity::query()->where('capacity_uuid', $id)->first();
-            if ($cap) {
-                $cap->is_active = false;
-                $cap->last_state_change_at = now();
-                $cap->save();
-            }
-
-            $this->info('OK: petición enviada (la API típicamente responde 200/202/204).');
-            return self::SUCCESS;
-        } catch (\Throwable $e) {
-            $this->error('ERROR pausando capacidad: ' . $e->getMessage());
+        if (!$cap) {
+            $this->error("No encontré capacidad por '{$key}' (ni capacity_uuid ni arm_resource_name).");
             return self::FAILURE;
         }
+
+        if (!$cap->supports_pause) {
+            $this->warn("La capacidad '{$cap->display_name}' no soporta pausa (probablemente PPU).");
+            return self::INVALID;
+        }
+
+        try {
+            $svc->pause($cap); // usa el modelo (ARM)
+            $cap->is_active = false;
+            $cap->last_state_change_at = now();
+            $cap->save();
+
+            $this->info("✔ Capacidad '{$cap->display_name}' pausada correctamente.");
+            return self::SUCCESS;
+        } catch (\Throwable $e) {
+            $this->error('Error al pausar: ' . $e->getMessage());
+            return self::FAILURE;
+        }
+    }
+
+    private function isUuid(string $v): bool
+    {
+        return (bool) preg_match(
+            '/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/',
+            $v
+        );
     }
 }

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Report;
+use App\Models\Workspace;
 use App\Services\PowerBiService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class ReportsController extends Controller
 {
@@ -38,26 +40,74 @@ class ReportsController extends Controller
         ]);
     }
 
+    /**
+     * Muestra el reporte embebido asegurando que pertenece al workspace de la URL.
+     * En caso de error al obtener el embed token, NO rompemos: devolvemos la vista con 'error' y 'error_debug'.
+     */
     public function show(string $workspaceId, string $reportId, PowerBiService $svc, Request $request): View
     {
-        $rlsUser  = $request->query('rls_user');
-        $rlsRoles = array_filter(array_map('trim', explode(',', (string)$request->query('rls_roles', ''))));
+        // 1) Cargar workspace (404 si no existe)
+        $workspace = Workspace::findOrFail($workspaceId);
 
+        // 2) Cargar reporte que pertenezca a ese workspace (404 si no coincide)
         $report = Report::where('id', $reportId)
-            ->where('workspace_id', $workspaceId)
+            ->where('workspace_id', $workspace->id)
             ->firstOrFail();
 
-        $embed = $svc->generateReportEmbedToken(
-            workspaceId: $workspaceId,
-            reportId:    $reportId,
-            datasetId:   $report->dataset_id,
-            rlsUser:     $rlsUser ?: null,
-            rlsRoles:    $rlsRoles
-        );
+        // 3) Parámetros opcionales de RLS desde querystring
+        $rlsUser  = $request->query('rls_user');
+        $rlsRoles = array_values(array_filter(array_map('trim', explode(',', (string) $request->query('rls_roles', '')))));
 
+        $embedArr  = [];
+        $errShort  = null;
+        $errDetail = null;
+
+        try {
+            // 4) Generar token de embed
+            $embed = $svc->generateReportEmbedToken(
+                workspaceId: $workspace->id,
+                reportId:    $report->id,
+                datasetId:   $report->dataset_id,
+                rlsUser:     $rlsUser ?: null,
+                rlsRoles:    $rlsRoles
+            );
+
+            // 4.1) Normalización de claves para la vista
+            $embedArr = is_array($embed) ? $embed : (array) $embed;
+
+            $embedArr['accessToken'] = $embedArr['accessToken']
+                ?? ($embedArr['token'] ?? null)
+                ?? ($embedArr['access_token'] ?? null);
+
+            $embedArr['embedUrl']    = $embedArr['embedUrl']    ?? ($embedArr['embed_url'] ?? null);
+            $embedArr['reportId']    = $embedArr['reportId']    ?? $report->id;
+            $embedArr['tokenType']   = $embedArr['tokenType']   ?? 'Embed';
+            $embedArr['datasetId']   = $embedArr['datasetId']   ?? $report->dataset_id;
+            $embedArr['workspaceId'] = $embedArr['workspaceId'] ?? $workspace->id;
+        } catch (Throwable $e) {
+            // 5) Fast-fail: NO lanzamos a la página de error; mostramos banner en la misma vista
+            $errShort  = 'No se pudo preparar el embed del reporte. Verifica credenciales/capacidad/permisos.';
+            // Detalle seguro para copiar/pegar (sin exponer secrets del env; mostramos clase, mensaje y stack)
+            $errDetail = sprintf(
+                "%s: %s\nCode: %s\nFile: %s:%d\n\nTrace:\n%s",
+                get_class($e),
+                $e->getMessage(),
+                (string) ($e->getCode() ?? '0'),
+                $e->getFile(),
+                $e->getLine(),
+                $e->getTraceAsString()
+            );
+            // Devolvemos con $embedArr vacío; la vista mostrará el diagnóstico y no romperá
+            $embedArr = [];
+        }
+
+        // 6) Vista
         return view('reports.show', [
-            'report' => $report,
-            'embed'  => $embed,
+            'report'       => $report,
+            'workspace'    => $workspace,
+            'embed'        => $embedArr,
+            'error'        => $errShort,   // mensaje corto arriba
+            'error_debug'  => $errDetail,  // detalle dentro de <details> para copiar
         ]);
     }
 
@@ -96,10 +146,7 @@ class ReportsController extends Controller
             // Si marcó "Usar como predeterminada", copiamos a report-covers/default.png
             if ($makeDefault) {
                 $defaultRelPath = 'report-covers/default.png';
-                // Creamos directorio si no existe
                 Storage::disk('public')->makeDirectory('report-covers');
-                // Copiamos el recién subido como predeterminado (en PNG manteniendo nombre fijo)
-                // Nota: no convertimos formato; copiamos bytes tal cual y nombre .png por consistencia de ruta pública
                 Storage::disk('public')->put($defaultRelPath, Storage::disk('public')->get($path));
             }
         }

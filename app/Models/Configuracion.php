@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,5 +25,9 @@ class Configuracion extends Model
         'powerbi_redirect_uri',
         'powerbi_scope',
         'powerbi_token_refresh_minutes',
+
+        // ⬇️ nuevos campos ARM
+        'azure_subscription_id',
+        'azure_resource_group',
     ];
 }

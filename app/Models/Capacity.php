@@ -14,6 +14,7 @@ class Capacity extends Model
     protected $fillable = [
         'capacity_uuid',
         'display_name',
+        'arm_resource_name',           // ⬅️ NUEVO
         'sku',
         'type',
         'region',

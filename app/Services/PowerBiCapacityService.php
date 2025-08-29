@@ -15,7 +15,7 @@ use RuntimeException;
 class PowerBiCapacityService
 {
     private Client $http;
-    private string $base = 'https://api.powerbi.com/v1.0/myorg';
+    private string $baseMyOrg = 'https://api.powerbi.com/v1.0/myorg';
 
     private string $tenantId;
     private string $clientId;
@@ -23,16 +23,19 @@ class PowerBiCapacityService
 
     public function __construct()
     {
-        // Leemos credenciales desde tu tabla configuraciones (o .env como fallback)
-        /** @var Configuracion|null $cfg */
+        // Leemos SIEMPRE desde configuraciones (no del .env),
+        // para que cada cliente cargue sus propios datos.
         $cfg = Configuracion::query()->first();
+        if (!$cfg) {
+            throw new RuntimeException('No existe fila en "configuraciones". Abre /configuraciones para crearla.');
+        }
 
-        $this->tenantId     = (string) ($cfg->powerbi_tenant_id ?? env('POWERBI_TENANT_ID', ''));
-        $this->clientId     = (string) ($cfg->powerbi_client_id ?? env('POWERBI_CLIENT_ID', ''));
-        $this->clientSecret = (string) ($cfg->powerbi_client_secret ?? env('POWERBI_CLIENT_SECRET', ''));
+        $this->tenantId     = (string) ($cfg->powerbi_tenant_id ?? '');
+        $this->clientId     = (string) ($cfg->powerbi_client_id ?? '');
+        $this->clientSecret = (string) ($cfg->powerbi_client_secret ?? '');
 
         if ($this->tenantId === '' || $this->clientId === '' || $this->clientSecret === '') {
-            throw new RuntimeException('Power BI credentials missing (tenant/client/secret).');
+            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configuraciones.');
         }
 
         $this->http = new Client([
@@ -41,9 +44,19 @@ class PowerBiCapacityService
         ]);
     }
 
-    /* ================== Auth ================== */
+    /* ================== TOKENS ================== */
 
-    private function getAccessToken(): string
+    private function getPbiToken(): string
+    {
+        return $this->issueToken('https://analysis.windows.net/powerbi/api/.default');
+    }
+
+    private function getArmToken(): string
+    {
+        return $this->issueToken('https://management.azure.com/.default');
+    }
+
+    private function issueToken(string $scope): string
     {
         $url = "https://login.microsoftonline.com/{$this->tenantId}/oauth2/v2.0/token";
 
@@ -52,36 +65,36 @@ class PowerBiCapacityService
                 'client_id'     => $this->clientId,
                 'client_secret' => $this->clientSecret,
                 'grant_type'    => 'client_credentials',
-                // Scope para API de Power BI (myorg)
-                'scope'         => 'https://analysis.windows.net/powerbi/api/.default',
+                'scope'         => $scope,
             ],
         ]);
 
         if ($resp->getStatusCode() !== 200) {
-            Log::error('PowerBi OAuth failed', [
-                'code' => $resp->getStatusCode(),
-                'body' => (string) $resp->getBody(),
+            Log::error('OAuth failed', [
+                'scope' => $scope,
+                'code'  => $resp->getStatusCode(),
+                'body'  => (string) $resp->getBody(),
             ]);
-            throw new RuntimeException('PowerBi OAuth failed');
+            throw new RuntimeException('OAuth failed for scope ' . $scope);
         }
 
         $json  = json_decode((string) $resp->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $token = (string) ($json['access_token'] ?? '');
         if ($token === '') {
-            throw new RuntimeException('PowerBi OAuth failed: empty token');
+            throw new RuntimeException('OAuth returned empty token for ' . $scope);
         }
-
         return $token;
     }
 
+    /* ================== HTTP WRAPPERS ================== */
+
     /**
-     * Helper para llamar a la API Power BI (myorg).
-     *
+     * Llama a Power BI (myorg).
      * @return array<string,mixed>|null
      */
-    private function api(string $method, string $path, array $opts = []): ?array
+    private function pbiApi(string $method, string $path, array $opts = []): ?array
     {
-        $token = $this->getAccessToken();
+        $token = $this->getPbiToken();
         $opts['headers']['Authorization'] = "Bearer {$token}";
         $opts['headers']['Content-Type']  = $opts['headers']['Content-Type'] ?? 'application/json';
 
@@ -89,10 +102,13 @@ class PowerBiCapacityService
 
         while (true) {
             $attempts++;
-
             try {
-                $url = rtrim($this->base, '/') . '/' . ltrim($path, '/');
-                $resp = $this->http->request($method, $url, $opts);
+                $resp = $this->http->request(
+                    $method,
+                    rtrim($this->baseMyOrg, '/') . '/' . ltrim($path, '/'),
+                    $opts
+                );
+
                 $code = $resp->getStatusCode();
 
                 if ($code >= 200 && $code < 300) {
@@ -100,86 +116,80 @@ class PowerBiCapacityService
                     return $body !== '' ? json_decode($body, true) : null;
                 }
 
-                // Reintentos en errores transitorios
                 if (in_array($code, [429, 500, 502, 503, 504], true) && $attempts < 4) {
-                    sleep(2 ** $attempts); // 2,4,8
+                    sleep(2 ** $attempts);
                     continue;
                 }
 
-                $bodyStr = (string) $resp->getBody();
-                Log::error('PowerBi API error', [
+                Log::error('PowerBi myorg API error', [
                     'method' => $method,
                     'path'   => $path,
-                    'url'    => $url,
                     'code'   => $code,
-                    'body'   => $bodyStr,
+                    'body'   => (string) $resp->getBody(),
                 ]);
-
-                if ($code === 405) {
-                    // Mensaje claro para diagnóstico
-                    throw new RuntimeException('PowerBi API 405 (Method Not Allowed). Para pausar/reanudar usa los endpoints /admin/capacities/{id}/(suspend|resume) y verifica que el Service Principal tenga rol de Power BI/Fabric Admin.');
-                }
-                if ($code === 403) {
-                    throw new RuntimeException('PowerBi API 403 (Forbidden). El Service Principal no tiene permisos suficientes (requiere permisos de admin en el tenant y acceso a la capacidad).');
-                }
-                if ($code === 401) {
-                    throw new RuntimeException('PowerBi API 401 (Unauthorized). Token inválido o sin alcance; revisa el scope del cliente app y los consentimientos.');
-                }
-
-                throw new RuntimeException("PowerBi API error {$code}");
+                throw new RuntimeException("PowerBi myorg API error {$code}");
             } catch (GuzzleException $e) {
                 if ($attempts < 4) {
                     sleep(2 ** $attempts);
                     continue;
                 }
-                Log::error('PowerBi API exception', ['path' => $path, 'ex' => $e->getMessage()]);
-                throw new RuntimeException('PowerBi API exception: ' . $e->getMessage(), 0, $e);
+                Log::error('PowerBi myorg exception', ['path' => $path, 'ex' => $e->getMessage()]);
+                throw new RuntimeException('PowerBi myorg exception: ' . $e->getMessage(), 0, $e);
             }
         }
     }
 
-    /* ================== Capacidades ================== */
+    /**
+     * Llama a ARM.
+     * Devuelve el código HTTP y el cuerpo parseado si aplica.
+     * @return array{code:int, json:array<string,mixed>|null, raw:string}
+     */
+    private function armRequest(string $method, string $url, array $opts = []): array
+    {
+        $token = $this->getArmToken();
+        $opts['headers']['Authorization'] = "Bearer {$token}";
+        $opts['headers']['Content-Type']  = $opts['headers']['Content-Type'] ?? 'application/json';
+
+        try {
+            $resp = $this->http->request($method, $url, $opts);
+            $code = $resp->getStatusCode();
+            $raw  = (string) $resp->getBody();
+            $json = null;
+            if ($raw !== '') {
+                try {
+                    $json = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+                } catch (\Throwable $e) {
+                    // cuerpo no JSON -> ignoramos parseo
+                }
+            }
+            return ['code' => $code, 'json' => is_array($json) ? $json : null, 'raw' => $raw];
+        } catch (GuzzleException $e) {
+            Log::error('ARM request exception', ['url' => $url, 'ex' => $e->getMessage()]);
+            throw new RuntimeException('ARM request exception: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /* ================== Capacidades (listar/importar) ================== */
 
     /**
-     * Lista capacidades (myorg).
      * @return array<int, array<string,mixed>>
      */
     public function listCapacities(): array
     {
-        $json = $this->api('GET', 'capacities');
+        $json = $this->pbiApi('GET', 'capacities');
         return (array) ($json['value'] ?? []);
     }
 
     /**
-     * Obtiene una capacidad por ID (UUID de myorg).
      * @return array<string,mixed>
      */
     public function getCapacity(string $capacityId): array
     {
-        return (array) $this->api('GET', "capacities/{$capacityId}");
+        return (array) $this->pbiApi('GET', "capacities/{$capacityId}");
     }
 
     /**
-     * Pausa una capacidad usando los endpoints de admin.
-     * Requiere que el Service Principal sea Power BI/Fabric Admin.
-     */
-    public function pause(string $capacityId): void
-    {
-        // /v1.0/myorg/admin/capacities/{id}/suspend
-        $this->api('POST', "admin/capacities/{$capacityId}/suspend");
-    }
-
-    /**
-     * Reanuda una capacidad usando los endpoints de admin.
-     */
-    public function resume(string $capacityId): void
-    {
-        // /v1.0/myorg/admin/capacities/{id}/resume
-        $this->api('POST', "admin/capacities/{$capacityId}/resume");
-    }
-
-    /**
-     * Importa/actualiza capacidades en DB desde myorg.
+     * Importa/actualiza capacidades desde myorg en BD.
      * @return array{created:int, updated:int}
      */
     public function importCapacities(): array
@@ -200,7 +210,6 @@ class PowerBiCapacityService
             $state   = (string) ($r['state'] ?? ''); // Active | Suspended
             $type    = (string) ($r['type'] ?? 'Fabric');
 
-            // PPU no soporta pause/resume
             $supportsPause = ! str_contains(strtoupper($sku), 'PPU');
 
             /** @var Capacity|null $cap */
@@ -225,9 +234,7 @@ class PowerBiCapacityService
                 ]);
                 $created++;
             } else {
-                $cap->fill($payload);
-                $cap->save();
-
+                $cap->fill($payload)->save();
                 if ($cap->activity()->doesntExist()) {
                     $cap->activity()->create([]);
                 }
@@ -238,9 +245,6 @@ class PowerBiCapacityService
         return ['created' => $created, 'updated' => $updated];
     }
 
-    /**
-     * Marca actividad de una capacidad.
-     */
     public function markActivity(Capacity $capacity): void
     {
         $now = Carbon::now();
@@ -248,5 +252,117 @@ class PowerBiCapacityService
         $activity->last_seen_at = $now;
         $activity->hits_last_window = (int) ($activity->hits_last_window ?? 0) + 1;
         $activity->save();
+    }
+
+    /* ================== Pausa / Reanudar (ARM) ================== */
+
+    /**
+     * Detecta provider ARM según SKU.
+     */
+    private function detectProviderBySku(string $sku): string
+    {
+        $u = strtoupper($sku);
+        if (str_starts_with($u, 'F')) {
+            return 'Microsoft.Fabric';
+        }
+        if (str_starts_with($u, 'A') || str_starts_with($u, 'EM')) {
+            return 'Microsoft.PowerBIDedicated';
+        }
+        // por defecto Fabric
+        return 'Microsoft.Fabric';
+    }
+
+    /**
+     * Devuelve api-version apropiada por provider.
+     */
+    private function providerApiVersion(string $provider): string
+    {
+        return $provider === 'Microsoft.Fabric' ? '2023-11-01' : '2021-01-01';
+    }
+
+    /**
+     * Construye la URL de ARM para action (suspend/resume) sobre la capacidad.
+     */
+    private function buildArmActionUrl(Capacity $cap, string $action): string
+    {
+        /** @var Configuracion|null $cfg */
+        $cfg = Configuracion::query()->first();
+        if (!$cfg) {
+            throw new RuntimeException('No existe fila de configuraciones.');
+        }
+
+        $subId = (string) ($cfg->azure_subscription_id ?? '');
+        $rg    = (string) ($cfg->azure_resource_group ?? '');
+
+        if ($subId === '' || $rg === '') {
+            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configuraciones.');
+        }
+
+        $provider = $this->detectProviderBySku((string) $cap->sku);
+        $api      = $this->providerApiVersion($provider);
+
+        // ARM usa el nombre del recurso, no el display ni el GUID de myorg.
+        $name = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
+        if ($name === '') {
+            throw new RuntimeException('arm_resource_name/display_name vacío en la capacidad.');
+        }
+
+        // Acciones:
+        // POST .../capacities/{name}/suspend?api-version=...
+        // POST .../capacities/{name}/resume?api-version=...
+        return sprintf(
+            'https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/%s/capacities/%s/%s?api-version=%s',
+            rawurlencode($subId),
+            rawurlencode($rg),
+            $provider,
+            rawurlencode($name),
+            $action,
+            $api
+        );
+    }
+
+    /**
+     * Pausa vía ARM.
+     */
+    public function pause(Capacity $cap): void
+    {
+        if (!$cap->supports_pause) {
+            throw new RuntimeException('Esta capacidad no soporta pausa (SKU PPU u otra restricción).');
+        }
+
+        $url = $this->buildArmActionUrl($cap, 'suspend');
+        $res = $this->armRequest('POST', $url);
+
+        // ARM suele responder 202 (accepted) o 200/204.
+        if (!in_array($res['code'], [200, 202, 204], true)) {
+            Log::error('ARM suspend error', ['url' => $url, 'code' => $res['code'], 'raw' => $res['raw']]);
+            if ($res['code'] === 404) {
+                throw new RuntimeException('404 ARM: nombre de recurso / RG / suscripción / provider incorrecto.');
+            }
+            if ($res['code'] === 403) {
+                throw new RuntimeException('403 ARM: permisos insuficientes (RBAC) en el scope.');
+            }
+            throw new RuntimeException("ARM suspend HTTP {$res['code']}");
+        }
+    }
+
+    /**
+     * Reanuda vía ARM.
+     */
+    public function resume(Capacity $cap): void
+    {
+        $url = $this->buildArmActionUrl($cap, 'resume');
+        $res = $this->armRequest('POST', $url);
+
+        if (!in_array($res['code'], [200, 202, 204], true)) {
+            Log::error('ARM resume error', ['url' => $url, 'code' => $res['code'], 'raw' => $res['raw']]);
+            if ($res['code'] === 404) {
+                throw new RuntimeException('404 ARM: nombre de recurso / RG / suscripción / provider incorrecto.');
+            }
+            if ($res['code'] === 403) {
+                throw new RuntimeException('403 ARM: permisos insuficientes (RBAC) en el scope.');
+            }
+            throw new RuntimeException("ARM resume HTTP {$res['code']}");
+        }
     }
 }

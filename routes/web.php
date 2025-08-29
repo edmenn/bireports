@@ -1,6 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
+
+// Controllers
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresasController;
@@ -13,6 +17,7 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ReportViewerController;
 use App\Http\Controllers\AuditAnalyticsController;
 use App\Http\Controllers\CapacityController;
+use App\Http\Controllers\Api\AuditController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +37,7 @@ Route::get('/dashboard', function () {
 
 // Grupo interno protegido
 Route::middleware(['auth'])->group(function () {
+
     // Menú principal (views placeholder o controllers)
     Route::view('/conjuntos-datos', 'datasets.index')->name('datasets.index');
     Route::view('/aplicaciones',    'apps.index')->name('apps.index');
@@ -40,13 +46,21 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('capacidades')->group(function () {
         Route::get('/', [CapacityController::class, 'index'])->name('capacities.index');
         Route::post('/refresh', [CapacityController::class, 'refresh'])->name('capacities.refresh');
-        Route::post('/{capacity}/toggle', [CapacityController::class, 'toggle'])->name('capacities.toggle');
+        Route::post('/{capacity}/pause', [CapacityController::class, 'pause'])->name('capacities.pause');
+        Route::post('/{capacity}/resume', [CapacityController::class, 'resume'])->name('capacities.resume');
     });
 
     // Workspaces + Reports (vista pública interna por workspace)
-    Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])->name('workspaces.index');
-    Route::get('/espacios-trabajo/{workspace}', [WorkspacesController::class, 'show'])->name('workspaces.show');
+    Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])
+        ->name('workspaces.index');
+
+    Route::get('/espacios-trabajo/{workspace}', [WorkspacesController::class, 'show'])
+        ->whereUuid('workspace')
+        ->name('workspaces.show');
+
     Route::get('/espacios-trabajo/{workspace}/reportes/{report}', [ReportsController::class, 'show'])
+        ->whereUuid('workspace')
+        ->whereUuid('report')
         ->name('reports.show');
 
     // 🚀 Vista embebida con powerbi-client + auditoría
@@ -71,23 +85,34 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/grupos',    'grupos.index')->name('grupos.index');
     Route::view('/carpetas',  'folders.index')->name('folders.index');
 
+    // Auditoría (analítica y export)
     Route::get('/auditoria', [AuditAnalyticsController::class, 'index'])
         ->name('auditoria.index');
+
+    Route::get('/auditoria/export', [AuditAnalyticsController::class, 'export'])
+        ->name('auditoria.export');
 
     // Configuraciones (controller)
     Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
         ->name('configuraciones.index');
+
     Route::put('/configuraciones/{configuracion}', [ConfiguracionesController::class, 'update'])
         ->name('configuraciones.update');
 
-    // Exportar CSV con filtros actuales
-    Route::get('/auditoria/export', [AuditAnalyticsController::class, 'export'])
-        ->name('auditoria.export');
+    // ✅ Endpoint de auditoría llamado desde Blade → route('api.audit.store')
+    Route::post('/api/audits', [AuditController::class, 'store'])
+        ->name('api.audit.store');
 
-    // Perfil (Breeze)
+    // ✅ Rutas de perfil (Breeze). Si existen, perfecto; si no, las creamos igual aquí.
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile',[ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // ✅ SHIM de seguridad: si por alguna razón profile.edit no quedó registrado
+    if (! Route::has('profile.edit')) {
+        Route::get('/mi-perfil', fn () => redirect()->route('dashboards.index'))
+            ->name('profile.edit');
+    }
 });
 
 // Área ADMIN (solo super_admin)
@@ -103,14 +128,13 @@ Route::prefix('admin')
         Route::get('/reportes', [ReportsController::class, 'index'])
             ->name('reports.index');
 
-        /*
-         * NUEVO: CRUD de imagen/descripcion de Report
-         * - /admin/reportes/{report}/edit -> formulario
-         * - /admin/reportes/{report}      -> update (PUT)
-         */
+        // CRUD de imagen/descripcion de Report
         Route::get('/reportes/{report}/edit', [ReportsController::class, 'edit'])
+            ->whereUuid('report')
             ->name('reports.edit');
+
         Route::put('/reportes/{report}', [ReportsController::class, 'update'])
+            ->whereUuid('report')
             ->name('reports.update');
 
         // Diagnóstico rápido del token/alcance
@@ -125,10 +149,12 @@ Route::prefix('admin')
 
 // Idiomas
 Route::get('/lang/{locale}', function (string $locale) {
-    if (! in_array($locale, ['es', 'pt', 'en'])) abort(404);
+    if (! in_array($locale, ['es', 'pt', 'en'], true)) {
+        abort(404);
+    }
     session(['locale' => $locale]);
     return back();
 })->name('lang.switch');
 
 // Auth (Breeze)
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
