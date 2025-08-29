@@ -1,59 +1,62 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
 use App\Models\Audit;
-use App\Models\User;
 use App\Models\Report;
+use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\View\View;
 
-class AuditAnalyticsController extends Controller
+final class AuditAnalyticsController extends Controller
 {
+    /**
+     * Acciones que cuentan como "acceso".
+     * Tu AuditService normaliza 'open' y 'loaded' -> 'view'.
+     */
+    private const ACCESS_ACTIONS = ['view']; // puedes usar ['view','render'] si quieres contar ambos
+
     public function index(Request $request): View
     {
-        // Tab activa
-        $tab = (string) $request->input('tab', 'dashboard');
+        $tab  = (string) $request->input('tab', 'dashboard');
 
-        // Rango por defecto: últimos 60 días (puedes cambiarlo a 30 si prefieres)
+        // Rango por defecto: últimos 60 días
         $to   = Carbon::today()->endOfDay();
         $from = (clone $to)->subDays(59)->startOfDay();
 
-        // Override por query
-        $fromInput = $request->input('from');
-        $toInput   = $request->input('to');
-        if (!empty($fromInput)) $from = Carbon::parse((string)$fromInput)->startOfDay();
-        if (!empty($toInput))   $to   = Carbon::parse((string)$toInput)->endOfDay();
+        // Overrides
+        if ($request->filled('from')) $from = Carbon::parse((string)$request->input('from'))->startOfDay();
+        if ($request->filled('to'))   $to   = Carbon::parse((string)$request->input('to'))->endOfDay();
 
         // Filtros opcionales
         $reportUuid = $request->filled('report_uuid') ? (string)$request->input('report_uuid') : null;
         $userId     = $request->filled('user_id')     ? (int)$request->input('user_id')       : null;
 
+        // Base: sólo eventos "accesos"
         $base = Audit::query()
             ->when($reportUuid, fn ($q) => $q->where('report_uuid', $reportUuid))
             ->when($userId,     fn ($q) => $q->where('user_id', $userId))
-            ->whereBetween('occurred_at', [$from, $to]);
+            ->whereBetween('occurred_at', [$from, $to])
+            ->whereIn('action', self::ACCESS_ACTIONS);
 
-        // Datos comunes (para tarjetas y dashboard)
+        // ===== Tarjetas =====
         $totals = [
             'totalAccesos'  => (clone $base)->count(),
-            'totalUsuarios' => (clone $base)->distinct('user_id')->whereNotNull('user_id')->count('user_id'),
+            'totalUsuarios' => (clone $base)->whereNotNull('user_id')->distinct('user_id')->count('user_id'),
             'totalReportes' => (clone $base)->distinct('report_uuid')->count('report_uuid'),
         ];
 
-        // Dashboard (meses, heatmap, top 10)
+        // ===== Dashboard =====
         $dashboard = $this->buildDashboard($base, $from, $to);
 
-        // Pestañas de usuarios
+        // ===== Pestañas (datos) =====
         $usersMost   = [];
         $usersLeast  = [];
         $usersNoAct  = [];
-        // Pestañas de reportes
+
         $reportsMost  = [];
         $reportsLeast = [];
         $reportsNoAcc = [];
@@ -98,10 +101,10 @@ class AuditAnalyticsController extends Controller
         ]));
     }
 
-    /** ======= Dashboard helpers ======= */
+    /** ===== Dashboard helpers ===== */
     private function buildDashboard($base, Carbon $from, Carbon $to): array
     {
-        // Meses
+        // Conteo por mes en rango (relleno de huecos)
         $monthsRaw = (clone $base)
             ->selectRaw("to_char(date_trunc('month', occurred_at), 'YYYY-MM') AS ym, COUNT(*) AS total")
             ->groupBy('ym')
@@ -141,10 +144,14 @@ class AuditAnalyticsController extends Controller
             ->orderByDesc('total')
             ->limit(10)
             ->get()
-            ->map(fn ($r) => ['label' => (string)$r->report_uuid, 'total' => (int)$r->total])
+            ->map(function ($r) {
+                $rep = Report::query()->find((string)$r->report_uuid);
+                $name = $rep?->name ?? (string)$r->report_uuid;
+                return ['label' => $name, 'total' => (int)$r->total];
+            })
             ->values();
 
-        // Heatmap día × hora
+        // Heatmap (día × hora)
         $gridRaw = (clone $base)
             ->selectRaw('EXTRACT(ISODOW FROM occurred_at)::int AS dow, EXTRACT(HOUR FROM occurred_at)::int AS hr, COUNT(*) AS total')
             ->groupBy('dow', 'hr')
@@ -166,10 +173,9 @@ class AuditAnalyticsController extends Controller
         ];
     }
 
-    /** ======= Users tabs ======= */
+    /** ===== Users tabs ===== */
     private function usersRank($base, string $direction, int $limit): array
     {
-        // >=1 acceso en el rango
         $rows = (clone $base)
             ->select('user_id', DB::raw('COUNT(*) AS total'), DB::raw('MAX(occurred_at) AS last_access'))
             ->whereNotNull('user_id')
@@ -193,11 +199,11 @@ class AuditAnalyticsController extends Controller
 
     private function usersWithoutAccess(Carbon $from, Carbon $to): array
     {
-        // Usuarios sin accesos en el rango
         $sub = Audit::query()
             ->select('user_id')
             ->whereNotNull('user_id')
             ->whereBetween('occurred_at', [$from, $to])
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('user_id');
 
         $users = User::query()
@@ -206,10 +212,10 @@ class AuditAnalyticsController extends Controller
             ->limit(500)
             ->get();
 
-        // Último acceso global (fuera del rango)
         $lastByUser = Audit::query()
             ->select('user_id', DB::raw('MAX(occurred_at) AS last_access'))
             ->whereNotNull('user_id')
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('user_id')
             ->pluck('last_access', 'user_id');
 
@@ -224,7 +230,7 @@ class AuditAnalyticsController extends Controller
         })->values()->all();
     }
 
-    /** ======= Reports tabs ======= */
+    /** ===== Reports tabs ===== */
     private function reportsRank($base, string $direction, int $limit): array
     {
         $rows = (clone $base)
@@ -234,13 +240,15 @@ class AuditAnalyticsController extends Controller
             ->limit($limit)
             ->get();
 
-        // Intentar traer nombre desde modelo Report (ajusta campo según tu esquema)
-        $names = Report::query()->whereIn('id', $rows->pluck('report_uuid'))->pluck('name', 'id');
+        $names = Report::query()
+            ->whereIn('id', $rows->pluck('report_uuid'))
+            ->pluck('name', 'id');
 
         return $rows->map(function ($r) use ($names) {
+            $id = (string)$r->report_uuid;
             return [
-                'report_uuid' => (string)$r->report_uuid,
-                'name'        => $names[$r->report_uuid] ?? $r->report_uuid,
+                'report_uuid' => $id,
+                'name'        => $names[$id] ?? $id,
                 'total'       => (int)$r->total,
                 'last_access' => $r->last_access ? Carbon::parse($r->last_access)->toDateTimeString() : null,
             ];
@@ -249,37 +257,37 @@ class AuditAnalyticsController extends Controller
 
     private function reportsWithoutAccess(Carbon $from, Carbon $to): array
     {
-        // Reportes con 0 accesos en el rango
         $sub = Audit::query()
             ->select('report_uuid')
             ->whereBetween('occurred_at', [$from, $to])
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('report_uuid');
 
-        // Ajusta si tu tabla/clave de Report es distinta
         $reports = Report::query()
             ->whereNotIn('id', $sub)
             ->orderBy('created_at', 'desc')
             ->limit(500)
             ->get(['id','name','created_at']);
 
-        // Último acceso global (fuera del rango)
         $lastByReport = Audit::query()
             ->select('report_uuid', DB::raw('MAX(occurred_at) AS last_access'))
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('report_uuid')
             ->pluck('last_access', 'report_uuid');
 
         return $reports->map(function ($r) use ($lastByReport) {
+            $id = (string)$r->id;
             return [
-                'report_uuid' => (string)$r->id,
-                'name'        => $r->name ?? $r->id,
-                'last_access' => isset($lastByReport[$r->id]) ? Carbon::parse($lastByReport[$r->id])->toDateTimeString() : null,
+                'report_uuid' => $id,
+                'name'        => $r->name ?? $id,
+                'last_access' => isset($lastByReport[$id]) ? Carbon::parse($lastByReport[$id])->toDateTimeString() : null,
                 'created_at'  => $r->created_at?->toDateTimeString(),
             ];
         })->values()->all();
     }
 
-    /** ======= Export CSV (igual que antes) ======= */
-    public function export(Request $request): StreamedResponse
+    /** ===== Export CSV (sólo ACCESS_ACTIONS) ===== */
+    public function export(Request $request)
     {
         $to   = $request->filled('to')   ? Carbon::parse((string)$request->input('to'))->endOfDay()   : Carbon::today()->endOfDay();
         $from = $request->filled('from') ? Carbon::parse((string)$request->input('from'))->startOfDay() : (clone $to)->subDays(59)->startOfDay();
@@ -291,6 +299,7 @@ class AuditAnalyticsController extends Controller
             ->when($reportUuid, fn ($q) => $q->where('report_uuid', $reportUuid))
             ->when($userId,     fn ($q) => $q->where('user_id', $userId))
             ->whereBetween('occurred_at', [$from, $to])
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->orderBy('occurred_at');
 
         $headers = [
@@ -300,7 +309,7 @@ class AuditAnalyticsController extends Controller
 
         return response()->stream(function() use ($base) {
             $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF");
+            fwrite($out, "\xEF\xBB\xBF"); // BOM UTF-8
             fputcsv($out, [
                 'id','occurred_at','user_id','report_uuid','workspace_uuid','dataset_uuid',
                 'action','page_name','rls_role','duration_ms','success','ip','referer','user_agent','filters','error_message'

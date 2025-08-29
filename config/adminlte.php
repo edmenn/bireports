@@ -285,7 +285,12 @@ return [
             'icon'  => 'fas fa-chart-line',
             'route' => 'auditoria.index',  // la crearemos luego
         ],
-
+        [
+            'text'  => 'Reiniciar auditoría',
+            'icon'  => 'fas fa-broom',
+            'route' => 'admin.audit.reset.show',
+            'can'   => 'super-admin.panel',
+        ],
         ['header' => 'Configuraciones'],
         [
             'text'  => 'Parámetros',

@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\AuditAdminController; // ← NUEVO (reset auditoría)
 use App\Http\Controllers\ConfiguracionesController;
 use App\Http\Controllers\PowerBiImportController;
 use App\Http\Controllers\WorkspacesController;
@@ -103,7 +104,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/audits', [AuditController::class, 'store'])
         ->name('api.audit.store');
 
-    // ✅ Rutas de perfil (Breeze). Si existen, perfecto; si no, las creamos igual aquí.
+    // ✅ Rutas de perfil (Breeze)
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile',[ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -136,6 +137,13 @@ Route::prefix('admin')
         Route::put('/reportes/{report}', [ReportsController::class, 'update'])
             ->whereUuid('report')
             ->name('reports.update');
+
+        // 🔒 Reset total de auditoría (solo super_admin)
+        Route::get('/auditoria/reset', [AuditAdminController::class, 'showReset'])
+            ->name('admin.audit.reset.show');
+
+        Route::post('/auditoria/reset', [AuditAdminController::class, 'reset'])
+            ->name('admin.audit.reset.run');
 
         // Diagnóstico rápido del token/alcance
         Route::get('dev/powerbi/ping', function (\App\Services\PowerBiService $svc) {

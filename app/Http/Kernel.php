@@ -9,9 +9,14 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     /**
-     * Middleware globales que se ejecutan en cada request.
+     * Middleware globales que se ejecutan en cada request (en orden).
+     * El primero envuelve a todo y puede capturar excepciones tempranas,
+     * mostrando la vista amigable de AdminLTE.
      */
     protected $middleware = [
+        // >>> NUEVO: envolver TODO el pipeline para forzar la vista amigable
+        \App\Http\Middleware\FriendlyErrorMiddleware::class,
+
         // Protección básica y cabeceras
         \Illuminate\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
@@ -34,15 +39,16 @@ class Kernel extends HttpKernel
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
 
-            // >>> Tu auditoría existente
+            // Auditoría existente
             \App\Http\Middleware\TrackAudit::class,
 
-            // >>> NUEVO: actividad on-demand + auto-resume para capacidades
+            // Actividad de capacidad
             \App\Http\Middleware\AutoCapacityActivity::class,
+
+            // ⚠️ YA NO incluimos FriendlyErrorMiddleware aquí.
         ],
 
         'api' => [
-            // Throttle típico API
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
@@ -50,7 +56,6 @@ class Kernel extends HttpKernel
 
     /**
      * Aliases de middleware para usarlos por nombre en rutas.
-     * (Sustituye al antiguo $routeMiddleware.)
      */
     protected $middlewareAliases = [
         'auth'              => \App\Http\Middleware\Authenticate::class,
@@ -63,10 +68,8 @@ class Kernel extends HttpKernel
         'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'          => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // Alias opcional si quisieras aplicarlo por ruta/grupo:
+        // Alias opcionales
         'track.audit'       => \App\Http\Middleware\TrackAudit::class,
-
-        // >>> NUEVO alias por si querés aplicarlo selectivamente en ciertas rutas
         'capacity.activity' => \App\Http\Middleware\AutoCapacityActivity::class,
     ];
 }
