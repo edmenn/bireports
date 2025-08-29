@@ -291,6 +291,14 @@ return [
             'route' => 'admin.audit.reset.show',
             'can'   => 'super-admin.panel',
         ],
+
+                [
+            'text'  => 'Diagnóstico de auditoría',
+            'icon'  => 'fas fa-stethoscope',
+            'route' => 'admin.auditoria.diag',
+            'can'   => 'super-admin.panel',
+        ],
+
         ['header' => 'Configuraciones'],
         [
             'text'  => 'Parámetros',

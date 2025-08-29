@@ -4,13 +4,34 @@ declare(strict_types=1);
 
 namespace App\Console;
 
+use App\Console\Commands\ProjectAuditCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
-class Kernel extends ConsoleKernel
+final class Kernel extends ConsoleKernel
 {
     /**
-     * Definición de tareas programadas (puedes moverlas a routes/console.php si prefieres).
+     * Registrar comandos de consola.
+     * Aunque Laravel autodetecta comandos en App\Console\Commands,
+     * los registramos explícitamente para evitar sorpresas.
+     *
+     * @var array<class-string>
+     */
+    protected $commands = [
+        ProjectAuditCommand::class,
+    ];
+
+    /**
+     * Zona horaria aplicada al scheduler.
+     * Asegura que las tareas se ejecuten según config('app.timezone').
+     */
+    protected function scheduleTimezone(): \DateTimeZone|string|null
+    {
+        return config('app.timezone'); // p.ej.: 'America/Sao_Paulo'
+    }
+
+    /**
+     * Definición de tareas programadas.
      */
     protected function schedule(Schedule $schedule): void
     {
@@ -33,7 +54,7 @@ class Kernel extends ConsoleKernel
         // Autocargar todos los comandos del directorio App\Console\Commands
         $this->load(__DIR__ . '/Commands');
 
-        // Si usas rutas de consola (opcional, por claridad de schedule)
+        // Si usas rutas de consola (útil para definir schedules en un solo lugar)
         require base_path('routes/console.php');
     }
 }

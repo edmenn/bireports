@@ -19,7 +19,7 @@ use App\Http\Controllers\ReportViewerController;
 use App\Http\Controllers\AuditAnalyticsController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\Api\AuditController;
-
+use App\Http\Controllers\Admin\AuditDiagController;
 /*
 |--------------------------------------------------------------------------
 | Rutas web (AdminLTE + Breeze)
@@ -121,6 +121,9 @@ Route::prefix('admin')
     ->middleware(['auth', 'role:super_admin'])
     ->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
+        
+        Route::get('/auditoria/diag', [AuditDiagController::class, 'index'])
+            ->name('admin.auditoria.diag');
 
         Route::resource('clients', ClientController::class)
             ->names('admin.clients');

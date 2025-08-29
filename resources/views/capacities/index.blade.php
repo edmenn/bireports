@@ -6,12 +6,12 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h1 class="h4 mb-0">Capacidades</h1>
+            <h1 class="h3 mb-0">Capacidades</h1>
             <small class="text-muted">Fabric / Power BI Capacities</small>
         </div>
         <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
             @csrf
-            <button class="btn btn-sm btn-outline-primary">
+            <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
                 <i class="fas fa-sync-alt mr-1"></i> Refrescar
             </button>
         </form>
@@ -34,12 +34,12 @@
     @endif
 
     @php
-        $total = $caps->count();
-        $activos = $caps->where('is_active', true)->count();
+        $total    = $caps->count();
+        $activos  = $caps->where('is_active', true)->count();
         $pausados = $total - $activos;
-        $pausables = $caps->where('supports_pause', true)->count();
+
         $regiones = $caps->pluck('region')->filter()->unique()->sort()->values();
-        $skus = $caps->pluck('sku')->filter()->unique()->sort()->values();
+        $skus     = $caps->pluck('sku')->filter()->unique()->sort()->values();
     @endphp
 
     @if($total === 0)
@@ -50,64 +50,56 @@
                 <p class="text-muted">Ejecuta “Refrescar” para traer las capacidades desde Fabric.</p>
                 <form action="{{ route('capacities.refresh') }}" method="POST">
                     @csrf
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary rounded-pill px-3">
                         <i class="fas fa-sync-alt mr-1"></i> Refrescar
                     </button>
                 </form>
             </div>
         </div>
     @else
-        {{-- Métricas superiores --}}
-        <div class="row">
-            <div class="col-md-3">
-                <div class="small-box bg-primary">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $total }}</h3>
-                        <p class="mb-0">Capacidades totales</p>
+        {{-- KPIs modernos --}}
+        <div class="row kpi-row">
+            <div class="col-md-4 mb-3">
+                <div class="kpi-card kpi-primary">
+                    <div>
+                        <div class="kpi-label">Capacidades totales</div>
+                        <div class="kpi-value">{{ $total }}</div>
                     </div>
-                    <div class="icon"><i class="fas fa-layer-group"></i></div>
+                    <i class="fas fa-layer-group kpi-icon"></i>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $activos }}</h3>
-                        <p class="mb-0">Activas</p>
+            <div class="col-md-4 mb-3">
+                <div class="kpi-card kpi-success">
+                    <div>
+                        <div class="kpi-label">Activas</div>
+                        <div class="kpi-value">{{ $activos }}</div>
                     </div>
-                    <div class="icon"><i class="fas fa-play"></i></div>
+                    <i class="fas fa-play kpi-icon"></i>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="small-box bg-warning">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $pausados }}</h3>
-                        <p class="mb-0">Pausadas</p>
+            <div class="col-md-4 mb-3">
+                <div class="kpi-card kpi-warning">
+                    <div>
+                        <div class="kpi-label">Pausadas</div>
+                        <div class="kpi-value">{{ $pausados }}</div>
                     </div>
-                    <div class="icon"><i class="fas fa-pause"></i></div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="small-box bg-secondary">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $pausables }}</h3>
-                        <p class="mb-0">Soportan pausa</p>
-                    </div>
-                    <div class="icon"><i class="fas fa-stopwatch"></i></div>
+                    <i class="fas fa-pause kpi-icon"></i>
                 </div>
             </div>
         </div>
 
-        {{-- Filtros rápidos (cliente) + filtros de servidor (opcional) --}}
-        <div class="card mb-3">
+        {{-- Filtros rápidos (cliente) --}}
+        <div class="card mb-3 shadow-sm border-0">
             <div class="card-body">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-5">
                         <label class="mb-1">Buscar</label>
-                        <input id="cap-search" type="text" class="form-control" placeholder="Nombre, GUID, región, SKU…">
+                        <input id="cap-search" type="text" class="form-control form-control-lg"
+                               placeholder="Nombre, GUID, región, SKU…">
                     </div>
                     <div class="col-md-2">
                         <label class="mb-1">Estado</label>
-                        <select id="cap-state" class="form-control">
+                        <select id="cap-state" class="form-control form-control-lg">
                             <option value="all" selected>Todos</option>
                             <option value="active">Activos</option>
                             <option value="paused">Pausados</option>
@@ -115,7 +107,7 @@
                     </div>
                     <div class="col-md-2">
                         <label class="mb-1">SKU</label>
-                        <select id="cap-sku" class="form-control">
+                        <select id="cap-sku" class="form-control form-control-lg">
                             <option value="all" selected>Todos</option>
                             @foreach($skus as $s)
                                 <option value="{{ $s }}">{{ $s }}</option>
@@ -124,7 +116,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="mb-1">Región</label>
-                        <select id="cap-region" class="form-control">
+                        <select id="cap-region" class="form-control form-control-lg">
                             <option value="all" selected>Todas</option>
                             @foreach($regiones as $r)
                                 <option value="{{ $r }}">{{ $r }}</option>
@@ -139,17 +131,16 @@
             </div>
         </div>
 
-        {{-- Tabla --}}
-        <div class="card">
+        {{-- Tabla moderna --}}
+        <div class="card shadow-sm border-0">
             <div class="table-responsive">
-                <table id="cap-table" class="table table-striped table-hover mb-0">
-                    <thead class="thead-light sticky-thead">
+                <table id="cap-table" class="table cap-table mb-0">
+                    <thead class="sticky-thead">
                     <tr>
                         <th class="sortable" data-sort="name">Nombre <i class="fas fa-sort text-muted ml-1"></i></th>
                         <th>GUID</th>
                         <th class="sortable" data-sort="sku">SKU <i class="fas fa-sort text-muted ml-1"></i></th>
                         <th class="sortable" data-sort="region">Región <i class="fas fa-sort text-muted ml-1"></i></th>
-                        <th class="sortable" data-sort="pause">Soporta pausa <i class="fas fa-sort text-muted ml-1"></i></th>
                         <th class="sortable" data-sort="state">Estado <i class="fas fa-sort text-muted ml-1"></i></th>
                         <th class="text-right">Acciones</th>
                     </tr>
@@ -157,11 +148,10 @@
                     <tbody>
                     @foreach ($caps as $c)
                         @php
-                            $isActive = (bool) $c->is_active;
-                            $supports = (bool) $c->supports_pause;
-                            $name = (string) ($c->display_name ?? '');
-                            $guid = (string) ($c->capacity_uuid ?? '');
-                            $skuVal = (string) ($c->sku ?? '');
+                            $isActive  = (bool) $c->is_active;
+                            $name      = (string) ($c->display_name ?? '');
+                            $guid      = (string) ($c->capacity_uuid ?? '');
+                            $skuVal    = (string) ($c->sku ?? '');
                             $regionVal = (string) ($c->region ?? '');
                             $searchBlob = \Illuminate\Support\Str::lower(trim($name.' '.$guid.' '.$skuVal.' '.$regionVal));
                         @endphp
@@ -171,17 +161,17 @@
                             data-sku="{{ \Illuminate\Support\Str::lower($skuVal) }}"
                             data-region="{{ \Illuminate\Support\Str::lower($regionVal) }}"
                             data-state="{{ $isActive ? 'active' : 'paused' }}"
-                            data-pause="{{ $supports ? 'yes' : 'no' }}"
                             data-search="{{ $searchBlob }}"
                         >
                             <td class="align-middle">
-                                <div class="font-weight-bold">{{ $c->display_name }}</div>
+                                <div class="font-weight-bold text-dark h6 mb-0">{{ $c->display_name }}</div>
                                 <small class="text-muted">{{ $c->type }}</small>
                             </td>
                             <td class="align-middle">
                                 @if($guid)
                                     <code class="mr-2">{{ \Illuminate\Support\Str::limit($guid, 22) }}</code>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary js-copy" data-copy="{{ $guid }}" title="Copiar GUID">
+                                    <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill js-copy"
+                                            data-copy="{{ $guid }}" title="Copiar GUID">
                                         <i class="far fa-copy"></i>
                                     </button>
                                 @else
@@ -191,45 +181,35 @@
                             <td class="align-middle">{{ $c->sku }}</td>
                             <td class="align-middle">{{ $c->region }}</td>
                             <td class="align-middle">
-                                @if ($supports)
-                                    <span class="badge badge-success">Sí</span>
-                                @else
-                                    <span class="badge badge-secondary">No</span>
-                                @endif
-                            </td>
-                            <td class="align-middle">
                                 @if ($isActive)
-                                    <span class="badge badge-success"><i class="fas fa-play mr-1"></i> Activo</span>
+                                    <span class="badge badge-pill badge-success px-3 py-2">
+                                        <i class="fas fa-play mr-1"></i> Activa
+                                    </span>
                                 @else
-                                    <span class="badge badge-warning"><i class="fas fa-pause mr-1"></i> Pausado</span>
+                                    <span class="badge badge-pill badge-warning px-3 py-2">
+                                        <i class="fas fa-pause mr-1"></i> Pausada
+                                    </span>
                                 @endif
                                 @if ($c->last_state_change_at)
-                                    <div>
-                                        <small class="text-muted">
-                                            Último cambio:
-                                            {{ \Illuminate\Support\Carbon::parse($c->last_state_change_at)->diffForHumans() }}
-                                        </small>
-                                    </div>
+                                    <div><small class="text-muted">Último cambio: {{ \Illuminate\Support\Carbon::parse($c->last_state_change_at)->diffForHumans() }}</small></div>
                                 @endif
                             </td>
                             <td class="align-middle text-right">
                                 <div class="btn-group" role="group">
-                                    @if ($supports)
-                                        @if ($isActive)
-                                            <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('¿Pausar esta capacidad?');">
-                                                @csrf
-                                                <button class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-pause mr-1"></i> Pausar
-                                                </button>
-                                            </form>
-                                        @else
-                                            <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('¿Reanudar esta capacidad?');">
-                                                @csrf
-                                                <button class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-play mr-1"></i> Reanudar
-                                                </button>
-                                            </form>
-                                        @endif
+                                    @if ($isActive)
+                                        <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('¿Pausar esta capacidad?');" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                                                <i class="fas fa-pause mr-1"></i> Pausar
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('¿Reanudar esta capacidad?');" class="d-inline">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                                <i class="fas fa-play mr-1"></i> Reanudar
+                                            </button>
+                                        </form>
                                     @endif
                                 </div>
                             </td>
@@ -250,21 +230,55 @@
 
 @push('css')
 <style>
-    .sticky-thead th { position: sticky; top: 0; z-index: 2; }
-    .table tbody tr { transition: background-color .12s ease; }
-    .table tbody tr:hover { background: #fafafa; }
-    .sortable { cursor: pointer; user-select: none; }
-    .sortable .fa-sort { opacity: .6; }
+/* ===== KPIs modernas ===== */
+.kpi-card{
+    display:flex; align-items:center; justify-content:space-between;
+    border-radius:16px; padding:1rem 1.25rem; color:#fff;
+    box-shadow:0 .6rem 1.2rem rgba(0,0,0,.08);
+}
+.kpi-label{ font-size:.95rem; opacity:.9; margin-bottom:.25rem; }
+.kpi-value{ font-size:2rem; font-weight:800; line-height:1; }
+.kpi-icon{ font-size:2rem; opacity:.9; }
+.kpi-primary{ background:linear-gradient(135deg,#3b82f6,#06b6d4); }
+.kpi-success{ background:linear-gradient(135deg,#10b981,#34d399); }
+.kpi-warning{ background:linear-gradient(135deg,#f59e0b,#f97316); }
+
+/* ===== Tabla moderna ===== */
+.cap-table{ font-size:1rem; }
+.cap-table thead th{
+    position: sticky; top: 0; z-index: 2;
+    background: #f8fafc; border-bottom: 1px solid rgba(0,0,0,.06);
+    font-weight:700; color:#334155; padding: .85rem .75rem;
+}
+.cap-table tbody td, .cap-table tbody th{ padding: .9rem .75rem; vertical-align: middle; }
+.cap-table tbody tr{ transition: background-color .12s ease, transform .06s ease; }
+.cap-table tbody tr:hover{ background: #fbfdff; }
+.cap-table code{ font-size:.9rem; }
+.badge-pill{ border-radius: 999px; }
+
+/* Botones redondos */
+.btn{ border-radius: .75rem; }
+.btn-xs{ padding: .15rem .45rem; border-radius: 999px; }
+
+/* Ordenamiento */
+.sortable{ cursor:pointer; user-select:none; }
+.sortable .fa-sort{ opacity:.6; }
+
+/* Ajustes responsive */
+@media (max-width: 768px){
+    .cap-table{ font-size:.95rem; }
+    .kpi-value{ font-size:1.6rem; }
+}
 </style>
 @endpush
 
 @push('js')
 <script>
 (function(){
-    const table = document.getElementById('cap-table');
+    const table  = document.getElementById('cap-table');
     if(!table) return;
 
-    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const rows   = Array.from(table.querySelectorAll('tbody tr'));
     const search = document.getElementById('cap-search');
     const state  = document.getElementById('cap-state');
     const sku    = document.getElementById('cap-sku');
@@ -277,19 +291,19 @@
     function norm(s){ return (s||'').toString().trim().toLowerCase(); }
 
     function applyFilters(){
-        const q = norm(search?.value || '');
-        const st= state?.value || 'all';   // all|active|paused
-        const sk= norm(sku?.value || 'all');
-        const rg= norm(region?.value || 'all');
+        const q  = norm(search?.value || '');
+        const st = state?.value || 'all';   // all|active|paused
+        const sk = norm(sku?.value || 'all');
+        const rg = norm(region?.value || 'all');
 
         let visible = 0;
         rows.forEach(tr=>{
-            const sb = tr.dataset.search || '';
-            const ds = tr.dataset.state || 'paused';
-            const dsku = tr.dataset.sku || '';
+            const sb   = tr.dataset.search || '';
+            const ds   = tr.dataset.state  || 'paused';
+            const dsku = tr.dataset.sku    || '';
             const drg  = tr.dataset.region || '';
 
-            const okText = (q === '' || sb.includes(q));
+            const okText  = (q === '' || sb.includes(q));
             const okState = (st === 'all') || (st === ds);
             const okSku   = (sk === 'all') || (sk === dsku);
             const okReg   = (rg === 'all') || (rg === drg);
@@ -299,9 +313,7 @@
             if(show) visible++;
         });
 
-        if(counter){
-            counter.textContent = `— ${visible} visibles`;
-        }
+        if(counter){ counter.textContent = `— ${visible} visibles`; }
     }
 
     function getKey(tr, key){
@@ -309,7 +321,6 @@
             case 'name':   return tr.dataset.name || '';
             case 'sku':    return tr.dataset.sku || '';
             case 'region': return tr.dataset.region || '';
-            case 'pause':  return tr.dataset.pause || 'no';
             case 'state':  return tr.dataset.state || 'paused';
             default:       return '';
         }
