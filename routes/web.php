@@ -12,6 +12,7 @@ use App\Http\Controllers\WorkspacesController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ReportViewerController;
 use App\Http\Controllers\AuditAnalyticsController;
+use App\Http\Controllers\CapacityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +35,13 @@ Route::middleware(['auth'])->group(function () {
     // Menú principal (views placeholder o controllers)
     Route::view('/conjuntos-datos', 'datasets.index')->name('datasets.index');
     Route::view('/aplicaciones',    'apps.index')->name('apps.index');
-    Route::view('/capacidades',     'capacities.index')->name('capacities.index');
+
+    // Capacidades (LISTAR / PAUSAR / REANUDAR / RECARGAR)
+    Route::prefix('capacidades')->group(function () {
+        Route::get('/', [CapacityController::class, 'index'])->name('capacities.index');
+        Route::post('/refresh', [CapacityController::class, 'refresh'])->name('capacities.refresh');
+        Route::post('/{capacity}/toggle', [CapacityController::class, 'toggle'])->name('capacities.toggle');
+    });
 
     // Workspaces + Reports (vista pública interna por workspace)
     Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])->name('workspaces.index');
@@ -42,7 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/espacios-trabajo/{workspace}/reportes/{report}', [ReportsController::class, 'show'])
         ->name('reports.show');
 
-    // 🚀 NUEVO: vista embebida con powerbi-client + auditoría
+    // 🚀 Vista embebida con powerbi-client + auditoría
     Route::get('/reports/{report_uuid}', [ReportViewerController::class, 'show'])
         ->whereUuid('report_uuid')
         ->name('reports.viewer');
@@ -63,14 +70,19 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/usuarios',  'users.index')->name('users.index');
     Route::view('/grupos',    'grupos.index')->name('grupos.index');
     Route::view('/carpetas',  'folders.index')->name('folders.index');
+
     Route::get('/auditoria', [AuditAnalyticsController::class, 'index'])
-    ->name('auditoria.index');
+        ->name('auditoria.index');
 
     // Configuraciones (controller)
     Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
         ->name('configuraciones.index');
     Route::put('/configuraciones/{configuracion}', [ConfiguracionesController::class, 'update'])
         ->name('configuraciones.update');
+
+    // Exportar CSV con filtros actuales
+    Route::get('/auditoria/export', [AuditAnalyticsController::class, 'export'])
+        ->name('auditoria.export');
 
     // Perfil (Breeze)
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');

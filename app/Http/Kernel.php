@@ -34,13 +34,16 @@ class Kernel extends HttpKernel
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
 
-            // >>> Nuestro middleware de auditoría (server-side view)
+            // >>> Tu auditoría existente
             \App\Http\Middleware\TrackAudit::class,
+
+            // >>> NUEVO: actividad on-demand + auto-resume para capacidades
+            \App\Http\Middleware\AutoCapacityActivity::class,
         ],
 
         'api' => [
             // Throttle típico API
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -50,17 +53,20 @@ class Kernel extends HttpKernel
      * (Sustituye al antiguo $routeMiddleware.)
      */
     protected $middlewareAliases = [
-        'auth'       => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can'        => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest'      => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed'     => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'throttle'   => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified'   => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'auth'              => \App\Http\Middleware\Authenticate::class,
+        'auth.basic'        => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+        'cache.headers'     => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'can'               => \Illuminate\Auth\Middleware\Authorize::class,
+        'guest'             => \App\Http\Middleware\RedirectIfAuthenticated::class,
+        'password.confirm'  => \Illuminate\Auth\Middleware\RequirePassword::class,
+        'signed'            => \Illuminate\Routing\Middleware\ValidateSignature::class,
+        'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        'verified'          => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // Alias opcional si quisieras aplicarlo por ruta:
-        'track.audit' => \App\Http\Middleware\TrackAudit::class,
+        // Alias opcional si quisieras aplicarlo por ruta/grupo:
+        'track.audit'       => \App\Http\Middleware\TrackAudit::class,
+
+        // >>> NUEVO alias por si querés aplicarlo selectivamente en ciertas rutas
+        'capacity.activity' => \App\Http\Middleware\AutoCapacityActivity::class,
     ];
 }
