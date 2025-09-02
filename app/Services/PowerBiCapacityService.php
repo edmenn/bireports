@@ -24,7 +24,7 @@ class PowerBiCapacityService
     public function __construct()
     {
         // Leemos SIEMPRE desde configuraciones (no del .env),
-        // para que cada cliente cargue sus propios datos.
+        // para gestionar las credenciales centralizadas por instancia.
         $cfg = Configuracion::query()->first();
         if (!$cfg) {
             throw new RuntimeException('No existe fila en "configuraciones". Abre /configuraciones para crearla.');

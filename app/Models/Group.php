@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Company extends Model
+class Group extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
-        'subdomain',
-        'is_active',
         'description',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }
+

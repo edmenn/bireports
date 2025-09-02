@@ -10,10 +10,8 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Permisos base (agregá más luego)
+        // Permisos base (ajustables)
         $perms = [
-            'super-admin.panel',     // ver /admin
-            'companies.manage',      // CRUD empresas
             'reports.view',          // ver informes
         ];
 
@@ -22,19 +20,19 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         // Roles
-        $super = Role::findOrCreate('super_admin', 'web');
-        $clientAdmin = Role::findOrCreate('client_admin', 'web');
-        $viewer = Role::findOrCreate('viewer', 'web');
+        $admin  = Role::findOrCreate('admin', 'web');
+        $editor = Role::findOrCreate('editor', 'web');
+        $usuario = Role::findOrCreate('usuario', 'web');
 
         // Asignaciones básicas
-        $super->givePermissionTo(['super-admin.panel', 'companies.manage', 'reports.view']);
-        $clientAdmin->givePermissionTo(['companies.manage', 'reports.view']);
-        $viewer->givePermissionTo(['reports.view']);
+        $admin->givePermissionTo(['reports.view']);
+        $editor->givePermissionTo(['reports.view']);
+        $usuario->givePermissionTo(['reports.view']);
 
-        // Asignar el primer usuario como super_admin (ajusta si querés otro criterio)
+        // Asignar el primer usuario como admin (ajusta si querés otro criterio)
         $user = \App\Models\User::orderBy('id')->first();
-        if ($user && !$user->hasRole('super_admin')) {
-            $user->assignRole('super_admin');
+        if ($user && !$user->hasRole('admin')) {
+            $user->assignRole('admin');
         }
     }
 }

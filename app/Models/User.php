@@ -72,12 +72,5 @@ class User extends Authenticatable
         return null;
     }
 
-    /**
-     * Relación N:M con Company (del mismo cliente)
-     * (si aún no la usás, no molesta)
-     */
-    public function companies()
-    {
-        return $this->belongsToMany(\App\Models\Company::class);
-    }
+    // Relación con Company eliminada; no se utiliza en este entorno
 }

@@ -13,7 +13,7 @@ class PowerBiSetCredentials extends Command
         {--tenant= : Tenant (Directory) ID de Entra}
         {--client= : Application (Client) ID}
         {--secret= : Client Secret (valor)}
-        {--name= : Nombre del cliente/instancia (opcional)}
+        {--name= : Nombre de la instancia (opcional)}
         {--activate : Marcar esta fila como activa (desactiva las demás)}';
 
     protected $description = 'Guarda las credenciales de Power BI/Fabric en la BD (tabla configuracions)';

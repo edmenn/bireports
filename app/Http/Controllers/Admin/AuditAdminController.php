@@ -14,7 +14,7 @@ final class AuditAdminController extends Controller
 {
     /**
      * Pantalla de confirmación para resetear auditoría.
-     * Ruta protegida por middleware ['auth', 'role:super_admin'] en web.php.
+     * Ruta protegida por middleware ['auth', 'role:admin'] en web.php.
      */
     public function showReset(): View
     {

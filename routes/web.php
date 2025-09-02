@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Route;
 // Controllers
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\ClientController;
+// Eliminado: use App\Http\Controllers\EmpresasController;
+// Eliminado: use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\AuditAdminController; // ← NUEVO (reset auditoría)
 use App\Http\Controllers\ConfiguracionesController;
 use App\Http\Controllers\PowerBiImportController;
@@ -18,6 +18,9 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ReportViewerController;
 use App\Http\Controllers\AuditAnalyticsController;
 use App\Http\Controllers\CapacityController;
+use App\Http\Controllers\UsersController;
+use App\Http\Controllers\GruposController;
+use App\Http\Controllers\FoldersController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Admin\AuditDiagController;
 /*
@@ -39,8 +42,7 @@ Route::get('/dashboard', function () {
 // Grupo interno protegido
 Route::middleware(['auth'])->group(function () {
 
-    // Menú principal (views placeholder o controllers)
-    Route::view('/conjuntos-datos', 'datasets.index')->name('datasets.index');
+    // Menú principal (limpiado: sin conjuntos de datos)
     Route::view('/aplicaciones',    'apps.index')->name('apps.index');
 
     // Capacidades (LISTAR / PAUSAR / REANUDAR / RECARGAR)
@@ -69,22 +71,46 @@ Route::middleware(['auth'])->group(function () {
         ->whereUuid('report_uuid')
         ->name('reports.viewer');
 
-    // Empresas (resource limitado)
-    Route::resource('empresas', EmpresasController::class)->parameters([
-        'empresas' => 'empresa',
-    ])->only(['index','create','store','edit','update','destroy'])->names([
-        'index'   => 'empresas.index',
-        'create'  => 'empresas.create',
-        'store'   => 'empresas.store',
-        'edit'    => 'empresas.edit',
-        'update'  => 'empresas.update',
-        'destroy' => 'empresas.destroy',
-    ]);
+    // (Sección eliminada)
 
-    // Otras vistas
-    Route::view('/usuarios',  'users.index')->name('users.index');
-    Route::view('/grupos',    'grupos.index')->name('grupos.index');
-    Route::view('/carpetas',  'folders.index')->name('folders.index');
+    // ABM Usuarios
+    Route::resource('usuarios', UsersController::class)->parameters([
+        'usuarios' => 'usuario',
+    ])->names([
+        'index' => 'users.index',
+        'create'=> 'users.create',
+        'store' => 'users.store',
+        'edit'  => 'users.edit',
+        'update'=> 'users.update',
+        'destroy'=>'users.destroy',
+        'show'  => 'users.show',
+    ])->except(['show']);
+
+    // ABM Grupos
+    Route::resource('grupos', GruposController::class)->parameters([
+        'grupos' => 'grupo',
+    ])->names([
+        'index' => 'grupos.index',
+        'create'=> 'grupos.create',
+        'store' => 'grupos.store',
+        'edit'  => 'grupos.edit',
+        'update'=> 'grupos.update',
+        'destroy'=>'grupos.destroy',
+        'show'  => 'grupos.show',
+    ])->except(['show']);
+
+    // ABM Carpetas
+    Route::resource('carpetas', FoldersController::class)->parameters([
+        'carpetas' => 'carpeta',
+    ])->names([
+        'index' => 'folders.index',
+        'create'=> 'folders.create',
+        'store' => 'folders.store',
+        'edit'  => 'folders.edit',
+        'update'=> 'folders.update',
+        'destroy'=>'folders.destroy',
+        'show'  => 'folders.show',
+    ])->except(['show']);
 
     // Auditoría (analítica y export)
     Route::get('/auditoria', [AuditAnalyticsController::class, 'index'])
@@ -116,17 +142,16 @@ Route::middleware(['auth'])->group(function () {
     }
 });
 
-// Área ADMIN (solo super_admin)
+// Área ADMIN (solo admin)
 Route::prefix('admin')
-    ->middleware(['auth', 'role:super_admin'])
+    ->middleware(['auth', 'role:admin'])
     ->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
         
         Route::get('/auditoria/diag', [AuditDiagController::class, 'index'])
             ->name('admin.auditoria.diag');
 
-        Route::resource('clients', ClientController::class)
-            ->names('admin.clients');
+        // (Sección eliminada)
 
         // Listado global de reportes
         Route::get('/reportes', [ReportsController::class, 'index'])
@@ -141,7 +166,7 @@ Route::prefix('admin')
             ->whereUuid('report')
             ->name('reports.update');
 
-        // 🔒 Reset total de auditoría (solo super_admin)
+        // 🔒 Reset total de auditoría (solo admin)
         Route::get('/auditoria/reset', [AuditAdminController::class, 'showReset'])
             ->name('admin.audit.reset.show');
 

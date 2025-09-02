@@ -219,13 +219,7 @@ return [
             'type' => 'sidebar-menu-search',
             'text' => 'Buscar',
         ],
-        // Clientes (solo super_admin)
-        [
-            'text'  => 'Clientes',
-            'icon'  => 'fas fa-handshake',
-            'route' => 'admin.clients.index',
-            'can'   => 'super-admin.panel',
-        ],
+        // Entrada removida
 
         // --- Menú lateral en español ---
         ['header' => 'Power BI'],
@@ -235,12 +229,7 @@ return [
             'icon'  => 'fas fa-chart-bar',
             'route' => 'reports.index',
         ],
-        [
-            'text'  => 'Conjuntos de datos',
-            'icon'  => 'fas fa-database',
-            'route' => 'datasets.index',   // la crearemos luego
-            'can'   => null,
-        ],
+        // (Conjuntos de datos eliminado)
         [
             'text'  => 'Aplicaciones',
             'icon'  => 'fas fa-th-large',
@@ -258,11 +247,7 @@ return [
         ],
 
         ['header' => 'Organización'],
-        [
-            'text'  => 'Empresas',
-            'icon'  => 'fas fa-building',
-            'route' => 'empresas.index',   // la crearemos luego
-        ],
+        // Entrada removida
         [
             'text'  => 'Usuarios',
             'icon'  => 'fas fa-users',
@@ -289,14 +274,12 @@ return [
             'text'  => 'Reiniciar auditoría',
             'icon'  => 'fas fa-broom',
             'route' => 'admin.audit.reset.show',
-            'can'   => 'super-admin.panel',
         ],
 
                 [
             'text'  => 'Diagnóstico de auditoría',
             'icon'  => 'fas fa-stethoscope',
             'route' => 'admin.auditoria.diag',
-            'can'   => 'super-admin.panel',
         ],
 
         ['header' => 'Configuraciones'],

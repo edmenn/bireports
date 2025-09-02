@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Capacity;
 use App\Services\PowerBiCapacityService;
+use App\Models\Configuracion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,13 +20,21 @@ class CapacityController extends Controller
      * - Sincroniza como máximo una vez cada $throttleSeconds.
      * - Aplica filtros básicos: q | state(active|paused|all) | sku
      */
-    public function index(Request $request, PowerBiCapacityService $svc): View
+    public function index(Request $request): View
     {
         // ⏱️ Cambiá este valor para ampliar o reducir la ventana de sincronización
         $throttleSeconds = 120;
 
-        // 1) Intento de sincronización con limitación (no rompe la vista si falla)
-        $this->syncWithThrottle($svc, $throttleSeconds);
+        // 1) Intento de sincronización con limitación (solo si hay configuración)
+        $hasConfig = Configuracion::query()
+            ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+            ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+            ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+            ->exists();
+        if ($hasConfig) {
+            $svc = app(PowerBiCapacityService::class);
+            $this->syncWithThrottle($svc, $throttleSeconds);
+        }
 
         // 2) Filtros
         $q     = trim((string) $request->input('q', ''));
@@ -56,6 +65,7 @@ class CapacityController extends Controller
             'q'     => $q,
             'state' => $state,
             'sku'   => $sku,
+            'hasConfig' => $hasConfig,
         ]);
     }
 
@@ -63,9 +73,18 @@ class CapacityController extends Controller
      * Re-sincroniza manualmente con Power BI.
      * Útil si mantenés el botón "Refrescar".
      */
-    public function refresh(PowerBiCapacityService $svc): RedirectResponse
+    public function refresh(): RedirectResponse
     {
+        $hasConfig = Configuracion::query()
+            ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+            ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+            ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+            ->exists();
+        if (! $hasConfig) {
+            return back()->with('error', 'Primero configura credenciales en Configuraciones.');
+        }
         try {
+            $svc = app(PowerBiCapacityService::class);
             $res = $svc->importCapacities();
             // Reseteamos el timestamp de última sync para que no frene futuros autosync
             Cache::forget('capacities:last_sync_at');
@@ -83,9 +102,18 @@ class CapacityController extends Controller
     /**
      * Pausar capacidad via ARM.
      */
-    public function pause(Capacity $capacity, PowerBiCapacityService $svc): RedirectResponse
+    public function pause(Capacity $capacity): RedirectResponse
     {
         try {
+            $hasConfig = Configuracion::query()
+                ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+                ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+                ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+                ->exists();
+            if (! $hasConfig) {
+                return back()->with('error', 'No hay configuración activa para pausar capacidades.');
+            }
+            $svc = app(PowerBiCapacityService::class);
             $svc->pause($capacity);
             $capacity->is_active = false;
             $capacity->last_state_change_at = now();
@@ -107,9 +135,18 @@ class CapacityController extends Controller
     /**
      * Reanudar capacidad via ARM.
      */
-    public function resume(Capacity $capacity, PowerBiCapacityService $svc): RedirectResponse
+    public function resume(Capacity $capacity): RedirectResponse
     {
         try {
+            $hasConfig = Configuracion::query()
+                ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+                ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+                ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+                ->exists();
+            if (! $hasConfig) {
+                return back()->with('error', 'No hay configuración activa para reanudar capacidades.');
+            }
+            $svc = app(PowerBiCapacityService::class);
             $svc->resume($capacity);
             $capacity->is_active = true;
             $capacity->last_state_change_at = now();

@@ -1,15 +1,16 @@
 @extends('adminlte::page')
 
-@section('title', 'Administración global')
+@section('title', 'Administración')
 
 @section('content_header')
-    <h1>Administración global</h1>
+    <h1>Panel de Administración</h1>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-body">
-            Bienvenido, Super Admin.
+            Bienvenido/a, Admin.
         </div>
     </div>
 @stop
+

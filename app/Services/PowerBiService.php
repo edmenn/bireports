@@ -17,7 +17,8 @@ class PowerBiService
     public function __construct()
     {
         $this->http   = new Client(['timeout' => 30]);
-        $this->config = Configuracion::firstOrFail(); // fila única
+        // No forzar existencia aquí; controlamos en getAccessToken
+        $this->config = Configuracion::query()->first() ?? new Configuracion();
     }
 
     /* =========================================================
@@ -28,6 +29,13 @@ class PowerBiService
     public function getAccessToken(): string
     {
         $tenant = trim((string) $this->config->powerbi_tenant_id);
+        $client = trim((string) $this->config->powerbi_client_id);
+        $secret = trim((string) $this->config->powerbi_client_secret);
+
+        if ($tenant === '' || $client === '' || $secret === '') {
+            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configuraciones.');
+        }
+
         $url    = "https://login.microsoftonline.com/{$tenant}/oauth2/v2.0/token";
 
         $resp = $this->http->post($url, [

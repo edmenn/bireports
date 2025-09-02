@@ -9,12 +9,18 @@
             <h1 class="h3 mb-0">Capacidades</h1>
             <small class="text-muted">Fabric / Power BI Capacities</small>
         </div>
-        <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
-            @csrf
-            <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                <i class="fas fa-sync-alt mr-1"></i> Refrescar
-            </button>
-        </form>
+        @if(!empty($hasConfig) && $hasConfig)
+            <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
+                @csrf
+                <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    <i class="fas fa-sync-alt mr-1"></i> Refrescar
+                </button>
+            </form>
+        @else
+            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Configura credenciales para habilitar el refresco">
+                <i class="fas fa-cogs mr-1"></i> Configurar
+            </a>
+        @endif
     </div>
 @stop
 
@@ -29,6 +35,13 @@
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show">
             <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    @endif
+
+    @if(empty($hasConfig) || !$hasConfig)
+        <div class="alert alert-warning alert-dismissible fade show">
+            <i class="fas fa-exclamation-triangle mr-2"></i>No hay configuración activa. Carga credenciales en <a href="{{ route('configuraciones.index') }}" class="alert-link">Configuraciones</a> para habilitar el refresco y operaciones.
             <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
         </div>
     @endif
@@ -48,12 +61,18 @@
                 <i class="fas fa-server fa-3x text-muted mb-3"></i>
                 <h5 class="mb-2">Sin capacidades</h5>
                 <p class="text-muted">Ejecuta “Refrescar” para traer las capacidades desde Fabric.</p>
-                <form action="{{ route('capacities.refresh') }}" method="POST">
-                    @csrf
-                    <button class="btn btn-primary rounded-pill px-3">
-                        <i class="fas fa-sync-alt mr-1"></i> Refrescar
-                    </button>
-                </form>
+                @if(!empty($hasConfig) && $hasConfig)
+                    <form action="{{ route('capacities.refresh') }}" method="POST">
+                        @csrf
+                        <button class="btn btn-primary rounded-pill px-3">
+                            <i class="fas fa-sync-alt mr-1"></i> Refrescar
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                        <i class="fas fa-cogs mr-1"></i> Configurar
+                    </a>
+                @endif
             </div>
         </div>
     @else
@@ -88,7 +107,7 @@
             </div>
         </div>
 
-        {{-- Filtros rápidos (cliente) --}}
+        {{-- Filtros rápidos --}}
         <div class="card mb-3 shadow-sm border-0">
             <div class="card-body">
                 <div class="row g-2 align-items-end">

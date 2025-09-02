@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Services\PowerBiService; // Usa tu servicio existente para obtener token AAD
+use App\Models\Configuracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -37,19 +38,38 @@ class ReportViewerController extends Controller
         $datasetUuid   = $v['dataset_uuid'] ?? null;
         $rlsRole       = $v['rls_role'] ?? null;
 
-        // Token AAD (Service Principal) con getAccessToken() de tu PowerBiService
-        $accessToken = $this->pbi->getAccessToken();
+        // Si no hay configuración completa, devolvemos vista con datos vacíos y sin error 500
+        $hasConfig = Configuracion::query()
+            ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+            ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+            ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+            ->exists();
+
+        if (! $hasConfig) {
+            $accessToken = null;
+        } else {
+            // Token AAD (Service Principal) con getAccessToken() de tu PowerBiService
+            $accessToken = $this->pbi->getAccessToken();
+        }
 
         // Embed URL estándar para reportes
         $embedUrl = "https://app.powerbi.com/reportEmbed?reportId={$reportUuid}&groupId={$workspaceUuid}";
 
-        return view('reports.show', compact(
-            'embedUrl',
-            'accessToken',
-            'reportUuid',
-            'workspaceUuid',
-            'datasetUuid',
-            'rlsRole'
-        ));
+        $embed = [
+            'embedUrl'    => $embedUrl,
+            'accessToken' => $accessToken,
+            'reportId'    => $reportUuid,
+            'workspaceId' => $workspaceUuid,
+            'datasetId'   => $datasetUuid,
+            'tokenType'   => 'Embed',
+        ];
+
+        return view('reports.show', [
+            'embed'         => $embed,
+            'report'        => (object) ['id' => $reportUuid, 'name' => 'Reporte'],
+            'workspace'     => (object) ['id' => $workspaceUuid, 'name' => null],
+            'error'         => null,
+            'error_debug'   => null,
+        ]);
     }
 }

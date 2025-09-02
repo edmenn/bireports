@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use App\Models\Workspace;
 use App\Services\PowerBiService;
+use App\Models\Configuracion;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ class ReportsController extends Controller
      * Muestra el reporte embebido asegurando que pertenece al workspace de la URL.
      * En caso de error al obtener el embed token, NO rompemos: devolvemos la vista con 'error' y 'error_debug'.
      */
-    public function show(string $workspaceId, string $reportId, PowerBiService $svc, Request $request): View
+    public function show(string $workspaceId, string $reportId, Request $request): View
     {
         // 1) Cargar workspace (404 si no existe)
         $workspace = Workspace::findOrFail($workspaceId);
@@ -62,9 +63,21 @@ class ReportsController extends Controller
         $errShort  = null;
         $errDetail = null;
 
-        try {
-            // 4) Generar token de embed
-            $embed = $svc->generateReportEmbedToken(
+        // 4) Si no hay configuración completa, devolvemos vista con error amigable
+        $hasConfig = Configuracion::query()
+            ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+            ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+            ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+            ->exists();
+
+        if (!$hasConfig) {
+            $errShort  = 'Faltan credenciales de Power BI en Configuraciones.';
+            $embedArr  = [];
+        } else {
+            try {
+                // 4) Generar token de embed
+                $svc = app(PowerBiService::class);
+                $embed = $svc->generateReportEmbedToken(
                 workspaceId: $workspace->id,
                 reportId:    $report->id,
                 datasetId:   $report->dataset_id,
@@ -72,33 +85,34 @@ class ReportsController extends Controller
                 rlsRoles:    $rlsRoles
             );
 
-            // 4.1) Normalización de claves para la vista
-            $embedArr = is_array($embed) ? $embed : (array) $embed;
+                // 4.1) Normalización de claves para la vista
+                $embedArr = is_array($embed) ? $embed : (array) $embed;
 
-            $embedArr['accessToken'] = $embedArr['accessToken']
-                ?? ($embedArr['token'] ?? null)
-                ?? ($embedArr['access_token'] ?? null);
+                $embedArr['accessToken'] = $embedArr['accessToken']
+                    ?? ($embedArr['token'] ?? null)
+                    ?? ($embedArr['access_token'] ?? null);
 
-            $embedArr['embedUrl']    = $embedArr['embedUrl']    ?? ($embedArr['embed_url'] ?? null);
-            $embedArr['reportId']    = $embedArr['reportId']    ?? $report->id;
-            $embedArr['tokenType']   = $embedArr['tokenType']   ?? 'Embed';
-            $embedArr['datasetId']   = $embedArr['datasetId']   ?? $report->dataset_id;
-            $embedArr['workspaceId'] = $embedArr['workspaceId'] ?? $workspace->id;
-        } catch (Throwable $e) {
-            // 5) Fast-fail: NO lanzamos a la página de error; mostramos banner en la misma vista
-            $errShort  = 'No se pudo preparar el embed del reporte. Verifica credenciales/capacidad/permisos.';
-            // Detalle seguro para copiar/pegar (sin exponer secrets del env; mostramos clase, mensaje y stack)
-            $errDetail = sprintf(
-                "%s: %s\nCode: %s\nFile: %s:%d\n\nTrace:\n%s",
-                get_class($e),
-                $e->getMessage(),
-                (string) ($e->getCode() ?? '0'),
-                $e->getFile(),
-                $e->getLine(),
-                $e->getTraceAsString()
-            );
-            // Devolvemos con $embedArr vacío; la vista mostrará el diagnóstico y no romperá
-            $embedArr = [];
+                $embedArr['embedUrl']    = $embedArr['embedUrl']    ?? ($embedArr['embed_url'] ?? null);
+                $embedArr['reportId']    = $embedArr['reportId']    ?? $report->id;
+                $embedArr['tokenType']   = $embedArr['tokenType']   ?? 'Embed';
+                $embedArr['datasetId']   = $embedArr['datasetId']   ?? $report->dataset_id;
+                $embedArr['workspaceId'] = $embedArr['workspaceId'] ?? $workspace->id;
+            } catch (Throwable $e) {
+                // 5) Fast-fail: NO lanzamos a la página de error; mostramos banner en la misma vista
+                $errShort  = 'No se pudo preparar el embed del reporte. Verifica credenciales/capacidad/permisos.';
+                // Detalle seguro para copiar/pegar (sin exponer secrets del env; mostramos clase, mensaje y stack)
+                $errDetail = sprintf(
+                    "%s: %s\nCode: %s\nFile: %s:%d\n\nTrace:\n%s",
+                    get_class($e),
+                    $e->getMessage(),
+                    (string) ($e->getCode() ?? '0'),
+                    $e->getFile(),
+                    $e->getLine(),
+                    $e->getTraceAsString()
+                );
+                // Devolvemos con $embedArr vacío; la vista mostrará el diagnóstico y no romperá
+                $embedArr = [];
+            }
         }
 
         // 6) Vista

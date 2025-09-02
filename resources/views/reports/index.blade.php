@@ -197,7 +197,7 @@
                                    onclick="event.stopPropagation();">
                                     <i class="fas fa-chart-line"></i> Abrir
                                 </a>
-                                @role('super_admin')
+                                @role('admin')
                                     <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
                                        class="btn btn-sm btn-outline-warning"
                                        title="Editar imagen y descripción"
