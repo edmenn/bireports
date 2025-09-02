@@ -318,8 +318,14 @@ return [
         [
             'text'  => 'Parámetros',
             'icon'  => 'fas fa-cogs',
-            'route' => 'configuraciones.index', // la crearemos luego
+            'route' => 'configuraciones.index',
             'can'   => 'menu.configuraciones',
+        ],
+        [
+            'text'   => 'Tema',
+            'icon'   => 'fas fa-paint-brush',
+            'route'  => 'configuraciones.tema',
+            'can'    => 'menu.configuraciones',
         ],
     ],
 

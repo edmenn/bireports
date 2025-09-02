@@ -131,12 +131,31 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/auditoria/export', [AuditAnalyticsController::class, 'export'])
         ->name('auditoria.export');
 
-    // Configuraciones (controller)
-    Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
-        ->name('configuraciones.index');
+    // Configuraciones (solo admin)
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
+            ->name('configuraciones.index');
 
-    Route::put('/configuraciones/{configuracion}', [ConfiguracionesController::class, 'update'])
-        ->name('configuraciones.update');
+        Route::get('/configuraciones/tema', [ConfiguracionesController::class, 'theme'])
+            ->name('configuraciones.tema');
+
+        Route::get('/configuraciones/login', [ConfiguracionesController::class, 'login'])
+            ->name('configuraciones.login');
+
+        Route::post('/configuraciones/tema/reset', function(\Illuminate\Http\Request $request){
+            $cfg = \App\Models\Configuracion::firstOrCreate(['id'=>1]);
+            $cfg->forceFill([
+                'theme_config' => null,
+                'theme_name' => null,
+                'theme_navbar_class' => null,
+                'theme_sidebar_class' => null,
+            ])->save();
+            return redirect()->route('configuraciones.tema')->with('success', 'Colores restablecidos a valores de fábrica.');
+        })->name('configuraciones.tema.reset');
+
+        Route::put('/configuraciones/{configuracion}', [ConfiguracionesController::class, 'update'])
+            ->name('configuraciones.update');
+    });
 
     // ✅ Endpoint de auditoría llamado desde Blade → route('api.audit.store')
     Route::post('/api/audits', [AuditController::class, 'store'])

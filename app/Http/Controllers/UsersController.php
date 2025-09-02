@@ -9,6 +9,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use App\Services\MicrosoftGraphService;
 
 class UsersController extends Controller
 {
@@ -87,5 +90,62 @@ class UsersController extends Controller
         $usuario->delete();
         return redirect()->route('users.index')->with('success', 'Usuario eliminado.');
     }
-}
 
+    public function importForm(Request $request): View
+    {
+        $q = trim((string) $request->query('q', ''));
+        $next = $request->query('next');
+        $items = [];
+        $nextLink = null;
+        $error = null;
+        try {
+            $svc = new MicrosoftGraphService();
+            $res = $svc->listUsers($q !== '' ? $q : null, $next ? (string) $next : null);
+            $items = $res['items'];
+            $nextLink = $res['next'];
+        } catch (\Throwable $e) {
+            $error = $e->getMessage();
+            Log::warning('Import users (Graph) error: ' . $error);
+        }
+        $roles = ['usuario','editor','admin'];
+        return view('users.import', compact('items','q','nextLink','error','roles'));
+    }
+
+    public function importStore(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'selected' => ['required','array','min:1'],
+            'selected.*' => ['required','string'], // formato: email|name
+            'role' => ['required','in:usuario,editor,admin'],
+        ]);
+
+        $created = 0;
+        foreach ($data['selected'] as $packed) {
+            [$email, $name] = array_pad(explode('|', $packed, 2), 2, '');
+            $email = trim($email);
+            $name  = trim($name) ?: $email;
+            if ($email === '') continue;
+
+            $user = User::query()->where('email', $email)->first();
+            if ($user) {
+                // opcional: actualizar nombre si está vacío
+                if (!$user->name && $name) {
+                    $user->name = $name;
+                    $user->save();
+                }
+                continue;
+            }
+            $user = User::create([
+                'name' => $name,
+                'email'=> $email,
+                'password' => Str::password(32),
+            ]);
+            $user->forceFill(['email_verified_at' => now()])->save();
+            try { $user->syncRoles([$data['role']]); } catch (\Throwable) {}
+            $created++;
+        }
+
+        return redirect()->route('users.index')
+            ->with('success', $created > 0 ? ("Se importaron {$created} usuario(s).") : 'No se crearon usuarios nuevos.');
+    }
+}

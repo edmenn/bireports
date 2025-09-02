@@ -25,9 +25,24 @@ class Configuracion extends Model
         'powerbi_redirect_uri',
         'powerbi_scope',
         'powerbi_token_refresh_minutes',
+        'microsoft_login_enabled',
 
         // ⬇️ nuevos campos ARM
         'azure_subscription_id',
         'azure_resource_group',
+
+        // Tema y branding
+        'theme_navbar_class',
+        'theme_sidebar_class',
+        'site_title',
+        'site_logo_path',
+        'site_logo_compact_path',
+        'site_favicon_path',
+        'login_bg_path',
+        'login_logo_path',
+        'theme_name',
+        'theme_config',
+        'footer_text',
+        'footer_enabled',
     ];
 }

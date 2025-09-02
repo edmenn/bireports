@@ -2,6 +2,20 @@
 
 @section('auth_header', __('Log in'))
 
+@php($appCfg = \App\Models\Configuracion::find(1))
+@if($appCfg && $appCfg->login_bg_path)
+    @section('adminlte_css')
+        <style>
+            body.login-page {
+                background-image: url('{{ Storage::disk('public')->url($appCfg->login_bg_path) }}');
+                background-size: cover;
+                background-position: center center;
+                background-repeat: no-repeat;
+            }
+        </style>
+    @endsection
+@endif
+
 @section('auth_body')
     @if (session('status'))
         <div class="alert alert-success small">{{ session('status') }}</div>
@@ -38,6 +52,14 @@
             </div>
         </div>
     </form>
+
+    @php($msCfg = \App\Models\Configuracion::find(1))
+    @if($msCfg && $msCfg->microsoft_login_enabled && $msCfg->powerbi_client_id && $msCfg->powerbi_client_secret && $msCfg->powerbi_tenant_id)
+        <div class="text-center my-3 text-muted">— o —</div>
+        <a href="{{ route('auth.microsoft.redirect') }}" class="btn btn-block btn-outline-primary">
+            <i class="fab fa-microsoft mr-1"></i> Continuar con Microsoft
+        </a>
+    @endif
 @endsection
 
 @section('auth_footer')

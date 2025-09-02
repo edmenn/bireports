@@ -22,6 +22,12 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // Microsoft OAuth
+    Route::get('login/microsoft', [\App\Http\Controllers\Auth\MicrosoftController::class, 'redirect'])
+        ->name('auth.microsoft.redirect');
+    Route::get('login/microsoft/callback', [\App\Http\Controllers\Auth\MicrosoftController::class, 'callback'])
+        ->name('auth.microsoft.callback');
+
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
