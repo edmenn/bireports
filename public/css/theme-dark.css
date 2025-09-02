@@ -1,0 +1,9 @@
+/* Dark theme overrides for AdminLTE (optional) */
+/* AdminLTE dark mode is enabled by adding 'dark-mode' to body. */
+/* Put any additional fine-tuning here if desired. */
+
+body.dark-mode .card {
+  /* Slightly adjust card background if needed */
+  /* background-color: #1f2937; */
+}
+

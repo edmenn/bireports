@@ -8,7 +8,10 @@
     @yield('css')
 @stop
 
-@section('classes_body', $layoutHelper->makeBodyClasses())
+@php($computedBody = $layoutHelper->makeBodyClasses())
+@php($userDark = optional(Auth::user())->theme === 'dark')
+@php($sessionDark = session('theme') === 'dark')
+@section('classes_body', trim($computedBody . (($userDark || $sessionDark) ? ' dark-mode' : '')))
 
 @section('body_data', $layoutHelper->makeBodyData())
 

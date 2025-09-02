@@ -312,12 +312,7 @@ return [
             'can'   => 'menu.auditoria',
         ],
 
-                [
-            'text'  => 'Diagnóstico de auditoría',
-            'icon'  => 'fas fa-stethoscope',
-            'route' => 'admin.auditoria.diag',
-            'can'   => 'menu.auditoria',
-        ],
+        // Eliminado: Diagnóstico de auditoría
 
         ['header' => 'Configuraciones', 'can' => 'menu.configuraciones'],
         [
@@ -382,6 +377,19 @@ return [
             'files' => [
                 ['type' => 'css', 'asset' => false, 'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-radar.min.css'],
                 ['type' => 'js',  'asset' => false, 'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js'],
+            ],
+        ],
+        // Theme overrides (optional CSS per theme)
+        'ThemeLight' => [
+            'active' => false,
+            'files' => [
+                ['type' => 'css', 'asset' => true, 'location' => 'css/theme-light.css'],
+            ],
+        ],
+        'ThemeDark' => [
+            'active' => false,
+            'files' => [
+                ['type' => 'css', 'asset' => true, 'location' => 'css/theme-dark.css'],
             ],
         ],
     ],

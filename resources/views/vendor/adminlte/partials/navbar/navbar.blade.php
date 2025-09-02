@@ -21,6 +21,22 @@
         {{-- Custom right links --}}
         @yield('content_top_nav_right')
 
+        {{-- Theme switcher --}}
+        @php($isDark = optional(Auth::user())->theme === 'dark' || session('theme') === 'dark')
+        <li class="nav-item">
+            <form method="POST" action="{{ route('theme.switch') }}" class="d-inline">
+                @csrf
+                <input type="hidden" name="theme" value="{{ $isDark ? 'light' : 'dark' }}">
+                <button type="submit" class="btn btn-link nav-link" title="{{ $isDark ? 'Light' : 'Dark' }} theme">
+                    @if($isDark)
+                        <i class="fas fa-sun"></i>
+                    @else
+                        <i class="fas fa-moon"></i>
+                    @endif
+                </button>
+            </form>
+        </li>
+
         {{-- Configured right links --}}
         @each('adminlte::partials.navbar.menu-item', $adminlte->menu('navbar-right'), 'item')
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 // Controllers
 use App\Http\Controllers\ProfileController;
@@ -23,7 +24,7 @@ use App\Http\Controllers\GruposController;
 use App\Http\Controllers\FoldersController;
 use App\Http\Controllers\UserPortalController;
 use App\Http\Controllers\Api\AuditController;
-use App\Http\Controllers\Admin\AuditDiagController;
+// use App\Http\Controllers\Admin\AuditDiagController; // eliminado: diagnóstico de auditoría
 /*
 |--------------------------------------------------------------------------
 | Rutas web (AdminLTE + Breeze)
@@ -159,8 +160,7 @@ Route::prefix('admin')
     ->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
         
-        Route::get('/auditoria/diag', [AuditDiagController::class, 'index'])
-            ->name('admin.auditoria.diag');
+        // Eliminado: Diagnóstico de auditoría
 
         // (Sección eliminada)
 
@@ -202,6 +202,24 @@ Route::get('/lang/{locale}', function (string $locale) {
     session(['locale' => $locale]);
     return back();
 })->name('lang.switch');
+
+// Tema (light/dark) por sesión
+Route::post('/theme', function (Request $request) {
+    $current = optional($request->user())->theme ?? session('theme', 'light');
+    $requested = $request->string('theme')->lower()->toString();
+    $to = in_array($requested, ['light', 'dark'], true)
+        ? $requested
+        : ($current === 'dark' ? 'light' : 'dark');
+
+    // Persist per user when available
+    if ($request->user()) {
+        $request->user()->forceFill(['theme' => $to])->save();
+    }
+
+    // Keep session in sync for immediate effect
+    session(['theme' => $to]);
+    return back();
+})->middleware('auth')->name('theme.switch');
 
 // Auth (Breeze)
 require __DIR__ . '/auth.php';
