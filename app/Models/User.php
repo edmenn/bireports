@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -28,6 +27,8 @@ class User extends Authenticatable
         'email',
         'password',
         'theme',
+        'auth_provider',   // ⬅️ nuevo
+        'external_id',     // ⬅️ nuevo
     ];
 
     /**
@@ -57,7 +58,6 @@ class User extends Authenticatable
      * === Métodos esperados por AdminLTE ===
      */
 
-    // IMPORTANTE: con 'use_route_url' => true, debe devolver NOMBRE de ruta
     public function adminlte_profile_url(): string
     {
         return 'profile.edit';
@@ -73,8 +73,6 @@ class User extends Authenticatable
         return null;
     }
 
-    // Relación con Company eliminada; no se utiliza en este entorno
-
     public function groups()
     {
         return $this->belongsToMany(\App\Models\Group::class);
@@ -88,5 +86,18 @@ class User extends Authenticatable
     public function favoriteReports()
     {
         return $this->belongsToMany(\App\Models\Report::class, 'user_favorites', 'user_id', 'report_id');
+    }
+
+    /**
+     * Helpers de proveedor
+     */
+    public function isExternal(): bool
+    {
+        return !empty($this->auth_provider) && $this->auth_provider !== 'local';
+    }
+
+    public function isEntra(): bool
+    {
+        return $this->auth_provider === 'entra';
     }
 }

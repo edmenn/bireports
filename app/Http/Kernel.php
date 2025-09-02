@@ -42,7 +42,6 @@ class Kernel extends HttpKernel
 
             // Actividad de capacidad
             \App\Http\Middleware\AutoCapacityActivity::class,
-
         ],
 
         'api' => [
@@ -65,9 +64,11 @@ class Kernel extends HttpKernel
         'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'          => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // Alias opcionales
+        // Alias opcionales propios
         'track.audit'       => \App\Http\Middleware\TrackAudit::class,
         'capacity.activity' => \App\Http\Middleware\AutoCapacityActivity::class,
+
+        // ⬇️ NUEVO: bloquea cambio de contraseña para usuarios Entra
+        'no-external-password' => \App\Http\Middleware\ForbidExternalPasswordChange::class,
     ];
 }
-

@@ -5,29 +5,28 @@ declare(strict_types=1);
 namespace App\Console;
 
 use App\Console\Commands\ProjectAuditCommand;
+use App\Console\Commands\SyncEntraUsers;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 final class Kernel extends ConsoleKernel
 {
     /**
-     * Registrar comandos de consola.
-     * Aunque Laravel autodetecta comandos en App\Console\Commands,
-     * los registramos explícitamente para evitar sorpresas.
+     * Registrar comandos de consola de forma explícita.
      *
      * @var array<class-string>
      */
     protected $commands = [
         ProjectAuditCommand::class,
+        SyncEntraUsers::class, // comando de sync Entra (si lo tienes creado)
     ];
 
     /**
      * Zona horaria aplicada al scheduler.
-     * Asegura que las tareas se ejecuten según config('app.timezone').
      */
     protected function scheduleTimezone(): \DateTimeZone|string|null
     {
-        return config('app.timezone'); // p.ej.: 'America/Sao_Paulo'
+        return \config('app.timezone'); // p.ej.: 'America/Sao_Paulo'
     }
 
     /**
@@ -35,6 +34,7 @@ final class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Jobs Power BI existentes
         $schedule->command('powerbi:capacities:import')
             ->hourly()
             ->withoutOverlapping()
@@ -44,6 +44,13 @@ final class Kernel extends ConsoleKernel
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
+
+        // (Opcional) Programar la sincronización de usuarios Entra diariamente.
+        // Ajusta parámetros según tu necesidad o deja comentado si prefieres manual.
+        // $schedule->command('users:sync-entra --domain=sarcom.com.py')
+        //     ->dailyAt('02:10')
+        //     ->withoutOverlapping()
+        //     ->onOneServer();
     }
 
     /**
@@ -54,7 +61,7 @@ final class Kernel extends ConsoleKernel
         // Autocargar todos los comandos del directorio App\Console\Commands
         $this->load(__DIR__ . '/Commands');
 
-        // Si usas rutas de consola (útil para definir schedules en un solo lugar)
-        require base_path('routes/console.php');
+        // Rutas de consola (si las usas)
+        require \base_path('routes/console.php');
     }
 }

@@ -1,0 +1,22 @@
+
+   Illuminate\Database\QueryException 
+
+  could not find driver (Connection: pgsql, SQL: select * from "configuraciones" limit 1)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:824
+    820▕                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    821▕                 );
+    822▕             }
+    823▕ 
+  ➜ 824▕             throw new QueryException(
+    825▕                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826▕             );
+    827▕         }
+    828▕     }
+
+  1   [internal]:0
+      App\Services\MicrosoftGraphService::__construct()
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connectors\Connector.php:67
+      PDOException::("could not find driver")
+
