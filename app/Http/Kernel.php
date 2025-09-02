@@ -11,11 +11,8 @@ class Kernel extends HttpKernel
     /**
      * Middleware globales que se ejecutan en cada request (en orden).
      * El primero envuelve a todo y puede capturar excepciones tempranas,
-     * mostrando la vista amigable de AdminLTE.
      */
     protected $middleware = [
-        // >>> NUEVO: envolver TODO el pipeline para forzar la vista amigable
-        \App\Http\Middleware\FriendlyErrorMiddleware::class,
 
         // Protección básica y cabeceras
         \Illuminate\Http\Middleware\TrustProxies::class,
@@ -45,7 +42,6 @@ class Kernel extends HttpKernel
             // Actividad de capacidad
             \App\Http\Middleware\AutoCapacityActivity::class,
 
-            // ⚠️ YA NO incluimos FriendlyErrorMiddleware aquí.
         ],
 
         'api' => [
@@ -73,3 +69,4 @@ class Kernel extends HttpKernel
         'capacity.activity' => \App\Http\Middleware\AutoCapacityActivity::class,
     ];
 }
+
