@@ -73,4 +73,19 @@ class User extends Authenticatable
     }
 
     // Relación con Company eliminada; no se utiliza en este entorno
+
+    public function groups()
+    {
+        return $this->belongsToMany(\App\Models\Group::class);
+    }
+
+    public function folders()
+    {
+        return $this->belongsToMany(\App\Models\Folder::class);
+    }
+
+    public function favoriteReports()
+    {
+        return $this->belongsToMany(\App\Models\Report::class, 'user_favorites', 'user_id', 'report_id');
+    }
 }

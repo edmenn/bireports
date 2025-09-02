@@ -21,6 +21,7 @@ use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\FoldersController;
+use App\Http\Controllers\UserPortalController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Admin\AuditDiagController;
 /*
@@ -29,14 +30,14 @@ use App\Http\Controllers\Admin\AuditDiagController;
 |--------------------------------------------------------------------------
 */
 
-// Home -> Informes
-Route::get('/', [DashboardController::class, 'index'])
-    ->middleware(['auth'])
-    ->name('dashboards.index');
+// Home -> Mi espacio (portal de usuario)
+Route::get('/', function () {
+    return redirect()->route('portal.index');
+})->middleware(['auth'])->name('dashboards.index');
 
-// /dashboard (compatibilidad Breeze)
+// /dashboard (compatibilidad Breeze) -> redirige al portal
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('portal.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Grupo interno protegido
@@ -45,16 +46,17 @@ Route::middleware(['auth'])->group(function () {
     // Menú principal (limpiado: sin conjuntos de datos)
     Route::view('/aplicaciones',    'apps.index')->name('apps.index');
 
-    // Capacidades (LISTAR / PAUSAR / REANUDAR / RECARGAR)
-    Route::prefix('capacidades')->group(function () {
+    // Capacidades (solo admin/editor)
+    Route::prefix('capacidades')->middleware('role:admin|editor')->group(function () {
         Route::get('/', [CapacityController::class, 'index'])->name('capacities.index');
         Route::post('/refresh', [CapacityController::class, 'refresh'])->name('capacities.refresh');
         Route::post('/{capacity}/pause', [CapacityController::class, 'pause'])->name('capacities.pause');
         Route::post('/{capacity}/resume', [CapacityController::class, 'resume'])->name('capacities.resume');
     });
 
-    // Workspaces + Reports (vista pública interna por workspace)
+    // Workspaces (solo admin/editor)
     Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])
+        ->middleware('role:admin|editor')
         ->name('workspaces.index');
 
     Route::get('/espacios-trabajo/{workspace}', [WorkspacesController::class, 'show'])
@@ -73,8 +75,8 @@ Route::middleware(['auth'])->group(function () {
 
     // (Sección eliminada)
 
-    // ABM Usuarios
-    Route::resource('usuarios', UsersController::class)->parameters([
+    // ABM Usuarios (solo admin)
+    Route::resource('usuarios', UsersController::class)->middleware('role:admin')->parameters([
         'usuarios' => 'usuario',
     ])->names([
         'index' => 'users.index',
@@ -86,8 +88,8 @@ Route::middleware(['auth'])->group(function () {
         'show'  => 'users.show',
     ])->except(['show']);
 
-    // ABM Grupos
-    Route::resource('grupos', GruposController::class)->parameters([
+    // ABM Grupos (solo admin)
+    Route::resource('grupos', GruposController::class)->middleware('role:admin')->parameters([
         'grupos' => 'grupo',
     ])->names([
         'index' => 'grupos.index',
@@ -99,8 +101,8 @@ Route::middleware(['auth'])->group(function () {
         'show'  => 'grupos.show',
     ])->except(['show']);
 
-    // ABM Carpetas
-    Route::resource('carpetas', FoldersController::class)->parameters([
+    // ABM Carpetas (solo admin)
+    Route::resource('carpetas', FoldersController::class)->middleware('role:admin')->parameters([
         'carpetas' => 'carpeta',
     ])->names([
         'index' => 'folders.index',
@@ -111,6 +113,15 @@ Route::middleware(['auth'])->group(function () {
         'destroy'=>'folders.destroy',
         'show'  => 'folders.show',
     ])->except(['show']);
+
+    // Portal de usuario (rol usuario)
+    Route::prefix('mi')->group(function () {
+        Route::get('/', [UserPortalController::class, 'index'])->name('portal.index');
+        Route::get('/favoritos', [UserPortalController::class, 'favorites'])->name('portal.favoritos');
+        Route::post('/favoritos/{report}/toggle', [UserPortalController::class, 'toggleFavorite'])->name('portal.fav.toggle');
+        Route::get('/mas-accedidos', [UserPortalController::class, 'mostAccessed'])->name('portal.mas');
+        Route::get('/reportes', [UserPortalController::class, 'myReports'])->name('portal.reportes');
+    });
 
     // Auditoría (analítica y export)
     Route::get('/auditoria', [AuditAnalyticsController::class, 'index'])

@@ -218,75 +218,113 @@ return [
         [
             'type' => 'sidebar-menu-search',
             'text' => 'Buscar',
+            'can'  => 'menu.reports_index',
         ],
         // Entrada removida
 
         // --- Menú lateral en español ---
-        ['header' => 'Power BI'],
+        ['header' => 'Mi espacio', 'can' => 'menu.portal'],
+        [
+            'text'  => 'Inicio',
+            'icon'  => 'fas fa-home',
+            'route' => 'portal.index',
+            'can'   => 'menu.portal',
+        ],
+        [
+            'text'  => 'Favoritos',
+            'icon'  => 'fas fa-star',
+            'route' => 'portal.favoritos',
+            'can'   => 'menu.portal',
+        ],
+        [
+            'text'  => 'Más accedidos',
+            'icon'  => 'fas fa-fire',
+            'route' => 'portal.mas',
+            'can'   => 'menu.portal',
+        ],
+        [
+            'text'  => 'Mis reportes',
+            'icon'  => 'fas fa-chart-line',
+            'route' => 'portal.reportes',
+            'can'   => 'menu.portal',
+        ],
+
+        ['header' => 'Power BI', 'can' => 'menu.reports_index'],
 
         [
             'text'  => 'Informes',
             'icon'  => 'fas fa-chart-bar',
             'route' => 'reports.index',
+            'can'   => 'menu.reports_index',
         ],
         // (Conjuntos de datos eliminado)
         [
             'text'  => 'Aplicaciones',
             'icon'  => 'fas fa-th-large',
             'route' => 'apps.index',       // la crearemos luego
+            'can'   => 'menu.apps',
         ],
         [
             'text'  => 'Espacios de trabajo',
             'icon'  => 'fas fa-project-diagram',
             'route' => 'workspaces.index', // la crearemos luego
+            'can'   => 'menu.workspaces',
         ],
         [
             'text'  => 'Capacidades',
             'icon'  => 'fas fa-cogs',
             'route' => 'capacities.index', // la crearemos luego
+            'can'   => 'menu.capacities',
         ],
 
-        ['header' => 'Organización'],
+        ['header' => 'Organización', 'can' => 'menu.users'],
         // Entrada removida
         [
             'text'  => 'Usuarios',
             'icon'  => 'fas fa-users',
             'route' => 'users.index',      // opcional: si agregamos UsersController@index
+            'can'   => 'menu.users',
         ],
         [
             'text'  => 'Grupos',
             'icon'  => 'fas fa-user-friends',
             'route' => 'grupos.index',     // la crearemos luego
+            'can'   => 'menu.groups',
         ],
         [
             'text'  => 'Carpetas',
             'icon'  => 'fas fa-folder',
             'route' => 'folders.index',    // la crearemos luego
+            'can'   => 'menu.folders',
         ],
 
-        ['header' => 'Auditoría'],
+        ['header' => 'Auditoría', 'can' => 'menu.auditoria'],
         [
             'text'  => 'Métricas de uso',
             'icon'  => 'fas fa-chart-line',
             'route' => 'auditoria.index',  // la crearemos luego
+            'can'   => 'menu.auditoria',
         ],
         [
             'text'  => 'Reiniciar auditoría',
             'icon'  => 'fas fa-broom',
             'route' => 'admin.audit.reset.show',
+            'can'   => 'menu.auditoria',
         ],
 
                 [
             'text'  => 'Diagnóstico de auditoría',
             'icon'  => 'fas fa-stethoscope',
             'route' => 'admin.auditoria.diag',
+            'can'   => 'menu.auditoria',
         ],
 
-        ['header' => 'Configuraciones'],
+        ['header' => 'Configuraciones', 'can' => 'menu.configuraciones'],
         [
             'text'  => 'Parámetros',
             'icon'  => 'fas fa-cogs',
             'route' => 'configuraciones.index', // la crearemos luego
+            'can'   => 'menu.configuraciones',
         ],
     ],
 
