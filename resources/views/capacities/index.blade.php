@@ -13,12 +13,12 @@
             <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
                 @csrf
                 <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                    <i class="fas fa-sync-alt mr-1"></i> Refrescar
+                    <i class="fas fa-sync-alt me-1"></i> Refrescar
                 </button>
             </form>
         @else
             <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Configura credenciales para habilitar el refresco">
-                <i class="fas fa-cogs mr-1"></i> Configurar
+                <i class="fas fa-cogs me-1"></i> Configurar
             </a>
         @endif
     </div>
@@ -27,22 +27,22 @@
 @section('content')
     {{-- Alerts --}}
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
 
     @if(empty($hasConfig) || !$hasConfig)
-        <div class="alert alert-warning alert-dismissible fade show">
-            <i class="fas fa-exclamation-triangle mr-2"></i>No hay configuración activa. Carga credenciales en <a href="{{ route('configuraciones.index') }}" class="alert-link">Configuraciones</a> para habilitar el refresco y operaciones.
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>No hay configuración activa. Carga credenciales en <a href="{{ route('configuraciones.index') }}" class="alert-link">Configuraciones</a> para habilitar el refresco y operaciones.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
 
@@ -65,18 +65,18 @@
                     <form action="{{ route('capacities.refresh') }}" method="POST">
                         @csrf
                         <button class="btn btn-primary rounded-pill px-3">
-                            <i class="fas fa-sync-alt mr-1"></i> Refrescar
+                            <i class="fas fa-sync-alt me-1"></i> Refrescar
                         </button>
                     </form>
                 @else
                     <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
-                        <i class="fas fa-cogs mr-1"></i> Configurar
+                        <i class="fas fa-cogs me-1"></i> Configurar
                     </a>
                 @endif
             </div>
         </div>
     @else
-        {{-- KPIs modernos --}}
+        {{-- KPIs modernas --}}
         <div class="row kpi-row">
             <div class="col-md-4 mb-3">
                 <div class="kpi-card kpi-primary">
@@ -144,8 +144,8 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center mt-2 small text-muted">
-                    <i class="far fa-lightbulb mr-1"></i> Los filtros se aplican en el navegador (sin recarga).
-                    <span id="cap-visible-counter" class="ml-2"></span>
+                    <i class="far fa-lightbulb me-1"></i> Los filtros se aplican en el navegador (sin recarga).
+                    <span id="cap-visible-counter" class="ms-2"></span>
                 </div>
             </div>
         </div>
@@ -156,12 +156,12 @@
                 <table id="cap-table" class="table cap-table mb-0">
                     <thead class="sticky-thead">
                     <tr>
-                        <th class="sortable" data-sort="name">Nombre <i class="fas fa-sort text-muted ml-1"></i></th>
+                        <th class="sortable" data-sort="name">Nombre <i class="fas fa-sort text-muted ms-1"></i></th>
                         <th>GUID</th>
-                        <th class="sortable" data-sort="sku">SKU <i class="fas fa-sort text-muted ml-1"></i></th>
-                        <th class="sortable" data-sort="region">Región <i class="fas fa-sort text-muted ml-1"></i></th>
-                        <th class="sortable" data-sort="state">Estado <i class="fas fa-sort text-muted ml-1"></i></th>
-                        <th class="text-right">Acciones</th>
+                        <th class="sortable" data-sort="sku">SKU <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th class="sortable" data-sort="region">Región <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th class="sortable" data-sort="state">Estado <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th class="text-end">Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -183,14 +183,14 @@
                             data-search="{{ $searchBlob }}"
                         >
                             <td class="align-middle">
-                                <div class="font-weight-bold text-dark h6 mb-0">{{ $c->display_name }}</div>
+                                <div class="fw-bold text-dark h6 mb-0">{{ $c->display_name }}</div>
                                 <small class="text-muted">{{ $c->type }}</small>
                             </td>
                             <td class="align-middle">
                                 @if($guid)
-                                    <code class="mr-2">{{ \Illuminate\Support\Str::limit($guid, 22) }}</code>
+                                    <code class="me-2">{{ \Illuminate\Support\Str::limit($guid, 22) }}</code>
                                     <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill js-copy"
-                                            data-copy="{{ $guid }}" title="Copiar GUID">
+                                            data-copy="{{ $guid }}" title="Copiar GUID" aria-label="Copiar GUID">
                                         <i class="far fa-copy"></i>
                                     </button>
                                 @else
@@ -201,32 +201,32 @@
                             <td class="align-middle">{{ $c->region }}</td>
                             <td class="align-middle">
                                 @if ($isActive)
-                                    <span class="badge badge-pill badge-success px-3 py-2">
-                                        <i class="fas fa-play mr-1"></i> Activa
+                                    <span class="badge rounded-pill bg-success px-3 py-2">
+                                        <i class="fas fa-play me-1"></i> Activa
                                     </span>
                                 @else
-                                    <span class="badge badge-pill badge-warning px-3 py-2">
-                                        <i class="fas fa-pause mr-1"></i> Pausada
+                                    <span class="badge rounded-pill bg-warning px-3 py-2">
+                                        <i class="fas fa-pause me-1"></i> Pausada
                                     </span>
                                 @endif
                                 @if ($c->last_state_change_at)
                                     <div><small class="text-muted">Último cambio: {{ \Illuminate\Support\Carbon::parse($c->last_state_change_at)->diffForHumans() }}</small></div>
                                 @endif
                             </td>
-                            <td class="align-middle text-right">
-                                <div class="btn-group" role="group">
+                            <td class="align-middle text-end">
+                                <div class="btn-group" role="group" aria-label="Acciones">
                                     @if ($isActive)
                                         <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('¿Pausar esta capacidad?');" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-warning rounded-pill px-3">
-                                                <i class="fas fa-pause mr-1"></i> Pausar
+                                                <i class="fas fa-pause me-1"></i> Pausar
                                             </button>
                                         </form>
                                     @else
                                         <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('¿Reanudar esta capacidad?');" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                                <i class="fas fa-play mr-1"></i> Reanudar
+                                                <i class="fas fa-play me-1"></i> Reanudar
                                             </button>
                                         </form>
                                     @endif
@@ -273,7 +273,9 @@
 .cap-table tbody tr{ transition: background-color .12s ease, transform .06s ease; }
 .cap-table tbody tr:hover{ background: #fbfdff; }
 .cap-table code{ font-size:.9rem; }
-.badge-pill{ border-radius: 999px; }
+
+/* Badges (forma pastilla) */
+.badge.rounded-pill{ border-radius: 999px; }
 
 /* Botones redondos */
 .btn{ border-radius: .75rem; }
@@ -375,8 +377,8 @@
             if(sortKey === key){ sortDir = (sortDir === 'asc' ? 'desc' : 'asc'); }
             else { sortKey = key; sortDir = 'asc'; }
 
-            table.querySelectorAll('thead th.sortable i').forEach(i=> i.className = 'fas fa-sort text-muted ml-1');
-            th.querySelector('i').className = (sortDir === 'asc' ? 'fas fa-sort-up ml-1' : 'fas fa-sort-down ml-1');
+            table.querySelectorAll('thead th.sortable i').forEach(i=> i.className = 'fas fa-sort text-muted ms-1');
+            th.querySelector('i').className = (sortDir === 'asc' ? 'fas fa-sort-up ms-1' : 'fas fa-sort-down ms-1');
 
             applySort();
         });

@@ -16,22 +16,19 @@
 
 @section('content')
     @php
+        $reports = $reports ?? collect();
+
         $total = $reports->count();
-        // Cover “no vacío”
         $conCover = $reports->filter(function($r){
             $c = trim((string)($r->effective_cover_url ?? ''));
             return $c !== '';
         })->count();
         $sinCover = $total - $conCover;
 
-        // Workspace únicos (por nombre si existe, si no por ID)
         $wsSet = $reports->map(function($r){
             $name = $r->workspace?->name ?? null;
             $wid  = $r->workspace_id ?? null;
-            return [
-                'key'  => $name ? $name : (string)$wid,
-                'text' => $name ? $name : (string)$wid
-            ];
+            return ['key' => $name ? $name : (string)$wid, 'text' => $name ? $name : (string)$wid];
         })->filter(fn($x)=>!empty($x['key']))->unique('key')->sortBy('text')->values();
     @endphp
 
@@ -39,7 +36,7 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <div class="mb-3">
-                    <i class="fas fa-inbox fa-3x text-muted"></i>
+                    <i class="fas fa-inbox fa-3x text-muted" aria-hidden="true"></i>
                 </div>
                 <h5 class="mb-2">No hay reportes importados</h5>
                 <p class="text-muted mb-4">Ejecuta una importación para ver tus dashboards aquí.</p>
@@ -58,7 +55,7 @@
                         <h3 class="mb-0">{{ $total }}</h3>
                         <p class="mb-0">Reportes totales</p>
                     </div>
-                    <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                    <div class="icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -67,7 +64,7 @@
                         <h3 class="mb-0">{{ $conCover }}</h3>
                         <p class="mb-0">Con portada</p>
                     </div>
-                    <div class="icon"><i class="fas fa-image"></i></div>
+                    <div class="icon"><i class="fas fa-image" aria-hidden="true"></i></div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -76,7 +73,7 @@
                         <h3 class="mb-0">{{ $sinCover }}</h3>
                         <p class="mb-0">Sin portada</p>
                     </div>
-                    <div class="icon"><i class="fas fa-image-slash"></i></div>
+                    <div class="icon"><i class="fas fa-image-slash" aria-hidden="true"></i></div>
                 </div>
             </div>
         </div>
@@ -119,7 +116,7 @@
                         </select>
                     </div>
                     <div class="col-md-9 text-muted small">
-                        <i class="far fa-lightbulb me-1"></i>
+                        <i class="far fa-lightbulb me-1" aria-hidden="true"></i>
                         Los filtros y el orden se aplican en el navegador, sin recargar la página.
                     </div>
                 </div>
@@ -137,9 +134,7 @@
                     $datasetId = $r->dataset_id ?? '';
                     $rid = (string)($r->id ?? '');
                     $hasCover = $cover !== '' ? 'yes' : 'no';
-                    $searchBlob = \Illuminate\Support\Str::lower(
-                        $title.' '.$rid.' '.$wsKey.' '.$datasetId
-                    );
+                    $searchBlob = \Illuminate\Support\Str::lower($title.' '.$rid.' '.$wsKey.' '.$datasetId);
                 @endphp
 
                 <div class="report-card shadow-sm"
@@ -154,15 +149,15 @@
                        title="Abrir reporte"></a>
 
                     {{-- COVER --}}
-                    <div class="report-cover">
+                    <div class="report-cover" aria-label="Portada del reporte">
                         @if($cover !== '')
                             @php $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default'); @endphp
                             <img src="{{ $cover }}"
-                                 alt="cover {{ $r->name }}"
+                                 alt="Portada de {{ $r->name }}"
                                  loading="lazy"
                                  class="{{ $isDefault ? 'cover-default' : 'cover-full' }}">
                         @else
-                            <svg class="bi-svg" viewBox="0 0 128 128" aria-hidden="true">
+                            <svg class="bi-svg" viewBox="0 0 128 128" role="img" aria-label="Portada genérica">
                                 <defs>
                                     <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stop-color="#FFD93D"/>
@@ -183,26 +178,27 @@
                         @endif
                     </div>
 
-                    {{-- Título + acciones --}}
+                    {{-- Título + acciones (ancho fijo y separación) --}}
                     <div class="px-3 pt-2">
-                        <div class="d-flex align-items-start justify-content-between gap-2">
-                            <h3 class="h6 fw-semibold text-truncate mb-1" title="{{ $r->name }}">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <h3 class="h6 fw-semibold text-truncate mb-1 pe-2" title="{{ $r->name }}" style="max-width: 65%;">
                                 {{ $r->name }}
                             </h3>
 
-                            <div class="d-flex gap-1 position-relative" style="z-index:2">
+                            {{-- Grid de acciones: 2 columnas fijas con gap --}}
+                            <div class="actions-grid position-relative" style="z-index:2">
                                 <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
-                                   class="btn btn-sm btn-primary"
+                                   class="btn btn-sm btn-primary w-100"
                                    title="Abrir dashboard"
                                    onclick="event.stopPropagation();">
-                                    <i class="fas fa-chart-line"></i> Abrir
+                                    <i class="fas fa-chart-line me-1"></i> Abrir
                                 </a>
                                 @role('admin')
                                     <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
-                                       class="btn btn-sm btn-outline-warning"
+                                       class="btn btn-sm btn-outline-warning w-100"
                                        title="Editar imagen y descripción"
                                        onclick="event.stopPropagation();">
-                                        <i class="fas fa-edit"></i> Editar
+                                        <i class="fas fa-edit me-1"></i> Editar
                                     </a>
                                 @endrole
                             </div>
@@ -222,19 +218,19 @@
                             <span class="badge bg-light text-dark border text-truncate"
                                   style="max-width: 260px"
                                   title="{{ $wsName !== '' ? $wsName : $r->workspace_id }}">
-                                <i class="fas fa-layer-group me-1"></i>
+                                <i class="fas fa-layer-group me-1" aria-hidden="true"></i>
                                 {{ $wsName !== '' ? $wsName : 'Workspace' }}
                             </span>
 
                             @if(!empty($r->dataset_id))
                                 <button type="button" class="badge bg-secondary border-0 copy-pill"
-                                        data-copy="{{ $r->dataset_id }}" title="Copiar Dataset ID">
+                                        data-copy="{{ $r->dataset_id }}" title="Copiar Dataset ID" aria-label="Copiar Dataset ID">
                                     Dataset
                                 </button>
                             @endif
 
                             <button type="button" class="badge bg-primary border-0 copy-pill"
-                                    data-copy="{{ $r->id }}" title="Copiar Report ID">
+                                    data-copy="{{ $r->id }}" title="Copiar Report ID" aria-label="Copiar Report ID">
                                 Report
                             </button>
                         </div>
@@ -243,7 +239,6 @@
             @endforeach
         </div>
 
-        {{-- Si tu $reports es LengthAwarePaginator, puedes dejar la paginación del servidor aquí --}}
         @if(method_exists($reports,'links'))
             <div class="mt-3">
                 {{ $reports->links() }}
@@ -261,7 +256,6 @@
         --cover-height: 170px;
         --cover-bg: #f5f6fa;
     }
-    .fw-600{font-weight:600;}
     .report-grid{
         display:grid;
         grid-template-columns: repeat(1, minmax(0,1fr));
@@ -292,37 +286,32 @@
         display:flex; align-items:center; justify-content:center;
         border-bottom:1px solid rgba(0,0,0,.05);
     }
-    .report-cover img.cover-full{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        display:block;
-    }
-    .report-cover img.cover-default{
-        max-width:70%;
-        max-height:70%;
-        object-fit:contain;
-        display:block;
-        margin:auto;
-    }
-    .bi-svg{
-        width: 60%;
-        max-height: 80%;
-        height: auto;
-        filter: drop-shadow(0 8px 16px rgba(0,0,0,.12));
-    }
+    .report-cover img.cover-full{ width:100%; height:100%; object-fit:cover; display:block; }
+    .report-cover img.cover-default{ max-width:70%; max-height:70%; object-fit:contain; display:block; margin:auto; }
+    .bi-svg{ width:60%; max-height:80%; height:auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,.12)); }
+
     .description-clamp{
-        display:-webkit-box;
-        -webkit-line-clamp:2;
-        -webkit-box-orient:vertical;
-        overflow:hidden;
-        min-height: 2.4em;
+        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+        overflow:hidden; min-height:2.4em;
     }
     .copy-pill{ cursor:pointer; user-select:none; }
-    .copy-pill.copied{
-        filter: brightness(1.05);
-        outline:2px solid rgba(25,135,84,.6);
-        outline-offset:2px;
+    .copy-pill.copied{ filter:brightness(1.05); outline:2px solid rgba(25,135,84,.6); outline-offset:2px; }
+
+    /* === Contenedor de acciones: 2 columnas fijas con separación consistente === */
+    .actions-grid{
+        display:grid;
+        grid-auto-rows: 1fr;                 /* misma altura */
+        grid-template-columns: 128px 128px;  /* ANCHO FIJO para ambos botones */
+        gap: .5rem;                          /* separación clara */
+        align-items: start;
+        justify-content: end;                /* pegado al borde derecho del header de la tarjeta */
+        margin-left: .5rem;                  /* respiro respecto del título */
+    }
+    @media (max-width: 480px){
+        .actions-grid{
+            grid-template-columns: 1fr;      /* en mobile, uno debajo del otro */
+            justify-content: stretch;
+        }
     }
 </style>
 @endpush
@@ -330,7 +319,7 @@
 @push('js')
 <script>
 (function(){
-    const grid = document.getElementById('rpt-grid');
+    const grid  = document.getElementById('rpt-grid');
     if(!grid) return;
 
     const cards = Array.from(grid.querySelectorAll('.report-card'));
@@ -339,7 +328,7 @@
     const cover  = document.getElementById('rpt-cover');
     const order  = document.getElementById('rpt-order');
 
-    function norm(s){ return (s||'').toString().trim().toLowerCase(); }
+    const norm = (s)=> (s||'').toString().trim().toLowerCase();
 
     function applyFilters(){
         const q  = norm(search?.value || '');
@@ -351,7 +340,7 @@
             const w  = card.dataset.ws || '';
             const c  = card.dataset.cover || 'no';
 
-            const okText  = q === '' || sb.includes(q);
+            const okText  = (q === '' || sb.includes(q));
             const okWs    = (ws === 'all') || (w === norm(ws));
             const okCover = (cv === 'all') || (cv === c);
 
@@ -363,9 +352,8 @@
         if(!order) return;
         const val = order.value;
         const [key, dir] = val.split('_'); // name|ws + asc|desc
-
         const visible = cards.filter(c => c.style.display !== 'none');
-        const tbody = grid; // reutilizamos el grid
+        const parent  = grid;
 
         visible.sort((a,b)=>{
             const av = key === 'name' ? (a.dataset.title||'') : (a.dataset.ws||'');
@@ -375,10 +363,10 @@
             return 0;
         });
 
-        visible.forEach(el => tbody.appendChild(el));
+        visible.forEach(el => parent.appendChild(el));
     }
 
-    // Debounce para búsqueda
+    // Debounce búsqueda
     let t=null;
     function debounceFilters(){
         if(t) clearTimeout(t);

@@ -28,7 +28,7 @@
 @endphp
 
 <div class="card shadow-sm border-0 overflow-hidden mb-3">
-    {{-- Header moderno con gradiente --}}
+    {{-- Header sin botones, alto contraste --}}
     <div class="up-header p-3 p-md-4">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
@@ -37,27 +37,15 @@
                 </div>
                 <div class="text-white">
                     <div class="h5 fw-bold mb-1">{{ $uname !== '' ? $uname : 'Usuario sin nombre' }}</div>
-                    <div class="small opacity-90">
-                        <i class="far fa-id-badge me-1"></i>ID: <code class="text-white-50">{{ $uid }}</code>
+                    <div class="small opacity-90 d-flex flex-wrap align-items-center gap-2">
+                        <span><i class="far fa-id-badge me-1"></i>ID: <code class="text-white-50">{{ $uid }}</code></span>
                         @if($mail !== '')
-                            <span class="ms-2"><i class="far fa-envelope me-1"></i>{{ $mail }}</span>
+                            <span class="text-white-75"><i class="far fa-envelope ms-1 me-1"></i>{{ $mail }}</span>
                         @endif
                     </div>
                 </div>
             </div>
-
-            <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-sm btn-light text-primary js-copy"
-                        data-copy="{{ $uid }}" title="Copiar ID">
-                    <i class="far fa-copy me-1"></i>ID
-                </button>
-                @if($mail !== '')
-                <button type="button" class="btn btn-sm btn-light text-primary js-copy"
-                        data-copy="{{ $mail }}" title="Copiar email">
-                    <i class="far fa-copy me-1"></i>Email
-                </button>
-                @endif
-            </div>
+            {{-- (sin acciones) --}}
         </div>
     </div>
 
@@ -68,7 +56,7 @@
                 <div class="text-muted">Seleccioná un usuario para ver su actividad.</div>
             </div>
         @else
-            {{-- KPIs en tarjetas modernas --}}
+            {{-- KPIs --}}
             <div class="row g-3">
                 <div class="col-6 col-md-3">
                     <div class="up-kpi up-kpi-blue">
@@ -100,7 +88,7 @@
                 </div>
             </div>
 
-            {{-- Heatmap compacto y moderno --}}
+            {{-- Heatmap --}}
             <div class="mt-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="fw-600">Actividad por día y hora</div>
@@ -151,7 +139,7 @@
                 </div>
             </div>
 
-            {{-- Top reportes con chips --}}
+            {{-- Top reportes --}}
             <div class="mt-4">
                 <div class="fw-600 mb-2">Reportes más usados</div>
                 @if(empty($tops))
@@ -180,7 +168,7 @@
                 @endif
             </div>
 
-            {{-- Feed vertical (timeline moderno) --}}
+            {{-- Feed --}}
             <div class="mt-4">
                 <div class="fw-600 mb-2">Actividad reciente</div>
                 @if(empty($userEvents))
@@ -229,17 +217,26 @@
 <style>
     .fw-600{font-weight:600;}
 
-    /* Header gradiente */
+    /* Header (más oscuro + overlay para contraste) */
     .up-header{
-        background: radial-gradient(1200px 500px at 90% -10%, rgba(105,90,205,.35), transparent 60%),
-                    linear-gradient(135deg, #4f46e5, #0ea5e9);
+        position: relative;
+        background:
+            radial-gradient(1100px 480px at 85% -15%, rgba(255,255,255,.15), transparent 60%),
+            linear-gradient(135deg, #1e293b, #0ea5e9);
         color:#fff;
     }
+    .up-header:after{
+        content:""; position:absolute; inset:0;
+        background: linear-gradient(0deg, rgba(0,0,0,.15), rgba(0,0,0,.05));
+        pointer-events:none;
+    }
+
     .up-avatar{
         width:56px;height:56px;
         font-weight:800;font-size:1.05rem;
-        color:#1e293b;background:#ffffff20;border:1px solid #ffffff40;
-        box-shadow: inset 0 0 0 2px #ffffff20;
+        color:#e2e8f0;background:#111827;            /* fondo oscuro */
+        border:1px solid rgba(255,255,255,.25);      /* borde tenue */
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,.08);
     }
 
     /* KPIs */
@@ -247,21 +244,18 @@
         position:relative;border-radius:14px;padding:.9rem 1rem;background:#fff;overflow:hidden;
         border:1px solid rgba(0,0,0,.06);box-shadow:0 .35rem 1rem rgba(0,0,0,.06);
     }
-    .up-kpi-icon{
-        position:absolute;right:.75rem;top:.6rem;opacity:.15;font-size:1.6rem;
-    }
+    .up-kpi-icon{ position:absolute;right:.75rem;top:.6rem;opacity:.15;font-size:1.6rem; }
     .up-kpi-value{ font-size:1.35rem;font-weight:800;line-height:1; }
     .up-kpi-label{ font-size:.85rem;color:#6b7280;margin-top:.25rem; }
-
     .up-kpi-blue   { background: linear-gradient(180deg, #eff6ff, #ffffff); }
     .up-kpi-violet { background: linear-gradient(180deg, #f3e8ff, #ffffff); }
     .up-kpi-green  { background: linear-gradient(180deg, #ecfdf5, #ffffff); }
     .up-kpi-orange { background: linear-gradient(180deg, #fff7ed, #ffffff); }
 
     /* Heatmap */
-    .up-heat{ border-radius:14px; padding: .75rem; background:#fff; }
+    .up-heat{ border-radius:14px; padding:.75rem; background:#fff; }
     .up-hm-table th{ font-weight:600; }
-    .up-hm-table thead th{ font-size:.8rem;color:#6b7280; }
+    .up-hm-table thead th{ font-size:.8rem;color:#6b7280; white-space:nowrap; }
     .up-hm-table .sticky-col{ position:sticky; left:0; background:#fff; z-index:1; }
     .up-hm-cell{
         width:24px;height:18px;border-radius:4px;margin:auto;border:1px solid rgba(0,0,0,.04);
@@ -286,7 +280,7 @@
     .up-progress{ height:6px; background:#eef2f7; }
     .up-progress .progress-bar{ background: linear-gradient(90deg, #6366f1, #22d3ee); }
 
-    /* Feed vertical */
+    /* Feed */
     .up-feed{ position:relative; padding-left:1.25rem; }
     .up-feed:before{
         content:""; position:absolute; left:.6rem; top:.4rem; bottom:.4rem; width:2px; background:#e5e7eb;
@@ -294,8 +288,7 @@
     .up-feed-item{ position:relative; margin-bottom:1rem; }
     .up-feed-dot{
         position:absolute; left:-.05rem; top:.35rem; width:10px; height:10px; border-radius:50%;
-        border:2px solid #fff; box-shadow:0 0 0 2px #e5e7eb;
-        background:#9ca3af;
+        border:2px solid #fff; box-shadow:0 0 0 2px #e5e7eb; background:#9ca3af;
     }
     .up-feed-dot.ok{ background:#10b981; }
     .up-feed-dot.warn{ background:#6b7280; }
@@ -304,30 +297,4 @@
     .shadow-xs{ box-shadow:0 .15rem .6rem rgba(0,0,0,.05)!important; }
     .opacity-90{ opacity:.9; }
 </style>
-@endpush
-
-@push('js')
-<script>
-(function(){
-    // Copiar ID / Email con feedback
-    document.addEventListener('click', function(e){
-        const btn = e.target.closest('.js-copy');
-        if(!btn) return;
-        const txt = btn.getAttribute('data-copy') || '';
-        if(!txt) return;
-
-        navigator.clipboard.writeText(txt).then(()=>{
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="far fa-check-circle me-1"></i>Copiado';
-            btn.classList.remove('btn-light','text-primary');
-            btn.classList.add('btn-success','text-white');
-            setTimeout(()=>{
-                btn.innerHTML = original;
-                btn.classList.add('btn-light','text-primary');
-                btn.classList.remove('btn-success','text-white');
-            }, 900);
-        }).catch(()=> alert('No se pudo copiar.'));
-    }, {passive:true});
-})();
-</script>
 @endpush

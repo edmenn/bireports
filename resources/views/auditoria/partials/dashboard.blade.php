@@ -7,7 +7,9 @@
                 <span class="dash-sub">Distribución mensual</span>
             </div>
             <div class="dash-body d-flex flex-column">
-                <div class="chart-wrap flex-grow-1"><canvas id="chartMonths"></canvas></div>
+                <div class="chart-wrap flex-grow-1">
+                    <canvas id="chartMonths" role="img" aria-label="Gráfico de barras de accesos por mes"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -18,7 +20,9 @@
                 <span class="dash-sub">Últimos registros</span>
             </div>
             <div class="dash-body d-flex flex-column">
-                <div class="chart-wrap flex-grow-1"><canvas id="chartDaily"></canvas></div>
+                <div class="chart-wrap flex-grow-1">
+                    <canvas id="chartDaily" role="img" aria-label="Gráfico de líneas de accesos diarios"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -32,7 +36,9 @@
                 <span class="dash-sub">Usuarios más activos</span>
             </div>
             <div class="dash-body d-flex flex-column">
-                <div class="chart-wrap flex-grow-1"><canvas id="chartUsers"></canvas></div>
+                <div class="chart-wrap flex-grow-1">
+                    <canvas id="chartUsers" role="img" aria-label="Gráfico de barras de usuarios con más accesos"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -43,16 +49,17 @@
                 <span class="dash-sub">Dashboards más consultados</span>
             </div>
             <div class="dash-body d-flex flex-column">
-                <div class="chart-wrap flex-grow-1"><canvas id="chartReports"></canvas></div>
+                <div class="chart-wrap flex-grow-1">
+                    <canvas id="chartReports" role="img" aria-label="Gráfico de barras de reportes con más accesos"></canvas>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- HEATMAP: sin scroll, sin sticky, totales con color y hover fila/columna --}}
+{{-- HEATMAP: sin scroll interno; totales destacados; hover y foco accesibles --}}
 <div class="row mt-3">
     <div class="col-12 mb-3">
-        {{-- sin h-100/d-flex aquí para no forzar overflow --}}
         <div class="dash-card">
             <div class="dash-head slate">
                 <strong class="dash-title">Accesos por día y horario</strong>
@@ -65,17 +72,17 @@
                         <table class="hm-table w-100" id="heatTable">
                             <thead>
                                 <tr>
-                                    <th data-col="H">Hora</th>
+                                    <th scope="col" data-col="H">Hora</th>
                                     @foreach($dowLabels as $i => $lbl)
-                                        <th data-col="{{ $i+1 }}">{{ $lbl }}</th>
+                                        <th scope="col" data-col="{{ $i+1 }}">{{ $lbl }}</th>
                                     @endforeach
-                                    <th class="total-col" data-col="T">Total</th>
+                                    <th scope="col" class="total-col" data-col="T">Total</th>
                                 </tr>
                             </thead>
                             <tbody id="heatBody"></tbody>
                             <tfoot>
                                 <tr id="heatTotalsRow" class="total-row">
-                                    <th data-col="H">Total</th>
+                                    <th scope="row" data-col="H">Total</th>
                                     @for($d=1; $d<=7; $d++)
                                         <th class="total-row" data-col="{{ $d }}" data-day="{{ $d }}">0</th>
                                     @endfor
@@ -104,13 +111,17 @@
 
 @push('css')
 <style>
-/* --- Cards modernas --- */
-.dash-card{ background:#fff; border:1px solid rgba(0,0,0,.06); border-radius:16px; overflow:hidden; box-shadow:0 .35rem 1rem rgba(0,0,0,.05); }
+/* --- Cards modernas con contraste mejorado en títulos --- */
+.dash-card{
+    background:#fff; border:1px solid rgba(0,0,0,.06);
+    border-radius:16px; overflow:hidden;
+    box-shadow:0 .35rem 1rem rgba(0,0,0,.05);
+}
 .dash-head{
     display:flex; align-items:baseline; justify-content:space-between; gap:.5rem;
     padding:.9rem 1rem; color:#fff;
-    background: radial-gradient(900px 400px at 90% -10%, rgba(255,255,255,.25), transparent 60%),
-                linear-gradient(135deg, #4f46e5, #22d3ee);
+    background: radial-gradient(900px 400px at 90% -10%, rgba(255,255,255,.2), transparent 60%),
+                linear-gradient(135deg, var(--bs-primary), #22d3ee);
     border-bottom:1px solid rgba(255,255,255,.25);
 }
 .dash-head.violet{ background: linear-gradient(135deg, #7c3aed, #06b6d4); }
@@ -121,17 +132,16 @@
 .dash-sub{ font-size:.85rem; opacity:.9; }
 .dash-body{ padding:1rem; }
 
-/* Charts */
+/* Charts: altura fluida, sin “saltos” al cargar */
 .chart-wrap{ position:relative; min-height: 300px; }
 @media (max-width:576px){ .chart-wrap{ min-height: 260px; } }
 
-/* --- Heatmap (sin sticky y sin scroll interno) --- */
+/* --- Heatmap --- */
 .heat-wrap{ border:1px solid rgba(0,0,0,.06); border-radius:12px; padding:1rem; background:#fff; }
-.heat-guard{ position: relative; overflow: hidden; } /* evita fugas hacia los bordes */
+.heat-guard{ position: relative; overflow: hidden; }
 
 .hm-table{
-    border-collapse:separate; border-spacing:6px;
-    table-layout: fixed; width:100%;
+    border-collapse:separate; border-spacing:6px; table-layout: fixed; width:100%;
 }
 .hm-table thead th, .hm-table tfoot th{
     text-align:center; color:#334155; font-weight:800; font-size:1rem; white-space:nowrap;
@@ -142,14 +152,10 @@
     font-size:1rem; line-height:1.15;
 }
 
-/* Desactiva cualquier sticky previo (clave para AdminLTE) */
-.hm-table th[data-col="H"],
-.hm-table th[data-col="T"],
-.hm-table td[data-col="T"]{
-    position: static !important;
-}
+/* Desactiva cualquier sticky heredado */
+.hm-table [data-col="H"], .hm-table [data-col="T"]{ position: static !important; }
 
-/* Paleta 0..7 para celdas de datos */
+/* Paleta 0..7 */
 .hm-0{ background:#f8fafc; color:#94a3b8; }
 .hm-1{ background:#e6f0ff; color:#1f3d70; }
 .hm-2{ background:#d6e8ff; color:#1d3767; }
@@ -159,20 +165,16 @@
 .hm-6{ background:#96c8ff; color:#122443; }
 .hm-7{ background:#86c0ff; color:#101f3a; }
 
-/* === Estilos de totales (fila y columna) === */
+/* Totales */
 .hm-table .total-col,
 .hm-table .total-row{
-    background:#eef2ff;            /* violeta azulado muy suave */
-    border-color:#c7d2fe;
-    color:#3730a3;                  /* violeta oscuro */
-    font-weight:800;
+    background:#eef2ff; border-color:#c7d2fe; color:#3730a3; font-weight:800;
 }
-#heatGrandTotal.total-col{ background:#e0e7ff; } /* gran total levemente distinto */
+#heatGrandTotal.total-col{ background:#e0e7ff; }
 
-/* === Hover de fila y de columna === */
-.hm-table tr.is-hover-row > th,
-.hm-table tr.is-hover-row > td{
-    box-shadow: inset 0 0 0 9999px rgba(99,102,241,.10); /* luz suave */
+/* Hover fila/columna */
+.hm-table tr.is-hover-row > th, .hm-table tr.is-hover-row > td{
+    box-shadow: inset 0 0 0 9999px rgba(99,102,241,.10);
 }
 .hm-table.hover-col-1 [data-col="1"],
 .hm-table.hover-col-2 [data-col="2"],
@@ -184,10 +186,15 @@
 .hm-table.hover-col-T [data-col="T"]{
     box-shadow: inset 0 0 0 9999px rgba(99,102,241,.10);
 }
-/* Hover fuerte para la intersección (celda bajo cursor) */
-.hm-table td.is-focus,
-.hm-table th.is-focus{
+.hm-table td.is-focus, .hm-table th.is-focus{
     box-shadow: inset 0 0 0 9999px rgba(99,102,241,.18);
+    outline: 0; /* evitamos doble foco junto al .is-focus */
+}
+
+/* Accesibilidad: foco por teclado visible en celdas */
+.hm-table td:focus, .hm-table th:focus{
+    outline: 2px solid rgba(79,70,229,.6);
+    outline-offset: 2px;
 }
 </style>
 @endpush
@@ -197,46 +204,131 @@
 document.addEventListener('DOMContentLoaded', function(){
     if (!window.Chart) return;
 
-    // === Datos del backend (sin cambios) ===
+    // === Datos del backend ===
     const months  = @json($months);
     const users   = @json($topUsers);
     const reports = @json($topReports);
     const heatmap = @json($heatmap);
     const daily   = @json($daily);
 
-    // === Charts (tus opciones base) ===
+    // === Tema Chart.js usando variables Bootstrap/AdminLTE ===
+    const styles = getComputedStyle(document.documentElement);
+    const cPrimary  = styles.getPropertyValue('--bs-primary').trim() || '#4f46e5';
+    const cInfo     = styles.getPropertyValue('--bs-info').trim()    || '#0ea5e9';
+    const cGray700  = '#334155';
+    const gridColor = 'rgba(148,163,184,.35)';
+
+    // Utilidad: degradado para líneas
+    function makeGradient(ctx, from, to){
+        const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height || 300);
+        g.addColorStop(0, from);
+        g.addColorStop(1, to);
+        return g;
+    }
+
+    // Opciones comunes
     const common = {
         responsive:true,
         maintainAspectRatio:false,
-        plugins:{ legend:{ display:false } },
-        scales:{ y:{ beginAtZero:true } }
+        animation: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? false : { duration: 300 },
+        plugins:{
+            legend:{ display:false },
+            tooltip:{ mode:'index', intersect:false, callbacks:{
+                label: (item)=> `${item.dataset.label || 'Accesos'}: ${Number(item.parsed.y ?? item.parsed).toLocaleString()}`
+            }}
+        },
+        scales:{
+            x:{ grid:{ color:gridColor }, ticks:{ color:cGray700, maxRotation:0 } },
+            y:{ grid:{ color:gridColor }, ticks:{ color:cGray700, callback:(v)=> Number(v).toLocaleString() }, beginAtZero:true }
+        }
     };
 
-    new Chart(document.getElementById('chartMonths').getContext('2d'), {
-        type: 'bar',
-        data: { labels: months.map(m => m.label), datasets: [{ label: 'Accesos', data: months.map(m => m.total) }] },
-        options: common
-    });
+    // --- Chart: Accesos por mes (bar) ---
+    (function(){
+        const el = document.getElementById('chartMonths');
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: months.map(m => m.label),
+                datasets: [{
+                    label: 'Accesos',
+                    data: months.map(m => m.total),
+                    backgroundColor: cPrimary,
+                    borderRadius: 6,
+                    maxBarThickness: 36
+                }]
+            },
+            options: common
+        });
+    })();
 
-    new Chart(document.getElementById('chartDaily').getContext('2d'), {
-        type: 'line',
-        data: { labels: daily.map(d => d.date), datasets: [{ label: 'Accesos', data: daily.map(d => d.total), tension: .2 }] },
-        options: common
-    });
+    // --- Chart: Accesos diarios (line) ---
+    (function(){
+        const el = document.getElementById('chartDaily');
+        const ctx = el.getContext('2d');
+        const grad = makeGradient(ctx, cInfo, 'rgba(14,165,233,0.08)');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: daily.map(d => d.date),
+                datasets: [{
+                    label: 'Accesos',
+                    data: daily.map(d => d.total),
+                    borderColor: cInfo,
+                    backgroundColor: grad,
+                    fill: true,
+                    tension: .25,
+                    pointRadius: 2,
+                    pointHoverRadius: 4,
+                    borderWidth: 2
+                }]
+            },
+            options: common
+        });
+    })();
 
-    new Chart(document.getElementById('chartUsers').getContext('2d'), {
-        type: 'bar',
-        data: { labels: users.map(u => u.name), datasets: [{ label: 'Accesos', data: users.map(u => u.total) }] },
-        options: common
-    });
+    // --- Chart: Top usuarios (bar) ---
+    (function(){
+        const el = document.getElementById('chartUsers');
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: users.map(u => u.name),
+                datasets: [{
+                    label: 'Accesos',
+                    data: users.map(u => u.total),
+                    backgroundColor: cPrimary,
+                    borderRadius: 6,
+                    maxBarThickness: 36
+                }]
+            },
+            options: common
+        });
+    })();
 
-    new Chart(document.getElementById('chartReports').getContext('2d'), {
-        type: 'bar',
-        data: { labels: reports.map(r => r.label), datasets: [{ label: 'Accesos', data: reports.map(r => r.total) }] },
-        options: common
-    });
+    // --- Chart: Top reportes (bar) ---
+    (function(){
+        const el = document.getElementById('chartReports');
+        const ctx = el.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: reports.map(r => r.label),
+                datasets: [{
+                    label: 'Accesos',
+                    data: reports.map(r => r.total),
+                    backgroundColor: cPrimary,
+                    borderRadius: 6,
+                    maxBarThickness: 36
+                }]
+            },
+            options: common
+        });
+    })();
 
-    // === Heatmap (sin sticky) con totales + hover ===
+    // === Heatmap con totales + hover/foco accesibles ===
     function bucket(v){
         if(v===0) return 0;
         if(v<=20) return 1;
@@ -278,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function(){
             td.className = 'hm-' + bucket(v);
             td.textContent = fmt(v);
             td.setAttribute('data-col', String(d));
+            td.setAttribute('tabindex', '0'); // foco por teclado
             tr.appendChild(td);
         }
 
@@ -298,45 +391,79 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     if(grandCell) grandCell.textContent = fmt(grandTotal);
 
-    // === Hover fila/columna (incluye columna Total) ===
-    let currentCol = null, currentRowEl = null, currentFocus = null;
+    // Hover/foco fila/columna (incluye Total)
+    let currentCol = null;
 
     function clearHover(){
-        if (table) {
-            table.classList.remove('hover-col-1','hover-col-2','hover-col-3','hover-col-4','hover-col-5','hover-col-6','hover-col-7','hover-col-T');
+        table.classList.remove('hover-col-1','hover-col-2','hover-col-3','hover-col-4','hover-col-5','hover-col-6','hover-col-7','hover-col-T');
+        tbody.querySelectorAll('tr.is-hover-row').forEach(el => el.classList.remove('is-hover-row'));
+        table.querySelectorAll('.is-focus').forEach(el => el.classList.remove('is-focus'));
+        currentCol = null;
+    }
+
+    function setHover(cell){
+        const col = cell.getAttribute('data-col');
+        const row = cell.parentElement;
+
+        clearHover();
+
+        if (row && row.parentElement === tbody) row.classList.add('is-hover-row');
+        if (col && col !== 'H') {
+            table.classList.add('hover-col-' + col);
+            currentCol = col;
         }
-        document.querySelectorAll('.hm-table tr.is-hover-row').forEach(el => el.classList.remove('is-hover-row'));
-        document.querySelectorAll('.hm-table .is-focus').forEach(el => el.classList.remove('is-focus'));
-        currentCol = null; currentRowEl = null; currentFocus = null;
+        cell.classList.add('is-focus');
     }
 
     table.addEventListener('mouseover', (e) => {
         const cell = e.target.closest('td,th');
         if(!cell || !table.contains(cell)) return;
-
-        const col = cell.getAttribute('data-col'); // '1'..'7', 'T', 'H'
-        const row = cell.parentElement;
-
-        clearHover();
-
-        // Marca fila (excepto header/footer cuando corresponda)
-        if (row && row.parentElement === tbody) {
-            row.classList.add('is-hover-row');
-            currentRowEl = row;
-        }
-
-        // Marca columna si es 1..7 o T (Total)
-        if (col && col !== 'H') {
-            table.classList.add('hover-col-' + col);
-            currentCol = col;
-        }
-
-        // Marca foco exacto (celda bajo cursor)
-        cell.classList.add('is-focus');
-        currentFocus = cell;
+        setHover(cell);
     }, {passive:true});
 
     table.addEventListener('mouseleave', clearHover, {passive:true});
+
+    // Accesible: navegación con TAB y flechas
+    table.addEventListener('focusin', (e)=>{
+        const cell = e.target.closest('td,th');
+        if(!cell) return;
+        setHover(cell);
+    });
+    table.addEventListener('keydown', (e)=>{
+        const focus = document.activeElement;
+        if (!focus || focus.tagName !== 'TD') return;
+        const tr = focus.parentElement;
+        const tds = Array.from(tr.querySelectorAll('td'));
+        const colIdx = tds.indexOf(focus);
+
+        // Flechas: izquierda/derecha (horizontal)
+        if (e.key === 'ArrowRight' && colIdx < tds.length - 1) {
+            tds[colIdx + 1].focus(); e.preventDefault();
+        } else if (e.key === 'ArrowLeft' && colIdx > 0) {
+            tds[colIdx - 1].focus(); e.preventDefault();
+        }
+        // Flechas: arriba/abajo (vertical)
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const rowIdx = rows.indexOf(tr);
+            const nextIdx = e.key === 'ArrowDown' ? rowIdx + 1 : rowIdx - 1;
+            if (nextIdx >= 0 && nextIdx < rows.length) {
+                const nextRowTds = Array.from(rows[nextIdx].querySelectorAll('td'));
+                const target = nextRowTds[colIdx] || nextRowTds[0];
+                if (target) { target.focus(); e.preventDefault(); }
+            }
+        }
+    });
+
+    // Re-render pequeño al cambiar tamaño para mantener gradientes y grosores
+    const ro = ('ResizeObserver' in window) ? new ResizeObserver(() => {
+        document.querySelectorAll('#chartMonths,#chartDaily,#chartUsers,#chartReports').forEach(c => {
+            if (c && c.chart && c.chart.resize) c.chart.resize();
+        });
+    }) : null;
+    document.querySelectorAll('#chartMonths,#chartDaily,#chartUsers,#chartReports').forEach(c => {
+        if (ro) ro.observe(c);
+    });
 });
 </script>
 @endpush

@@ -5,10 +5,14 @@
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <h1 class="m-0">Editar reporte</h1>
-        <div class="d-flex gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Volver</a>
-            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary">
-                Ver reporte
+
+        {{-- Acciones de header: ancho fijo + buen espaciado --}}
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
+            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-eq">
+                <i class="fas fa-chart-line me-1"></i> Ver reporte
             </a>
         </div>
     </div>
@@ -16,17 +20,21 @@
 
 @section('content')
     @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <strong>Revisa los errores:</strong>
             <ul class="mb-0">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
 
@@ -157,12 +165,25 @@
 
         </div>
 
-        <div class="card-footer d-flex justify-content-end gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        {{-- Footer: botones iguales y con buen aire --}}
+        <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">Cancelar</a>
+            <button type="submit" class="btn btn-primary btn-eq">Guardar cambios</button>
         </div>
     </form>
 @stop
+
+@push('css')
+<style>
+/* Ancho mínimo uniforme para todos los botones de acción */
+.btn-eq{ min-width: 138px; }
+
+/* En móviles, que los botones puedan ocupar todo el ancho y no queden pegados */
+@media (max-width: 480px){
+    .btn-eq{ flex: 1 1 auto; }
+}
+</style>
+@endpush
 
 @push('js')
 <script>

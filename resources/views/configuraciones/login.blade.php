@@ -1,69 +1,75 @@
-@extends('adminlte::page')
+{{-- ==================================================================== --}}
+{{-- INICIO: NUEVA ESTRUCTURA DE DOS COLUMNAS PARA EL TEMA DEL LOGIN      --}}
+{{-- ==================================================================== --}}
 
-@section('title', 'Login')
+<div class="row">
 
-@section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h1 class="m-0">Configuración de Login</h1>
-        <a href="{{ route('configuraciones.tema') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-palette"></i> Ir a Tema
-        </a>
+    {{-- COLUMNA IZQUIERDA: ACCIONES (SUBIR ARCHIVOS) --}}
+    <div class="col-md-7">
+        <x-adminlte-card title="Archivos a Subir" icon="fas fa-upload text-lightblue">
+            
+            {{-- Campo para el Logo --}}
+            <x-adminlte-input-file name="login_logo" label="Logo de login (PNG/JPG/SVG)" placeholder="Elegir un archivo..." accept="image/*">
+                <x-slot name="prependSlot">
+                    <div class="input-group-text bg-lightblue">
+                        <i class="fas fa-image"></i>
+                    </div>
+                </x-slot>
+            </x-adminlte-input-file>
+            
+            <hr>
+
+            {{-- Campo para la Imagen de Fondo --}}
+            <x-adminlte-input-file name="login_bg" label="Imagen de fondo (pantalla completa)" placeholder="Elegir un archivo..." accept="image/jpeg,image/png">
+                <x-slot name="prependSlot">
+                    <div class="input-group-text bg-lightblue">
+                        <i class="fas fa-image"></i>
+                    </div>
+                </x-slot>
+                <x-slot name="bottom">
+                    <small class="text-muted">Se ajustará para cubrir toda la pantalla en la página de login.</small>
+                </x-slot>
+            </x-adminlte-input-file>
+
+        </x-adminlte-card>
     </div>
-@stop
 
-@section('content')
-    @if(session('success'))
-        <x-adminlte-alert theme="success" title="OK" dismissable>
-            {{ session('success') }}
-        </x-adminlte-alert>
-    @endif
-    @if ($errors->any())
-        <x-adminlte-alert theme="danger" title="Errores de validación" dismissable>
-            <ul class="mb-0 ps-3">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </x-adminlte-alert>
-    @endif
+    {{-- COLUMNA DERECHA: VISTAS PREVIA --}}
+    <div class="col-md-5 d-flex">
+        <div class="w-100">
+            <x-adminlte-card title="Vistas Previa Actuales" icon="fas fa-eye text-lightblue" class="h-100">
 
-    <form method="POST" action="{{ route('configuraciones.update', $config->id) }}" enctype="multipart/form-data" novalidate>
-        @csrf
-        @method('PUT')
-        <input type="hidden" name="return_to" value="{{ route('configuraciones.login') }}">
-
-        <div class="card">
-            <div class="card-header">Logos e imagen de fondo</div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Logo de login (PNG/JPG/SVG)</label>
-                        <input type="file" name="login_logo" accept="image/png,image/jpeg,image/svg+xml" class="form-control @error('login_logo') is-invalid @enderror">
-                        @error('login_logo')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                        @if($config->login_logo_path)
-                            <div class="mt-2">
-                                <small class="text-muted d-block">Actual:</small>
-                                <img src="{{ Storage::disk('public')->url($config->login_logo_path) }}" alt="Login Logo" style="max-height:60px">
-                            </div>
-                        @endif
+                {{-- Vista Previa del Logo --}}
+                @if($config->login_logo_path)
+                    <div>
+                        <p class="mb-1 text-secondary">Logo de Login:</p>
+                        <div class="p-2 border rounded text-center bg-light">
+                             <img src="{{ Storage::disk('public')->url($config->login_logo_path) }}" alt="Login Logo" style="max-height:90px; max-width: 100%;">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Imagen de fondo (pantalla completa)</label>
-                        <input type="file" name="login_bg" accept="image/png,image/jpeg" class="form-control @error('login_bg') is-invalid @enderror">
-                        @error('login_bg')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                        @if($config->login_bg_path)
-                            <div class="mt-2">
-                                <small class="text-muted d-block">Vista previa:</small>
-                                <img class="border" src="{{ Storage::disk('public')->url($config->login_bg_path) }}" alt="Login BG" style="max-width:100%; max-height:120px; object-fit:cover;">
-                            </div>
-                        @endif
+                @else
+                    <div class="text-muted text-center py-5">No hay un logo de login cargado.</div>
+                @endif
+
+                <hr class="@if(!$config->login_logo_path || !$config->login_bg_path) d-none @endif">
+
+                {{-- Vista Previa del Fondo --}}
+                @if($config->login_bg_path)
+                    <div class="mt-2">
+                        <p class="mb-1 text-secondary">Imagen de Fondo:</p>
+                        <div class="border rounded">
+                            <img src="{{ Storage::disk('public')->url($config->login_bg_path) }}" alt="Login BG" style="width: 100%; height: 120px; object-fit: cover;">
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="card-footer text-right">
-                <button type="submit" class="btn btn-primary">Guardar cambios</button>
-            </div>
+                @else
+                    <div class="text-muted text-center py-5 @if($config->login_logo_path) border-top mt-3 pt-3 @endif">No hay una imagen de fondo cargada.</div>
+                @endif
+
+            </x-adminlte-card>
         </div>
-    </form>
-@stop
+    </div>
+</div>
 
+{{-- ==================================================================== --}}
+{{-- FIN: NUEVA ESTRUCTURA                                                --}}
+{{-- ==================================================================== --}}

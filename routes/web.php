@@ -43,6 +43,9 @@ Route::get('/dashboard', function () {
 // Grupo interno protegido
 Route::middleware(['auth'])->group(function () {
 
+    // Forzar que {usuario} sea numérico para evitar capturar strings como "bulk-destroy"
+    Route::pattern('usuario', '[0-9]+');
+
     // Menú principal
     Route::view('/aplicaciones', 'apps.index')->name('apps.index');
 
@@ -72,6 +75,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/{report_uuid}', [ReportViewerController::class, 'show'])
         ->whereUuid('report_uuid')
         ->name('reports.viewer');
+
+    // ✅ Eliminación masiva de usuarios (solo admin) — DEFINIR PRIMERO
+    Route::delete('/usuarios/bulk-destroy', [UsersController::class, 'bulkDestroy'])
+        ->middleware('role:admin')
+        ->name('users.bulk-destroy');
 
     // ABM Usuarios (solo admin)
     Route::resource('usuarios', UsersController::class)
@@ -183,10 +191,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('api.audit.store');
 
     // ✅ Rutas de perfil (Breeze/propio).
-    //    Aplicamos middleware para BLOQUEAR cambio de password a usuarios Entra:
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])
-        ->middleware('no-external-password') // <- importante
+        ->middleware('no-external-password')
         ->name('profile.update');
     Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -251,12 +258,10 @@ Route::post('/theme', function (Request $request) {
         ? $requested
         : ($current === 'dark' ? 'light' : 'dark');
 
-    // Persist per user when available
     if ($request->user()) {
         $request->user()->forceFill(['theme' => $to])->save();
     }
 
-    // Keep session in sync for immediate effect
     session(['theme' => $to]);
     return back();
 })->middleware('auth')->name('theme.switch');

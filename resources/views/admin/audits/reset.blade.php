@@ -1,61 +1,85 @@
 @extends('adminlte::page')
 
-@section('title', 'Resetear auditoría')
+@section('title', 'Resetear Auditoría')
 
 @section('content_header')
-    <div class="d-flex justify-content-between align-items-center">
-        <h1 class="h5 mb-0">Resetear auditoría</h1>
-        <a href="{{ route('auditoria.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-chart-line mr-1"></i> Métricas de uso
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="m-0 text-dark">Resetear Auditoría</h1>
+        <a href="{{ route('auditoria.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-chart-line mr-1"></i> Métricas de Uso
         </a>
     </div>
 @stop
 
 @section('content')
+    {{-- Alertas con el componente de AdminLTE --}}
     @if (session('status'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('status') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
+        <x-adminlte-alert theme="success" title="Éxito" dismissable>
+            {{ session('status') }}
+        </x-adminlte-alert>
     @endif
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-times-circle mr-2"></i>{{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
+        <x-adminlte-alert theme="danger" title="Error" dismissable>
+            {{ session('error') }}
+        </x-adminlte-alert>
     @endif
 
-    <div class="card">
-        <div class="card-header">
-            <strong>Confirmación de borrado total</strong>
-        </div>
-        <div class="card-body">
-            <p class="mb-3">
+    <form method="post" 
+          action="{{ route('admin.audit.reset.run') }}" 
+          onsubmit="return confirm('¿Seguro que deseas BORRAR TODO? Esta acción no se puede deshacer.');">
+        @csrf
+
+        <x-adminlte-card title="⚠️ Confirmación de Borrado Total" icon="fas fa-exclamation-triangle"
+                         theme="danger" theme-mode="outline" class="mt-3">
+            
+            <p class="lead">
                 Esta acción <strong>eliminará todos los registros</strong> de la tabla <code>audits</code> y
-                <strong>reiniciará</strong> el contador de IDs. No se puede deshacer.
+                <strong>reiniciará</strong> el contador de IDs. <span class="text-danger font-weight-bold">No se puede deshacer.</span>
             </p>
 
-            <ul class="list-unstyled mb-3">
+            {{-- Eliminamos la clase "small" para que el texto sea más grande --}}
+            <ul class="list-unstyled text-muted my-4">
                 <li><strong>Registros actuales:</strong> {{ number_format($total) }}</li>
                 <li><strong>Primer evento:</strong> {{ $first_at ?? '—' }}</li>
                 <li><strong>Último evento:</strong> {{ $last_at ?? '—' }}</li>
             </ul>
 
-            <form method="post" action="{{ route('admin.audit.reset.run') }}" onsubmit="return confirm('¿Seguro que deseas BORRAR TODO? Esta acción no se puede deshacer.');">
-                @csrf
+            <x-adminlte-input name="confirm" label="Escribe RESET para confirmar" placeholder="RESET" required>
+                <x-slot name="prependSlot"><div class="input-group-text text-danger"><i class="fas fa-keyboard"></i></div></x-slot>
+                <x-slot name="bottom"><small class="text-muted">Debes escribir la palabra exactamente como se muestra.</small></x-slot>
+            </x-adminlte-input>
 
-                <div class="form-group">
-                    <label for="confirm">Escribe <code>RESET</code> para confirmar</label>
-                    <input id="confirm" name="confirm" type="text" class="form-control" placeholder="RESET" required>
-                    <small class="form-text text-muted">
-                        Debes escribir exactamente <strong>RESET</strong>.
-                    </small>
+        </x-adminlte-card>
+
+        {{-- Tarjeta de acciones con los botones centrados y de igual tamaño --}}
+        <x-adminlte-card theme="primary" theme-mode="outline">
+            <div class="d-flex justify-content-center">
+                <div class="d-flex" style="gap: 0.75rem; width: 320px;">
+                    <x-adminlte-button type="submit" theme="danger" label="Borrar Todo" icon="fas fa-trash-alt" class="btn-eq"/>
+                    <x-adminlte-button :href="route('auditoria.index')" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
                 </div>
+            </div>
+        </x-adminlte-card>
 
-                <button type="submit" class="btn btn-danger">
-                    <i class="fas fa-trash-alt mr-1"></i> Borrar todos los datos de auditoría
-                </button>
-            </form>
-        </div>
-    </div>
+    </form>
 @stop
+
+@push('css')
+<style>
+    /* ================================== */
+    /* CSS PARA TEXTOS MÁS GRANDES      */
+    /* ================================== */
+    .card-body .lead {
+        font-size: 1.15rem; /* Párrafo principal */
+        font-weight: 400;
+    }
+    .card-body ul li {
+        font-size: 1rem; /* Lista de estadísticas */
+        padding-bottom: 0.25rem;
+    }
+    #confirm-group label,
+    #confirm-group .form-text {
+        font-size: 1rem; /* Etiqueta y texto de ayuda del input */
+    }
+</style>
+@endpush

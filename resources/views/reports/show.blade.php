@@ -45,16 +45,16 @@
         @endif
     </h1>
     <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-arrow-left mr-1"></i> Volver
+        <i class="fas fa-arrow-left me-1"></i> Volver
     </a>
 </div>
 @stop
 
 @section('content')
     @if (session('status'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('status') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
 
@@ -67,8 +67,8 @@
     @endphp
 
     @if (!$hasCritical)
-        <div class="alert alert-danger">
-            <h5 class="mb-2"><i class="fas fa-times-circle mr-2"></i>No se pudo preparar el embed del reporte.</h5>
+        <div class="alert alert-danger" role="alert">
+            <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>No se pudo preparar el embed del reporte.</h5>
             <ul class="mb-2">
                 <li>embedUrl: {!! $embedUrl ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
                 <li>accessToken: {!! $accessToken ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
@@ -83,14 +83,14 @@
     @endif
 
     <div class="pbi-wrapper">
-        <div id="reportContainer">
+        <div id="reportContainer" aria-live="polite" aria-busy="true">
             <div id="reportLoading">
                 <div class="text-center">
-                    <div class="spinner-border" role="status"></div>
+                    <div class="spinner-border" role="status" aria-label="Cargando"></div>
                     <div class="mt-2">Cargando reporte...</div>
                 </div>
             </div>
-            <div id="reportError" class="alert alert-danger d-none"></div>
+            <div id="reportError" class="alert alert-danger d-none" role="alert"></div>
         </div>
 
         @if(!empty($report->description))
@@ -127,8 +127,9 @@
     function showError(msg) {
         if (!errorBox) return;
         errorBox.classList.remove('d-none');
-        errorBox.innerText = typeof msg === 'string' ? msg : (msg?.message ?? JSON.stringify(msg));
+        errorBox.textContent = (typeof msg === 'string') ? msg : (msg?.message ?? JSON.stringify(msg));
         if (loading) loading.remove();
+        container?.setAttribute('aria-busy', 'false');
     }
 
     if (!EMBED.embedUrl || !EMBED.accessToken || !EMBED.reportId) {
@@ -140,18 +141,18 @@
     }
 
     let currentHeight = 0;
-    function px(n){ return (typeof n === 'number' && isFinite(n)) ? n : 0; }
-    function queryH(sel) {
+    const px = (n) => (typeof n === 'number' && isFinite(n)) ? n : 0;
+    const queryH = (sel) => {
         const el = document.querySelector(sel);
         if (!el) return 0;
         const r = el.getBoundingClientRect();
         return px(r.height);
-    }
+    };
     function fitContainerHeight() {
         const vh = window.innerHeight || document.documentElement.clientHeight || 800;
-        const mainHeaderH   = queryH('.main-header');
-        const contentHeaderH= queryH('.content-header');
-        const mainFooterH   = queryH('.main-footer');
+        const mainHeaderH    = queryH('.main-header');
+        const contentHeaderH = queryH('.content-header');
+        const mainFooterH    = queryH('.main-footer');
         const contentTopPad = 8, contentBotPad = 8;
         let h = vh - mainHeaderH - contentHeaderH - mainFooterH - contentTopPad - contentBotPad;
         const MIN = 460; if (!isFinite(h) || h < MIN) h = MIN;
@@ -161,22 +162,21 @@
             try { if (window.report?.resize) window.report.resize(); } catch (_) {}
         }
     }
-    function scheduleFit(){ requestAnimationFrame(fitContainerHeight); }
+    const scheduleFit = () => requestAnimationFrame(fitContainerHeight);
 
     if ('ResizeObserver' in window) {
         const ro = new ResizeObserver(scheduleFit);
-        const hdr = document.querySelector('.main-header');
-        const chd = document.querySelector('.content-header');
-        const ftr = document.querySelector('.main-footer');
-        if (hdr) ro.observe(hdr); if (chd) ro.observe(chd); if (ftr) ro.observe(ftr);
+        ['.main-header', '.content-header', '.main-footer'].forEach(sel=>{
+            const el = document.querySelector(sel);
+            if (el) ro.observe(el);
+        });
     }
-    window.addEventListener('load',     scheduleFit, { once: true });
-    window.addEventListener('resize',   scheduleFit);
+    window.addEventListener('load', scheduleFit, { once: true });
+    window.addEventListener('resize', scheduleFit);
     window.addEventListener('orientationchange', scheduleFit);
     document.addEventListener('transitionend', (e) => {
-        if (e.target?.classList && (e.target.classList.contains('main-sidebar') || e.target.classList.contains('content-wrapper'))) {
-            scheduleFit();
-        }
+        const c = e.target?.classList;
+        if (c && (c.contains('main-sidebar') || c.contains('content-wrapper'))) scheduleFit();
     });
 
     try { powerbi.reset(container); } catch (_) {}
@@ -214,19 +214,18 @@
         postAudit('error', { error_message: 'load_timeout_10s' });
     }, LOAD_TIMEOUT_MS);
 
-    // ====== 🔧 CAMBIO CLAVE: registramos SOLO 1 "view" al estar cargado ======
+    // ====== Solo 1 "view" al cargar ======
     report.on('loaded', async () => {
         loaded = true;
         clearTimeout(loadTimer);
         if (loading) loading.remove();
+        container?.setAttribute('aria-busy', 'false');
         scheduleFit();
 
-        // Antes: postAudit('loaded', ...)   -> mapeaba a 'view' y duplicaba con 'open'
-        // Ahora: enviamos DIRECTO 'view' y ELIMINAMOS el evento 'open'.
         postAudit('view', await snapshotState('after_loaded'));
     });
 
-    // Render (no cuenta como acceso)
+    // Render (telemetría auxiliar)
     report.on('rendered', async () => {
         scheduleFit();
         postAudit('render', await snapshotState('after_rendered'));
@@ -239,7 +238,7 @@
         postAudit('error', { error_message: String(msg) });
     });
 
-    // Otros eventos (no cuentan como accesos)
+    // Otros eventos
     report.on('pageChanged', async (ev) => {
         const page = ev?.detail?.newPage || ev?.detail;
         const pageName = page?.name || page?.displayName || null;
@@ -384,10 +383,10 @@
         return out;
     }
 
-    // ❌ Eliminado: NO mandamos 'open' al cargar la página (duplicaba el acceso)
+    // No mandamos 'open' (evita doble acceso)
     // window.addEventListener('load', () => postAudit('open'), { once: true });
 
-    // 'close' sigue siendo útil para seguimiento, pero NO cuenta como acceso
+    // 'close' informativo
     window.addEventListener('beforeunload', () => {
         try {
             const payload = {

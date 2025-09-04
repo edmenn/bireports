@@ -1,0 +1,148 @@
+/* ===========================
+   Estilos personalizados PowerBIDash
+   =========================== */
+
+/* Fuente global */
+body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size: 0.95rem;
+}
+
+/* Paleta personalizada */
+:root {
+    --bs-primary: #4f46e5;    /* Azul violeta */
+    --bs-secondary: #64748b;  /* Gris */
+    --bs-success: #22c55e;
+    --bs-danger: #ef4444;
+    --bs-warning: #f59e0b;
+    --bs-info: #0ea5e9;
+
+    --navbar-grad-start: #1e293b;
+    --navbar-grad-end: #0f172a;
+    --sidebar-bg: #0b1220;
+}
+
+/* NAVBAR moderno */
+.main-header {
+    background: linear-gradient(135deg, var(--navbar-grad-start), var(--navbar-grad-end));
+    color: #e2e8f0;
+}
+.main-header .nav-link { color: #e2e8f0 !important; }
+.main-header .input-group { background: rgba(255, 255, 255, .08); border-radius: 12px; }
+.main-header .form-control { color: #f8fafc; }
+
+/* SIDEBAR moderno */
+.main-sidebar { background: var(--sidebar-bg); }
+.main-sidebar .brand-text { color: #e2e8f0 !important; font-weight: 700; }
+.nav-sidebar .nav-link {
+    color: #94a3b8; border-radius: 10px;
+    transition: background .2s ease, color .2s ease;
+}
+.nav-sidebar .nav-link.active { background: var(--bs-primary); color: #fff; }
+.nav-sidebar .nav-link:hover { background: rgba(79, 70, 229, 0.3); color: #fff; }
+
+/* CARDS modernas */
+.card {
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, .15);
+    box-shadow: 0 4px 24px rgba(2, 6, 23, .08);
+}
+.card .card-title { font-weight: 600; }
+
+/* SMALL-BOX (KPIs) */
+.small-box { border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
+.small-box .icon { opacity: 0.4; font-size: 3rem; top: 10px; right: 10px; }
+
+/* TABLAS modernas */
+.table thead th {
+    color: #475569; font-weight: 600;
+    border-bottom: 2px solid rgba(148, 163, 184, .3);
+}
+.table tbody td { border-color: rgba(148, 163, 184, .15) !important; }
+
+/* BADGES suaves (mantengo tu paleta) */
+.badge.bg-success { background-color: #dcfce7 !important; color: #166534 !important; }
+.badge.bg-warning { background-color: #fef9c3 !important; color: #854d0e !important; }
+.badge.bg-danger  { background-color: #fee2e2 !important; color: #991b1b !important; }
+.badge.bg-secondary{ background-color: #e2e8f0 !important; color: #334155 !important; }
+
+/* TIMELINE ajustes */
+.timeline > div > .timeline-item {
+    border-radius: 12px; box-shadow: 0 2px 12px rgba(2, 6, 23, .06);
+}
+
+/* FOOTER */
+.main-footer {
+    background: linear-gradient(90deg, var(--navbar-grad-start), var(--navbar-grad-end));
+    color: #e2e8f0;
+}
+.main-footer .fw-semibold { color: #cbd5e1; }
+
+/* Botón outline secundario */
+.btn-outline-secondary { border-color: #cbd5e1; color: #475569; }
+.btn-outline-secondary:hover { background-color: #f1f5f9; color: #1e293b; }
+
+/* =========================================================
+   BOTONES — UNIFORME + ESPACIADO CORRECTO EN TODAS LAS VISTAS
+   ========================================================= */
+
+/* Ancho mínimo y estética consistente */
+.btn{
+    min-width: 138px;
+    border-radius: 0.5rem;
+    margin: 0 0 .5rem 0;   /* aire vertical por si envuelven (wrap) */
+}
+
+/* Fallback de separación cuando NO hay contenedor con gap */
+.btn + .btn { margin-left: .5rem; }
+
+/* Contenedores típicos de acciones con gap real y wrap */
+.card-header .d-flex,
+.content-header .d-flex,
+.content_header .d-flex, /* por si usas este nombre en Blade */
+.card-footer,
+.btn-toolbar,
+.btn-row,        /* utilidad opcional para quien quiera usarla en Blade */
+.action-bar {    /* utilidad opcional para quien quiera usarla en Blade */
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;             /* separación horizontal/vertical uniforme */
+}
+
+/* Asegurar que las .card-footer no "aplasten" el gap */
+.card-footer .btn { margin: 0; }  /* evitamos doble: gap + margin */
+
+/* Grupos y toolbars: separar botones sin perder el estilo del grupo */
+.btn-group,
+.btn-toolbar {
+    gap: .5rem;
+}
+.btn-group > .btn { margin: 0; }   /* evita doble espacio dentro del grupo */
+
+/* Botones de igual ancho (cuando quieras forzarlo en vistas puntuales) */
+.btn-eq { flex: 1; /* Esto asegura que ambos botones tengan exactamente el mismo ancho */ }
+
+/* En móviles, que los botones puedan ocupar todo el ancho si hace falta */
+@media (max-width: 480px){
+    .card-header .d-flex,
+    .content-header .d-flex,
+    .content_header .d-flex,
+    .card-footer,
+    .btn-toolbar,
+    .action-bar,
+    .btn-row { gap: .5rem; }
+    .btn { flex: 1 1 auto; }
+}
+
+/* =========================================================
+   COMPAT: MAPEO MR/ML (BS4) → MÁRGENES LÓGICOS EN BS5
+   ========================================================= */
+
+.mr-1 { margin-inline-end: .25rem !important; }
+.mr-2 { margin-inline-end: .5rem !important;  }
+.mr-3 { margin-inline-end: 1rem !important;   }
+.ml-1 { margin-inline-start: .25rem !important; }
+.ml-2 { margin-inline-start: .5rem !important;  }
+.ml-3 { margin-inline-start: 1rem !important;   }
+
+/* También iconos con “me-*” actuales siguen funcionando y no chocan */

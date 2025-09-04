@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Services\MicrosoftGraphService;
 
@@ -128,7 +129,6 @@ class UsersController extends Controller
 
             $user = User::query()->where('email', $email)->first();
             if ($user) {
-                // opcional: actualizar nombre si está vacío
                 if (!$user->name && $name) {
                     $user->name = $name;
                     $user->save();
@@ -147,5 +147,52 @@ class UsersController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', $created > 0 ? ("Se importaron {$created} usuario(s).") : 'No se crearon usuarios nuevos.');
+    }
+
+    /**
+     * Eliminación masiva de usuarios (excepto el propio).
+     */
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids'   => ['required','array','min:1'],
+            'ids.*' => ['integer','distinct','exists:users,id'],
+        ]);
+
+        $selfId = (int) (Auth::id() ?? 0);
+
+        $ids = collect($data['ids'])
+            ->map(static fn ($v) => (int) $v)
+            ->unique()
+            ->reject(static fn (int $id) => $id === $selfId) // evitar auto-borrado
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return redirect()->route('users.index')
+                ->with('warning', 'No se eliminaron usuarios.');
+        }
+
+        $deleted = 0;
+        $errors  = 0;
+
+        $users = User::whereIn('id', $ids)->get();
+        foreach ($users as $u) {
+            try {
+                $u->delete();
+                $deleted++;
+            } catch (\Throwable $e) {
+                $errors++;
+            }
+        }
+
+        $resp = redirect()->route('users.index');
+        if ($deleted > 0) { $resp->with('success', "Se eliminaron {$deleted} usuario(s)."); }
+        if ($errors  > 0) { $resp->with('warning', "No se pudieron eliminar {$errors} usuario(s)."); }
+
+        if (in_array($selfId, $request->input('ids', []), true)) {
+            $resp->with('warning', 'Tu propio usuario no puede eliminarse.');
+        }
+
+        return $resp;
     }
 }

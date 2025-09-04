@@ -34,7 +34,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'logo' => '<b>PowerBI</b>Dash',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png', // cambiá por tu logo cuando lo tengas
+    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -83,7 +83,7 @@ return [
     'usermenu_header_class' => 'bg-primary',
     'usermenu_image' => false,
     'usermenu_desc' => false,
-    'usermenu_profile_url' => true, // muestra enlace al perfil
+    'usermenu_profile_url' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -94,7 +94,7 @@ return [
     'layout_boxed' => null,
     'layout_fixed_sidebar' => null,
     'layout_fixed_navbar' => null,
-    'layout_fixed_footer' => null,
+    'layout_fixed_footer' => false,
     'layout_dark_mode' => null,
 
     /*
@@ -156,19 +156,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | URLs
+    | URLs (usamos nombres de rutas)
     |--------------------------------------------------------------------------
-    |
-    | Usamos nombres de rutas (Breeze/AdminLTE).
     */
-    'use_route_url' => true,                 // <- usar nombres de rutas
-    'dashboard_url' => 'dashboards.index',   // enlace del logo/breadcrumb
+    'use_route_url' => true,
+    'dashboard_url' => 'dashboards.index',
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
     'password_reset_url' => 'password.request',
     'password_email_url' => 'password.email',
-    'profile_url' => 'profile.edit',         // abre la página de perfil de Breeze
+    'profile_url' => 'profile.edit',
     'disable_darkmode_routes' => false,
 
     /*
@@ -182,11 +180,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Ítems de menú (navbar + sidebar)
+    | Ítems de menú
     |--------------------------------------------------------------------------
     */
     'menu' => [
-        // Navbar (arriba)
         [
             'type' => 'navbar-search',
             'text' => 'Buscar',
@@ -197,136 +194,38 @@ return [
             'icon'         => 'fas fa-language',
             'topnav_right' => true,
             'submenu'      => [
-                [   
-                    'text' => 'Español',
-                    'url'  => 'lang/es',
-                    'icon' => 'far fa-flag',
-                ],
-                [
-                    'text' => 'Portugués',
-                    'url'  => 'lang/pt',
-                    'icon' => 'far fa-flag',
-                ],
+                [ 'text' => 'Español',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
+                [ 'text' => 'Portugués', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],
             ],
         ],
-            [
-                'type' => 'fullscreen-widget',
-                'topnav_right' => true,
-        ],
+        [ 'type' => 'fullscreen-widget', 'topnav_right' => true ],
 
-        // Búsqueda en el sidebar
-        [
-            'type' => 'sidebar-menu-search',
-            'text' => 'Buscar',
-            'can'  => 'menu.reports_index',
-        ],
-        // Entrada removida
+        [ 'type' => 'sidebar-menu-search', 'text' => 'Buscar', 'can'  => 'menu.reports_index' ],
 
-        // --- Menú lateral en español ---
         ['header' => 'Mi espacio', 'can' => 'menu.portal'],
-        [
-            'text'  => 'Inicio',
-            'icon'  => 'fas fa-home',
-            'route' => 'portal.index',
-            'can'   => 'menu.portal',
-        ],
-        [
-            'text'  => 'Favoritos',
-            'icon'  => 'fas fa-star',
-            'route' => 'portal.favoritos',
-            'can'   => 'menu.portal',
-        ],
-        [
-            'text'  => 'Más accedidos',
-            'icon'  => 'fas fa-fire',
-            'route' => 'portal.mas',
-            'can'   => 'menu.portal',
-        ],
-        [
-            'text'  => 'Mis reportes',
-            'icon'  => 'fas fa-chart-line',
-            'route' => 'portal.reportes',
-            'can'   => 'menu.portal',
-        ],
+        [ 'text'=>'Inicio',       'icon'=>'fas fa-home',         'route'=>'portal.index',    'can'=>'menu.portal' ],
+        [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',         'route'=>'portal.favoritos','can'=>'menu.portal' ],
+        [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',         'route'=>'portal.mas',      'can'=>'menu.portal' ],
+        [ 'text'=>'Mis reportes', 'icon'=>'fas fa-chart-line',   'route'=>'portal.reportes', 'can'=>'menu.portal' ],
 
         ['header' => 'Power BI', 'can' => 'menu.reports_index'],
-
-        [
-            'text'  => 'Informes',
-            'icon'  => 'fas fa-chart-bar',
-            'route' => 'reports.index',
-            'can'   => 'menu.reports_index',
-        ],
-        // (Conjuntos de datos eliminado)
-        [
-            'text'  => 'Aplicaciones',
-            'icon'  => 'fas fa-th-large',
-            'route' => 'apps.index',       // la crearemos luego
-            'can'   => 'menu.apps',
-        ],
-        [
-            'text'  => 'Espacios de trabajo',
-            'icon'  => 'fas fa-project-diagram',
-            'route' => 'workspaces.index', // la crearemos luego
-            'can'   => 'menu.workspaces',
-        ],
-        [
-            'text'  => 'Capacidades',
-            'icon'  => 'fas fa-cogs',
-            'route' => 'capacities.index', // la crearemos luego
-            'can'   => 'menu.capacities',
-        ],
+        [ 'text'=>'Informes', 'icon'=>'fas fa-chart-bar', 'route'=>'reports.index', 'can'=>'menu.reports_index' ],
+        [ 'text'=>'Aplicaciones', 'icon'=>'fas fa-th-large', 'route'=>'apps.index', 'can'=>'menu.apps' ],
+        [ 'text'=>'Espacios de trabajo','icon'=>'fas fa-project-diagram','route'=>'workspaces.index','can'=>'menu.workspaces'],
+        [ 'text'=>'Capacidades', 'icon'=>'fas fa-cogs', 'route'=>'capacities.index','can'=>'menu.capacities'],
 
         ['header' => 'Organización', 'can' => 'menu.users'],
-        // Entrada removida
-        [
-            'text'  => 'Usuarios',
-            'icon'  => 'fas fa-users',
-            'route' => 'users.index',      // opcional: si agregamos UsersController@index
-            'can'   => 'menu.users',
-        ],
-        [
-            'text'  => 'Grupos',
-            'icon'  => 'fas fa-user-friends',
-            'route' => 'grupos.index',     // la crearemos luego
-            'can'   => 'menu.groups',
-        ],
-        [
-            'text'  => 'Carpetas',
-            'icon'  => 'fas fa-folder',
-            'route' => 'folders.index',    // la crearemos luego
-            'can'   => 'menu.folders',
-        ],
+        [ 'text'=>'Usuarios', 'icon'=>'fas fa-users', 'route'=>'users.index', 'can'=>'menu.users' ],
+        [ 'text'=>'Grupos',   'icon'=>'fas fa-user-friends', 'route'=>'grupos.index', 'can'=>'menu.groups' ],
+        [ 'text'=>'Carpetas', 'icon'=>'fas fa-folder', 'route'=>'folders.index', 'can'=>'menu.folders' ],
 
         ['header' => 'Auditoría', 'can' => 'menu.auditoria'],
-        [
-            'text'  => 'Métricas de uso',
-            'icon'  => 'fas fa-chart-line',
-            'route' => 'auditoria.index',  // la crearemos luego
-            'can'   => 'menu.auditoria',
-        ],
-        [
-            'text'  => 'Reiniciar auditoría',
-            'icon'  => 'fas fa-broom',
-            'route' => 'admin.audit.reset.show',
-            'can'   => 'menu.auditoria',
-        ],
-
-        // Eliminado: Diagnóstico de auditoría
+        [ 'text'=>'Métricas de uso', 'icon'=>'fas fa-chart-line', 'route'=>'auditoria.index', 'can'=>'menu.auditoria' ],
+        [ 'text'=>'Reiniciar auditoría','icon'=>'fas fa-broom','route'=>'admin.audit.reset.show','can'=>'menu.auditoria' ],
 
         ['header' => 'Configuraciones', 'can' => 'menu.configuraciones'],
-        [
-            'text'  => 'Parámetros',
-            'icon'  => 'fas fa-cogs',
-            'route' => 'configuraciones.index',
-            'can'   => 'menu.configuraciones',
-        ],
-        [
-            'text'   => 'Tema',
-            'icon'   => 'fas fa-paint-brush',
-            'route'  => 'configuraciones.tema',
-            'can'    => 'menu.configuraciones',
-        ],
+        [ 'text'=>'Parámetros', 'icon'=>'fas fa-cogs', 'route'=>'configuraciones.index', 'can'=>'menu.configuraciones' ],
+        [ 'text'=>'Tema',       'icon'=>'fas fa-paint-brush', 'route'=>'configuraciones.tema', 'can'=>'menu.configuraciones' ],
     ],
 
     /*
@@ -348,7 +247,7 @@ return [
     |--------------------------------------------------------------------------
     | Plugins
     |--------------------------------------------------------------------------
-    | (dejamos en false por ahora; los activamos cuando los usemos)
+    | (activamos nuestro CSS global)
     */
     'plugins' => [
         'Datatables' => [
@@ -385,7 +284,8 @@ return [
                 ['type' => 'js',  'asset' => false, 'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js'],
             ],
         ],
-        // Theme overrides (optional CSS per theme)
+
+        // Theme overrides (opcional)
         'ThemeLight' => [
             'active' => false,
             'files' => [
@@ -396,6 +296,14 @@ return [
             'active' => false,
             'files' => [
                 ['type' => 'css', 'asset' => true, 'location' => 'css/theme-dark.css'],
+            ],
+        ],
+
+        // === NUEVO: CSS global para TODAS LAS VISTAS ===
+        'AppTheme' => [
+            'active' => true,
+            'files' => [
+                ['type' => 'css', 'asset' => true, 'location' => 'css/custom.css'],
             ],
         ],
     ],
