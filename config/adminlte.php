@@ -238,6 +238,7 @@ return [
                 [ 'text'=>'Usuarios', 'icon'=>'fas fa-users',         'route'=>'users.index',   'can'=>'menu.users' ],
                 [ 'text'=>'Grupos',   'icon'=>'fas fa-user-friends',  'route'=>'grupos.index',  'can'=>'menu.groups' ],
                 [ 'text'=>'Carpetas', 'icon'=>'fas fa-folder',        'route'=>'folders.index', 'can'=>'menu.folders' ],
+                [ 'text'=>'Perfiles y Accesos', 'icon'=>'fas fa-user-shield', 'route'=>'roles.index', 'can'=>'menu.users' ],
             ],
         ],
 

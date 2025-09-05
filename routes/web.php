@@ -19,6 +19,7 @@ use App\Http\Controllers\ReportViewerController;
 use App\Http\Controllers\AuditAnalyticsController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\FoldersController;
 use App\Http\Controllers\UserPortalController;
@@ -101,6 +102,21 @@ Route::middleware(['auth'])->group(function () {
             'update'  => 'users.update',
             'destroy' => 'users.destroy',
             'show'    => 'users.show',
+        ])
+        ->except(['show']);
+
+    // ABM Perfiles/Roles (solo admin)
+    Route::resource('perfiles', RoleController::class)
+        ->middleware('role:admin')
+        ->parameters(['perfiles' => 'rol'])
+        ->names([
+            'index'   => 'roles.index',
+            'create'  => 'roles.create',
+            'store'   => 'roles.store',
+            'edit'    => 'roles.edit',
+            'update'  => 'roles.update',
+            'destroy' => 'roles.destroy',
+            'show'    => 'roles.show',
         ])
         ->except(['show']);
 

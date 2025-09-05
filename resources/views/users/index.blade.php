@@ -109,17 +109,27 @@
                             </td>
                             <td class="py-2 text-center role-col">
                                 @if($rolesList->isEmpty())
-                                    <span class="text-muted">—</span>
+                                    <span class="text-muted">-</span>
                                 @else
-                                    @foreach($rolesList as $r)
+                                    @foreach($u->roles as $role)
                                         @php
-                                            $key = strtolower($r);
-                                            $badgeClass = 'badge-role';
-                                            if ($key === 'admin')      $badgeClass = 'badge-admin';
-                                            elseif ($key === 'editor') $badgeClass = 'badge-editor';
-                                            elseif ($key === 'usuario')$badgeClass = 'badge-usuario';
+                                            $key = strtolower($role->name);
+                                            $style = '';
+                                            if (!empty($role->badge_bg) || !empty($role->badge_text)) {
+                                                $bg = $role->badge_bg ?: '#eef2ff';
+                                                $tx = $role->badge_text ?: '#4338ca';
+                                                $style = "background: {$bg}; color: {$tx}; border:1px solid {$tx}; font-weight:700;";
+                                            }
+                                            if ($style === '') {
+                                                $badgeClass = 'badge-role';
+                                                if ($key === 'admin')      $badgeClass = 'badge-admin';
+                                                elseif ($key === 'editor') $badgeClass = 'badge-editor';
+                                                elseif ($key === 'usuario')$badgeClass = 'badge-usuario';
+                                            }
                                         @endphp
-                                        <span class="badge {{ $badgeClass }} u-badge-fixed">{{ $r }}</span>
+                                        <span class="badge u-badge-fixed {{ $style === '' ? $badgeClass : '' }}" @if($style) style="{{ $style }}" @endif>
+                                            {{ $role->name }}
+                                        </span>
                                     @endforeach
                                 @endif
                             </td>

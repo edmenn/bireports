@@ -23,6 +23,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'menu.folders',            // ver ABM Carpetas
             'menu.configuraciones',    // ver Configuraciones
             'menu.auditoria',          // ver Auditoría
+            // Opcional: permiso específico para ver ABM de Perfiles
+            'menu.roles',
         ];
 
         foreach ($perms as $p) {
@@ -34,11 +36,26 @@ class RolesAndPermissionsSeeder extends Seeder
         $editor = Role::findOrCreate('editor', 'web');
         $usuario = Role::findOrCreate('usuario', 'web');
 
-        // Asignaciones de permisos de menú
-        $admin->givePermissionTo([
-            'reports.view', 'menu.portal', 'menu.reports_index', 'menu.workspaces', 'menu.capacities',
-            'menu.apps', 'menu.users', 'menu.groups', 'menu.folders', 'menu.configuraciones', 'menu.auditoria'
-        ]);
+        // Colores por defecto para badges (pueden editarse desde Perfiles)
+        try {
+            $admin->forceFill(['badge_bg' => '#fee2e2', 'badge_text' => '#b91c1c'])->save();
+            $editor->forceFill(['badge_bg' => '#fef9c3', 'badge_text' => '#a16207'])->save();
+            $usuario->forceFill(['badge_bg' => '#dcfce7', 'badge_text' => '#166534'])->save();
+        } catch (\Throwable $e) {
+            // columnas podrían no existir en instalaciones antiguas; omitir silenciosamente
+        }
+
+        // ADMIN: acceso total (todos los permisos existentes)
+        try {
+            $admin->syncPermissions(Permission::all());
+        } catch (\Throwable $e) {
+            // si falla por cache/config, al menos aseguramos menú principal
+            $admin->givePermissionTo([
+                'reports.view', 'menu.portal', 'menu.reports_index', 'menu.workspaces', 'menu.capacities',
+                'menu.apps', 'menu.users', 'menu.groups', 'menu.folders', 'menu.configuraciones', 'menu.auditoria',
+                'menu.roles'
+            ]);
+        }
         $editor->givePermissionTo([
             'reports.view', 'menu.reports_index', 'menu.workspaces', 'menu.capacities'
         ]);
