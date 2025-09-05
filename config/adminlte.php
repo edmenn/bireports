@@ -16,7 +16,7 @@ return [
     | Favicon
     |--------------------------------------------------------------------------
     */
-    'use_ico_only' => false,
+    'use_ico_only' => true,
     'use_full_favicon' => false,
 
     /*
@@ -115,7 +115,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'classes_body' => '',
-    'classes_brand' => '',
+    'classes_brand' => 'd-flex justify-content-center align-items-center',
     'classes_brand_text' => '',
     'classes_content_wrapper' => '',
     'classes_content_header' => '',
@@ -138,7 +138,7 @@ return [
     'sidebar_collapse_remember_no_transition' => true,
     'sidebar_scrollbar_theme' => 'os-theme-light',
     'sidebar_scrollbar_auto_hide' => 'l',
-    'sidebar_nav_accordion' => true,
+    'sidebar_nav_accordion' => false,
     'sidebar_nav_animation_speed' => 300,
 
     /*
@@ -200,32 +200,67 @@ return [
         ],
         [ 'type' => 'fullscreen-widget', 'topnav_right' => true ],
 
-        [ 'type' => 'sidebar-menu-search', 'text' => 'Buscar', 'can'  => 'menu.reports_index' ],
+        // Buscador en sidebar eliminado a pedido
 
-        ['header' => 'Mi espacio', 'can' => 'menu.portal'],
-        [ 'text'=>'Inicio',       'icon'=>'fas fa-home',         'route'=>'portal.index',    'can'=>'menu.portal' ],
-        [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',         'route'=>'portal.favoritos','can'=>'menu.portal' ],
-        [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',         'route'=>'portal.mas',      'can'=>'menu.portal' ],
-        [ 'text'=>'Mis reportes', 'icon'=>'fas fa-chart-line',   'route'=>'portal.reportes', 'can'=>'menu.portal' ],
+        [
+            'text' => 'Mi espacio',
+            'icon' => 'fas fa-user-circle',
+            'can'  => 'menu.portal',
+            'classes' => 'menu-open',
+            'submenu' => [
+                [ 'text'=>'Inicio',       'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
+                [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
+                [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
+                [ 'text'=>'Mis reportes', 'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'menu.portal' ],
+            ],
+        ],
 
-        ['header' => 'Power BI', 'can' => 'menu.reports_index'],
-        [ 'text'=>'Informes', 'icon'=>'fas fa-chart-bar', 'route'=>'reports.index', 'can'=>'menu.reports_index' ],
-        [ 'text'=>'Aplicaciones', 'icon'=>'fas fa-th-large', 'route'=>'apps.index', 'can'=>'menu.apps' ],
-        [ 'text'=>'Espacios de trabajo','icon'=>'fas fa-project-diagram','route'=>'workspaces.index','can'=>'menu.workspaces'],
-        [ 'text'=>'Capacidades', 'icon'=>'fas fa-cogs', 'route'=>'capacities.index','can'=>'menu.capacities'],
+        [
+            'text' => 'Power BI',
+            'icon' => 'fas fa-bolt',
+            'can'  => 'menu.reports_index',
+            'classes' => 'menu-open',
+            'submenu' => [
+                [ 'text'=>'Informes',           'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
+                [ 'text'=>'Aplicaciones',       'icon'=>'fas fa-th-large',        'route'=>'apps.index',        'can'=>'menu.apps' ],
+                [ 'text'=>'Espacios de trabajo','icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
+                [ 'text'=>'Capacidades',        'icon'=>'fas fa-cogs',            'route'=>'capacities.index',  'can'=>'menu.capacities'],
+            ],
+        ],
 
-        ['header' => 'Organización', 'can' => 'menu.users'],
-        [ 'text'=>'Usuarios', 'icon'=>'fas fa-users', 'route'=>'users.index', 'can'=>'menu.users' ],
-        [ 'text'=>'Grupos',   'icon'=>'fas fa-user-friends', 'route'=>'grupos.index', 'can'=>'menu.groups' ],
-        [ 'text'=>'Carpetas', 'icon'=>'fas fa-folder', 'route'=>'folders.index', 'can'=>'menu.folders' ],
+        [
+            'text' => 'Organización',
+            'icon' => 'fas fa-sitemap',
+            'can'  => 'menu.users',
+            'classes' => 'menu-open',
+            'submenu' => [
+                [ 'text'=>'Usuarios', 'icon'=>'fas fa-users',         'route'=>'users.index',   'can'=>'menu.users' ],
+                [ 'text'=>'Grupos',   'icon'=>'fas fa-user-friends',  'route'=>'grupos.index',  'can'=>'menu.groups' ],
+                [ 'text'=>'Carpetas', 'icon'=>'fas fa-folder',        'route'=>'folders.index', 'can'=>'menu.folders' ],
+            ],
+        ],
 
-        ['header' => 'Auditoría', 'can' => 'menu.auditoria'],
-        [ 'text'=>'Métricas de uso', 'icon'=>'fas fa-chart-line', 'route'=>'auditoria.index', 'can'=>'menu.auditoria' ],
-        [ 'text'=>'Reiniciar auditoría','icon'=>'fas fa-broom','route'=>'admin.audit.reset.show','can'=>'menu.auditoria' ],
+        [
+            'text' => 'Auditoría',
+            'icon' => 'fas fa-chart-line',
+            'can'  => 'menu.auditoria',
+            'classes' => 'menu-open',
+            'submenu' => [
+                [ 'text'=>'Métricas de uso',     'icon'=>'fas fa-chart-bar', 'route'=>'auditoria.index',        'can'=>'menu.auditoria' ],
+                [ 'text'=>'Reiniciar auditoría', 'icon'=>'fas fa-broom',     'route'=>'admin.audit.reset.show', 'can'=>'menu.auditoria' ],
+            ],
+        ],
 
-        ['header' => 'Configuraciones', 'can' => 'menu.configuraciones'],
-        [ 'text'=>'Parámetros', 'icon'=>'fas fa-cogs', 'route'=>'configuraciones.index', 'can'=>'menu.configuraciones' ],
-        [ 'text'=>'Tema',       'icon'=>'fas fa-paint-brush', 'route'=>'configuraciones.tema', 'can'=>'menu.configuraciones' ],
+        [
+            'text' => 'Configuraciones',
+            'icon' => 'fas fa-cogs',
+            'can'  => 'menu.configuraciones',
+            'classes' => 'menu-open',
+            'submenu' => [
+                [ 'text'=>'Parámetros', 'icon'=>'fas fa-sliders-h',   'route'=>'configuraciones.index', 'can'=>'menu.configuraciones' ],
+                [ 'text'=>'Tema',       'icon'=>'fas fa-paint-brush', 'route'=>'configuraciones.tema',  'can'=>'menu.configuraciones' ],
+            ],
+        ],
     ],
 
     /*
@@ -304,6 +339,12 @@ return [
             'active' => true,
             'files' => [
                 ['type' => 'css', 'asset' => true, 'location' => 'css/custom.css'],
+            ],
+        ],
+        'AppMenuState' => [
+            'active' => true,
+            'files' => [
+                ['type' => 'js', 'asset' => true, 'location' => 'js/menu-state.js'],
             ],
         ],
     ],

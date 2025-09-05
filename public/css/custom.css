@@ -1,96 +1,288 @@
-/* ===========================
-   Estilos personalizados PowerBIDash
-   =========================== */
+/* ======================================================================
+   PowerBIDash — CSS moderno y "theme-safe" (Bootstrap 5 + AdminLTE 4)
+   Respeta el color del tema (light/dark) y evita !important innecesarios.
+   ====================================================================== */
 
-/* Fuente global */
+/* =========================
+   BASE (fuente y tamaños)
+   ========================= */
 body {
-    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    font-size: 0.95rem;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 0.95rem;
 }
 
-/* Paleta personalizada */
-:root {
-    --bs-primary: #4f46e5;    /* Azul violeta */
-    --bs-secondary: #64748b;  /* Gris */
-    --bs-success: #22c55e;
-    --bs-danger: #ef4444;
-    --bs-warning: #f59e0b;
-    --bs-info: #0ea5e9;
+/* ===========================================================
+   VARIABLES DE TEMA (usar data-bs-theme="light" | "dark")
+   Si tu AdminLTE usa .dark-mode, verás un bloque fallback abajo.
+   =========================================================== */
 
-    --navbar-grad-start: #1e293b;
-    --navbar-grad-end: #0f172a;
-    --sidebar-bg: #0b1220;
+/* -----------------
+   Tema CLARO (light)
+   ----------------- */
+:root[data-bs-theme="light"] {
+  /* Si quieres que el tema defina primary, deja estas líneas comentadas.
+     Descomenta SOLO si quieres forzar una paleta propia en LIGHT.
+  */
+  /* --bs-primary: #4f46e5;
+     --bs-secondary: #64748b;
+     --bs-success: #22c55e;
+     --bs-danger: #ef4444;
+     --bs-warning: #f59e0b;
+     --bs-info: #0ea5e9; */
+
+  /* Gradientes/colores personalizados SOLO para light */
+  --pbd-navbar-grad-start: #1e293b; /* slate-800 */
+  --pbd-navbar-grad-end:   #0f172a; /* slate-950 */
+  --pbd-sidebar-bg:        #0b1220; /* azul muy oscuro */
+
+  /* Navbar (usamos variables oficiales de Bootstrap p/ respetar el tema) */
+  --bs-navbar-bg: linear-gradient(135deg, var(--pbd-navbar-grad-start), var(--pbd-navbar-grad-end));
+  --bs-navbar-color: #e2e8f0;
+  --bs-navbar-hover-color: #ffffff;
+
+  /* Cards y tablas (neutros que funcionan en light) */
+  --pbd-card-border: rgba(148, 163, 184, .15);
+  --pbd-card-shadow: 0 4px 24px rgba(2, 6, 23, .08);
+  --pbd-th-color: #475569;      /* slate-600 */
+  --pbd-th-border: rgba(148, 163, 184, .3);
+  --pbd-td-border: rgba(148, 163, 184, .15);
+
+  /* Badges suaves (light only) */
+  --pbd-badge-success-bg: #dcfce7;
+  --pbd-badge-success-fg: #166534;
+  --pbd-badge-warning-bg: #fef9c3;
+  --pbd-badge-warning-fg: #854d0e;
+  --pbd-badge-danger-bg:  #fee2e2;
+  --pbd-badge-danger-fg:  #991b1b;
+  --pbd-badge-secondary-bg:#e2e8f0;
+  --pbd-badge-secondary-fg:#334155;
+
+  /* Footer */
+  --pbd-footer-bg: linear-gradient(90deg, var(--pbd-navbar-grad-start), var(--pbd-navbar-grad-end));
+  --pbd-footer-fg: #e2e8f0;
+  --pbd-footer-muted: #cbd5e1;
 }
 
-/* NAVBAR moderno */
+/* ----------------
+   Tema OSCURO (dark)
+   ----------------
+   No "pintamos" nada fuerte aquí para dejar que el tema maneje colores.
+   Solo definimos valores que mantengan coherencia si necesitas ajustar. */
+:root[data-bs-theme="dark"] {
+  /* Mantener control del usuario/tema. Puedes ajustar mínimos si hace falta. */
+  /* Ejemplo (descomentá si algo se ve raro con tu skin oscuro):
+     --bs-navbar-bg: var(--bs-body-bg);
+     --bs-navbar-color: var(--bs-body-color);
+     --bs-navbar-hover-color: var(--bs-emphasis-color);
+  */
+}
+
+/* ==============================================================
+   FALLBACK PARA AdminLTE 3/4 con clase .dark-mode (si aplica)
+   ============================================================== */
+.dark-mode {
+  /* Evita forzar colores en oscuro. Deja que el tema haga su trabajo. */
+  /* Si necesitas algo MUY puntual, declara aquí (con moderación). */
+}
+
+/* ======================
+   NAVBAR (respetar tema)
+   ====================== */
 .main-header {
-    background: linear-gradient(135deg, var(--navbar-grad-start), var(--navbar-grad-end));
-    color: #e2e8f0;
+  /* Deja que tome el color del tema (en light lo definimos arriba). */
+  background: var(--bs-navbar-bg);
 }
-.main-header .nav-link { color: #e2e8f0 !important; }
-.main-header .input-group { background: rgba(255, 255, 255, .08); border-radius: 12px; }
-.main-header .form-control { color: #f8fafc; }
 
-/* SIDEBAR moderno */
-.main-sidebar { background: var(--sidebar-bg); }
-.main-sidebar .brand-text { color: #e2e8f0 !important; font-weight: 700; }
-.nav-sidebar .nav-link {
-    color: #94a3b8; border-radius: 10px;
-    transition: background .2s ease, color .2s ease;
+/* Colores de links desde variables del tema (sin !important) */
+.main-header .nav-link {
+  color: var(--bs-navbar-color);
 }
-.nav-sidebar .nav-link.active { background: var(--bs-primary); color: #fff; }
-.nav-sidebar .nav-link:hover { background: rgba(79, 70, 229, 0.3); color: #fff; }
+.main-header .nav-link:hover,
+.main-header .nav-link:focus {
+  color: var(--bs-navbar-hover-color);
+}
 
-/* CARDS modernas */
+/* Input group del buscador en navbar (ligero efecto en light).
+   En dark, hereda de tema y se ve correctamente. */
+.main-header .input-group {
+  background: rgba(255, 255, 255, .08);
+  border-radius: 12px;
+}
+.main-header .form-control {
+  color: inherit;
+}
+
+/* Botón de cambiar tema: solo icono, sin pastilla grande */
+.navbar .nav-link.bg-transparent {
+  background: transparent;
+  padding: 0 .5rem;
+  line-height: 1;
+}
+
+/* =======================
+   SIDEBAR (coherente tema)
+   ======================= */
+/* Para LIGHT, usamos nuestro bg oscuro estilizado */
+:root[data-bs-theme="light"] .main-sidebar {
+  background: var(--pbd-sidebar-bg);
+}
+
+/* En DARK, dejamos que el tema administre; si necesitas reforzar tono:
+.dark-mode .main-sidebar { background: var(--bs-body-bg); } */
+
+/* Branding centrado y más limpio */
+.brand-link,
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-link {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.brand-link.logo-switch,
+.navbar-brand.logo-switch {
+  justify-content: center !important;
+  width: 100%;
+}
+.brand-link .brand-image,
+.brand-link .brand-image-xl,
+.navbar-brand .brand-image,
+.navbar-brand .brand-image-xl {
+  margin: 0 !important;
+  float: none !important;
+  display: inline-block;
+}
+/* Logo switch: centrar ambas variantes */
+.logo-switch .logo-xs,
+.logo-switch .logo-xl {
+  display: block !important;
+  margin: 0 auto !important;
+}
+/* Ocultar texto de marca junto al logo (si tu diseño lo requiere) */
+.brand-text { display: none !important; }
+
+/* Sidebar links (light): paleta sutil, sin romper dark */
+:root[data-bs-theme="light"] .nav-sidebar .nav-link {
+  color: #94a3b8; /* slate-400 */
+  border-radius: 10px;
+  transition: background .2s ease, color .2s ease;
+}
+:root[data-bs-theme="light"] .nav-sidebar .nav-link.active {
+  background: var(--bs-primary);
+  color: #fff;
+}
+:root[data-bs-theme="light"] .nav-sidebar .nav-link:hover {
+  background: rgba(79, 70, 229, 0.3);
+  color: #fff;
+}
+
+/* Buscador del sidebar: botón más pequeño que el input */
+.sidebar .btn-sidebar {
+  padding: .25rem .5rem !important;
+  line-height: 1 !important;
+}
+.sidebar .form-control-sidebar {
+  padding: .35rem .5rem !important;
+}
+
+/* =================
+   CARDS modernas
+   ================= */
 .card {
-    border-radius: 12px;
-    border: 1px solid rgba(148, 163, 184, .15);
-    box-shadow: 0 4px 24px rgba(2, 6, 23, .08);
+  border-radius: 12px;
+  border: 1px solid var(--pbd-card-border, var(--bs-border-color));
+  box-shadow: var(--pbd-card-shadow, 0 2px 12px rgba(0,0,0,.06));
 }
-.card .card-title { font-weight: 600; }
+.card .card-title {
+  font-weight: 600;
+}
 
-/* SMALL-BOX (KPIs) */
-.small-box { border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); }
-.small-box .icon { opacity: 0.4; font-size: 3rem; top: 10px; right: 10px; }
+/* ==========================
+   SMALL-BOX (KPIs)
+   ========================== */
+.small-box {
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.small-box .icon {
+  opacity: 0.4;
+  font-size: 3rem;
+  top: 10px;
+  right: 10px;
+}
 
-/* TABLAS modernas */
+/* =================
+   TABLAS modernas
+   ================= */
 .table thead th {
-    color: #475569; font-weight: 600;
-    border-bottom: 2px solid rgba(148, 163, 184, .3);
+  color: var(--pbd-th-color, var(--bs-secondary-color));
+  font-weight: 600;
+  border-bottom: 2px solid var(--pbd-th-border, var(--bs-border-color));
 }
-.table tbody td { border-color: rgba(148, 163, 184, .15) !important; }
+.table tbody td {
+  border-color: var(--pbd-td-border, var(--bs-border-color)) !important;
+}
 
-/* BADGES suaves (mantengo tu paleta) */
-.badge.bg-success { background-color: #dcfce7 !important; color: #166534 !important; }
-.badge.bg-warning { background-color: #fef9c3 !important; color: #854d0e !important; }
-.badge.bg-danger  { background-color: #fee2e2 !important; color: #991b1b !important; }
-.badge.bg-secondary{ background-color: #e2e8f0 !important; color: #334155 !important; }
+/* =========================
+   BADGES suaves (LIGHT)
+   ========================= */
+:root[data-bs-theme="light"] .badge.bg-success {
+  background-color: var(--pbd-badge-success-bg);
+  color: var(--pbd-badge-success-fg);
+}
+:root[data-bs-theme="light"] .badge.bg-warning {
+  background-color: var(--pbd-badge-warning-bg);
+  color: var(--pbd-badge-warning-fg);
+}
+:root[data-bs-theme="light"] .badge.bg-danger {
+  background-color: var(--pbd-badge-danger-bg);
+  color: var(--pbd-badge-danger-fg);
+}
+:root[data-bs-theme="light"] .badge.bg-secondary {
+  background-color: var(--pbd-badge-secondary-bg);
+  color: var(--pbd-badge-secondary-fg);
+}
 
-/* TIMELINE ajustes */
+/* ===========
+   TIMELINE
+   =========== */
 .timeline > div > .timeline-item {
-    border-radius: 12px; box-shadow: 0 2px 12px rgba(2, 6, 23, .06);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(2, 6, 23, .06);
 }
 
-/* FOOTER */
+/* =========
+   FOOTER
+   ========= */
 .main-footer {
-    background: linear-gradient(90deg, var(--navbar-grad-start), var(--navbar-grad-end));
-    color: #e2e8f0;
+  background: var(--pbd-footer-bg, var(--bs-body-bg));
+  color: var(--pbd-footer-fg, var(--bs-body-color));
 }
-.main-footer .fw-semibold { color: #cbd5e1; }
+.main-footer .fw-semibold {
+  color: var(--pbd-footer-muted, var(--bs-secondary-color));
+}
 
-/* Botón outline secundario */
-.btn-outline-secondary { border-color: #cbd5e1; color: #475569; }
-.btn-outline-secondary:hover { background-color: #f1f5f9; color: #1e293b; }
+/* ================================
+   Botón outline secundario suave
+   ================================ */
+.btn-outline-secondary {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+.btn-outline-secondary:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
 
 /* =========================================================
    BOTONES — UNIFORME + ESPACIADO CORRECTO EN TODAS LAS VISTAS
    ========================================================= */
-
-/* Ancho mínimo y estética consistente */
-.btn{
-    min-width: 138px;
-    border-radius: 0.5rem;
-    margin: 0 0 .5rem 0;   /* aire vertical por si envuelven (wrap) */
+.btn {
+  min-width: 138px;
+  border-radius: 0.5rem;
+  margin: 0 0 .5rem 0; /* aire vertical para wrap */
 }
 
 /* Fallback de separación cuando NO hay contenedor con gap */
@@ -102,49 +294,58 @@ body {
 .content_header .d-flex, /* por si usas este nombre en Blade */
 .card-footer,
 .btn-toolbar,
-.btn-row,        /* utilidad opcional para quien quiera usarla en Blade */
-.action-bar {    /* utilidad opcional para quien quiera usarla en Blade */
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;             /* separación horizontal/vertical uniforme */
+.btn-row,
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
 }
 
-/* Asegurar que las .card-footer no "aplasten" el gap */
-.card-footer .btn { margin: 0; }  /* evitamos doble: gap + margin */
+/* Evitar doble espacio donde ya hay gap */
+.card-footer .btn { margin: 0; }
 
-/* Grupos y toolbars: separar botones sin perder el estilo del grupo */
+/* Grupos y toolbars: separar sin romper estilo del grupo */
 .btn-group,
-.btn-toolbar {
-    gap: .5rem;
-}
-.btn-group > .btn { margin: 0; }   /* evita doble espacio dentro del grupo */
+.btn-toolbar { gap: .5rem; }
+.btn-group > .btn { margin: 0; }
 
-/* Botones de igual ancho (cuando quieras forzarlo en vistas puntuales) */
-.btn-eq { flex: 1; /* Esto asegura que ambos botones tengan exactamente el mismo ancho */ }
+/* Botones de igual ancho (usa .btn-eq en tus vistas) */
+.btn-eq { flex: 1; }
 
-/* En móviles, que los botones puedan ocupar todo el ancho si hace falta */
+/* Móvil: ocupar ancho cuando haga falta */
 @media (max-width: 480px){
-    .card-header .d-flex,
-    .content-header .d-flex,
-    .content_header .d-flex,
-    .card-footer,
-    .btn-toolbar,
-    .action-bar,
-    .btn-row { gap: .5rem; }
-    .btn { flex: 1 1 auto; }
+  .card-header .d-flex,
+  .content-header .d-flex,
+  .content_header .d-flex,
+  .card-footer,
+  .btn-toolbar,
+  .action-bar,
+  .btn-row { gap: .5rem; }
+  .btn { flex: 1 1 auto; }
 }
 
 /* =========================================================
    COMPAT: MAPEO MR/ML (BS4) → MÁRGENES LÓGICOS EN BS5
    ========================================================= */
-
 .mr-1 { margin-inline-end: .25rem !important; }
-.mr-2 { margin-inline-end: .5rem !important;  }
-.mr-3 { margin-inline-end: 1rem !important;   }
+.mr-2 { margin-inline-end: .5rem !important; }
+.mr-3 { margin-inline-end: 1rem !important; }
 .ml-1 { margin-inline-start: .25rem !important; }
-.ml-2 { margin-inline-start: .5rem !important;  }
-.ml-3 { margin-inline-start: 1rem !important;   }
+.ml-2 { margin-inline-start: .5rem !important; }
+.ml-3 { margin-inline-start: 1rem !important; }
 
-/* También iconos con “me-*” actuales siguen funcionando y no chocan */
+/* ==========================
+   TÍTULOS / TEXTOS primarios
+   ========================== */
+.content-header h1 { color: var(--bs-emphasis-color) !important; }
 
-.content-header h1 { color: #212529 !important; } /* mismo tono que .text-dark */
+/* ==========================
+   Dropdown de usuario
+   ========================== */
+.user-menu .dropdown-menu .dropdown-item {
+  padding: .35rem .75rem;
+}
+.user-menu .dropdown-menu .dropdown-item i {
+  width: 1rem;
+  text-align: center;
+}

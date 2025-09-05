@@ -38,36 +38,41 @@ class AppServiceProvider extends ServiceProvider
             if (!empty($cfg->site_title)) {
                 config(['adminlte.title' => $cfg->site_title]);
             }
-            if (! $isDark) {
-                if (!empty($cfg->theme_navbar_class)) {
-                    config(['adminlte.classes_topnav' => $cfg->theme_navbar_class]);
-                }
-                if (!empty($cfg->theme_sidebar_class)) {
-                    config(['adminlte.classes_sidebar' => $cfg->theme_sidebar_class]);
-                }
-            } else {
+            if ($isDark) {
                 // En modo oscuro, forzamos clases dark para navbar y sidebar
                 config([
                     'adminlte.classes_topnav' => 'navbar-dark navbar-dark',
                     'adminlte.classes_sidebar' => 'sidebar-dark-primary elevation-4',
                 ]);
             }
+            // AdminLTE espera:
+            //  - logo_img     => versión reducida (xs)
+            //  - logo_img_xl  => logo principal (xl)
+            // Invertimos las asignaciones para que coincidan con los campos
             if (!empty($cfg->site_logo_path)) {
+                // Logo principal (grande)
                 $logoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_path);
                 config([
-                    'adminlte.logo_img' => ltrim(parse_url($logoUrl, PHP_URL_PATH), '/')
-                ]);
-            }
-            if (!empty($cfg->site_logo_compact_path)) {
-                $logoSmallUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_compact_path);
-                config([
-                    'adminlte.logo_img_xl' => ltrim(parse_url($logoSmallUrl, PHP_URL_PATH), '/'),
+                    'adminlte.logo_img_xl' => ltrim(parse_url($logoUrl, PHP_URL_PATH), '/'),
                     'adminlte.logo_img_xl_class' => 'brand-image-xs',
                 ]);
             }
+            if (!empty($cfg->site_logo_compact_path)) {
+                // Logo reducido (compacto)
+                $logoSmallUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_compact_path);
+                config([
+                    'adminlte.logo_img' => ltrim(parse_url($logoSmallUrl, PHP_URL_PATH), '/'),
+                ]);
+            }
             if (!empty($cfg->site_favicon_path)) {
-                // Si hay favicon, habilitamos el uso de .ico simple
-                config(['adminlte.use_ico_only' => true]);
+                // Si hay favicon, habilitamos el uso de .ico simple y
+                // exponemos la ruta para la vista principal.
+                $favUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_favicon_path);
+                config([
+                    'adminlte.use_ico_only' => true,
+                    // Ruta relativa para usar con asset(...)
+                    'adminlte.favicon_path' => ltrim(parse_url($favUrl, PHP_URL_PATH), '/'),
+                ]);
             }
             if (!empty($cfg->login_logo_path)) {
                 $authLogoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->login_logo_path);

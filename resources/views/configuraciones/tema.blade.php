@@ -30,9 +30,9 @@
 
         <div class="card card-primary card-outline mt-3">
             <div class="card-header">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
                     @php($active = request('tab', 'pagina'))
-                    {{-- Pestañas de navegación --}}
+                    {{-- Pestañas --}}
                     <ul class="nav nav-tabs border-0" id="themeTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link {{ $active === 'pagina' ? 'active' : '' }}" id="tab-pagina" data-toggle="tab" href="#pane-pagina" role="tab" aria-controls="pane-pagina" aria-selected="{{ $active === 'pagina' ? 'true' : 'false' }}">
@@ -45,23 +45,9 @@
                             </a>
                         </li>
                     </ul>
-                    {{-- Botón de presets --}}
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-palette"></i> Cambiar de tema
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-right p-0">
-                            @foreach(['Azul','Gris','Verde','Rojo','Naranja','Morado','Marrón'] as $preset)
-                                <button class="dropdown-item js-apply-preset" type="button" data-preset="{{ $preset }}">{{ $preset }}</button>
-                            @endforeach
-                            <div class="dropdown-divider"></div>
-                            <button class="dropdown-item text-danger js-reset-theme" type="button">
-                                <i class="fas fa-undo"></i> Volver a colores de fábrica
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
+
             <div class="card-body">
                 <div class="tab-content" id="themeTabsContent">
 
@@ -69,192 +55,218 @@
                     {{--            CONTENIDO: TEMA PRINCIPAL          --}}
                     {{-- ============================================= --}}
                     <div class="tab-pane fade {{ $active === 'pagina' ? 'show active' : '' }}" id="pane-pagina" role="tabpanel" aria-labelledby="tab-pagina">
-                        <div class="row">
-                            <div class="col-md-7 d-flex flex-column justify-content-between">
-                                <x-adminlte-card title="Configuración General" icon="fas fa-cog text-lightblue">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <x-adminlte-input name="site_title" label="Nombre de la página (título)" placeholder="Ej: Mi Portal BI" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
-                                                <x-slot name="bottom"><small class="text-muted">Se muestra en la pestaña del navegador.</small></x-slot>
-                                            </x-adminlte-input>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <x-adminlte-select name="theme_name" id="theme_name" label="Tema predefinido">
-                                                <option value="">Predeterminado</option>
-                                                @foreach(['Azul','Gris','Verde','Rojo','Naranja','Morado','Marrón'] as $preset)
-                                                    <option value="{{ $preset }}" @selected(old('theme_name', $config->theme_name) === $preset)>{{ $preset }}</option>
-                                                @endforeach
-                                                <x-slot name="bottom"><small class="text-muted">Aplica una paleta inicial de colores.</small></x-slot>
-                                            </x-adminlte-select>
-                                        </div>
-                                    </div>
-                                </x-adminlte-card>
-                                <x-adminlte-card title="Apariencia (Clases CSS)" icon="fab fa-css3-alt text-lightblue">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <x-adminlte-select name="theme_navbar_class" label="Clases del menú de navegación (navbar)">
-                                                @php($navbar_options = ['' => 'Predeterminado', 'navbar-white navbar-light' => 'Blanco (claro)', 'navbar-dark navbar-primary' => 'Primario (oscuro)', 'navbar-dark navbar-dark' => 'Oscuro', 'navbar-light navbar-info' => 'Info (claro)', 'navbar-dark navbar-teal' => 'Teal (oscuro)'])
-                                                @foreach($navbar_options as $val => $label)
-                                                    <option value="{{ $val }}" @selected(old('theme_navbar_class', $config->theme_navbar_class) === $val)>{{ $label }}</option>
-                                                @endforeach
-                                            </x-adminlte-select>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <x-adminlte-select name="theme_sidebar_class" label="Clases de la barra lateral (sidebar)">
-                                                @php($sidebar_options = ['' => 'Predeterminado', 'sidebar-dark-primary elevation-4' => 'Oscuro primario', 'sidebar-light-primary elevation-4' => 'Claro primario', 'sidebar-dark-light elevation-4' => 'Oscuro (light)', 'sidebar-dark-info elevation-4' => 'Oscuro info'])
-                                                @foreach($sidebar_options as $val => $label)
-                                                    <option value="{{ $val }}" @selected(old('theme_sidebar_class', $config->theme_sidebar_class) === $val)>{{ $label }}</option>
-                                                @endforeach
-                                            </x-adminlte-select>
-                                        </div>
-                                    </div>
-                                </x-adminlte-card>
-                                <x-adminlte-card title="Logos y Favicon" icon="far fa-images text-lightblue">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <x-adminlte-input-file name="site_logo" label="Logo principal" placeholder="Elegir archivo..." accept="image/*">
-                                                <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                            </x-adminlte-input-file>
-                                            @if($config->site_logo_path) <img src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px;"> @endif
-                                        </div>
-                                        <div class="col-md-4">
-                                            <x-adminlte-input-file name="site_logo_compact" label="Logo reducido" placeholder="Elegir archivo..." accept="image/*">
-                                                <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                            </x-adminlte-input-file>
-                                            @if($config->site_logo_compact_path) <img src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: 60px;"> @endif
-                                        </div>
-                                        <div class="col-md-4">
-                                            <x-adminlte-input-file name="site_favicon" label="Favicon" placeholder="Elegir archivo..." accept="image/x-icon,image/png">
-                                                <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                            </x-adminlte-input-file>
-                                            @if($config->site_favicon_path) <img src="{{ Storage::disk('public')->url($config->site_favicon_path) }}" alt="Favicon" class="img-thumbnail mt-1" style="height: 32px; width: 32px;"> @endif
-                                        </div>
-                                    </div>
-                                </x-adminlte-card>
+
+                        {{-- Configuración General (mantengo dos campos lado a lado en pantallas grandes) --}}
+                        <x-adminlte-card title="Configuración General" icon="fas fa-cog text-lightblue" class="mb-3">
+                            <div class="form-row">
+                                <div class="form-group col-12 col-lg-6">
+                                    <x-adminlte-input name="site_title" label="Nombre de la página (título)" placeholder="Ej: Mi Portal BI" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
+                                        <x-slot name="bottom"><small class="text-muted">Se muestra en la pestaña del navegador.</small></x-slot>
+                                    </x-adminlte-input>
+                                </div>
+                                <div class="form-group col-12 col-lg-6">
+                                    <x-adminlte-select name="theme_name" id="theme_name" label="Tema predefinido">
+                                        <option value="">Predeterminado</option>
+                                        @foreach(['Azul','Gris','Verde','Rojo','Naranja','Morado','Marrón'] as $preset)
+                                            <option value="{{ $preset }}" @selected(old('theme_name', $config->theme_name) === $preset)>{{ $preset }}</option>
+                                        @endforeach
+                                        <x-slot name="bottom"><small class="text-muted">Aplica una paleta inicial de colores.</small></x-slot>
+                                    </x-adminlte-select>
+                                </div>
                             </div>
-                            <div class="col-md-5 d-flex flex-column">
-                                <x-adminlte-card title="Paleta de Colores Personalizada" icon="fas fa-palette text-lightblue" class="flex-grow-1">
-                                    @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
-                                    <div class="color-card">
-                                        <div class="color-card__header"><i class="fas fa-square mr-1 text-muted"></i> Base</div>
-                                        <div class="color-grid">
-                                            <label class="color-item"><span>Fondo principal</span><input type="color" name="color_main_bg" value="{{ $t['main_bg'] ?? '#f4f6f9' }}" class="color-item__swatch js-color" data-var="--app-main-bg"></label>
-                                            <label class="color-item"><span>Texto principal</span><input type="color" name="color_main_text" value="{{ $t['main_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-main-text"></label>
-                                        </div>
-                                    </div>
-                                    <div class="color-card">
-                                        <div class="color-card__header"><i class="fas fa-window-maximize mr-1 text-muted"></i> Navbar</div>
-                                        <div class="color-grid">
-                                            <label class="color-item"><span>Fondo</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
-                                            <label class="color-item"><span>Texto</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
-                                        </div>
-                                    </div>
-                                    <div class="color-card">
-                                        <div class="color-card__header"><i class="fas fa-columns mr-1 text-muted"></i> Sidebar</div>
-                                        <div class="color-grid">
-                                            <label class="color-item"><span>Fondo</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#343a40' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
-                                            <label class="color-item"><span>Texto</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#c2c7d0' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
-                                        </div>
-                                    </div>
-                                    <div class="color-card">
-                                        <div class="color-card__header"><i class="far fa-clone mr-1 text-muted"></i> Contenido (cards)</div>
-                                        <div class="color-grid">
-                                            <label class="color-item"><span>Card fondo</span><input type="color" name="color_container_bg" value="{{ $t['container_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-card-bg"></label>
-                                            <label class="color-item"><span>Header fondo</span><input type="color" name="color_container_alt_bg" value="{{ $t['container_alt_bg'] ?? '#f8fafc' }}" class="color-item__swatch js-color" data-var="--app-card-alt-bg"></label>
-                                            <label class="color-item"><span>Texto</span><input type="color" name="color_container_text" value="{{ $t['container_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-card-text"></label>
-                                        </div>
-                                    </div>
-                                    <div class="color-card">
-                                        <div class="color-card__header"><i class="fas fa-highlighter mr-1 text-muted"></i> Acentos y Botones</div>
-                                        <div class="color-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                            <label class="color-item"><span>Destacado</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
-                                            <label class="color-item"><span>Texto destacado</span><input type="color" name="color_highlight_text" value="{{ $t['highlight_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-hi-text"></label>
-                                            <label class="color-item"><span>Botón</span><input type="color" name="color_btn_bg" value="{{ $t['btn_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-btn-bg"></label>
-                                            <label class="color-item"><span>Texto botón</span><input type="color" name="color_btn_text" value="{{ $t['btn_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-btn-text"></label>
-                                            <label class="color-item"><span>Botón hover</span><input type="color" name="color_btn_hover" value="{{ $t['btn_hover'] ?? '#1d4ed8' }}" class="color-item__swatch js-color" data-var="--app-btn-hover"></label>
-                                            <label class="color-item"><span>Botón activo</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#1e40af' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
-                                        </div>
-                                    </div>
-                                </x-adminlte-card>
+                        </x-adminlte-card>
+
+                        {{-- Logos y Favicon (grilla 3→2→1 columnas) --}}
+                        <x-adminlte-card title="Logos y Favicon" icon="far fa-images text-lightblue" class="mb-3">
+                            <div class="grid-logos">
+                                {{-- Logo principal --}}
+                                <div class="logo-block">
+                                    <x-adminlte-input-file name="site_logo" label="Logo principal" placeholder="Elegir archivo..." accept="image/*">
+                                        <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                    </x-adminlte-input-file>
+                                    @if($config->site_logo_path)
+                                        <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px;">
+                                    @else
+                                        <img id="site-logo-preview" src="" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px; display:none;">
+                                    @endif
+                                </div>
+
+                                {{-- Logo reducido --}}
+                                <div class="logo-block">
+                                    <x-adminlte-input-file name="site_logo_compact" label="Logo reducido" placeholder="Elegir archivo..." accept="image/*">
+                                        <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                    </x-adminlte-input-file>
+                                    @if($config->site_logo_compact_path)
+                                        <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: 60px;">
+                                    @else
+                                        <img id="site-logo-compact-preview" src="" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: 60px; display:none;">
+                                    @endif
+                                </div>
+
+                                {{-- Favicon --}}
+                                <div class="logo-block">
+                                    <x-adminlte-input-file name="site_favicon" label="Favicon" placeholder="Elegir archivo..." accept="image/x-icon,image/png">
+                                        <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                    </x-adminlte-input-file>
+                                    @if($config->site_favicon_path)
+                                        <img id="site-favicon-preview" src="{{ Storage::disk('public')->url($config->site_favicon_path) }}" alt="Favicon" class="img-thumbnail mt-1" style="height: 32px; width: 32px;">
+                                    @else
+                                        <img id="site-favicon-preview" src="" alt="Favicon" class="img-thumbnail mt-1" style="height: 32px; width: 32px; display:none;">
+                                    @endif
+                                </div>
                             </div>
-                        </div>
+                        </x-adminlte-card>
+
+                        {{-- Paleta de colores (sub-secciones en 2 columnas, auto-wrap) --}}
+                        <x-adminlte-card title="Paleta de Colores Personalizada" icon="fas fa-palette text-lightblue" class="mb-1">
+                            @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
+
+                            <div class="grid-colors-2">
+                                <div class="color-card">
+                                    <div class="color-card__header"><i class="fas fa-square mr-1 text-muted"></i> Base</div>
+                                    <div class="color-grid">
+                                        <label class="color-item"><span>Fondo principal</span><input type="color" name="color_main_bg" value="{{ $t['main_bg'] ?? '#f4f6f9' }}" class="color-item__swatch js-color" data-var="--app-main-bg"></label>
+                                        <label class="color-item"><span>Texto principal</span><input type="color" name="color_main_text" value="{{ $t['main_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-main-text"></label>
+                                    </div>
+                                </div>
+
+                                <div class="color-card">
+                                    <div class="color-card__header"><i class="fas fa-window-maximize mr-1 text-muted"></i> Navbar</div>
+                                    <div class="color-grid">
+                                        <label class="color-item"><span>Fondo</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
+                                        <label class="color-item"><span>Texto</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
+                                    </div>
+                                </div>
+
+                                <div class="color-card">
+                                    <div class="color-card__header"><i class="fas fa-columns mr-1 text-muted"></i> Sidebar</div>
+                                    <div class="color-grid">
+                                        <label class="color-item"><span>Fondo</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#343a40' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
+                                        <label class="color-item"><span>Texto</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#c2c7d0' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
+                                    </div>
+                                </div>
+
+                                <div class="color-card">
+                                    <div class="color-card__header"><i class="far fa-clone mr-1 text-muted"></i> Contenido (cards)</div>
+                                    <div class="color-grid">
+                                        <label class="color-item"><span>Card fondo</span><input type="color" name="color_container_bg" value="{{ $t['container_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-card-bg"></label>
+                                        <label class="color-item"><span>Header fondo</span><input type="color" name="color_container_alt_bg" value="{{ $t['container_alt_bg'] ?? '#f8fafc' }}" class="color-item__swatch js-color" data-var="--app-card-alt-bg"></label>
+                                        <label class="color-item"><span>Texto</span><input type="color" name="color_container_text" value="{{ $t['container_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-card-text"></label>
+                                    </div>
+                                </div>
+
+                                <div class="color-card">
+                                    <div class="color-card__header"><i class="fas fa-highlighter mr-1 text-muted"></i> Acentos y Botones</div>
+                                    <div class="color-grid" style="grid-template-columns: repeat(2, 1fr);">
+                                        <label class="color-item"><span>Destacado</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
+                                        <label class="color-item"><span>Texto destacado</span><input type="color" name="color_highlight_text" value="{{ $t['highlight_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-hi-text"></label>
+                                        <label class="color-item"><span>Botón</span><input type="color" name="color_btn_bg" value="{{ $t['btn_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-btn-bg"></label>
+                                        <label class="color-item"><span>Texto botón</span><input type="color" name="color_btn_text" value="{{ $t['btn_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-btn-text"></label>
+                                        <label class="color-item"><span>Botón hover</span><input type="color" name="color_btn_hover" value="{{ $t['btn_hover'] ?? '#1d4ed8' }}" class="color-item__swatch js-color" data-var="--app-btn-hover"></label>
+                                        <label class="color-item"><span>Botón activo</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#1e40af' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </x-adminlte-card>
                     </div>
 
                     {{-- ============================================= --}}
                     {{--              CONTENIDO: TEMA LOGIN            --}}
                     {{-- ============================================= --}}
                     <div class="tab-pane fade {{ $active === 'login' ? 'show active' : '' }}" id="pane-login" role="tabpanel" aria-labelledby="tab-login">
-                        <div class="row">
-                            <div class="col-md-7 d-flex">
-                                <x-adminlte-card title="Archivos a Subir" icon="fas fa-upload text-lightblue" class="flex-grow-1">
-                                    <div class="d-flex flex-column justify-content-around h-100">
-                                        <x-adminlte-input-file name="login_logo" label="Logo de login (PNG/JPG/SVG)" placeholder="Elegir un archivo..." accept="image/png,image/jpeg,image/svg+xml"/>
-                                        <x-adminlte-input-file name="login_bg" label="Imagen de fondo (pantalla completa)" placeholder="Elegir un archivo..." accept="image/png,image/jpeg">
-                                            <x-slot name="bottom">
-                                                <small class="text-muted">Se ajustará para cubrir toda la pantalla en la página de login.</small>
-                                            </x-slot>
-                                        </x-adminlte-input-file>
+
+                        <x-adminlte-card title="Archivos a Subir" icon="fas fa-upload text-lightblue" class="mb-3">
+                            <div class="d-flex flex-column">
+                                <x-adminlte-input-file name="login_logo" label="Logo de login (PNG/JPG/SVG)" placeholder="Elegir un archivo..." accept="image/png,image/jpeg,image/svg+xml"/>
+                                <x-adminlte-input-file name="login_bg" label="Imagen de fondo (pantalla completa)" placeholder="Elegir un archivo..." accept="image/png,image/jpeg">
+                                    <x-slot name="bottom">
+                                        <small class="text-muted">Se ajustará para cubrir toda la pantalla en la página de login.</small>
+                                    </x-slot>
+                                </x-adminlte-input-file>
+                            </div>
+                        </x-adminlte-card>
+
+                        <x-adminlte-card title="Vistas Previa Actuales" icon="fas fa-eye text-lightblue" class="mb-1">
+                            @if($config->login_logo_path ?? false)
+                                <div class="mb-3">
+                                    <p class="mb-1 text-secondary">Logo de Login:</p>
+                                    <div class="p-2 border rounded text-center bg-light">
+                                         <img src="{{ Storage::disk('public')->url($config->login_logo_path) }}" alt="Login Logo" style="max-height:90px; max-width: 100%;" id="logo-preview">
                                     </div>
-                                </x-adminlte-card>
-                            </div>
-                    
-                            <div class="col-md-5 d-flex">
-                                <x-adminlte-card title="Vistas Previa Actuales" icon="fas fa-eye text-lightblue" class="flex-grow-1">
-                                    @if($config->login_logo_path ?? false)
-                                        <div>
-                                            <p class="mb-1 text-secondary">Logo de Login:</p>
-                                            <div class="p-2 border rounded text-center bg-light">
-                                                 <img src="{{ Storage::disk('public')->url($config->login_logo_path) }}" alt="Login Logo" style="max-height:90px; max-width: 100%;" id="logo-preview">
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="text-muted text-center py-5">
-                                            No hay un logo de login cargado.
-                                            <img src="" alt="" style="max-height:90px; max-width: 100%; display: none;" id="logo-preview" class="p-2 border rounded text-center bg-light mt-2">
-                                        </div>
-                                    @endif
-                    
-                                    <hr class="@if(!($config->login_logo_path ?? false) || !($config->login_bg_path ?? false)) d-none @endif">
-                    
-                                    @if($config->login_bg_path ?? false)
-                                        <div class="mt-2">
-                                            <p class="mb-1 text-secondary">Imagen de Fondo:</p>
-                                            <div class="border rounded">
-                                                <img src="{{ Storage::disk('public')->url($config->login_bg_path) }}" alt="Login BG" style="width: 100%; height: 180px; object-fit: cover;" id="bg-preview">
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="text-muted text-center py-5 @if($config->login_logo_path ?? false) border-top mt-3 pt-3 @endif">
-                                            No hay una imagen de fondo cargada.
-                                            <img src="" alt="" style="width: 100%; height: 180px; object-fit: cover; display: none;" id="bg-preview" class="border rounded mt-2">
-                                        </div>
-                                    @endif
-                                </x-adminlte-card>
-                            </div>
-                        </div>
+                                </div>
+                            @else
+                                <div class="text-muted text-center py-5">
+                                    No hay un logo de login cargado.
+                                    <img src="" alt="" style="max-height:90px; max-width: 100%; display: none;" id="logo-preview" class="p-2 border rounded text-center bg-light mt-2">
+                                </div>
+                            @endif
+
+                            @if($config->login_bg_path ?? false)
+                                <div class="mt-2">
+                                    <p class="mb-1 text-secondary">Imagen de Fondo:</p>
+                                    <div class="border rounded">
+                                        <img src="{{ Storage::disk('public')->url($config->login_bg_path) }}" alt="Login BG" style="width: 100%; height: 180px; object-fit: cover;" id="bg-preview">
+                                    </div>
+                                </div>
+                            @else
+                                <div class="text-muted text-center py-5 @if($config->login_logo_path ?? false) border-top mt-3 pt-3 @endif">
+                                    No hay una imagen de fondo cargada.
+                                    <img src="" alt="" style="width: 100%; height: 180px; object-fit: cover; display: none;" id="bg-preview" class="border rounded mt-2">
+                                </div>
+                            @endif
+                        </x-adminlte-card>
                     </div>
+
                 </div>
             </div>
+        </div>
+
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="d-flex" style="gap: 0.75rem; width: 320px;">
                     <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
-                    <x-adminlte-button type="reset" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
+                    <a href="{{ route('configuraciones.index') }}" id="js-cancel-changes" class="btn btn-secondary btn-eq">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
                 </div>
             </div>
         </x-adminlte-card>
-        </div>
     </form>
 @stop
 
 @push('css')
 <style>
-/* Estilos para los selectores de color */
+/* ====== Grillas internas para reducir altura ====== */
+
+/* Logos: 3 columnas en >=1200px, 2 en >=768px, 1 en móvil */
+.grid-logos{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+@media (max-width: 1199.98px){
+    .grid-logos{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767.98px){
+    .grid-logos{ grid-template-columns: 1fr; }
+}
+.logo-block .img-thumbnail{ max-width: 100%; }
+
+/* Paleta: contenedor con 2 columnas auto-wrap (secciones parejas) */
+.grid-colors-2{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+@media (max-width: 991.98px){
+    .grid-colors-2{ grid-template-columns: 1fr; }
+}
+
+/* ====== Estilos existentes para color pickers (se mantienen) ====== */
 .color-card {
     background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: .75rem;
-    padding: .75rem; margin-bottom: 1rem;
+    padding: .75rem;
 }
-.color-card:last-child { margin-bottom: 0; }
 .color-card__header {
     font-weight: 600; color: #475569; margin-bottom: .75rem; font-size: .9rem;
     text-transform: uppercase; letter-spacing: .05em;
@@ -285,17 +297,7 @@
 <script>
 (function(){
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('theme-form');
         const colorInputs = document.querySelectorAll('.js-color');
-        const initialColorValues = new Map();
-        
-        colorInputs.forEach(input => {
-            const cssVar = input.dataset.var;
-            if (cssVar) {
-                initialColorValues.set(cssVar, input.value);
-            }
-        });
-
         const presets = {
             'Azul':    { navbar_bg:'#0ea5e9', navbar_text:'#ffffff', menu_bg:'#0b4f6c', menu_text:'#e2e8f0', highlight_bg:'#2563eb', highlight_text:'#ffffff', btn_bg:'#2563eb', btn_text:'#ffffff' },
             'Gris':    { navbar_bg:'#374151', navbar_text:'#f9fafb', menu_bg:'#1f2d37', menu_text:'#d1d5db', highlight_bg:'#6b7280', highlight_text:'#ffffff', btn_bg:'#6b7280', btn_text:'#ffffff' },
@@ -306,18 +308,23 @@
             'Marrón':  { navbar_bg:'#92400e', navbar_text:'#fef3c7', menu_bg:'#431407', menu_text:'#fde68a', highlight_bg:'#b45309', highlight_text:'#fef3c7', btn_bg:'#92400e', btn_text:'#fef3c7' },
         };
 
-        function applyPreset(name){
-            const p = presets[name]; if(!p) return;
-            for(const [k,v] of Object.entries(p)){
-                const input = document.querySelector(`[name="color_${k}"]`);
-                if(input){ 
-                    input.value = v; 
-                    input.dispatchEvent(new Event('input',{bubbles:true})); 
-                }
-            }
-            const sel = document.getElementById('theme_name');
-            if(sel && sel.value !== name) sel.value = name;
-        }
+        const defaultPreset = {
+            main_bg:'#f4f6f9',
+            main_text:'#111111',
+            navbar_bg:'#374151',
+            navbar_text:'#f9fafb',
+            menu_bg:'#1f2d37',
+            menu_text:'#d1d5db',
+            container_bg:'#ffffff',
+            container_alt_bg:'#f8fafc',
+            container_text:'#111111',
+            highlight_bg:'#6b7280',
+            highlight_text:'#ffffff',
+            btn_bg:'#6b7280',
+            btn_text:'#ffffff',
+            btn_hover:'#4b5563',
+            btn_active:'#374151',
+        };
 
         document.addEventListener('input', function(e){
             const el = e.target.closest('.js-color');
@@ -327,48 +334,34 @@
             document.documentElement.style.setProperty(cssVar, el.value);
         }, {passive:true});
 
-        const cancelButton = document.getElementById('js-cancel-changes');
-        if (cancelButton) {
-            cancelButton.addEventListener('click', function() {
-                // El reseteo de formulario simple no funciona para vistas previas de archivos.
-                // La recarga de página sería la forma más simple de resetear los archivos seleccionados.
-                if (confirm('¿Descartar todos los cambios no guardados? La página se recargará.')) {
-                    window.location.reload();
-                }
-            });
-        }
-        
-        document.addEventListener('click', function(e){
-            const btn = e.target.closest('.js-apply-preset');
-            if(btn){ applyPreset(btn.getAttribute('data-preset')); }
-        });
-
         const themeNameSelect = document.getElementById('theme_name');
+        function applyPresetValues(p){
+            if(!p) return;
+            for (const [k,v] of Object.entries(p)){
+                const input = document.querySelector(`[name="color_${k}"]`);
+                if(input){
+                    input.value = v;
+                    input.dispatchEvent(new Event('input',{bubbles:true}));
+                }
+            }
+        }
+        function applyPreset(name){
+            const p = presets[name]; if(!p) return;
+            applyPresetValues(p);
+            const sel = document.getElementById('theme_name');
+            if(sel && sel.value !== name) sel.value = name;
+        }
         if (themeNameSelect) {
             themeNameSelect.addEventListener('change', function(event) {
                 const selectedPreset = event.target.value;
-                if (selectedPreset) {
-                    applyPreset(selectedPreset);
-                }
+                if (selectedPreset) applyPreset(selectedPreset);
+                else applyPresetValues(defaultPreset);
             });
         }
-        
-        document.addEventListener('click', function(e){
-            const btn = e.target.closest('.js-reset-theme');
-            if(!btn) return;
-            if(!confirm('¿Restablecer colores de fábrica?')) return;
-            const f = document.createElement('form');
-            f.method = 'POST';
-            f.action = @json(route('configuraciones.tema.reset'));
-            const token = document.createElement('input');
-            token.type = 'hidden'; token.name = '_token'; token.value = @json(csrf_token());
-            f.appendChild(token); document.body.appendChild(f); f.submit();
-        });
 
         function setupImagePreview(inputId, previewId) {
             const inputElement = document.querySelector(`input[name="${inputId}"]`);
             const previewElement = document.getElementById(previewId);
-
             if (!inputElement || !previewElement) return;
 
             inputElement.addEventListener('change', function(event) {
@@ -378,16 +371,9 @@
                     reader.onload = function(e) {
                         previewElement.src = e.target.result;
                         previewElement.style.display = 'block';
-                        
-                        // Oculta el texto "No hay imagen cargada" si existe
-                        const placeholderText = previewElement.parentElement;
-                        if (placeholderText.classList.contains('text-muted')) {
-                            // En lugar de ocultar todo, solo ocultamos el texto.
-                            Array.from(placeholderText.childNodes).forEach(node => {
-                                if(node.nodeType === Node.TEXT_NODE) {
-                                    node.textContent = '';
-                                }
-                            });
+                        const cont = previewElement.parentElement;
+                        if (cont && cont.classList && cont.classList.contains('text-muted')) {
+                            Array.from(cont.childNodes).forEach(n => { if(n.nodeType === Node.TEXT_NODE) n.textContent = ''; });
                         }
                     }
                     reader.readAsDataURL(file);
@@ -397,10 +383,9 @@
 
         setupImagePreview('login_logo', 'logo-preview');
         setupImagePreview('login_bg', 'bg-preview');
-        
-        // El código para las vistas previas de los logos del tema principal también debe ir aquí si los usas
-        // setupImagePreview('site_logo', 'site-logo-preview'); 
-        // etc...
+        setupImagePreview('site_logo', 'site-logo-preview');
+        setupImagePreview('site_logo_compact', 'site-logo-compact-preview');
+        setupImagePreview('site_favicon', 'site-favicon-preview');
     });
 })();
 </script>

@@ -112,6 +112,30 @@ class ConfiguracionesController extends Controller
             $data['theme_config'] = $themeConfig;
         }
 
+        // Sincronizar "Predeterminado" con paleta gris
+        $themeName = (string) $request->input('theme_name', '');
+        $defaultPreset = [
+            'main_bg' => '#f4f6f9',
+            'main_text' => '#111111',
+            'navbar_bg' => '#374151',
+            'navbar_text' => '#f9fafb',
+            'menu_bg' => '#1f2d37',
+            'menu_text' => '#d1d5db',
+            'container_bg' => '#ffffff',
+            'container_alt_bg' => '#f8fafc',
+            'container_text' => '#111111',
+            'highlight_bg' => '#6b7280',
+            'highlight_text' => '#ffffff',
+            'btn_bg' => '#6b7280',
+            'btn_text' => '#ffffff',
+            'btn_hover' => '#4b5563',
+            'btn_active' => '#374151',
+        ];
+        if ($themeName === '') {
+            // Fuerza a guardar la paleta gris por defecto
+            $data['theme_config'] = $defaultPreset;
+        }
+
         // Toggles de login (checkbox)
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['local_login_enabled'] = $request->boolean('local_login_enabled');
@@ -161,6 +185,10 @@ class ConfiguracionesController extends Controller
                 unset($data['powerbi_client_secret']);
             }
         }
+
+        // Remover cualquier clase de apariencia previa (ya no se usan)
+        $data['theme_navbar_class'] = null;
+        $data['theme_sidebar_class'] = null;
 
         $configuracion->update($data);
 

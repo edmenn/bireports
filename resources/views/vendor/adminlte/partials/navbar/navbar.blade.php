@@ -1,8 +1,9 @@
 @inject('layoutHelper', 'JeroenNoten\LaravelAdminLte\Helpers\LayoutHelper')
 
+@php($isDark = optional(Auth::user())->theme === 'dark' || session('theme') === 'dark')
 <nav class="main-header navbar
     {{ config('adminlte.classes_topnav_nav', 'navbar-expand') }}
-    {{ config('adminlte.classes_topnav', 'navbar-white navbar-light') }}">
+    {{ $isDark ? 'navbar-dark bg-dark' : 'navbar-light bg-white' }}">
 
     {{-- Navbar left links --}}
     <ul class="navbar-nav">
@@ -22,12 +23,11 @@
         @yield('content_top_nav_right')
 
         {{-- Theme switcher --}}
-        @php($isDark = optional(Auth::user())->theme === 'dark' || session('theme') === 'dark')
         <li class="nav-item">
             <form method="POST" action="{{ route('theme.switch') }}" class="d-inline">
                 @csrf
                 <input type="hidden" name="theme" value="{{ $isDark ? 'light' : 'dark' }}">
-                <button type="submit" class="btn btn-link nav-link" title="{{ $isDark ? 'Light' : 'Dark' }} theme">
+                <button type="submit" class="nav-link p-0 px-2 bg-transparent border-0" style="line-height:1" title="{{ $isDark ? 'Light' : 'Dark' }} theme">
                     @if($isDark)
                         <i class="fas fa-sun"></i>
                     @else

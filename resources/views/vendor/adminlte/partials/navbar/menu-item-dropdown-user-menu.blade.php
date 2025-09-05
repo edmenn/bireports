@@ -61,17 +61,16 @@
         @endif
 
         {{-- User menu footer --}}
-        <li class="user-footer">
+        <li class="user-footer py-2">
             @if($profile_url)
-                <a href="{{ $profile_url }}" class="nav-link btn btn-default btn-flat d-inline-block">
-                    <i class="fa fa-fw fa-user text-lightblue"></i>
-                    {{ __('adminlte::menu.profile') }}
+                <a href="{{ $profile_url }}" class="dropdown-item text-sm d-flex align-items-center">
+                    <i class="fa fa-fw fa-user text-primary mr-2"></i>
+                    <span>{{ __('Perfil') }}</span>
                 </a>
             @endif
-            <a class="btn btn-default btn-flat float-right @if(!$profile_url) btn-block @endif"
-               href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fa fa-fw fa-power-off text-red"></i>
-                {{ __('adminlte::adminlte.log_out') }}
+            <a class="dropdown-item text-sm d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="fa fa-fw fa-power-off text-danger mr-2"></i>
+                <span>{{ __('Salir') }}</span>
             </a>
             <form id="logout-form" action="{{ $logout_url }}" method="POST" style="display: none;">
                 @if(config('adminlte.logout_method'))
