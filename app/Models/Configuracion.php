@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class Configuracion extends Model
 {
@@ -26,6 +27,7 @@ class Configuracion extends Model
         'powerbi_scope',
         'powerbi_token_refresh_minutes',
         'microsoft_login_enabled',
+        'local_login_enabled',
 
         // ⬇️ nuevos campos ARM
         'azure_subscription_id',
@@ -45,4 +47,35 @@ class Configuracion extends Model
         'footer_text',
         'footer_enabled',
     ];
+
+    protected $casts = [
+        'theme_config' => 'array',
+        'microsoft_login_enabled' => 'boolean',
+        'local_login_enabled' => 'boolean',
+        'footer_enabled' => 'boolean',
+        'powerbi_token_refresh_minutes' => 'integer',
+    ];
+
+    // Almacenar el client secret encriptado; tolera valores antiguos en texto claro
+    public function getPowerbiClientSecretAttribute($value)
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Throwable) {
+            return $value; // compatibilidad con valores preexistentes sin cifrar
+        }
+    }
+
+    public function setPowerbiClientSecretAttribute($value): void
+    {
+        if ($value === null || $value === '') {
+            $this->attributes['powerbi_client_secret'] = $value;
+            return;
+        }
+        // Siempre guardar cifrado; si viene enmascarado, el controlador ya evita sobrescribir
+        $this->attributes['powerbi_client_secret'] = Crypt::encryptString((string) $value);
+    }
 }

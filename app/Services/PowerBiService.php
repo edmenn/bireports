@@ -35,6 +35,12 @@ class PowerBiService
         if ($tenant === '' || $client === '' || $secret === '') {
             throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configuraciones.');
         }
+        // Cache rápido del token por tenant+client
+        $cacheKey = 'pbi:token:' . sha1($tenant . '|' . $client);
+        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        if (is_string($cached) && $cached !== '') {
+            return $cached;
+        }
 
         $url    = "https://login.microsoftonline.com/{$tenant}/oauth2/v2.0/token";
 
@@ -42,7 +48,7 @@ class PowerBiService
             'form_params' => [
                 'client_id'     => $this->config->powerbi_client_id,
                 'client_secret' => $this->config->powerbi_client_secret,
-                'scope'         => $this->config->powerbi_scope ?: 'https://analysis.windows.net/powerbi/api/.default',
+                'scope'         => env('POWERBI_SCOPE', 'https://analysis.windows.net/powerbi/api/.default'),
                 'grant_type'    => 'client_credentials',
             ],
             'headers' => ['Accept' => 'application/json'],
@@ -53,6 +59,10 @@ class PowerBiService
             Log::error('Azure token sin access_token', ['response' => $data]);
             throw new RuntimeException('No se recibió access_token de Azure.');
         }
+        // Guardar en cache con margen de 60s
+        $ttl = (int) ($data['expires_in'] ?? 3600);
+        $ttl = max(60, $ttl - 60);
+        \Illuminate\Support\Facades\Cache::put($cacheKey, $data['access_token'], now()->addSeconds($ttl));
         return $data['access_token'];
     }
 

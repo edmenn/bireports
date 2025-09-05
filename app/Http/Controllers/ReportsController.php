@@ -23,12 +23,12 @@ class ReportsController extends Controller
         $reports = Report::query()
             ->with('workspace')
             ->when($q !== '', function ($query) use ($q) {
-                $query->where(function ($w) use ($q) {
-                    // Cambia a 'like' si usas MySQL
-                    $w->where('name', 'ilike', "%{$q}%")
-                      ->orWhere('id', 'ilike', "%{$q}%")
-                      ->orWhere('workspace_id', 'ilike', "%{$q}%")
-                      ->orWhere('dataset_id', 'ilike', "%{$q}%");
+                $needle = mb_strtolower($q);
+                $query->where(function ($w) use ($needle) {
+                    $w->whereRaw('LOWER(name) LIKE ?', ["%{$needle}%"]) 
+                      ->orWhereRaw('LOWER(id) LIKE ?', ["%{$needle}%"]) 
+                      ->orWhereRaw('LOWER(workspace_id) LIKE ?', ["%{$needle}%"]) 
+                      ->orWhereRaw('LOWER(dataset_id) LIKE ?', ["%{$needle}%"]);
                 });
             })
             ->orderBy('name')

@@ -22,10 +22,10 @@ class UpdateConfiguracionRequest extends FormRequest
             'powerbi_client_id'              => ['nullable','string','max:255'],
             'powerbi_client_secret'          => ['nullable','string'],
             'powerbi_tenant_id'              => ['nullable','string','max:255'],
-            'powerbi_redirect_uri'           => ['nullable','string','max:255'],
-            'powerbi_scope'                  => ['nullable','string','max:255'],
+            // redirect_uri y scope se gestionan fuera de la UI (scope via .env)
             'powerbi_token_refresh_minutes'  => ['nullable','integer','min:0'],
             'microsoft_login_enabled'        => ['nullable','boolean'],
+            'local_login_enabled'            => ['nullable','boolean'],
 
             // Tema y branding
             'theme_navbar_class'             => ['nullable','string','max:100'],

@@ -16,7 +16,22 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $cfg = \App\Models\Configuracion::query()->first();
+
+        $allowMicrosoft = (bool) ($cfg
+            && $cfg->microsoft_login_enabled
+            && $cfg->powerbi_client_id
+            && $cfg->powerbi_client_secret
+            && $cfg->powerbi_tenant_id);
+
+        $envOverrideLocal = (bool) config('auth.allow_local_login', false);
+        $allowLocal = (bool) ($envOverrideLocal || ($cfg->local_login_enabled ?? true));
+
+        if (! $allowLocal && ! $allowMicrosoft) {
+            $allowLocal = true; // fallback para evitar bloqueo total
+        }
+
+        return view('auth.login', compact('allowLocal', 'allowMicrosoft'));
     }
 
     /**

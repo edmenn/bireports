@@ -21,9 +21,10 @@ class UsersController extends Controller
         $q = trim((string) $request->query('q', ''));
         $users = User::query()
             ->when($q !== '', function ($qr) use ($q) {
-                $qr->where(function ($w) use ($q) {
-                    $w->where('name', 'ilike', "%{$q}%")
-                      ->orWhere('email', 'ilike', "%{$q}%");
+                $needle = mb_strtolower($q);
+                $qr->where(function ($w) use ($needle) {
+                    $w->whereRaw('LOWER(name) LIKE ?', ["%{$needle}%"]) 
+                      ->orWhereRaw('LOWER(email) LIKE ?', ["%{$needle}%"]);
                 });
             })
             ->orderBy('name')

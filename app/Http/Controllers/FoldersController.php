@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
@@ -16,7 +17,10 @@ class FoldersController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
         $folders = Folder::query()
-            ->when($q !== '', fn($qr)=> $qr->where('name','ilike',"%{$q}%"))
+            ->when($q !== '', function ($qr) use ($q) {
+                $needle = mb_strtolower($q);
+                return $qr->whereRaw('LOWER(name) LIKE ?', ["%{$needle}%"]);
+            })
             ->orderBy('name')
             ->paginate(20)
             ->withQueryString();

@@ -1,22 +1,12 @@
-{{-- resources/views/auth/login.blade.php --}}
 @extends('adminlte::auth.auth-page', ['authType' => 'login'])
 
 @section('title', __('Log in'))
 
-@section('auth_header')
-    <div class="text-center w-100">
-        @php($appCfg = \App\Models\Configuracion::find(1))
-        @if($appCfg && $appCfg->site_logo_path)
-            <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}"
-                 alt="Logo" style="max-height:48px" class="mb-2">
-        @endif
-        <h1 class="h5 mb-0">{{ __('Log in') }}</h1>
-        <small class="text-muted">{{ config('app.name', 'PowerBIDash') }}</small>
-    </div>
-@endsection
+@section('auth_header','')
 
-{{-- Estilos del fondo + card (compatibles AdminLTE 4 / BS5) --}}
-@section('adminlte_css')
+@php($appCfg = \App\Models\Configuracion::find(1))
+
+@push('css')
     <style>
         body.login-page{
             min-height: 100vh;
@@ -59,16 +49,28 @@
             border-color:#2563eb;
         }
         /* Centrado y ancho cómodo */
-        .login-box{ max-width: 420px; width: 100%; }
+        .login-box{ max-width: 380px; width: 100%; }
+        .login-logo{ display:none; }
     </style>
-@endsection
+@endpush
 
 @section('auth_body')
+    @php($appCfg = \App\Models\Configuracion::find(1))
+
     <div class="login-card p-3 p-md-4">
+        <div class="text-center mb-2">
+            @if($appCfg && $appCfg->login_logo_path)
+                <img src="{{ Storage::disk('public')->url($appCfg->login_logo_path) }}" alt="Logo" style="max-height:48px" class="mb-1">
+            @elseif($appCfg && $appCfg->site_logo_path)
+                <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" style="max-height:48px" class="mb-1">
+            @endif
+            <h1 class="h6 mb-0">{{ __('Log in') }}</h1>
+        </div>
         @if (session('status'))
             <div class="alert alert-success small">{{ session('status') }}</div>
         @endif
 
+        @if($allowLocal)
         <form method="POST" action="{{ route('login') }}" novalidate>
             @csrf
 
@@ -109,10 +111,12 @@
                 {{ __('Log in') }}
             </button>
         </form>
+        @endif
 
-        @php($msCfg = \App\Models\Configuracion::find(1))
-        @if($msCfg && $msCfg->microsoft_login_enabled && $msCfg->powerbi_client_id && $msCfg->powerbi_client_secret && $msCfg->powerbi_tenant_id)
-            <div class="text-center my-3 text-muted small">— o —</div>
+        @if($allowMicrosoft)
+            @if($allowLocal)
+                <div class="text-center my-3 text-muted small">- o -</div>
+            @endif
             <a href="{{ route('auth.microsoft.redirect') }}" class="btn btn-outline-primary w-100 btn-microsoft">
                 <i class="fab fa-microsoft me-1"></i> {{ __('Continue with Microsoft') }}
             </a>
@@ -120,11 +124,4 @@
     </div>
 @endsection
 
-@section('auth_footer')
-    @if (Route::has('register'))
-        <p class="my-2 text-center">
-            <span class="text-muted small">{{ __('Don’t have an account?') }}</span>
-            <a href="{{ route('register') }}">{{ __('Register') }}</a>
-        </p>
-    @endif
-@endsection
+@section('auth_footer') @endsection

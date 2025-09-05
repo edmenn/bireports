@@ -44,18 +44,21 @@ class CapacityController extends Controller
         // 3) Query con filtros
         $caps = Capacity::query()
             ->when($q !== '', function ($qr) use ($q) {
-                $like = '%' . $q . '%';
-                // Si usas MySQL, cambia 'ilike' por 'like'
+                $needle = mb_strtolower($q);
+                $like = '%' . $needle . '%';
                 $qr->where(function ($w) use ($like) {
-                    $w->where('display_name', 'ilike', $like)
-                      ->orWhere('capacity_uuid', 'ilike', $like)
-                      ->orWhere('region', 'ilike', $like)
-                      ->orWhere('sku', 'ilike', $like);
+                    $w->whereRaw('LOWER(display_name) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(capacity_uuid) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(region) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(sku) LIKE ?', [$like]);
                 });
             })
             ->when($state === 'active', fn ($qr) => $qr->where('is_active', true))
             ->when($state === 'paused', fn ($qr) => $qr->where('is_active', false))
-            ->when($sku !== '', fn ($qr) => $qr->where('sku', 'ilike', '%' . $sku . '%'))
+            ->when($sku !== '', function ($qr) use ($sku) {
+                $likeSku = '%' . mb_strtolower($sku) . '%';
+                return $qr->whereRaw('LOWER(sku) LIKE ?', [$likeSku]);
+            })
             ->orderBy('display_name')
             ->paginate(20)
             ->appends($request->query());

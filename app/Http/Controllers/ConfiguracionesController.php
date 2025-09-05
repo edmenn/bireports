@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
@@ -25,7 +26,6 @@ class ConfiguracionesController extends Controller
                 'powerbi_token_refresh_minutes' => 0,
             ]
         );
-
         return view('configuraciones.index', compact('config'));
     }
 
@@ -112,8 +112,9 @@ class ConfiguracionesController extends Controller
             $data['theme_config'] = $themeConfig;
         }
 
-        // Toggle de login con Microsoft (checkbox)
+        // Toggles de login (checkbox)
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
+        $data['local_login_enabled'] = $request->boolean('local_login_enabled');
 
         // Manejo de archivos (branding)
         if ($request->hasFile('site_logo')) {
@@ -149,6 +150,18 @@ class ConfiguracionesController extends Controller
             $data['login_logo_path'] = $path;
         }
 
+        // Protección adicional: evitar sobrescritura del secreto si viene enmascarado
+        if (array_key_exists('powerbi_client_secret', $data)) {
+            $raw2 = (string) ($request->input('powerbi_client_secret') ?? '');
+            $looksMasked2 = ($raw2 === '')
+                || str_contains($raw2, "\x07")
+                || (bool) preg_match('/^\*+$/u', $raw2)
+                || (bool) preg_match('/^[\x{2022}\x{00B7}\x{25CF}]+$/u', $raw2);
+            if ($looksMasked2) {
+                unset($data['powerbi_client_secret']);
+            }
+        }
+
         $configuracion->update($data);
 
         // Redirección: respetar retorno si viene desde "Tema"
@@ -160,3 +173,4 @@ class ConfiguracionesController extends Controller
         return redirect()->route('configuraciones.index')->with('success', 'Configuración actualizada.');
     }
 }
+

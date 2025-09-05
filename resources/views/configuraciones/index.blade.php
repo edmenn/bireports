@@ -67,21 +67,7 @@
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-key"></i></div></x-slot>
                             </x-adminlte-input>
                         </div>
-                        <div class="col-md-6">
-                            <x-adminlte-input name="powerbi_redirect_uri" label="Redirect URI (Opcional)" placeholder="No requerido para Service Principal" value="{{ old('powerbi_redirect_uri', $config->powerbi_redirect_uri) }}">
-                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-link"></i></div></x-slot>
-                            </x-adminlte-input>
-                        </div>
-                        <div class="col-md-8">
-                            <x-adminlte-input name="powerbi_scope" id="field_scope" label="Scope" value="{{ old('powerbi_scope', $config->powerbi_scope ?? 'https://analysis.windows.net/powerbi/api/.default') }}">
-                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-bullseye"></i></div></x-slot>
-                                <x-slot name="appendSlot">
-                                    <button class="btn btn-outline-secondary" type="button" id="btn-scope-default" title="Usar scope recomendado">
-                                        <i class="fas fa-magic"></i>
-                                    </button>
-                                </x-slot>
-                            </x-adminlte-input>
-                        </div>
+                        {{-- Redirect URI y Scope removidos de la UI (scope via .env) --}}
                         <div class="col-md-4">
                             <x-adminlte-input name="powerbi_token_refresh_minutes" type="number" min="0" step="1" label="Refrescar (min)" placeholder="0 = auto" value="{{ old('powerbi_token_refresh_minutes', $config->powerbi_token_refresh_minutes ?? 0) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
@@ -99,6 +85,19 @@
                         <div>
                             <label class="custom-toggle-switch">
                                 <input type="checkbox" name="microsoft_login_enabled" value="1" {{ old('microsoft_login_enabled', $config->microsoft_login_enabled) ? 'checked' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-3 border rounded d-flex justify-content-between align-items-center bg-light mt-3">
+                        <div>
+                            <h6 class="mb-0 font-weight-bold">Inicio de Sesión Local</h6>
+                            <small class="text-muted">Formulario tradicional de email y contraseña. En caso de emergencia, el entorno puede forzar habilitarlo con <code>AUTH_ALLOW_LOCAL_LOGIN=true</code>.</small>
+                        </div>
+                        <div>
+                            <label class="custom-toggle-switch">
+                                <input type="checkbox" name="local_login_enabled" value="1" {{ old('local_login_enabled', $config->local_login_enabled) ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
                         </div>

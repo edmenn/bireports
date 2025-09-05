@@ -1,0 +1,125 @@
+001: @extends('adminlte::auth.auth-page', ['authType' => 'login'])
+002: 
+003: @section('title', __('Log in'))
+004: 
+005: @section('auth_header','')
+006: 
+007: @push('css')
+008:     <style>
+009:         body.login-page{
+010:             min-height: 100vh;
+011:             position: relative;
+012:             background:
+013:                 linear-gradient(180deg, rgba(2,6,23,.35), rgba(2,6,23,.45)),
+014:                 url('{{ optional($appCfg)->login_bg_path ? Storage::disk('public')->url($appCfg->login_bg_path) : '' }}') center/cover no-repeat fixed;
+015:         }
+016:         /* Capa de refuerzo por si no hay imagen */
+017:         body.login-page::before{
+018:             content:""; position:fixed; inset:0;
+019:             background: linear-gradient(135deg, rgba(79,70,229,.25), rgba(14,165,233,.15));
+020:             pointer-events:none;
+021:         }
+022:         /* Caja del formulario */
+023:         .login-card{
+024:             backdrop-filter: blur(6px);
+025:             -webkit-backdrop-filter: blur(6px);
+026:             background: rgba(255,255,255,.86);
+027:             border: 1px solid rgba(148,163,184,.22);
+028:             border-radius: 14px;
+029:             box-shadow: 0 10px 40px rgba(2,6,23,.18);
+030:         }
+031:         .login-card .input-group-text{
+032:             background: #f8fafc;
+033:             border-right: 0;
+034:         }
+035:         .login-card .form-control{
+036:             border-left: 0;
+037:         }
+038:         .login-card .form-control:focus{
+039:             box-shadow: none;
+040:             border-color: #93c5fd;
+041:         }
+042:         .btn-brand{
+043:             background: #2563eb; color:#fff; border: 0;
+044:         }
+045:         .btn-brand:hover{ background:#1d4ed8; color:#fff; }
+046:         .btn-microsoft{
+047:             border-color:#2563eb;
+048:         }
+049:         /* Centrado y ancho cómodo */
+050:         .login-box{ max-width: 380px; width: 100%; }
+051:         .login-logo{ display:none; }
+052:     </style>
+053: @endpush
+054: 
+055: @section('auth_body')
+056:     @php($appCfg = \App\Models\Configuracion::find(1))
+057: 
+058:     <div class="login-card p-3 p-md-4">
+059:         <div class="text-center mb-2">
+060:             @if($appCfg && $appCfg->login_logo_path)
+061:                 <img src="{{ Storage::disk('public')->url($appCfg->login_logo_path) }}" alt="Logo" style="max-height:48px" class="mb-1">
+062:             @elseif($appCfg && $appCfg->site_logo_path)
+063:                 <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" style="max-height:48px" class="mb-1">
+064:             @endif
+065:             <h1 class="h6 mb-0">{{ __('Log in') }}</h1>
+066:         </div>
+067:         @if (session('status'))
+068:             <div class="alert alert-success small">{{ session('status') }}</div>
+069:         @endif
+070: 
+071:         @if($allowLocal)
+072:         <form method="POST" action="{{ route('login') }}" novalidate>
+073:             @csrf
+074: 
+075:             {{-- Email --}}
+076:             <div class="mb-3">
+077:                 <label for="email" class="form-label small text-muted mb-1">{{ __('Email') }}</label>
+078:                 <div class="input-group">
+079:                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+080:                     <input id="email" type="email" name="email" class="form-control"
+081:                            value="{{ old('email') }}" placeholder="you@company.com"
+082:                            required autofocus autocomplete="username">
+083:                 </div>
+084:                 @error('email')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+085:             </div>
+086: 
+087:             {{-- Password --}}
+088:             <div class="mb-3">
+089:                 <label for="password" class="form-label small text-muted mb-1">{{ __('Password') }}</label>
+090:                 <div class="input-group">
+091:                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
+092:                     <input id="password" type="password" name="password" class="form-control"
+093:                            placeholder="********" required autocomplete="current-password">
+094:                 </div>
+095:                 @error('password')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+096:             </div>
+097: 
+098:             <div class="d-flex justify-content-between align-items-center mb-3">
+099:                 <div class="form-check">
+100:                     <input class="form-check-input" type="checkbox" name="remember" id="remember">
+101:                     <label class="form-check-label small" for="remember">{{ __('Remember me') }}</label>
+102:                 </div>
+103:                 @if (Route::has('password.request'))
+104:                     <a class="small" href="{{ route('password.request') }}">{{ __('Forgot your password?') }}</a>
+105:                 @endif
+106:             </div>
+107: 
+108:             <button type="submit" class="btn btn-brand w-100">
+109:                 {{ __('Log in') }}
+110:             </button>
+111:         </form>
+112:         @endif
+113: 
+114:         @if($allowMicrosoft)
+115:             @if($allowLocal)
+116:                 <div class="text-center my-3 text-muted small">- o -</div>
+117:             @endif
+118:             <a href="{{ route('auth.microsoft.redirect') }}" class="btn btn-outline-primary w-100 btn-microsoft">
+119:                 <i class="fab fa-microsoft me-1"></i> {{ __('Continue with Microsoft') }}
+120:             </a>
+121:         @endif
+122:     </div>
+123: @endsection
+124: 
+125: @section('auth_footer') @endsection

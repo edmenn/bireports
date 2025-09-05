@@ -74,6 +74,10 @@
                 <li>accessToken: {!! $accessToken ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
                 <li>reportId: {!! $reportId ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
             </ul>
+            <p class="mb-2">
+                Si faltan credenciales o permisos, revisa la configuración de Power BI en
+                <a href="{{ route('configuraciones.index') }}" class="alert-link">Configuraciones</a>.
+            </p>
             <details>
                 <summary>Payload de <code>PowerBiService::generateReportEmbedToken()</code></summary>
                 <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ json_encode($embed ?? [], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) }}</pre>
