@@ -146,3 +146,5 @@ body {
 .ml-3 { margin-inline-start: 1rem !important;   }
 
 /* También iconos con “me-*” actuales siguen funcionando y no chocan */
+
+.content-header h1 { color: #212529 !important; } /* mismo tono que .text-dark */

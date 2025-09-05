@@ -1,38 +1,57 @@
+{{-- resources/views/layouts/app-shell.blade.php --}}
 @extends('adminlte::page')
 
-@section('title')
-    @yield('page-title', trim($__env->yieldContent('title')) ?: config('app.name'))
-@endsection
+{{-- Título de la pestaña (usa el de la vista si existe) --}}
+@section('title', trim($__env->yieldContent('title')) ?: config('app.name'))
 
+{{-- Header opcional: se muestra solo si la vista define "page_title" --}}
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div class="d-flex align-items-baseline flex-wrap gap-2">
-            <h1 class="m-0">@yield('page-title', trim($__env->yieldContent('title')) ?: '')</h1>
-            @hasSection('page-subtitle')
-                <small class="text-muted">@yield('page-subtitle')</small>
-            @endif
+    @hasSection('page_title')
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <h1 class="m-0">@yield('page_title')</h1>
+            <div>@yield('page_actions')</div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            @yield('header-actions')
-        </div>
-    </div>
+    @endif
 
-    @hasSection('toolbar')
-        <div class="page-toolbar mt-3">
-            @yield('toolbar')
+    @hasSection('page_toolbar')
+        <div class="mt-3">
+            @yield('page_toolbar')
         </div>
     @endif
 @endsection
 
+{{-- Contenido dentro de un contenedor centrado (anti desbordes) --}}
 @section('content')
-    @if(session('success')) <x-adminlte-alert theme="success" title="OK" dismissable>{{ session('success') }}</x-adminlte-alert> @endif
-    @if(session('warning')) <x-adminlte-alert theme="warning" title="Atención" dismissable>{{ session('warning') }}</x-adminlte-alert> @endif
-    @if(session('error'))   <x-adminlte-alert theme="danger"  title="Error"    dismissable>{{ session('error') }}</x-adminlte-alert>   @endif
-    @if($errors->any())
-        <x-adminlte-alert theme="danger" title="Errores de validación" dismissable>
-            <ul class="mb-0 ps-3">@foreach($errors->all() as $m)<li>{{ $m }}</li>@endforeach</ul>
-        </x-adminlte-alert>
-    @endif
-
-    @yield('page')
+    <div class="app-page-container">
+        @yield('page')
+    </div>
 @endsection
+
+@push('css')
+<style>
+/* Contenedor principal centrado para TODAS las páginas que usen este layout */
+.app-page-container{
+    max-width: 1200px;  /* ancho fijo y bonito */
+    margin: 0 auto;     /* centra */
+    padding: .75rem;    /* aire */
+}
+
+/* Anti desborde de imágenes/tablas dentro del contenedor */
+.app-page-container img,
+.app-page-container table{
+    max-width: 100%;
+}
+
+/* Una toolbar simple si la usas (opcional) */
+.app-page-toolbar{
+    display:flex;
+    gap:.5rem;
+    flex-wrap:wrap;
+    align-items:center;
+    background:#fff;
+    padding:.75rem;
+    border:1px solid rgba(148,163,184,.15);
+    border-radius:12px;
+}
+</style>
+@endpush
