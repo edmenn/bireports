@@ -194,6 +194,32 @@ class ConfiguracionesController extends Controller
 
         $configuracion->update($data);
 
+        // Auditoría de cambios (evento)
+        try {
+            $after = $configuracion->fresh();
+            $maskFields = ['powerbi_client_secret'];
+            $changes = [];
+            foreach (array_keys($data) as $k) {
+                $old = $before->{$k} ?? null;
+                $new = $after->{$k} ?? null;
+                if (is_array($old)) $old = json_encode($old);
+                if (is_array($new)) $new = json_encode($new);
+                if ($old === $new) continue;
+                if (in_array($k, $maskFields, true)) {
+                    $old = $old !== null ? '***' : null;
+                    $new = $new !== null ? '***' : null;
+                }
+                $changes[] = ['field' => $k, 'old' => $old, 'new' => $new];
+            }
+            if (!empty($changes)) {
+                \App\Models\ConfigAudit::create([
+                    'user_id' => optional($request->user())->id,
+                    'ip'      => (string) $request->ip(),
+                    'changes' => $changes,
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
         // Redirección: respetar retorno si viene desde "Tema"
         $returnTo = (string) $request->input('return_to', '');
         if ($returnTo && Str::startsWith($returnTo, url('/configuraciones'))) {

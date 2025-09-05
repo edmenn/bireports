@@ -6,6 +6,8 @@ use App\Services\PowerBiService;
 use App\Models\Workspace;
 use App\Models\Report;
 use App\Models\Dataset;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 
 class PowerBiImportController extends Controller
@@ -93,6 +95,14 @@ class PowerBiImportController extends Controller
                 );
                 $rpCount++;
             }
+        }
+
+        // 3b) Importar capacidades + descubrir ARM (suscripción/RG y arm_resource_name) de forma automática
+        try {
+            Artisan::call('powerbi:capacities:import');
+            Artisan::call('powerbi:discover', ['--dry-run' => 0]);
+        } catch (\Throwable $e) {
+            Log::warning('Auto ARM discovery after import failed', ['error' => $e->getMessage()]);
         }
 
         // 4) Mostrar un resumen simple

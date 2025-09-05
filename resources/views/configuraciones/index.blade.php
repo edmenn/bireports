@@ -8,6 +8,9 @@
             <h1 class="m-0 text-dark">Configuraciones</h1>
             <small class="text-muted">Credenciales de Microsoft Fabric / Power BI para App-Owns-Data</small>
         </div>
+        <a href="{{ route('config.audit.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-list"></i> Ver auditoría
+        </a>
         <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
             <i class="fas fa-cloud-download-alt mr-1"></i> Importar Ahora
         </a>

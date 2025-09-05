@@ -56,6 +56,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/refresh', [CapacityController::class, 'refresh'])->name('capacities.refresh');
         Route::post('/{capacity}/pause', [CapacityController::class, 'pause'])->name('capacities.pause');
         Route::post('/{capacity}/resume', [CapacityController::class, 'resume'])->name('capacities.resume');
+        // Programación y auditoría
+        Route::get('/{capacity}/schedule', [CapacityController::class, 'schedule'])->name('capacities.schedule');
+        Route::post('/{capacity}/schedule', [CapacityController::class, 'scheduleStore'])->name('capacities.schedule.store');
+        Route::post('/{capacity}/schedule/{slot}/toggle', [CapacityController::class, 'scheduleToggle'])->name('capacities.schedule.toggle');
+        Route::delete('/{capacity}/schedule/{slot}', [CapacityController::class, 'scheduleDelete'])->name('capacities.schedule.delete');
+        Route::put('/{capacity}/settings', [CapacityController::class, 'settingsUpdate'])->name('capacities.settings.update');
+        Route::get('/{capacity}/audit', [CapacityController::class, 'audit'])->name('capacities.audit');
     });
 
     // Workspaces (solo admin/editor)
@@ -162,6 +169,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
             ->name('configuraciones.index');
+        Route::get('/configuraciones/auditoria', [\App\Http\Controllers\Admin\ConfigAuditController::class, 'index'])
+            ->name('config.audit.index');
 
         Route::get('/configuraciones/tema', [ConfiguracionesController::class, 'theme'])
             ->name('configuraciones.tema');

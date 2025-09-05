@@ -52,11 +52,26 @@ class CheckCapacityInactivityJob implements ShouldQueue
 
         // Si estuvo inactiva más de N minutos y está activa => pausar
         if ($cap->is_active && ($lastSeen === null || $lastSeen->diffInMinutes($now) >= $timeout)) {
-            $svc->pause($cap->capacity_uuid);
-            $cap->is_active = false;
-            $cap->last_state_change_at = Carbon::now();
-            $cap->save();
-            Log::info("Capacity {$cap->display_name} paused by inactivity ({$timeout} min)");
+            try {
+                $svc->pause($cap->capacity_uuid);
+                $cap->is_active = false;
+                $cap->last_state_change_at = Carbon::now();
+                $cap->save();
+                \App\Models\CapacityAudit::create([
+                    'capacity_id' => $cap->id,
+                    'action'      => 'inactivity_pause',
+                    'result'      => 'success',
+                    'message'     => "Paused after {$timeout} min of inactivity",
+                ]);
+                Log::info("Capacity {$cap->display_name} paused by inactivity ({$timeout} min)");
+            } catch (\Throwable $e) {
+                \App\Models\CapacityAudit::create([
+                    'capacity_id' => $cap->id,
+                    'action'      => 'inactivity_pause',
+                    'result'      => 'error',
+                    'message'     => (string) $e->getMessage(),
+                ]);
+            }
         }
     }
 

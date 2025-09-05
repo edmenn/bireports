@@ -231,6 +231,15 @@
                                         </form>
                                     @endif
                                 </div>
+                                <div class="dropdown d-inline-block ms-2">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
+                                        Acciones
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-right">
+                                        <li><a class="dropdown-item" href="{{ route('capacities.schedule', $c) }}"><i class="fas fa-clock me-2"></i> Programar encendido/pausado</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('capacities.audit', $c) }}"><i class="fas fa-list me-2"></i> Auditoría</a></li>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                     @endforeach

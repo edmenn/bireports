@@ -121,6 +121,12 @@ class CapacityController extends Controller
             $capacity->is_active = false;
             $capacity->last_state_change_at = now();
             $capacity->save();
+            \App\Models\CapacityAudit::create([
+                'capacity_id' => $capacity->id,
+                'action'      => 'pause',
+                'result'      => 'success',
+                'message'     => 'Paused by user',
+            ]);
 
             // Al cambiar estado, borramos la marca para permitir una próxima sync fresca
             Cache::forget('capacities:last_sync_at');
@@ -130,6 +136,12 @@ class CapacityController extends Controller
             Log::error('Pause capacity error: '.$e->getMessage(), [
                 'capacity_id' => $capacity->id,
                 'exception'   => $e,
+            ]);
+            \App\Models\CapacityAudit::create([
+                'capacity_id' => $capacity->id,
+                'action'      => 'pause',
+                'result'      => 'error',
+                'message'     => (string) $e->getMessage(),
             ]);
             return back()->with('error', "No se pudo pausar: {$e->getMessage()}");
         }
@@ -154,6 +166,12 @@ class CapacityController extends Controller
             $capacity->is_active = true;
             $capacity->last_state_change_at = now();
             $capacity->save();
+            \App\Models\CapacityAudit::create([
+                'capacity_id' => $capacity->id,
+                'action'      => 'resume',
+                'result'      => 'success',
+                'message'     => 'Resumed by user',
+            ]);
 
             Cache::forget('capacities:last_sync_at');
 
@@ -163,8 +181,85 @@ class CapacityController extends Controller
                 'capacity_id' => $capacity->id,
                 'exception'   => $e,
             ]);
+            \App\Models\CapacityAudit::create([
+                'capacity_id' => $capacity->id,
+                'action'      => 'resume',
+                'result'      => 'error',
+                'message'     => (string) $e->getMessage(),
+            ]);
             return back()->with('error', "No se pudo reanudar: {$e->getMessage()}");
         }
+    }
+
+    // ===== Programación (encendido/pausado) e inactividad =====
+    public function schedule(Capacity $capacity): View
+    {
+        $capacity->load('schedules');
+        $dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+        return view('capacities.schedule', [
+            'capacity'  => $capacity,
+            'schedules' => $capacity->schedules()->orderBy('weekday')->orderBy('start_time')->get(),
+            'dayNames'  => $dayNames,
+        ]);
+    }
+
+    public function scheduleStore(Request $request, Capacity $capacity): RedirectResponse
+    {
+        $validated = $request->validate([
+            'days'       => ['required','array','min:1'],
+            'days.*'     => ['integer','between:0,6'],
+            'start_time' => ['required','date_format:H:i'],
+            'end_time'   => ['required','date_format:H:i','after:start_time'],
+        ]);
+
+        $start = $validated['start_time'] . ':00';
+        $end   = $validated['end_time']   . ':00';
+        foreach (array_unique($validated['days']) as $wd) {
+            $capacity->schedules()->create([
+                'weekday'    => (int)$wd,
+                'start_time' => $start,
+                'end_time'   => $end,
+                'enabled'    => true,
+            ]);
+        }
+        return back()->with('success','Horario agregado.');
+    }
+
+    public function scheduleToggle(Capacity $capacity, int $slot): RedirectResponse
+    {
+        $slot = \App\Models\CapacitySchedule::query()->where('capacity_id',$capacity->id)->where('id',$slot)->firstOrFail();
+        $slot->enabled = ! $slot->enabled;
+        $slot->save();
+        return back()->with('success', $slot->enabled ? 'Horario activado.' : 'Horario desactivado.');
+    }
+
+    public function scheduleDelete(Capacity $capacity, int $slot): RedirectResponse
+    {
+        \App\Models\CapacitySchedule::query()->where('capacity_id',$capacity->id)->where('id',$slot)->delete();
+        return back()->with('success','Horario eliminado.');
+    }
+
+    public function settingsUpdate(Request $request, Capacity $capacity): RedirectResponse
+    {
+        $validated = $request->validate([
+            'force_shutdown_on_schedule'  => ['nullable','boolean'],
+            'cost_optimization_enabled'   => ['nullable','boolean'],
+            'inactivity_timeout_minutes'  => ['nullable','integer','min:5','max:120'],
+        ]);
+
+        $capacity->force_shutdown_on_schedule = $request->boolean('force_shutdown_on_schedule');
+        $capacity->cost_optimization_enabled  = $request->boolean('cost_optimization_enabled');
+        $capacity->inactivity_timeout_minutes = $validated['inactivity_timeout_minutes'] ?? null;
+        $capacity->save();
+
+        return back()->with('success','Configuración actualizada.');
+    }
+
+    public function audit(Capacity $capacity): View
+    {
+        $logs = \App\Models\CapacityAudit::query()->where('capacity_id',$capacity->id)
+            ->orderByDesc('id')->limit(200)->get();
+        return view('capacities.audit', compact('capacity','logs'));
     }
 
     /**

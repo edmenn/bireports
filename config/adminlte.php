@@ -249,6 +249,7 @@ return [
             'submenu' => [
                 [ 'text'=>'Métricas de uso',     'icon'=>'fas fa-chart-bar', 'route'=>'auditoria.index',        'can'=>'menu.auditoria' ],
                 [ 'text'=>'Reiniciar auditoría', 'icon'=>'fas fa-broom',     'route'=>'admin.audit.reset.show', 'can'=>'menu.auditoria' ],
+                [ 'text'=>'Cambios de configuración', 'icon'=>'fas fa-list', 'route'=>'config.audit.index', 'can'=>'menu.auditoria' ],
             ],
         ],
 

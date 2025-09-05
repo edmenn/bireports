@@ -54,17 +54,47 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
 
         if ($cap->force_shutdown_on_schedule) {
             if ($inWindow && ! $cap->is_active) {
-                $svc->resume($cap->capacity_uuid);
-                $cap->is_active = true;
-                $cap->last_state_change_at = Carbon::now();
-                $cap->save();
-                Log::info("Capacity {$cap->display_name} resumed by schedule");
+                try {
+                    $svc->resume($cap->capacity_uuid);
+                    $cap->is_active = true;
+                    $cap->last_state_change_at = Carbon::now();
+                    $cap->save();
+                    \App\Models\CapacityAudit::create([
+                        'capacity_id' => $cap->id,
+                        'action'      => 'schedule_resume',
+                        'result'      => 'success',
+                        'message'     => 'Auto-resume by schedule window',
+                    ]);
+                    Log::info("Capacity {$cap->display_name} resumed by schedule");
+                } catch (\Throwable $e) {
+                    \App\Models\CapacityAudit::create([
+                        'capacity_id' => $cap->id,
+                        'action'      => 'schedule_resume',
+                        'result'      => 'error',
+                        'message'     => (string) $e->getMessage(),
+                    ]);
+                }
             } elseif (! $inWindow && $cap->is_active) {
-                $svc->pause($cap->capacity_uuid);
-                $cap->is_active = false;
-                $cap->last_state_change_at = Carbon::now();
-                $cap->save();
-                Log::info("Capacity {$cap->display_name} paused by schedule");
+                try {
+                    $svc->pause($cap->capacity_uuid);
+                    $cap->is_active = false;
+                    $cap->last_state_change_at = Carbon::now();
+                    $cap->save();
+                    \App\Models\CapacityAudit::create([
+                        'capacity_id' => $cap->id,
+                        'action'      => 'schedule_pause',
+                        'result'      => 'success',
+                        'message'     => 'Auto-pause outside schedule window',
+                    ]);
+                    Log::info("Capacity {$cap->display_name} paused by schedule");
+                } catch (\Throwable $e) {
+                    \App\Models\CapacityAudit::create([
+                        'capacity_id' => $cap->id,
+                        'action'      => 'schedule_pause',
+                        'result'      => 'error',
+                        'message'     => (string) $e->getMessage(),
+                    ]);
+                }
             }
         }
     }
