@@ -14,6 +14,7 @@ use App\Http\Controllers\ConfiguracionesController;
 use App\Http\Controllers\PowerBiImportController;
 use App\Http\Controllers\WorkspacesController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\DatasetsController;
 use App\Http\Controllers\ReportViewerController;
 use App\Http\Controllers\AuditAnalyticsController;
 use App\Http\Controllers\CapacityController;
@@ -214,6 +215,37 @@ Route::prefix('admin')
         Route::get('/reportes', [ReportsController::class, 'index'])
             ->name('reports.index');
 
+        // Datasets (conjuntos de datos)
+        Route::get('/datasets', [DatasetsController::class, 'index'])
+            ->name('datasets.index');
+        // Vista combinada de programaciones (local + Fabric)
+        Route::get('/datasets/schedules', [DatasetsController::class, 'schedulesIndex'])
+            ->name('datasets.schedules.index');
+        Route::get('/datasets/schedules/export', [DatasetsController::class, 'schedulesExport'])
+            ->name('datasets.schedules.export');
+        Route::post('/datasets/{workspace}/{dataset}/refresh', [DatasetsController::class, 'refresh'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.refresh');
+        Route::post('/datasets/{workspace}/{dataset}/metadata-refresh', [DatasetsController::class, 'metadataRefresh'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.metadata.refresh');
+        Route::get('/datasets/{workspace}/{dataset}/history', [DatasetsController::class, 'history'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.history');
+        Route::get('/datasets/{workspace}/{dataset}/schedule', [DatasetsController::class, 'schedule'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.schedule');
+        // Programaciones locales
+        Route::post('/datasets/{workspace}/{dataset}/local-schedules', [DatasetsController::class, 'localScheduleStore'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.local.store');
+        Route::post('/datasets/{workspace}/{dataset}/local-schedules/{schedule}/toggle', [DatasetsController::class, 'localScheduleToggle'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.local.toggle');
+        Route::delete('/datasets/{workspace}/{dataset}/local-schedules/{schedule}', [DatasetsController::class, 'localScheduleDelete'])
+            ->whereUuid('workspace')->whereUuid('dataset')
+            ->name('datasets.local.delete');
+
         // CRUD de imagen/descripcion de Report
         Route::get('/reportes/{report}/edit', [ReportsController::class, 'edit'])
             ->whereUuid('report')
@@ -238,6 +270,10 @@ Route::prefix('admin')
         // Importación Workspaces + Reports desde Power BI
         Route::get('dev/import/powerbi/run', [PowerBiImportController::class, 'importWorkspacesAndReports'])
             ->name('powerbi.import.run');
+
+        // Importación de Datasets desde Power BI
+        Route::get('dev/import/powerbi/datasets', [PowerBiImportController::class, 'importDatasets'])
+            ->name('powerbi.import.datasets');
     });
 
 // Idiomas

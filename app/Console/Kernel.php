@@ -30,7 +30,12 @@ final class Kernel extends ConsoleKernel
      */
     protected function scheduleTimezone(): \DateTimeZone|string|null
     {
-        return \config('app.timezone'); // p.ej.: 'America/Sao_Paulo'
+        try {
+            $cfgTz = optional(\App\Models\Configuracion::query()->first())->app_timezone_db;
+            return $cfgTz ?: \config('app.timezone');
+        } catch (\Throwable $e) {
+            return \config('app.timezone');
+        }
     }
 
     /**
@@ -48,6 +53,19 @@ final class Kernel extends ConsoleKernel
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
+
+        // Encender capacidad antes de jobs de refresh de datasets (pre-warm)
+        try {
+            $cfg = \App\Models\Configuracion::query()->first();
+            if ($cfg && $cfg->prewarm_enabled) {
+                $schedule->command('powerbi:datasets:prewarm --window=10')
+                    ->everyFiveMinutes()
+                    ->withoutOverlapping()
+                    ->onOneServer();
+            }
+        } catch (\Throwable $e) {
+            // Silencioso: si no hay tabla/config todavía
+        }
 
         // (Opcional) Auditoría semanal automática del stack UI
         // Genera/actualiza storage/app/ui_audit.json para tener visibilidad continua.
@@ -74,5 +92,4 @@ final class Kernel extends ConsoleKernel
 
         // Rutas de consola (si las usas)
         require \base_path('routes/console.php');
-    }
-}
+    }\n        // Evaluación de programaciones locales de datasets (cada minuto)\n        \->command('datasets:scheduler-tick')\n            ->everyMinute()\n            ->withoutOverlapping()\n            ->onOneServer();\n    }\n\n}\n

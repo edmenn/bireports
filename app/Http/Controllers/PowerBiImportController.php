@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\PowerBiService;
 use App\Models\Workspace;
 use App\Models\Report;
+use App\Models\Dataset;
 use Illuminate\Http\Request;
 
 class PowerBiImportController extends Controller
@@ -42,7 +43,31 @@ class PowerBiImportController extends Controller
             );
             $wsCount++;
 
-            // 2) Por cada workspace, traer reports y guardarlos
+            // 2) Por cada workspace, traer datasets y guardarlos
+            $datasets = $powerBi->listDatasets($workspaceData['id']);
+            foreach ($datasets as $d) {
+                $datasetData = [
+                    'id'                   => (string)($d['id'] ?? ''),
+                    'name'                 => (string)($d['name'] ?? '(sin nombre)'),
+                    'workspace_id'         => $workspaceData['id'],
+                    'configured_by'        => isset($d['configuredBy']) ? (string)$d['configuredBy'] : null,
+                    'is_refreshable'       => (bool)  ($d['isRefreshable'] ?? false),
+                    'add_rows_api_enabled' => (bool)  ($d['addRowsAPIEnabled'] ?? false),
+                ];
+                if (!$datasetData['id']) { continue; }
+                Dataset::updateOrCreate(
+                    ['id' => $datasetData['id']],
+                    [
+                        'name'                  => $datasetData['name'],
+                        'workspace_id'          => $datasetData['workspace_id'],
+                        'configured_by'         => $datasetData['configured_by'],
+                        'is_refreshable'        => $datasetData['is_refreshable'],
+                        'add_rows_api_enabled'  => $datasetData['add_rows_api_enabled'],
+                    ]
+                );
+            }
+
+            // 3) Por cada workspace, traer reports y guardarlos
             $reports = $powerBi->listReports($workspaceData['id']);
             foreach ($reports as $r) {
                 $reportData = [
@@ -70,10 +95,61 @@ class PowerBiImportController extends Controller
             }
         }
 
-        // 3) Mostrar un resumen simple
+        // 4) Mostrar un resumen simple
         return view('admin.dev.powerbi_import_result', [
             'wsCount' => $wsCount,
             'rpCount' => $rpCount,
+            'dsCount' => Dataset::count(),
+        ]);
+    }
+
+    /** Importa/actualiza solo Datasets para todos los workspaces. */
+    public function importDatasets(PowerBiService $powerBi)
+    {
+        $groups = $powerBi->listWorkspaces();
+        $dsCount = 0;
+        foreach ($groups as $g) {
+            $wsId = (string)($g['id'] ?? '');
+            if ($wsId === '') continue;
+
+            // Asegurar workspace exista en BD aunque sea mínimo
+            Workspace::firstOrCreate(['id' => $wsId], [
+                'name' => (string)($g['name'] ?? '(sin nombre)'),
+                'type' => (string)($g['type'] ?? null),
+                'is_read_only' => (bool)($g['isReadOnly'] ?? false),
+                'capacity_id' => isset($g['capacityId']) ? (string)$g['capacityId'] : null,
+            ]);
+
+            $datasets = $powerBi->listDatasets($wsId);
+            foreach ($datasets as $d) {
+                $datasetData = [
+                    'id'                   => (string)($d['id'] ?? ''),
+                    'name'                 => (string)($d['name'] ?? '(sin nombre)'),
+                    'workspace_id'         => $wsId,
+                    'configured_by'        => isset($d['configuredBy']) ? (string)$d['configuredBy'] : null,
+                    'is_refreshable'       => (bool)  ($d['isRefreshable'] ?? false),
+                    'add_rows_api_enabled' => (bool)  ($d['addRowsAPIEnabled'] ?? false),
+                ];
+                if (!$datasetData['id']) continue;
+
+                Dataset::updateOrCreate(
+                    ['id' => $datasetData['id']],
+                    [
+                        'name'                  => $datasetData['name'],
+                        'workspace_id'          => $datasetData['workspace_id'],
+                        'configured_by'         => $datasetData['configured_by'],
+                        'is_refreshable'        => $datasetData['is_refreshable'],
+                        'add_rows_api_enabled'  => $datasetData['add_rows_api_enabled'],
+                    ]
+                );
+                $dsCount++;
+            }
+        }
+
+        return view('admin.dev.powerbi_import_result', [
+            'wsCount' => Workspace::count(),
+            'rpCount' => \App\Models\Report::count(),
+            'dsCount' => $dsCount,
         ]);
     }
 }

@@ -20,12 +20,14 @@ class Configuracion extends Model
         'google_analytics_code',
         'tipo_visualizacion',
         'email_locale',
+        'app_timezone_db',
         'powerbi_client_id',
         'powerbi_client_secret',
         'powerbi_tenant_id',
         'powerbi_redirect_uri',
         'powerbi_scope',
         'powerbi_token_refresh_minutes',
+        'prewarm_enabled',
         'microsoft_login_enabled',
         'local_login_enabled',
 
@@ -54,6 +56,7 @@ class Configuracion extends Model
         'local_login_enabled' => 'boolean',
         'footer_enabled' => 'boolean',
         'powerbi_token_refresh_minutes' => 'integer',
+        'prewarm_enabled' => 'boolean',
     ];
 
     // Almacenar el client secret encriptado; tolera valores antiguos en texto claro

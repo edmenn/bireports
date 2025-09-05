@@ -43,4 +43,9 @@ class Workspace extends Model
         // FK: reports.workspace_id -> workspaces.id
         return $this->hasMany(Report::class, 'workspace_id', 'id');
     }
+
+    public function datasets(): HasMany
+    {
+        return $this->hasMany(Dataset::class, 'workspace_id', 'id');
+    }
 }

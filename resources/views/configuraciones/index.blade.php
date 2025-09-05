@@ -73,6 +73,33 @@
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
                             </x-adminlte-input>
                         </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Zona horaria por defecto</label>
+                            @php
+                                $tzList = \DateTimeZone::listIdentifiers();
+                                $selTz = old('app_timezone_db', $config->app_timezone_db ?? config('app.timezone'));
+                                $nowUTC = \Carbon\Carbon::now('UTC');
+                                $label = function(string $id) use ($nowUTC) {
+                                    try {
+                                        $dt = $nowUTC->copy()->setTimezone($id);
+                                        $offsetMin = $dt->offsetMinutes;
+                                        $sign = $offsetMin >= 0 ? '+' : '-';
+                                        $abs = abs($offsetMin);
+                                        $hh = str_pad((string) intdiv($abs,60), 2, '0', STR_PAD_LEFT);
+                                        $mm = str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT);
+                                        return sprintf('%s (UTC %s%s:%s)', $id, $sign, $hh, $mm);
+                                    } catch (\Throwable $e) {
+                                        return $id;
+                                    }
+                                };
+                            @endphp
+                            <select name="app_timezone_db" class="form-control">
+                                @foreach($tzList as $tz)
+                                    <option value="{{ $tz }}" {{ $selTz === $tz ? 'selected' : '' }}>{{ $label($tz) }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Se aplicará al scheduler y como valor por defecto en programación de datasets.</small>
+                        </div>
                     </div>
 
                     <hr>
@@ -87,6 +114,21 @@
                                 <input type="checkbox" name="microsoft_login_enabled" value="1" {{ old('microsoft_login_enabled', $config->microsoft_login_enabled) ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
+                        </div>
+                    </div>
+
+                    <div class="p-3 border rounded bg-light mt-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1 font-weight-bold">Pre‑warm de capacidades</h6>
+                                <small class="text-muted d-block">Si está activo, antes de una actualización programada reanudamos (encendemos) la capacidad asociada para evitar fallos por estar pausada. Desactívalo si prefieres controlar esto externamente.</small>
+                            </div>
+                            <div>
+                                <label class="custom-toggle-switch">
+                                    <input type="checkbox" name="prewarm_enabled" value="1" {{ old('prewarm_enabled', $config->prewarm_enabled) ? 'checked' : '' }}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 

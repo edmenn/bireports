@@ -149,6 +149,88 @@ class PowerBiService
         }
     }
 
+    /** @return array<int, array<string,mixed>> */
+    public function listDatasets(string $workspaceId): array
+    {
+        $token = $this->getAccessToken();
+        try {
+            $resp = $this->http->get("{$this->base}/groups/{$workspaceId}/datasets?\$top=5000", [
+                'headers' => $this->authHeaders($token),
+            ]);
+            $data = json_decode((string) $resp->getBody(), true);
+            return $data['value'] ?? [];
+        } catch (ClientException $e) {
+            $this->logHttpError("GET /groups/{$workspaceId}/datasets", $e);
+            throw $e;
+        }
+    }
+
+    public function getDataset(string $workspaceId, string $datasetId): array
+    {
+        $token = $this->getAccessToken();
+        try {
+            $resp = $this->http->get("{$this->base}/groups/{$workspaceId}/datasets/{$datasetId}", [
+                'headers' => $this->authHeaders($token),
+            ]);
+            return json_decode((string) $resp->getBody(), true) ?? [];
+        } catch (ClientException $e) {
+            $this->logHttpError("GET /groups/{$workspaceId}/datasets/{$datasetId}", $e);
+            throw $e;
+        }
+    }
+
+    public function refreshDataset(string $workspaceId, string $datasetId): array
+    {
+        $token = $this->getAccessToken();
+        try {
+            $resp = $this->http->post("{$this->base}/groups/{$workspaceId}/datasets/{$datasetId}/refreshes", [
+                'headers' => $this->authHeaders($token),
+                'json'    => new \stdClass(),
+            ]);
+            return [
+                'status' => $resp->getStatusCode(),
+            ];
+        } catch (ClientException $e) {
+            $this->logHttpError("POST /groups/{$workspaceId}/datasets/{$datasetId}/refreshes", $e);
+            throw $e;
+        }
+    }
+
+    /** @return array<int, array<string,mixed>> */
+    public function getDatasetRefreshHistory(string $workspaceId, string $datasetId): array
+    {
+        $token = $this->getAccessToken();
+        try {
+            $resp = $this->http->get("{$this->base}/groups/{$workspaceId}/datasets/{$datasetId}/refreshes", [
+                'headers' => $this->authHeaders($token),
+            ]);
+            $data = json_decode((string) $resp->getBody(), true);
+            return $data['value'] ?? [];
+        } catch (ClientException $e) {
+            $this->logHttpError("GET /groups/{$workspaceId}/datasets/{$datasetId}/refreshes", $e);
+            throw $e;
+        }
+    }
+
+    public function getDatasetRefreshSchedule(string $workspaceId, string $datasetId): array
+    {
+        $token = $this->getAccessToken();
+        try {
+            $resp = $this->http->get("{$this->base}/groups/{$workspaceId}/datasets/{$datasetId}/refreshSchedule", [
+                'headers' => $this->authHeaders($token),
+            ]);
+            $data = json_decode((string) $resp->getBody(), true) ?? [];
+            // Normaliza: para esta API, el schedule viene en el nivel raíz (sin 'value').
+            // La UI espera ['value' => {...}] para unificar con otros endpoints.
+            return isset($data['value']) ? $data : ['value' => $data];
+        } catch (ClientException $e) {
+            $this->logHttpError("GET /groups/{$workspaceId}/datasets/{$datasetId}/refreshSchedule", $e);
+            throw $e;
+        }
+    }
+
+    // updateDatasetRefreshSchedule eliminado: mantenemos solo lectura del schedule de Fabric.
+
     /* =========================================================
      * Info puntual
      * ========================================================= */

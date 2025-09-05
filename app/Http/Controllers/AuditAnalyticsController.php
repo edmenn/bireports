@@ -26,11 +26,11 @@ final class AuditAnalyticsController extends Controller
         $from = (clone $to)->subDays(59)->startOfDay();
 
         if ($request->filled('from')) {
-            $from = Carbon::parse((string)$request->input('from'), config('app.timezone'))
+            $from = Carbon::parse((string)$request->input('from'), \App\Support\AppTimezone::current())
                 ->utc()->startOfDay();
         }
         if ($request->filled('to')) {
-            $to = Carbon::parse((string)$request->input('to'), config('app.timezone'))
+            $to = Carbon::parse((string)$request->input('to'), \App\Support\AppTimezone::current())
                 ->utc()->endOfDay();
         }
         // ====================================================================

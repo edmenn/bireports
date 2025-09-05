@@ -139,6 +139,8 @@ class ConfiguracionesController extends Controller
         // Toggles de login (checkbox)
         $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
         $data['local_login_enabled'] = $request->boolean('local_login_enabled');
+        // Toggle de pre-warm
+        $data['prewarm_enabled'] = $request->boolean('prewarm_enabled');
 
         // Manejo de archivos (branding)
         if ($request->hasFile('site_logo')) {

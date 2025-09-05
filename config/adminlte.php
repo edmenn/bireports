@@ -222,6 +222,7 @@ return [
             'classes' => 'menu-open',
             'submenu' => [
                 [ 'text'=>'Informes',           'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
+                [ 'text'=>'Conjuntos de datos', 'icon'=>'fas fa-database',        'route'=>'datasets.index',    'can'=>'menu.reports_index' ],
                 [ 'text'=>'Aplicaciones',       'icon'=>'fas fa-th-large',        'route'=>'apps.index',        'can'=>'menu.apps' ],
                 [ 'text'=>'Espacios de trabajo','icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
                 [ 'text'=>'Capacidades',        'icon'=>'fas fa-cogs',            'route'=>'capacities.index',  'can'=>'menu.capacities'],
