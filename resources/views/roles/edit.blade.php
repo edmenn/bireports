@@ -56,11 +56,15 @@
             <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save"/>
             <x-adminlte-button :href="route('roles.index')" theme="secondary" label="Cancelar" icon="fas fa-times"/>
             @if (strtolower($role->name) !== 'admin')
-                <form action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el perfil {{ $role->name }}?');">
-                    @csrf @method('DELETE')
-                    <x-adminlte-button theme="danger" label="Eliminar" icon="fas fa-trash" type="submit"/>
-                </form>
+                <x-adminlte-button theme="danger" label="Eliminar" icon="fas fa-trash" type="submit" form="roleDeleteForm"/>
             @endif
         </x-adminlte-card>
     </form>
+
+    @if (strtolower($role->name) !== 'admin')
+        <form id="roleDeleteForm" action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el perfil {{ $role->name }}?');">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endif
 @endsection

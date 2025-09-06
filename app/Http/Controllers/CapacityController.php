@@ -257,9 +257,110 @@ class CapacityController extends Controller
 
     public function audit(Capacity $capacity): View
     {
-        $logs = \App\Models\CapacityAudit::query()->where('capacity_id',$capacity->id)
+        // 1) Logs locales (BD)
+        $localRaw = \App\Models\CapacityAudit::query()->where('capacity_id',$capacity->id)
             ->orderByDesc('id')->limit(200)->get();
+
+        // Normalizamos locales a objetos simples con campo source
+        $local = collect();
+        foreach ($localRaw as $l) {
+            $row = new class($l) {
+                public $created_at; public $action; public $result; public $message; public $source;
+                public function __construct($m){
+                    $this->created_at = $m->created_at; $this->action = $m->action; $this->result = $m->result; $this->message = $m->message; $this->source = 'local';
+                }
+            };
+            $local->push($row);
+        }
+
+        // 2) Logs de API (Azure Activity Logs / ARM)
+        $apiItems = collect();
+        try {
+            /** @var PowerBiCapacityService $svc */
+            $svc = app(PowerBiCapacityService::class);
+            $events = $svc->getCapacityActivityLogs($capacity, now()->subDays(14), now(), 200);
+
+            foreach ($events as $ev) {
+                $ts = isset($ev['eventTimestamp']) ? \Illuminate\Support\Carbon::parse((string) $ev['eventTimestamp']) : now();
+                $op = (string)($ev['operationName']['value'] ?? '');
+                $status = strtoupper((string)($ev['status']['value'] ?? ($ev['status'] ?? '')));
+                $caller = (string)($ev['caller'] ?? '');
+                $corrId = (string)($ev['correlationId'] ?? '');
+
+                $action = str_contains(strtolower($op), 'resume') ? 'resume' : (str_contains(strtolower($op), 'suspend') ? 'pause' : 'other');
+                $result = $status === 'SUCCEEDED' ? 'success' : ($status === 'FAILED' ? 'error' : strtolower($status ?: '-'));
+                $msgParts = [];
+                $msgParts[] = 'API';
+                if ($caller !== '') { $msgParts[] = "by $caller"; }
+                if ($corrId !== '') { $msgParts[] = "corrId=$corrId"; }
+                $message = implode(' ', $msgParts);
+
+                // Creamos objetos compatibles con la vista (propiedades como en el modelo)
+                $row = new class($ts, $action, $result, $message) {
+                    public $created_at; public $action; public $result; public $message; public $source;
+                    public function __construct($created_at, $action, $result, $message){
+                        $this->created_at = $created_at; $this->action = $action; $this->result = $result; $this->message = $message; $this->source = 'api';
+                    }
+                };
+                $apiItems->push($row);
+            }
+        } catch (\Throwable $e) {
+            // Si falla (sin credenciales ARM, etc.), seguimos solo con locales
+        }
+
+        // 3) Merge + ordenar desc por fecha
+        $logs = $apiItems
+            ->merge($local)
+            ->sortByDesc(function ($x) { return optional($x->created_at)->getTimestamp() ?? 0; })
+            ->take(200);
+
         return view('capacities.audit', compact('capacity','logs'));
+    }
+
+    /**
+     * Refresca metadatos de la capacidad desde Power BI y vuelve a la auditoría.
+     */
+    public function auditRefresh(Capacity $capacity): \Illuminate\Http\RedirectResponse
+    {
+        $hasConfig = \App\Models\Configuracion::query()
+            ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+            ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+            ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+            ->exists();
+        if (! $hasConfig) {
+            return back()->with('error', 'Primero configura credenciales en Configuraciones.');
+        }
+
+        try {
+            /** @var PowerBiCapacityService $svc */
+            $svc = app(PowerBiCapacityService::class);
+            $r   = $svc->getCapacity($capacity->capacity_uuid);
+
+            if (empty($r)) {
+                return back()->with('error', 'No se pudo obtener metadatos de la capacidad.');
+            }
+
+            $display = (string) ($r['displayName'] ?? $r['name'] ?? $capacity->display_name);
+            $sku     = (string) ($r['sku'] ?? ($r['administration']['sku'] ?? ($capacity->sku ?? '')));
+            $region  = (string) ($r['region'] ?? ($capacity->region ?? ''));
+            $state   = (string) ($r['state'] ?? '');
+            $type    = (string) ($r['type'] ?? ($capacity->type ?? ''));
+
+            $supportsPause = ! str_contains(strtoupper($sku), 'PPU');
+
+            $capacity->fill([
+                'display_name'   => $display,
+                'sku'            => $sku,
+                'type'           => $type,
+                'region'         => $region,
+                'supports_pause' => $supportsPause,
+                'is_active'      => $state !== '' ? strtoupper($state) === 'ACTIVE' : $capacity->is_active,
+            ])->save();
+
+            return redirect()->route('capacities.audit', $capacity)->with('success', 'Metadatos actualizados.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error al actualizar metadatos: ' . $e->getMessage());
+        }
     }
 
     /**

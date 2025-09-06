@@ -10,6 +10,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuditAdminController; // reset auditoría
+use App\Http\Controllers\Admin\AuditChangesController;
+use App\Http\Controllers\Admin\EntityAuditController;
 use App\Http\Controllers\ConfiguracionesController;
 use App\Http\Controllers\PowerBiImportController;
 use App\Http\Controllers\WorkspacesController;
@@ -64,6 +66,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{capacity}/schedule/{slot}', [CapacityController::class, 'scheduleDelete'])->name('capacities.schedule.delete');
         Route::put('/{capacity}/settings', [CapacityController::class, 'settingsUpdate'])->name('capacities.settings.update');
         Route::get('/{capacity}/audit', [CapacityController::class, 'audit'])->name('capacities.audit');
+        Route::post('/{capacity}/audit/refresh', [CapacityController::class, 'auditRefresh'])->name('capacities.audit.refresh');
     });
 
     // Workspaces (solo admin/editor)
@@ -185,8 +188,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
             ->name('configuraciones.index');
-        Route::get('/configuraciones/auditoria', [\App\Http\Controllers\Admin\ConfigAuditController::class, 'index'])
-            ->name('config.audit.index');
+    // Legacy: redirige a auditoría unificada
+    Route::get('/configuraciones/auditoria', function(){
+        return redirect()->route('auditoria.changes.index');
+    })->name('config.audit.index');
 
         Route::get('/configuraciones/tema', [ConfiguracionesController::class, 'theme'])
             ->name('configuraciones.tema');
@@ -286,6 +291,15 @@ Route::prefix('admin')
 
         Route::post('/auditoria/reset', [AuditAdminController::class, 'reset'])
             ->name('admin.audit.reset.run');
+
+        // Auditoría unificada de cambios (sistema + configuración)
+        Route::get('/auditoria/cambios', [AuditChangesController::class, 'index'])
+            ->name('auditoria.changes.index');
+
+        // Legacy: /auditoria/entidades -> unificada
+        Route::get('/auditoria/entidades', function(){
+            return redirect()->route('auditoria.changes.index');
+        })->name('auditoria.entities.index');
 
         // Diagnóstico rápido del token/alcance
         Route::get('dev/powerbi/ping', function (\App\Services\PowerBiService $svc) {

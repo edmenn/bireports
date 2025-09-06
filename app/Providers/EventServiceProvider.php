@@ -23,6 +23,24 @@ final class EventServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        // Observers de auditoría para entidades clave
+        \App\Models\User::observe(\App\Observers\EntityObserver::class);
+        if (class_exists(\App\Models\Group::class)) {
+            \App\Models\Group::observe(\App\Observers\EntityObserver::class);
+        }
+        if (class_exists(\App\Models\Folder::class)) {
+            \App\Models\Folder::observe(\App\Observers\EntityObserver::class);
+        }
+        // Modelos de Spatie Permission
+        if (class_exists(\Spatie\Permission\Models\Role::class)) {
+            \Spatie\Permission\Models\Role::observe(\App\Observers\EntityObserver::class);
+        }
+        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
+            \Spatie\Permission\Models\Permission::observe(\App\Observers\EntityObserver::class);
+        }
     }
+
+    protected $subscribe = [
+        \App\Listeners\LogSpatiePermissionEvents::class,
+    ];
 }

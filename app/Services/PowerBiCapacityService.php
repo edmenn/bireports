@@ -365,4 +365,92 @@ class PowerBiCapacityService
             throw new RuntimeException("ARM resume HTTP {$res['code']}");
         }
     }
+
+    /* ================== Auditoría (Activity Logs) ================== */
+
+    /**
+     * Obtiene eventos de Activity Logs (ARM) para una capacidad específica.
+     * Filtra por operaciones suspend/resume y por el resourceId de la capacidad.
+     *
+     * @return array<int, array<string,mixed>>
+     */
+    public function getCapacityActivityLogs(Capacity $cap, ?Carbon $from = null, ?Carbon $to = null, int $limit = 200): array
+    {
+        /** @var Configuracion|null $cfg */
+        $cfg = Configuracion::query()->first();
+        if (!$cfg) {
+            throw new RuntimeException('No existe fila de configuraciones.');
+        }
+
+        $subId = (string) ($cfg->azure_subscription_id ?? '');
+        $rg    = (string) ($cfg->azure_resource_group ?? '');
+        if ($subId === '' || $rg === '') {
+            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configuraciones.');
+        }
+
+        $provider = $this->detectProviderBySku((string) $cap->sku); // Microsoft.Fabric | Microsoft.PowerBIDedicated
+        $name     = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
+        if ($name === '') {
+            throw new RuntimeException('arm_resource_name/display_name vacío en la capacidad.');
+        }
+
+        $resourceId = sprintf(
+            '/subscriptions/%s/resourceGroups/%s/providers/%s/capacities/%s',
+            $subId,
+            $rg,
+            $provider,
+            $name
+        );
+
+        $from = $from ?: Carbon::now()->subDays(14);
+        $to   = $to   ?: Carbon::now();
+
+        // Filtro: por ventana de tiempo, resourceUri y operaciones (suspend/resume) para ambos providers.
+        $ops = [
+            "{$provider}/capacities/suspend/action",
+            "{$provider}/capacities/resume/action",
+            // En caso que el SKU detectado no coincida, incluimos ambos providers por compatibilidad
+            'Microsoft.Fabric/capacities/suspend/action',
+            'Microsoft.Fabric/capacities/resume/action',
+            'Microsoft.PowerBIDedicated/capacities/suspend/action',
+            'Microsoft.PowerBIDedicated/capacities/resume/action',
+        ];
+
+        $opFilter = '(' . implode(' or ', array_map(fn($v) => "operationName/value eq '$v'", array_unique($ops))) . ')';
+
+        $filter = sprintf(
+            "eventTimestamp ge '%s' and eventTimestamp le '%s' and resourceUri eq '%s' and %s",
+            $from->copy()->utc()->toIso8601String(),
+            $to->copy()->utc()->toIso8601String(),
+            $resourceId,
+            $opFilter
+        );
+
+        $url = sprintf(
+            'https://management.azure.com/subscriptions/%s/providers/microsoft.insights/eventtypes/management/values?api-version=2015-04-01&$filter=%s',
+            rawurlencode($subId),
+            rawurlencode($filter)
+        );
+
+        $res = $this->armRequest('GET', $url);
+        if ($res['code'] < 200 || $res['code'] >= 300) {
+            Log::warning('ActivityLogs query failed', ['code' => $res['code'], 'raw' => $res['raw']]);
+            return [];
+        }
+
+        $value = (array) ($res['json']['value'] ?? []);
+
+        // Ordenar desc por eventTimestamp y recortar al límite
+        usort($value, function ($a, $b) {
+            $ta = strtotime((string) ($a['eventTimestamp'] ?? '')) ?: 0;
+            $tb = strtotime((string) ($b['eventTimestamp'] ?? '')) ?: 0;
+            return $tb <=> $ta;
+        });
+
+        if ($limit > 0 && count($value) > $limit) {
+            $value = array_slice($value, 0, $limit);
+        }
+
+        return $value;
+    }
 }

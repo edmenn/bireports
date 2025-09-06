@@ -60,9 +60,7 @@
                 <div class="d-flex" style="gap: 0.75rem; width: 320px;">
                     <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
 
-                    <x-adminlte-button type="button" theme="secondary" label="Cancelar" icon="fas fa-times"
-                        class="btn-eq"
-                        onclick="window.location='{{ route('grupos.index') }}'"/>
+                    <x-adminlte-button :href="route('grupos.index')" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
                 </div>
             </div>
         </x-adminlte-card>

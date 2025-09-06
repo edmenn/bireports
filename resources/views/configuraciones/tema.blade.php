@@ -225,9 +225,9 @@
             <div class="d-flex justify-content-center">
                 <div class="d-flex" style="gap: 0.75rem; width: 320px;">
                     <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
-                    <a href="{{ route('configuraciones.index') }}" id="js-cancel-changes" class="btn btn-secondary btn-eq">
+                    <button type="button" id="js-cancel-changes" class="btn btn-secondary btn-eq" onclick="window.history.back()">
                         <i class="fas fa-times"></i> Cancelar
-                    </a>
+                    </button>
                 </div>
             </div>
         </x-adminlte-card>

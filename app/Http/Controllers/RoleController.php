@@ -113,7 +113,34 @@ class RoleController extends Controller
             $role->syncPermissions(\Spatie\Permission\Models\Permission::all());
         } else {
             $perms = array_values(array_unique($data['permissions'] ?? []));
-            $role->syncPermissions($perms);
+
+            // Auditoría: dif de permisos antes/después
+            try {
+                $before = $role->permissions()->pluck('name')->all();
+                $after  = $perms;
+                sort($before); sort($after);
+                $added   = array_values(array_diff($after, $before));
+                $removed = array_values(array_diff($before, $after));
+                $role->syncPermissions($perms);
+                if (!empty($added) || !empty($removed)) {
+                    \App\Models\EntityAudit::create([
+                        'user_id' => optional($request->user())->id,
+                        'action'  => 'synced',
+                        'auditable_type' => get_class($role),
+                        'auditable_id'   => (string) $role->getKey(),
+                        'changes' => null,
+                        'meta'    => [
+                            'context' => 'role.permissions',
+                            'added'   => $added,
+                            'removed' => $removed,
+                            'route'   => optional($request->route())->getName(),
+                            'ip'      => (string) $request->ip(),
+                        ],
+                    ]);
+                }
+            } catch (\Throwable) {
+                $role->syncPermissions($perms);
+            }
         }
 
         return redirect()->route('roles.index')->with('success', 'Perfil actualizado.');

@@ -112,7 +112,7 @@ class ConfiguracionesController extends Controller
             $data['theme_config'] = $themeConfig;
         }
 
-        // Sincronizar "Predeterminado" con paleta gris
+        // Sincronizar "Predeterminado" con paleta gris SOLO si no se enviaron colores
         $themeName = (string) $request->input('theme_name', '');
         $defaultPreset = [
             'main_bg' => '#f4f6f9',
@@ -131,16 +131,22 @@ class ConfiguracionesController extends Controller
             'btn_hover' => '#4b5563',
             'btn_active' => '#374151',
         ];
-        if ($themeName === '') {
-            // Fuerza a guardar la paleta gris por defecto
+        // Si no se eligió preset y tampoco se enviaron valores de colores, aplicamos el default
+        if ($themeName === '' && empty($themeConfig)) {
             $data['theme_config'] = $defaultPreset;
         }
 
-        // Toggles de login (checkbox)
-        $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
-        $data['local_login_enabled'] = $request->boolean('local_login_enabled');
+        // Toggles de login (checkbox): solo actualizar si vienen en la request
+        if ($request->has('microsoft_login_enabled')) {
+            $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
+        }
+        if ($request->has('local_login_enabled')) {
+            $data['local_login_enabled'] = $request->boolean('local_login_enabled');
+        }
         // Toggle de pre-warm
-        $data['prewarm_enabled'] = $request->boolean('prewarm_enabled');
+        if ($request->has('prewarm_enabled')) {
+            $data['prewarm_enabled'] = $request->boolean('prewarm_enabled');
+        }
 
         // Manejo de archivos (branding)
         if ($request->hasFile('site_logo')) {
@@ -191,6 +197,9 @@ class ConfiguracionesController extends Controller
         // Remover cualquier clase de apariencia previa (ya no se usan)
         $data['theme_navbar_class'] = null;
         $data['theme_sidebar_class'] = null;
+
+        // Snapshot ANTES
+        $before = $configuracion->replicate();
 
         $configuracion->update($data);
 

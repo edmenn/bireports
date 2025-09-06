@@ -8,7 +8,7 @@
             <h1 class="m-0 text-dark">Configuraciones</h1>
             <small class="text-muted">Credenciales de Microsoft Fabric / Power BI para App-Owns-Data</small>
         </div>
-        <a href="{{ route('config.audit.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ route('auditoria.changes.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-list"></i> Ver auditoría
         </a>
         <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
@@ -120,6 +120,22 @@
                         </div>
                     </div>
 
+
+                    <div class="p-3 border rounded d-flex justify-content-between align-items-center bg-light mt-3">
+                        <div>
+                            <h6 class="mb-0 font-weight-bold">Inicio de Sesión Local</h6>
+                            <small class="text-muted">Formulario tradicional de email y contraseña. En caso de emergencia, el entorno puede forzar habilitarlo con <code>AUTH_ALLOW_LOCAL_LOGIN=true</code>.</small>
+                        </div>
+                        <div>
+                            <label class="custom-toggle-switch">
+                                <input type="checkbox" name="local_login_enabled" value="1" {{ old('local_login_enabled', $config->local_login_enabled) ? 'checked' : '' }}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+
+
                     <div class="p-3 border rounded bg-light mt-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
@@ -135,18 +151,7 @@
                         </div>
                     </div>
 
-                    <div class="p-3 border rounded d-flex justify-content-between align-items-center bg-light mt-3">
-                        <div>
-                            <h6 class="mb-0 font-weight-bold">Inicio de Sesión Local</h6>
-                            <small class="text-muted">Formulario tradicional de email y contraseña. En caso de emergencia, el entorno puede forzar habilitarlo con <code>AUTH_ALLOW_LOCAL_LOGIN=true</code>.</small>
-                        </div>
-                        <div>
-                            <label class="custom-toggle-switch">
-                                <input type="checkbox" name="local_login_enabled" value="1" {{ old('local_login_enabled', $config->local_login_enabled) ? 'checked' : '' }}>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
+
                 </x-adminlte-card>
             </div>
 
@@ -183,7 +188,7 @@
             <div class="d-flex justify-content-center">
                 <div class="d-flex" style="gap: 0.75rem; width: 320px;">
                     <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
-                    <x-adminlte-button type="reset" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
+                    <x-adminlte-button type="button" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq" onclick="window.history.back()"/>
                 </div>
             </div>
         </x-adminlte-card>
