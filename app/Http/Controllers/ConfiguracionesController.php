@@ -147,6 +147,10 @@ class ConfiguracionesController extends Controller
         if ($request->has('prewarm_enabled')) {
             $data['prewarm_enabled'] = $request->boolean('prewarm_enabled');
         }
+        // [Minimalista] Toggle de encendido on-demand
+        if ($request->has('capacity_on_demand_enable')) {
+            $data['capacity_on_demand_enable'] = $request->boolean('capacity_on_demand_enable');
+        }
 
         // Manejo de archivos (branding)
         if ($request->hasFile('site_logo')) {

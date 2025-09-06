@@ -63,6 +63,9 @@
                                     <x-adminlte-input name="site_title" label="Nombre de la página (título)" placeholder="Ej: Mi Portal BI" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
                                         <x-slot name="bottom"><small class="text-muted">Se muestra en la pestaña del navegador.</small></x-slot>
                                     </x-adminlte-input>
+                                    <small class="text-muted d-inline-block ms-1">
+                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Título que verá el usuario en la pestaña del navegador."></i>
+                                    </small>
                                 </div>
                                 <div class="form-group col-12 col-lg-6">
                                     <x-adminlte-select name="theme_name" id="theme_name" label="Tema predefinido">
@@ -71,8 +74,11 @@
                                             <option value="{{ $preset }}" @selected(old('theme_name', $config->theme_name) === $preset)>{{ $preset }}</option>
                                         @endforeach
                                         <x-slot name="bottom"><small class="text-muted">Aplica una paleta inicial de colores.</small></x-slot>
-                                    </x-adminlte-select>
-                                </div>
+                                     </x-adminlte-select>
+                                    <small class="text-muted d-inline-block ms-1">
+                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Aplica una paleta base; luego podés ajustar los colores debajo."></i>
+                                    </small>
+                                 </div>
                             </div>
                         </x-adminlte-card>
 
@@ -83,6 +89,9 @@
                                 <div class="logo-block">
                                     <x-adminlte-input-file name="site_logo" label="Logo principal" placeholder="Elegir archivo..." accept="image/*">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">Formato PNG/JPG/SVG. Recomendado fondo transparente y altura ≤ 60px.
+                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Se muestra en el encabezado. Usa un archivo liviano para mejor carga."></i>
+                                        </small></x-slot>
                                     </x-adminlte-input-file>
                                     @if($config->site_logo_path)
                                         <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px;">
@@ -95,6 +104,9 @@
                                 <div class="logo-block">
                                     <x-adminlte-input-file name="site_logo_compact" label="Logo reducido" placeholder="Elegir archivo..." accept="image/*">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">Se usa con sidebar colapsada. Altura sugerida ≤ 60px.
+                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Versión compacta del logo para espacios reducidos."></i>
+                                        </small></x-slot>
                                     </x-adminlte-input-file>
                                     @if($config->site_logo_compact_path)
                                         <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: 60px;">
@@ -107,6 +119,9 @@
                                 <div class="logo-block">
                                     <x-adminlte-input-file name="site_favicon" label="Favicon" placeholder="Elegir archivo..." accept="image/x-icon,image/png">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">ICO o PNG 32×32 recomendado.
+                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Pequeño ícono de pestaña del navegador."></i>
+                                        </small></x-slot>
                                     </x-adminlte-input-file>
                                     @if($config->site_favicon_path)
                                         <img id="site-favicon-preview" src="{{ Storage::disk('public')->url($config->site_favicon_path) }}" alt="Favicon" class="img-thumbnail mt-1" style="height: 32px; width: 32px;">
@@ -123,7 +138,9 @@
 
                             <div class="grid-colors-2">
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-square mr-1 text-muted"></i> Base</div>
+                                    <div class="color-card__header"><i class="fas fa-square mr-1 text-muted"></i> Base
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Colores principales de la interfaz (fondo y texto base)."></i>
+                                    </div>
                                     <div class="color-grid">
                                         <label class="color-item"><span>Fondo principal</span><input type="color" name="color_main_bg" value="{{ $t['main_bg'] ?? '#f4f6f9' }}" class="color-item__swatch js-color" data-var="--app-main-bg"></label>
                                         <label class="color-item"><span>Texto principal</span><input type="color" name="color_main_text" value="{{ $t['main_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-main-text"></label>
@@ -131,7 +148,9 @@
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-window-maximize mr-1 text-muted"></i> Navbar</div>
+                                    <div class="color-card__header"><i class="fas fa-window-maximize mr-1 text-muted"></i> Navbar
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Barra superior: fondo y texto del encabezado."></i>
+                                    </div>
                                     <div class="color-grid">
                                         <label class="color-item"><span>Fondo</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
                                         <label class="color-item"><span>Texto</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
@@ -139,7 +158,9 @@
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-columns mr-1 text-muted"></i> Sidebar</div>
+                                    <div class="color-card__header"><i class="fas fa-columns mr-1 text-muted"></i> Sidebar
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Menú lateral: colores de fondo y textos."></i>
+                                    </div>
                                     <div class="color-grid">
                                         <label class="color-item"><span>Fondo</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#343a40' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
                                         <label class="color-item"><span>Texto</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#c2c7d0' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
@@ -147,7 +168,9 @@
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="far fa-clone mr-1 text-muted"></i> Contenido (cards)</div>
+                                    <div class="color-card__header"><i class="far fa-clone mr-1 text-muted"></i> Contenido (cards)
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Tarjetas y contenedores: fondos y texto."></i>
+                                    </div>
                                     <div class="color-grid">
                                         <label class="color-item"><span>Card fondo</span><input type="color" name="color_container_bg" value="{{ $t['container_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-card-bg"></label>
                                         <label class="color-item"><span>Header fondo</span><input type="color" name="color_container_alt_bg" value="{{ $t['container_alt_bg'] ?? '#f8fafc' }}" class="color-item__swatch js-color" data-var="--app-card-alt-bg"></label>
@@ -156,7 +179,9 @@
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-highlighter mr-1 text-muted"></i> Acentos y Botones</div>
+                                    <div class="color-card__header"><i class="fas fa-highlighter mr-1 text-muted"></i> Acentos y Botones
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Resaltados y botones: estados normal, hover y activo."></i>
+                                    </div>
                                     <div class="color-grid" style="grid-template-columns: repeat(2, 1fr);">
                                         <label class="color-item"><span>Destacado</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
                                         <label class="color-item"><span>Texto destacado</span><input type="color" name="color_highlight_text" value="{{ $t['highlight_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-hi-text"></label>
@@ -297,6 +322,14 @@
 <script>
 (function(){
     document.addEventListener('DOMContentLoaded', function() {
+        // Inicializa tooltips (si Bootstrap está disponible)
+        try {
+            if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+                document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                    new window.bootstrap.Tooltip(el);
+                });
+            }
+        } catch (_) {}
         const colorInputs = document.querySelectorAll('.js-color');
         const presets = {
             'Azul':    { navbar_bg:'#0ea5e9', navbar_text:'#ffffff', menu_bg:'#0b4f6c', menu_text:'#e2e8f0', highlight_bg:'#2563eb', highlight_text:'#ffffff', btn_bg:'#2563eb', btn_text:'#ffffff' },
@@ -326,17 +359,49 @@
             btn_active:'#374151',
         };
 
+        // Personalizado <-> Preset
+        const CUSTOM_VALUE = 'Personalizado';
+        let applyingPreset = false;
+        let customDirty = false;
+        const themeNameSelect = document.getElementById('theme_name');
+        let lastThemeSelection = themeNameSelect ? themeNameSelect.value : '';
+
+        function ensureCustomOption() {
+            if (!themeNameSelect) return;
+            const exists = Array.from(themeNameSelect.options).some(o => o.value === CUSTOM_VALUE);
+            if (!exists) {
+                const opt = document.createElement('option');
+                opt.value = CUSTOM_VALUE;
+                opt.textContent = CUSTOM_VALUE;
+                themeNameSelect.appendChild(opt);
+            }
+        }
+        function removeCustomOption() {
+            if (!themeNameSelect) return;
+            const opt = Array.from(themeNameSelect.options).find(o => o.value === CUSTOM_VALUE);
+            if (opt) opt.remove();
+        }
+
         document.addEventListener('input', function(e){
             const el = e.target.closest('.js-color');
             if(!el) return;
             const cssVar = el.dataset.var;
             if(!cssVar) return;
             document.documentElement.style.setProperty(cssVar, el.value);
-        }, {passive:true});
 
-        const themeNameSelect = document.getElementById('theme_name');
+            // Si cambia manualmente un color, pasamos a Personalizado
+            if (!applyingPreset) {
+                customDirty = true;
+                ensureCustomOption();
+                if (themeNameSelect && themeNameSelect.value !== CUSTOM_VALUE) {
+                    themeNameSelect.value = CUSTOM_VALUE;
+                    lastThemeSelection = CUSTOM_VALUE;
+                }
+            }
+        }, {passive:true});
         function applyPresetValues(p){
             if(!p) return;
+            applyingPreset = true;
             for (const [k,v] of Object.entries(p)){
                 const input = document.querySelector(`[name="color_${k}"]`);
                 if(input){
@@ -344,19 +409,86 @@
                     input.dispatchEvent(new Event('input',{bubbles:true}));
                 }
             }
+            applyingPreset = false;
         }
         function applyPreset(name){
             const p = presets[name]; if(!p) return;
             applyPresetValues(p);
             const sel = document.getElementById('theme_name');
             if(sel && sel.value !== name) sel.value = name;
+            customDirty = false;
+            removeCustomOption();
+            lastThemeSelection = name || '';
         }
         if (themeNameSelect) {
             themeNameSelect.addEventListener('change', function(event) {
                 const selectedPreset = event.target.value;
-                if (selectedPreset) applyPreset(selectedPreset);
-                else applyPresetValues(defaultPreset);
+                if (selectedPreset === CUSTOM_VALUE) {
+                    if (!customDirty) {
+                        event.target.value = lastThemeSelection || '';
+                        return;
+                    }
+                    lastThemeSelection = CUSTOM_VALUE;
+                    return;
+                }
+                if (selectedPreset) {
+                    applyPreset(selectedPreset);
+                } else {
+                    // Predeterminado
+                    applyPresetValues(defaultPreset);
+                    customDirty = false;
+                    removeCustomOption();
+                    lastThemeSelection = '';
+                }
             });
+
+            // Detección al cargar: seleccionar preset si coincide, si no => Personalizado
+            (function detectInitialSelection(){
+                try {
+                    // Construye el mapa de valores actuales por nombre
+                    const getVal = (k) => {
+                        const el = document.querySelector(`[name="color_${k}"]`);
+                        return (el && typeof el.value === 'string') ? el.value.toLowerCase() : '';
+                    };
+                    const keysDefault = Object.keys(defaultPreset);
+                    const equalsAll = (objA, objB, keys) => keys.every(k => String((objA[k]||'')).toLowerCase() === String((objB[k]||'')).toLowerCase());
+
+                    const current = {};
+                    keysDefault.forEach(k => current[k] = getVal(k));
+
+                    // Si coincide exactamente con Predeterminado → seleccionar vacío si no hay valor guardado
+                    if (equalsAll(current, defaultPreset, keysDefault)) {
+                        if (themeNameSelect.value === '' || themeNameSelect.value === CUSTOM_VALUE) {
+                            themeNameSelect.value = '';
+                            customDirty = false;
+                            removeCustomOption();
+                            lastThemeSelection = '';
+                        }
+                        return;
+                    }
+
+                    // Buscar un preset que coincida en las claves que define
+                    let matched = null;
+                    for (const [name, p] of Object.entries(presets)) {
+                        const keys = Object.keys(p);
+                        const ok = keys.every(k => getVal(k) === String(p[k]||'').toLowerCase());
+                        if (ok) { matched = name; break; }
+                    }
+
+                    if (matched) {
+                        themeNameSelect.value = matched;
+                        customDirty = false;
+                        removeCustomOption();
+                        lastThemeSelection = matched;
+                    } else {
+                        // No coincide con ningún preset → Personalizado
+                        ensureCustomOption();
+                        themeNameSelect.value = CUSTOM_VALUE;
+                        customDirty = true;
+                        lastThemeSelection = CUSTOM_VALUE;
+                    }
+                } catch(_) {}
+            })();
         }
 
         function setupImagePreview(inputId, previewId) {
@@ -390,3 +522,4 @@
 })();
 </script>
 @endpush
+

@@ -15,8 +15,7 @@ final class Kernel extends ConsoleKernel
 {
     /**
      * Registrar comandos de consola de forma explícita.
-     *
-     * @var array<class-string>
+     * Mantiene el comportamiento existente.
      */
     protected $commands = [
         ProjectAuditCommand::class,
@@ -43,18 +42,28 @@ final class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Jobs Power BI existentes
+        // Importar capacidades periódicamente (sin cambios)
         $schedule->command('powerbi:capacities:import')
             ->hourly()
             ->withoutOverlapping()
             ->onOneServer();
 
+        // Evaluar horarios e inactividad de capacidades (sin cambios)
         $schedule->command('powerbi:capacities:evaluate')
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
 
-        // Encender capacidad antes de jobs de refresh de datasets (pre-warm)
+        /* [Minimalista] Scheduler de datasets locales del portal
+         * La idea es usar 100% el portal, por eso dejamos el tick
+         * cada minuto para evaluar y disparar refresh locales.
+         */
+        $schedule->command('datasets:scheduler-tick')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer();
+
+        // Pre-warm de datasets (sólo si está habilitado en Configuraciones)
         try {
             $cfg = \App\Models\Configuracion::query()->first();
             if ($cfg && $cfg->prewarm_enabled) {
@@ -68,14 +77,12 @@ final class Kernel extends ConsoleKernel
         }
 
         // (Opcional) Auditoría semanal automática del stack UI
-        // Genera/actualiza storage/app/ui_audit.json para tener visibilidad continua.
         // $schedule->command('ui:audit')
-        //     ->weeklyOn(1, '03:10') // lunes 03:10
+        //     ->weeklyOn(1, '03:10')
         //     ->withoutOverlapping()
         //     ->onOneServer();
 
-        // (Opcional) Programar la sincronización de usuarios Entra diariamente.
-        // Ajusta parámetros según tu necesidad o deja comentado si prefieres manual.
+        // (Opcional) Sync de usuarios Entra
         // $schedule->command('users:sync-entra --domain=sarcom.com.py')
         //     ->dailyAt('02:10')
         //     ->withoutOverlapping()
@@ -92,4 +99,6 @@ final class Kernel extends ConsoleKernel
 
         // Rutas de consola (si las usas)
         require \base_path('routes/console.php');
-    }\n        // Evaluación de programaciones locales de datasets (cada minuto)\n        \->command('datasets:scheduler-tick')\n            ->everyMinute()\n            ->withoutOverlapping()\n            ->onOneServer();\n    }\n\n}\n
+    }
+}
+

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers; 
 
-use App\Models\Report;
+use App\Models\Report; 
+use App\Models\Capacity; // [Minimalista] Para mapear workspace.capacity_id (UUID) a la fila local (PK)
 use App\Models\Workspace;
 use App\Services\PowerBiService;
 use App\Models\Configuracion;
@@ -54,6 +55,17 @@ class ReportsController extends Controller
         $report = Report::where('id', $reportId)
             ->where('workspace_id', $workspace->id)
             ->firstOrFail();
+
+        // [Minimalista] Resolver la capacidad asociada al workspace
+        // - workspace.capacity_id almacena el UUID de Power BI/Fabric
+        // - La API /api/capacities/{capacity}/ping usa RouteModelBinding por PK local (entero)
+        //   Mapeamos aquí para que la vista pueda hacer ping/resume on-demand.
+        $capacityModelId = null;
+        $capacityUuid    = (string) ($workspace->capacity_id ?? '');
+        if ($capacityUuid !== '') {
+            $capModel = Capacity::query()->where('capacity_uuid', $capacityUuid)->first();
+            $capacityModelId = $capModel?->id;
+        }
 
         // 3) Parámetros opcionales de RLS desde querystring
         $rlsUser  = $request->query('rls_user');
@@ -115,6 +127,13 @@ class ReportsController extends Controller
             }
         }
 
+        // 5.5) Parámetros minimalistas para warmup on-demand desde la vista
+        $cfg = Configuracion::first();
+        $capacityOnDemandEnable = (bool) ($cfg?->capacity_on_demand_enable ?? true);
+        $capacityOnDemandMessage = (string) ($cfg?->capacity_on_demand_message ?? 'Encendiendo la capacidad, aguarde unos segundos…');
+        $capacityStartTimeoutSec = (int) ($cfg?->capacity_start_timeout_sec ?? 120);
+        $capacityStartPollSec    = (int) ($cfg?->capacity_start_poll_interval_sec ?? 5);
+
         // 6) Vista
         return view('reports.show', [
             'report'       => $report,
@@ -122,6 +141,14 @@ class ReportsController extends Controller
             'embed'        => $embedArr,
             'error'        => $errShort,   // mensaje corto arriba
             'error_debug'  => $errDetail,  // detalle dentro de <details> para copiar
+            // [Minimalista] IDs de capacidad para warmup on-demand desde la vista
+            'capacityModelId' => $capacityModelId, // PK local (entero) para /api/capacities/{id}/ping
+            'capacityUuid'    => $capacityUuid,    // UUID de Fabric/PBI (informativo/eventos)
+            // [Minimalista] Parámetros on-demand
+            'capacityOnDemandEnable' => $capacityOnDemandEnable,
+            'capacityOnDemandMessage' => $capacityOnDemandMessage,
+            'capacityStartTimeoutSec' => $capacityStartTimeoutSec,
+            'capacityStartPollSec'    => $capacityStartPollSec,
         ]);
     }
 

@@ -60,7 +60,12 @@ class User extends Authenticatable
 
     public function adminlte_profile_url(): string
     {
-        return 'profile.edit';
+        // Devolver nombre de ruta si AdminLTE usa route();
+        // caso contrario, devolver el slug para url().
+        if (config('adminlte.use_route_url', false)) {
+            return 'profile.edit'; // nombre de la ruta
+        }
+        return 'profile'; // slug relativo (url('profile') => /profile)
     }
 
     public function adminlte_image(): ?string

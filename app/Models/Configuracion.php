@@ -28,6 +28,11 @@ class Configuracion extends Model
         'powerbi_scope',
         'powerbi_token_refresh_minutes',
         'prewarm_enabled',
+        // [Minimalista] Parámetros on-demand viewer
+        'capacity_on_demand_enable',
+        'capacity_on_demand_message',
+        'capacity_start_timeout_sec',
+        'capacity_start_poll_interval_sec',
         'microsoft_login_enabled',
         'local_login_enabled',
 
@@ -57,6 +62,10 @@ class Configuracion extends Model
         'footer_enabled' => 'boolean',
         'powerbi_token_refresh_minutes' => 'integer',
         'prewarm_enabled' => 'boolean',
+        // [Minimalista]
+        'capacity_on_demand_enable' => 'boolean',
+        'capacity_start_timeout_sec' => 'integer',
+        'capacity_start_poll_interval_sec' => 'integer',
     ];
 
     // Almacenar el client secret encriptado; tolera valores antiguos en texto claro

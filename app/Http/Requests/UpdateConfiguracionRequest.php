@@ -26,6 +26,11 @@ class UpdateConfiguracionRequest extends FormRequest
             'powerbi_token_refresh_minutes'  => ['nullable','integer','min:0'],
             'microsoft_login_enabled'        => ['nullable','boolean'],
             'local_login_enabled'            => ['nullable','boolean'],
+            // [Minimalista] Parámetros on-demand del viewer
+            'capacity_on_demand_enable'      => ['nullable','boolean'],
+            'capacity_on_demand_message'     => ['nullable','string','max:255'],
+            'capacity_start_timeout_sec'     => ['nullable','integer','min:10','max:600'],
+            'capacity_start_poll_interval_sec' => ['nullable','integer','min:1','max:60'],
 
             // Tema y branding
             'theme_navbar_class'             => ['nullable','string','max:100'],

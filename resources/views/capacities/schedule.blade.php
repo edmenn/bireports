@@ -101,22 +101,41 @@
                         @csrf @method('PUT')
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="force_sched" name="force_shutdown_on_schedule" value="1" {{ $capacity->force_shutdown_on_schedule ? 'checked' : '' }}>
-                            <label class="form-check-label" for="force_sched">Forzar encendido/pausado por horario</label>
+                            <label class="form-check-label" for="force_sched">Forzar encendido/pausado por horario
+                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Dentro de los intervalos configurados la capacidad se encenderá; fuera de ellos se pausará automáticamente."></i>
+                            </label>
                         </div>
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="opt_inact" name="cost_optimization_enabled" value="1" {{ $capacity->cost_optimization_enabled ? 'checked' : '' }}>
-                            <label class="form-check-label" for="opt_inact">Pausar por inactividad</label>
+                            <label class="form-check-label" for="opt_inact">Pausar por inactividad
+                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Si no hay actividad por el tiempo configurado, la capacidad se pausará para ahorrar costo."></i>
+                            </label>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">Tiempo de inactividad (min)</label>
+                            <label class="form-label">Tiempo de inactividad (min)
+                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Cantidad de minutos sin uso antes de pausar. Mínimo 5, máximo 120."></i>
+                            </label>
                             <input type="number" class="form-control" name="inactivity_timeout_minutes" min="5" max="120" step="5" value="{{ old('inactivity_timeout_minutes', $capacity->inactivity_timeout_minutes) }}" placeholder="ej. 30">
                             <small class="text-muted">Mínimo 5, incrementos de 5, máximo 120.</small>
                         </div>
                         <button class="btn btn-primary">Guardar</button>
+                        @push('js')
+                        <script>
+                        (function(){
+                            // Inicializar tooltips si Bootstrap está disponible
+                            try {
+                                if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+                                    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                                        new window.bootstrap.Tooltip(el);
+                                    });
+                                }
+                            } catch (_) {}
+                        })();
+                        </script>
+                        @endpush
                     </form>
                 </div>
             </div>
         </div>
     </div>
 @stop
-

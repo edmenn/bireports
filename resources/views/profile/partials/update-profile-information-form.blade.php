@@ -20,7 +20,10 @@
 
         <div class="form-group mb-2">
             <label for="email">{{ __('Email') }}</label>
-            <input id="email" name="email" type="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}" required autocomplete="username">
+            {{-- Política: el email no es editable por el usuario (solo lectura). --}}
+            <input id="email" type="email" class="form-control" value="{{ $user->email }}" disabled>
+            {{-- Hidden para cumplir validación del request sin permitir cambios --}}
+            <input type="hidden" name="email" value="{{ $user->email }}">
             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
@@ -44,4 +47,3 @@
         </div>
     </form>
 </section>
-

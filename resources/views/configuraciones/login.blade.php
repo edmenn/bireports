@@ -7,7 +7,7 @@
     {{-- COLUMNA IZQUIERDA: ACCIONES (SUBIR ARCHIVOS) --}}
     <div class="col-md-7">
         <x-adminlte-card title="Archivos a Subir" icon="fas fa-upload text-lightblue">
-            
+
             {{-- Campo para el Logo --}}
             <x-adminlte-input-file name="login_logo" label="Logo de login (PNG/JPG/SVG)" placeholder="Elegir un archivo..." accept="image/*">
                 <x-slot name="prependSlot">
@@ -15,8 +15,14 @@
                         <i class="fas fa-image"></i>
                     </div>
                 </x-slot>
+                {{-- Tooltip: recomendaciones para el logo de login --}}
+                <x-slot name="bottom">
+                    <small class="text-muted">Se recomienda fondo transparente y altura ≤ 90px.
+                        <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Formatos admitidos: PNG, JPG o SVG. Se muestra sobre el formulario de login."></i>
+                    </small>
+                </x-slot>
             </x-adminlte-input-file>
-            
+
             <hr>
 
             {{-- Campo para la Imagen de Fondo --}}
@@ -27,7 +33,9 @@
                     </div>
                 </x-slot>
                 <x-slot name="bottom">
-                    <small class="text-muted">Se ajustará para cubrir toda la pantalla en la página de login.</small>
+                    <small class="text-muted">Se ajustará para cubrir toda la pantalla en la página de login.
+                        <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Sugerencia: usar 1920×1080 o superior, con buena compresión."></i>
+                    </small>
                 </x-slot>
             </x-adminlte-input-file>
 
@@ -73,3 +81,33 @@
 {{-- ==================================================================== --}}
 {{-- FIN: NUEVA ESTRUCTURA                                                --}}
 {{-- ==================================================================== --}}
+
+@push('js')
+<script>
+(function(){
+    // Inicializa tooltips en esta pantalla (si Bootstrap está disponible)
+    try {
+        if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new window.bootstrap.Tooltip(el);
+            });
+        }
+    } catch (_) {}
+})();
+</script>
+@endpush
+
+@push('js')
+<script>
+(function(){
+    // Inicializa tooltips en esta pantalla (si Bootstrap está disponible)
+    try {
+        if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new window.bootstrap.Tooltip(el);
+            });
+        }
+    } catch (_) {}
+})();
+</script>
+@endpush

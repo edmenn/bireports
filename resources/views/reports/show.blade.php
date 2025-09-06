@@ -127,6 +127,14 @@
     };
     const REPORT_UUID    = @json($report->id);
     const WORKSPACE_UUID = @json($workspace->id ?? null);
+    // [Minimalista] IDs de capacidad para warmup on-demand desde la vista
+    const CAPACITY_DB_ID = @json($capacityModelId ?? null); // PK local para /api/capacities/{id}/ping
+    const CAPACITY_UUID  = @json($capacityUuid ?? null);     // UUID informativo (no se usa en el ping)
+    // [Minimalista] Parámetros on-demand desde Configuraciones
+    const ON_DEMAND_ENABLE = @json($capacityOnDemandEnable ?? true);
+    const START_TIMEOUT_MS = @json(($capacityStartTimeoutSec ?? 120) * 1000);
+    const START_POLL_MS    = @json(($capacityStartPollSec ?? 5) * 1000);
+    const STARTING_MSG     = @json($capacityOnDemandMessage ?? 'Encendiendo la capacidad, aguarde unos segundos…');
 
     function showError(msg) {
         if (!errorBox) return;
@@ -183,9 +191,61 @@
         if (c && (c.contains('main-sidebar') || c.contains('content-wrapper'))) scheduleFit();
     });
 
-    try { powerbi.reset(container); } catch (_) {}
+    // [Minimalista] Warmup de capacidad on-demand antes de embeder
+    async function waitForCapacityActive(timeoutMs = START_TIMEOUT_MS, intervalMs = START_POLL_MS) {
+        if (!ON_DEMAND_ENABLE) return true; // Desactivado en Configuraciones
+        if (!CAPACITY_DB_ID) return true; // Nada que hacer si no hay capacidad asociada
+        const start = Date.now();
+        const url = `/api/capacities/${CAPACITY_DB_ID}/ping`;
+        const payload = { resume: true };
 
-    const config = {
+        // Mensaje de encendido
+        if (loading) {
+            loading.innerHTML = `<div class="text-center"><div class=\"spinner-border\" role=\"status\" aria-label=\"Encendiendo\"></div><div class=\"mt-2\">${STARTING_MSG}</div></div>`;
+        }
+
+        while (Date.now() - start < timeoutMs) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token())),
+                    },
+                    body: JSON.stringify(payload),
+                });
+                if (res.ok) {
+                    const json = await res.json().catch(() => ({}));
+                    const isActive = !!json?.capacity?.is_active;
+                    if (isActive) return true;
+                    if (json?.reason === 'outside_schedule_window') {
+                        showError('La capacidad está pausada por fuera del horario operativo.');
+                        return false;
+                    }
+                }
+            } catch (_) { /* ignorar y reintentar */ }
+            await new Promise(r => setTimeout(r, intervalMs));
+        }
+        showError('No fue posible activar la capacidad a tiempo (timeout).');
+        return false;
+    }
+
+    async function prewarmThenEmbed() {
+        const ok = await waitForCapacityActive();
+        if (!ok) return null; // error ya mostrado
+        if (loading) {
+            loading.innerHTML = `<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\" aria-label=\"Cargando\"></div><div class=\"mt-2\">Cargando reporte...</div></div>`;
+        }
+        try { powerbi.reset(container); } catch (_) {}
+        return doEmbed();
+    }
+
+    // Encapsulamos el embed en función reutilizable
+    function doEmbed() {
+        try { powerbi.reset(container); } catch (_) {}
+
+        const config = {
         type: 'report',
         id: EMBED.reportId,
         embedUrl: EMBED.embedUrl,
@@ -201,10 +261,12 @@
                 pageNavigation: { visible: true }
             }
         }
-    };
+        };
 
-    const report = powerbi.embed(container, config);
-    window.report = report;
+        const report = powerbi.embed(container, config);
+        window.report = report; // deja referencia global
+        return report;
+    }
 
     scheduleFit();
     setTimeout(scheduleFit, 60);
@@ -219,7 +281,8 @@
     }, LOAD_TIMEOUT_MS);
 
     // ====== Solo 1 "view" al cargar ======
-    report.on('loaded', async () => {
+    function attachListeners(rpt) {
+    rpt.on('loaded', async () => {
         loaded = true;
         clearTimeout(loadTimer);
         if (loading) loading.remove();
@@ -230,12 +293,12 @@
     });
 
     // Render (telemetría auxiliar)
-    report.on('rendered', async () => {
+    rpt.on('rendered', async () => {
         scheduleFit();
         postAudit('render', await snapshotState('after_rendered'));
     });
 
-    report.on('error', (event) => {
+    rpt.on('error', (event) => {
         const detail = event?.detail;
         const msg = (typeof detail === 'string') ? detail : (detail?.message || 'Error al renderizar el reporte');
         showError(msg);
@@ -243,20 +306,27 @@
     });
 
     // Otros eventos
-    report.on('pageChanged', async (ev) => {
+    rpt.on('pageChanged', async (ev) => {
         const page = ev?.detail?.newPage || ev?.detail;
         const pageName = page?.name || page?.displayName || null;
         postAudit('page_change', await snapshotState('page_changed', { page_name: pageName }));
     });
 
-    report.on('filtersApplied', async () => {
+    rpt.on('filtersApplied', async () => {
         postAudit('filter_change', await snapshotState('filters_applied'));
     });
 
-    report.on('bookmarkApplied', async (ev) => {
+    rpt.on('bookmarkApplied', async (ev) => {
         const bookmark = ev?.detail?.name || ev?.detail?.displayName || null;
         postAudit('bookmark', await snapshotState('bookmark_applied', { bookmark }));
     });
+    }
+
+    // [Minimalista] Orquestación principal: warmup (si aplica) y embed con listeners
+    (async () => {
+        const rpt = await prewarmThenEmbed();
+        if (rpt) attachListeners(rpt);
+    })();
 
     report.on('dataSelected', async (ev) => {
         const visual = ev?.detail?.visual || {};

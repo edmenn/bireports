@@ -58,26 +58,34 @@
                         <div class="col-md-6">
                             <x-adminlte-input name="powerbi_client_id" label="Client ID (Application ID)" placeholder="ID de la aplicación" value="{{ old('powerbi_client_id', $config->powerbi_client_id) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-id-badge"></i></div></x-slot>
+                                {{-- Tooltip: dónde encontrar el Client ID en Entra ID --}}
+                                <x-slot name="bottom"><small class="text-muted">Azure Entra ID → App registrations → Overview → Application (client) ID. <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Identificador de la app (Client ID) registrada en Entra ID."></i></small></x-slot>
                             </x-adminlte-input>
                         </div>
                         <div class="col-md-6">
                             <x-adminlte-input name="powerbi_tenant_id" label="Tenant ID (Directory ID)" placeholder="ID del directorio" value="{{ old('powerbi_tenant_id', $config->powerbi_tenant_id) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-building"></i></div></x-slot>
+                                {{-- Tooltip: dónde ver el Tenant ID --}}
+                                <x-slot name="bottom"><small class="text-muted">Azure Entra ID → Overview → Tenant ID. <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Debe coincidir con el tenant donde está registrada la app."></i></small></x-slot>
                             </x-adminlte-input>
                         </div>
                         <div class="col-md-6">
                             <x-adminlte-input name="powerbi_client_secret" id="field_client_secret" type="password" label="Client Secret" placeholder="••••••••••••" value="{{ old('powerbi_client_secret', $config->powerbi_client_secret) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-key"></i></div></x-slot>
+                                {{-- Tooltip: cómo gestionar el secreto --}}
+                                <x-slot name="bottom"><small class="text-muted">Se guarda cifrado. Deja en blanco para no cambiar. <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Genera el secreto en Azure Entra ID → Certificates & secrets. Evita pegar valores enmascarados."></i></small></x-slot>
                             </x-adminlte-input>
                         </div>
                         {{-- Redirect URI y Scope removidos de la UI (scope via .env) --}}
                         <div class="col-md-4">
                             <x-adminlte-input name="powerbi_token_refresh_minutes" type="number" min="0" step="1" label="Refrescar (min)" placeholder="0 = auto" value="{{ old('powerbi_token_refresh_minutes', $config->powerbi_token_refresh_minutes ?? 0) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
+                                {{-- Tooltip: política de refresco del token --}}
+                                <x-slot name="bottom"><small class="text-muted">0 = maneja el SDK automáticamente. <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Usa 0 para que la librería gestione la renovación; ajusta solo si es necesario."></i></small></x-slot>
                             </x-adminlte-input>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label">Zona horaria por defecto</label>
+                            <label class="form-label">Zona horaria por defecto <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Afecta horarios mostrados y ejecución de tareas programadas."></i></label>
                             @php
                                 $tzList = \DateTimeZone::listIdentifiers();
                                 $selTz = old('app_timezone_db', $config->app_timezone_db ?? config('app.timezone'));
@@ -182,6 +190,84 @@
         </div>
 
         {{-- ========================================================== --}}
+        {{--         CAPACIDAD ON‑DEMAND (Parámetros del Viewer)         --}}
+        {{-- ========================================================== --}}
+        <div class="row mt-3">
+            <div class="col-12 d-flex">
+                <x-adminlte-card title="Capacidad on‑demand (Viewer)" icon="fas fa-bolt text-warning"
+                                 theme="warning" theme-mode="outline" class="flex-grow-1">
+                    {{-- [Minimalista] Estos parámetros controlan el comportamiento del viewer cuando la capacidad está en pausa.
+                         - Encendido on‑demand: si está en true, el viewer intenta encender la capacidad automáticamente
+                           cuando un usuario abre un reporte fuera de horario o con la capacidad pausada.
+                         - Mensaje: texto mostrado mientras se enciende la capacidad.
+                         - Timeout (seg): tiempo máximo de espera antes de mostrar error si no enciende.
+                         - Intervalo (seg): cada cuántos segundos se consulta el estado mientras enciende. --}}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Encendido on‑demand
+                                {{-- Tooltip: explica qué hace el encendido on-demand --}}
+                                <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
+                                   data-bs-toggle="tooltip"
+                                   title="Si está activado, el visor intentará encender la capacidad automáticamente cuando un usuario abra un reporte y la capacidad esté pausada."></i>
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="capacity_on_demand_enable"
+                                       name="capacity_on_demand_enable" value="1"
+                                       {{ old('capacity_on_demand_enable', $config->capacity_on_demand_enable ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="capacity_on_demand_enable">Activar intento automático</label>
+                            </div>
+                            <small class="text-muted">Si está desactivado, el viewer no intentará encender la capacidad.
+                                {{-- Tooltip de ayuda extra --}}
+                                <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
+                                   data-bs-toggle="tooltip"
+                                   title="Desactívalo si preferís que el usuario vea un mensaje de capacidad pausada sin intentar encender automáticamente."></i>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="capacity_on_demand_message" label="Mensaje de encendido"
+                                              placeholder="Encendiendo la capacidad, aguarde…"
+                                              value="{{ old('capacity_on_demand_message', $config->capacity_on_demand_message ?? 'Encendiendo la capacidad, aguarde unos segundos…') }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-comment"></i></div></x-slot>
+                            </x-adminlte-input>
+                            <small class="text-muted">Texto que verá el usuario mientras se enciende.
+                                {{-- Tooltip: alcance del mensaje --}}
+                                <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
+                                   data-bs-toggle="tooltip"
+                                   title="Se muestra en un banner de espera hasta que la capacidad esté activa o se alcance el tiempo máximo."></i>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="capacity_start_timeout_sec" type="number" min="10" max="600" step="5"
+                                              label="Timeout de encendido (seg)"
+                                              value="{{ old('capacity_start_timeout_sec', $config->capacity_start_timeout_sec ?? 120) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
+                            </x-adminlte-input>
+                            <small class="text-muted">Tiempo máximo de espera antes de mostrar error (recomendado: 120s).
+                                {{-- Tooltip: qué pasa al vencer el timeout --}}
+                                <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
+                                   data-bs-toggle="tooltip"
+                                   title="Si se supera este tiempo sin que la capacidad quede activa, se muestra un error y no se embebe el reporte."></i>
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="capacity_start_poll_interval_sec" type="number" min="1" max="60" step="1"
+                                              label="Intervalo de consulta (seg)"
+                                              value="{{ old('capacity_start_poll_interval_sec', $config->capacity_start_poll_interval_sec ?? 5) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-sync"></i></div></x-slot>
+                            </x-adminlte-input>
+                            <small class="text-muted">Frecuencia con la que el viewer consulta si la capacidad ya está activa.
+                                {{-- Tooltip: impacto del intervalo --}}
+                                <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
+                                   data-bs-toggle="tooltip"
+                                   title="Intervalos más cortos reaccionan más rápido pero generan más llamadas; 5s suele ser un buen equilibrio."></i>
+                            </small>
+                        </div>
+                    </div>
+                </x-adminlte-card>
+            </div>
+        </div>
+
+        {{-- ========================================================== --}}
         {{--           NUEVA TARJETA DE ACCIONES PARA BOTONES           --}}
         {{-- ========================================================== --}}
         <x-adminlte-card theme="primary" theme-mode="outline">
@@ -270,6 +356,15 @@
             fieldScope.value = 'https://analysis.windows.net/powerbi/api/.default';
         }, { passive: true });
     }
+
+    // [Tooltips] Inicializa tooltips Bootstrap en esta pantalla (si están disponibles)
+    try {
+        if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+                new window.bootstrap.Tooltip(el);
+            });
+        }
+    } catch (_) { /* silencioso si no hay bootstrap */ }
 })();
 </script>
 @endpush

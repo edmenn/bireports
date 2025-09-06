@@ -226,13 +226,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->middleware('no-external-password')
         ->name('profile.update');
-    Route::delete('/profile',[ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // ✅ SHIM de seguridad: si por alguna razón profile.edit no quedó registrado
-    if (! Route::has('profile.edit')) {
-        Route::get('/mi-perfil', fn () => redirect()->route('dashboards.index'))
-            ->name('profile.edit');
-    }
 });
 
 // Área ADMIN (solo admin)
@@ -343,3 +337,9 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
+
+
+
+
+
+
