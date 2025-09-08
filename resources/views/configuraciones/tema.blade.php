@@ -83,7 +83,7 @@
                         </x-adminlte-card>
 
                         {{-- Logos y Favicon (grilla 3→2→1 columnas) --}}
-                        <x-adminlte-card title="Logos y Favicon" icon="far fa-images text-lightblue" class="mb-3">
+                        <x-adminlte-card title="Logos, Favicon y Preloader" icon="far fa-images text-lightblue" class="mb-3">
                             <div class="grid-logos">
                                 {{-- Logo principal --}}
                                 <div class="logo-block">
@@ -97,6 +97,34 @@
                                         <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px;">
                                     @else
                                         <img id="site-logo-preview" src="" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px; display:none;">
+                                    @endif
+                                </div>
+
+                                {{-- Icono de Preloader (centro al refrescar) --}}
+                                <div class="logo-block">
+                                    <x-adminlte-input-file name="preloader_logo" label="Icono de preloader (centrado al cargar)" placeholder="Elegir archivo..." accept="image/*">
+                                        <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">Se muestra en el centro mientras carga la página.</small></x-slot>
+                                    </x-adminlte-input-file>
+
+                                    <div class="d-flex align-items-end gap-2">
+                                        <div>
+                                            @php($pw = (int) (old('preloader_logo_width', $config->preloader_logo_width ?? 60)))
+                                            @php($ph = (int) (old('preloader_logo_height', $config->preloader_logo_height ?? 60)))
+                                            <label class="form-label mb-1">Ancho × Alto (px)</label>
+                                            <div class="d-flex align-items-center" style="gap:.5rem; max-width: 260px;">
+                                                <input type="number" name="preloader_logo_width" class="form-control" min="16" max="512" step="1" value="{{ $pw }}" style="width:100px" />
+                                                <span class="text-muted">×</span>
+                                                <input type="number" name="preloader_logo_height" class="form-control" min="16" max="512" step="1" value="{{ $ph }}" style="width:100px" />
+                                            </div>
+                                            <small class="text-muted">Recomendado: 60–120 px.</small>
+                                        </div>
+                                    </div>
+
+                                    @if($config->preloader_logo_path)
+                                        <img id="preloader-logo-preview" src="{{ Storage::disk('public')->url($config->preloader_logo_path) }}" alt="Preloader" class="img-thumbnail mt-2" style="height: {{ $ph }}px; width: {{ $pw }}px;">
+                                    @else
+                                        <img id="preloader-logo-preview" src="" alt="Preloader" class="img-thumbnail mt-2" style="height: {{ $ph }}px; width: {{ $pw }}px; display:none;">
                                     @endif
                                 </div>
 
@@ -518,8 +546,25 @@
         setupImagePreview('site_logo', 'site-logo-preview');
         setupImagePreview('site_logo_compact', 'site-logo-compact-preview');
         setupImagePreview('site_favicon', 'site-favicon-preview');
+        setupImagePreview('preloader_logo', 'preloader-logo-preview');
+
+        // Actualizar vista previa del tamaño del preloader al cambiar los inputs
+        (function bindPreloaderSizePreview(){
+            const w = document.querySelector('input[name="preloader_logo_width"]');
+            const h = document.querySelector('input[name="preloader_logo_height"]');
+            const img = document.getElementById('preloader-logo-preview');
+            if (!w || !h || !img) return;
+            const clamp = (val, min, max) => Math.max(min, Math.min(max, parseInt(val || 0, 10)));
+            const apply = () => {
+                const W = clamp(w.value, 16, 512);
+                const H = clamp(h.value, 16, 512);
+                img.style.width = W + 'px';
+                img.style.height = H + 'px';
+            };
+            w.addEventListener('input', apply);
+            h.addEventListener('input', apply);
+        })();
     });
 })();
 </script>
 @endpush
-

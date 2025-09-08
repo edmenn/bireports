@@ -47,6 +47,9 @@ class Configuracion extends Model
         'site_logo_path',
         'site_logo_compact_path',
         'site_favicon_path',
+        'preloader_logo_path',
+        'preloader_logo_width',
+        'preloader_logo_height',
         'login_bg_path',
         'login_logo_path',
         'theme_name',
@@ -66,6 +69,8 @@ class Configuracion extends Model
         'capacity_on_demand_enable' => 'boolean',
         'capacity_start_timeout_sec' => 'integer',
         'capacity_start_poll_interval_sec' => 'integer',
+        'preloader_logo_width' => 'integer',
+        'preloader_logo_height' => 'integer',
     ];
 
     // Almacenar el client secret encriptado; tolera valores antiguos en texto claro

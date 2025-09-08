@@ -41,6 +41,9 @@ class UpdateConfiguracionRequest extends FormRequest
             'site_logo'                      => ['nullable','image','mimes:png,jpg,jpeg,svg','max:2048'],
             'site_logo_compact'              => ['nullable','image','mimes:png,jpg,jpeg,svg','max:1024'],
             'site_favicon'                   => ['nullable','mimes:ico,png','max:1024'],
+            'preloader_logo'                 => ['nullable','image','mimes:png,jpg,jpeg,svg','max:1024'],
+            'preloader_logo_width'           => ['nullable','integer','min:16','max:512'],
+            'preloader_logo_height'          => ['nullable','integer','min:16','max:512'],
             'login_bg'                       => ['nullable','image','mimes:png,jpg,jpeg','max:4096'],
             'login_logo'                     => ['nullable','image','mimes:png,jpg,jpeg,svg','max:2048'],
 

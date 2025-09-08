@@ -74,6 +74,20 @@ class AppServiceProvider extends ServiceProvider
                     'adminlte.favicon_path' => ltrim(parse_url($favUrl, PHP_URL_PATH), '/'),
                 ]);
             }
+            // Preloader (imagen central al refrescar)
+            if (!empty($cfg->preloader_logo_path)) {
+                $preUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->preloader_logo_path);
+                config([
+                    'adminlte.preloader.img.path' => ltrim(parse_url($preUrl, PHP_URL_PATH), '/'),
+                    'adminlte.preloader.img.alt'  => $cfg->site_title ?: 'Cargando...',
+                ]);
+            }
+            if (!empty($cfg->preloader_logo_width)) {
+                config(['adminlte.preloader.img.width' => (int) $cfg->preloader_logo_width]);
+            }
+            if (!empty($cfg->preloader_logo_height)) {
+                config(['adminlte.preloader.img.height' => (int) $cfg->preloader_logo_height]);
+            }
             if (!empty($cfg->login_logo_path)) {
                 $authLogoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->login_logo_path);
                 config([

@@ -175,6 +175,18 @@ class ConfiguracionesController extends Controller
             $data['site_logo_compact_path'] = $path;
         }
 
+        // Icono del preloader (centro al refrescar)
+        if ($request->hasFile('preloader_logo')) {
+            $path = $request->file('preloader_logo')->store('branding', 'public');
+            $data['preloader_logo_path'] = $path;
+        }
+        if ($request->has('preloader_logo_width')) {
+            $data['preloader_logo_width'] = $request->integer('preloader_logo_width');
+        }
+        if ($request->has('preloader_logo_height')) {
+            $data['preloader_logo_height'] = $request->integer('preloader_logo_height');
+        }
+
         if ($request->hasFile('login_bg')) {
             $path = $request->file('login_bg')->store('branding', 'public');
             $data['login_bg_path'] = $path;
@@ -242,4 +254,3 @@ class ConfiguracionesController extends Controller
         return redirect()->route('configuraciones.index')->with('success', 'Configuración actualizada.');
     }
 }
-
