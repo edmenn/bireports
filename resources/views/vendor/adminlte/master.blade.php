@@ -14,9 +14,16 @@
 
     {{-- Title --}}
     <title>
-        @yield('title_prefix', config('adminlte.title_prefix', ''))
-        @yield('title', config('adminlte.title', 'AdminLTE 3'))
-        @yield('title_postfix', config('adminlte.title_postfix', ''))
+        @php($__siteTitle = config('adminlte.title', 'AdminLTE 3'))
+        @hasSection('title')
+            @yield('title_prefix', $__siteTitle . ' - ')
+            @yield('title')
+            @yield('title_postfix', '')
+        @else
+            @yield('title_prefix', '')
+            @yield('title', $__siteTitle)
+            @yield('title_postfix', '')
+        @endif
     </title>
 
     {{-- Custom stylesheets (pre AdminLTE) --}}
