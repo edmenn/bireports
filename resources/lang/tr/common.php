@@ -21,6 +21,8 @@ return [
     'copy' => 'Kopyala',
     'yes' => 'Evet',
     'no' => 'Hayır',
+    'close' => 'Kapat',
+    'warning' => 'Uyarı',
 
     'active' => 'Aktif',
     'paused' => 'Duraklatıldı',
@@ -38,4 +40,3 @@ return [
     'folders' => 'Klasörler',
     'portal' => 'Alanım',
 ];
-

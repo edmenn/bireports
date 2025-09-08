@@ -2,7 +2,7 @@
 
 return [
     'title' => 'Auditoria de métricas de uso',
-    'dashboard' => 'Dashboard',
+    'dashboard' => 'Painel',
     'users_most' => 'Usuários mais ativos',
     'users_least' => 'Usuários menos ativos',
     'users_inactive' => 'Usuários inativos',
@@ -11,5 +11,21 @@ return [
     'reports_inactive' => 'Relatórios não acessados',
     'user_profile' => 'Perfil do usuário',
     'export' => 'Exportar',
+    'filters' => [
+        'from' => 'De',
+        'to' => 'Até',
+        'user' => 'Usuário',
+        'select_user' => '- Selecione um usuário -',
+        'apply' => 'Aplicar filtros',
+        'clear' => 'Limpar',
+    ],
+    'table' => [
+        'records' => ':count registros',
+        'user' => 'Usuário',
+        'email' => 'Email',
+        'accesses' => 'Acessos',
+        'last_access' => 'Último acesso',
+        'created' => 'Criado',
+        'no_data' => 'Sem dados disponíveis',
+    ],
 ];
-

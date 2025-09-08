@@ -21,6 +21,8 @@ return [
     'copy' => 'Copiar',
     'yes' => 'Sim',
     'no' => 'Não',
+    'close' => 'Fechar',
+    'warning' => 'Aviso',
 
     'active' => 'Ativa',
     'paused' => 'Pausada',
@@ -38,4 +40,5 @@ return [
     'folders' => 'Pastas',
     'portal' => 'Meu espaço',
 ];
+
 

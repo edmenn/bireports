@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Configuracion;
+use Illuminate\Support\Facades\Schema;
 use GuzzleHttp\Client;
 use RuntimeException;
 
@@ -24,7 +25,17 @@ class MicrosoftGraphService
     public function __construct()
     {
         $this->http = new Client(['timeout' => 30]);
-        $this->config = Configuracion::query()->first() ?? new Configuracion();
+        // Evitar fallar durante migraciones/seed cuando aún no existe la tabla
+        try {
+            if (Schema::hasTable('configuraciones')) {
+                $this->config = Configuracion::query()->first() ?? new Configuracion();
+            } else {
+                $this->config = new Configuracion();
+            }
+        } catch (\Throwable $e) {
+            // En cualquier error (por ejemplo, conexión inicial), continuar vacío
+            $this->config = new Configuracion();
+        }
     }
 
     public function getAccessToken(): string

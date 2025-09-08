@@ -1,15 +1,15 @@
 @extends('adminlte::page')
 
-@section('title', 'Todos los reportes')
+@section('title', __('reports.index.title'))
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
-            <h1 class="m-0">Todos los reportes</h1>
-            <small class="text-muted">Listado importado desde Microsoft Fabric / Power BI</small>
+            <h1 class="m-0">{{ __('reports.index.title') }}</h1>
+            <small class="text-muted">{{ __('reports.index.subtitle') }}</small>
         </div>
         <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-cloud-download-alt"></i> Importar ahora
+            <i class="fas fa-cloud-download-alt"></i> {{ __('reports.index.import_now') }}
         </a>
     </div>
 @stop

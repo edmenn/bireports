@@ -60,7 +60,7 @@
                         <x-adminlte-card title="Configuración General" icon="fas fa-cog text-lightblue" class="mb-3">
                             <div class="form-row">
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-input name="site_title" label="Nombre de la página (título)" placeholder="Ej: Mi Portal BI" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
+                                    <x-adminlte-input name="site_title" label="Nombre de la página (título)" placeholder="{{ __("config_theme.fields.site_title.placeholder") }}" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
                                         <x-slot name="bottom"><small class="text-muted">Se muestra en la pestaña del navegador.</small></x-slot>
                                     </x-adminlte-input>
                                     <small class="text-muted d-inline-block ms-1">
@@ -68,12 +68,12 @@
                                     </small>
                                 </div>
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-select name="theme_name" id="theme_name" label="Tema predefinido">
+                                    <x-adminlte-select name="theme_name" id="theme_name" label="{{ __("config_theme.fields.theme_preset.label") }}">
                                         <option value="">Predeterminado</option>
                                         @foreach(['Azul','Gris','Verde','Rojo','Naranja','Morado','Marrón'] as $preset)
                                             <option value="{{ $preset }}" @selected(old('theme_name', $config->theme_name) === $preset)>{{ $preset }}</option>
                                         @endforeach
-                                        <x-slot name="bottom"><small class="text-muted">Aplica una paleta inicial de colores.</small></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">{{ __("config_theme.fields.theme_preset.help") }}</small></x-slot>
                                      </x-adminlte-select>
                                     <small class="text-muted d-inline-block ms-1">
                                         <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Aplica una paleta base; luego podés ajustar los colores debajo."></i>
@@ -83,7 +83,7 @@
                         </x-adminlte-card>
 
                         {{-- Logos y Favicon (grilla 3→2→1 columnas) --}}
-                        <x-adminlte-card title="Logos, Favicon y Preloader" icon="far fa-images text-lightblue" class="mb-3">
+                        <x-adminlte-card title="{{ __("config_theme.cards.branding.title") }}" icon="far fa-images text-lightblue" class="mb-3">
                             <div class="grid-logos">
                                 {{-- Logo principal --}}
                                 <div class="logo-block">
@@ -171,7 +171,7 @@
                         </x-adminlte-card>
 
                         {{-- Paleta de colores (sub-secciones en 2 columnas, auto-wrap) --}}
-                        <x-adminlte-card title="Paleta de Colores Personalizada" icon="fas fa-palette text-lightblue" class="mb-1">
+                        <x-adminlte-card title="{{ __("config_theme.cards.palette.title") }}" icon="fas fa-palette text-lightblue" class="mb-1">
                             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
 
                             <div class="grid-colors-2">
@@ -591,3 +591,4 @@
 })();
 </script>
 @endpush
+

@@ -1,24 +1,24 @@
 {{-- resources/views/capacities/index.blade.php --}}
 @extends('adminlte::page')
 
-@section('title', 'Capacidades')
+@section('title', __('capacities.title'))
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h1 class="h3 mb-0">Capacidades</h1>
-            <small class="text-muted">Fabric / Power BI Capacities</small>
+            <h1 class="h3 mb-0">{{ __('capacities.title') }}</h1>
+            <small class="text-muted">{{ __('capacities.subtitle') }}</small>
         </div>
         @if(!empty($hasConfig) && $hasConfig)
             <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
                 @csrf
                 <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                    <i class="fas fa-sync-alt me-1"></i> Refrescar
+                    <i class="fas fa-sync-alt me-1"></i> {{ __('capacities.refresh') }}
                 </button>
             </form>
         @else
             <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Configura credenciales para habilitar el refresco">
-                <i class="fas fa-cogs me-1"></i> Configurar
+                <i class="fas fa-cogs me-1"></i> {{ __('capacities.configure') }}
             </a>
         @endif
     </div>

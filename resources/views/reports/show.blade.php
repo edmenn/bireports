@@ -45,7 +45,7 @@
         @endif
     </h1>
     <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Volver
+        <i class="fas fa-arrow-left me-1"></i> {{ __("common.back") }}
     </a>
 </div>
 @stop
@@ -90,8 +90,8 @@
         <div id="reportContainer" aria-live="polite" aria-busy="true">
             <div id="reportLoading">
                 <div class="text-center">
-                    <div class="spinner-border" role="status" aria-label="Cargando"></div>
-                    <div class="mt-2">Cargando reporte...</div>
+                    <div class="spinner-border" role="status" aria-label="{{ __("reports.show.loading") }}"></div>
+                    <div class="mt-2">{{ __("reports.show.loading") }}</div>
                 </div>
             </div>
             <div id="reportError" class="alert alert-danger d-none" role="alert"></div>
@@ -254,7 +254,7 @@
         const ok = await waitForCapacityActive();
         if (!ok) return null; // error ya mostrado
         if (loading) {
-            loading.innerHTML = `<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\" aria-label=\"Cargando\"></div><div class=\"mt-2\">Cargando reporte...</div></div>`;
+            loading.innerHTML = `<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\" aria-label=\"Cargando\"></div><div class=\"mt-2\">{{ __("reports.show.loading") }}</div></div>`;
         }
         try { powerbi.reset(container); } catch (_) {}
         const rpt = doEmbed();

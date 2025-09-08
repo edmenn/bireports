@@ -9,7 +9,7 @@
         {{-- Acciones de header: ancho fijo + buen espaciado --}}
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
-                <i class="fas fa-arrow-left me-1"></i> Volver
+                <i class="fas fa-arrow-left me-1"></i> {{ __("common.back") }}
             </a>
             <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-eq">
                 <i class="fas fa-chart-line me-1"></i> Ver reporte
