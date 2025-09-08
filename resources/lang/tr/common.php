@@ -1,0 +1,41 @@
+<?php
+
+return [
+    'app_name' => 'PowerBIDash',
+
+    'actions' => 'İşlemler',
+    'back' => 'Geri',
+    'save' => 'Kaydet',
+    'add' => 'Ekle',
+    'edit' => 'Düzenle',
+    'delete' => 'Sil',
+    'view' => 'Görüntüle',
+    'export' => 'Dışa aktar',
+    'filter' => 'Filtrele',
+    'clear' => 'Temizle',
+    'configure' => 'Yapılandır',
+    'refresh' => 'Yenile',
+    'update_now' => 'Şimdi yenile',
+    'history' => 'Geçmiş',
+    'schedule' => 'Zamanlama',
+    'copy' => 'Kopyala',
+    'yes' => 'Evet',
+    'no' => 'Hayır',
+
+    'active' => 'Aktif',
+    'paused' => 'Duraklatıldı',
+
+    'capacities' => 'Kapasiteler',
+    'datasets' => 'Veri kümeleri',
+    'reports' => 'Raporlar',
+    'workspaces' => 'Çalışma alanları',
+    'apps' => 'Uygulamalar',
+    'audit' => 'Denetim',
+    'configuration' => 'Ayarlar',
+    'users' => 'Kullanıcılar',
+    'roles' => 'Roller',
+    'groups' => 'Gruplar',
+    'folders' => 'Klasörler',
+    'portal' => 'Alanım',
+];
+

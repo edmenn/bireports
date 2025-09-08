@@ -92,8 +92,10 @@ return [
     */
     'layout_topnav' => null,
     'layout_boxed' => null,
-    'layout_fixed_sidebar' => null,
-    'layout_fixed_navbar' => null,
+    // Mantener la barra lateral fija para que no se desplace con el contenido.
+    'layout_fixed_sidebar' => true,
+    // Navbar fijo para que AdminLTE calcule correctamente offsets y alturas.
+    'layout_fixed_navbar' => true,
     'layout_fixed_footer' => false,
     'layout_dark_mode' => null,
 

@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'my_space' => 'My Space',
+    'home' => 'Home',
+    'favorites' => 'Favorites',
+    'most_accessed' => 'Most Accessed',
+    'my_reports' => 'My Reports',
+    'power_bi' => 'Power BI',
+    'reports' => 'Reports',
+    'datasets' => 'Datasets',
+    'apps' => 'Apps',
+    'workspaces' => 'Workspaces',
+    'capacities' => 'Capacities',
+    'organization' => 'Organization',
+    'users' => 'Users',
+    'groups' => 'Groups',
+    'folders' => 'Folders',
+    'roles' => 'Roles & Access',
+    'audit' => 'Audit',
+    'usage_metrics' => 'Usage Metrics',
+    'audit_reset' => 'Reset Audit',
+    'changes' => 'Changes (System + Settings)',
+    'settings' => 'Settings',
+    'parameters' => 'Parameters',
+    'theme' => 'Theme',
+];
+

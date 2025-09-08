@@ -11,6 +11,9 @@ body {
   font-size: 0.95rem;
 }
 
+/* Altura de navbar (ajusta si cambias paddings del header) */
+:root{ --app-navbar-h: 56px; }
+
 /* ===========================================================
    VARIABLES DE TEMA (usar data-bs-theme="light" | "dark")
    Si tu AdminLTE usa .dark-mode, verás un bloque fallback abajo.
@@ -91,7 +94,14 @@ body {
 .main-header {
   /* Deja que tome el color del tema (en light lo definimos arriba). */
   background: var(--bs-navbar-bg);
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1030; /* sobre contenido y sidebar */
+  min-height: var(--app-navbar-h);
 }
+
+/* Empujar el contenido por debajo del navbar fijo */
+.content-wrapper { padding-top: var(--app-navbar-h); }
 
 /* Colores de links desde variables del tema (sin !important) */
 .main-header .nav-link {
@@ -119,6 +129,12 @@ body {
   line-height: 1;
 }
 
+/* Quitar borde/sombra inferior del navbar */
+.main-header.navbar {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
 /* =======================
    SIDEBAR (coherente tema)
    ======================= */
@@ -129,6 +145,27 @@ body {
 
 /* En DARK, dejamos que el tema administre; si necesitas reforzar tono:
 .dark-mode .main-sidebar { background: var(--bs-body-bg); } */
+
+/* Hacer que el área de marca (logo) herede el fondo del contenedor */
+.main-sidebar .brand-link { background: transparent !important; color: inherit; border-bottom: 0 !important; box-shadow: none !important; }
+.navbar .navbar-brand { background: transparent !important; color: inherit; }
+
+/* Sidebar fijo: no debe desplazarse con páginas largas.
+   Solo el contenido interno del menú debe tener scroll cuando sea necesario. */
+.main-sidebar {
+  position: fixed;
+  top: var(--app-navbar-h);
+  height: calc(100vh - var(--app-navbar-h));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* evita que el scroll de la página afecte al sidebar */
+}
+.main-sidebar .sidebar {
+  flex: 1 1 auto;
+  min-height: 0; /* necesario para que overflow funcione en flex */
+  overflow-y: auto; /* el menú solo scrollea si es más largo que la pantalla */
+  overflow-x: hidden;
+}
 
 /* Branding centrado y más limpio */
 .brand-link,
@@ -259,6 +296,10 @@ body {
 .main-footer {
   background: var(--pbd-footer-bg, var(--bs-body-bg));
   color: var(--pbd-footer-fg, var(--bs-body-color));
+  border-top: 0 !important;
+  box-shadow: none !important;
+  padding-top: .5rem !important;   /* reduce de py-3 (~1rem) a .5rem */
+  padding-bottom: .5rem !important;
 }
 .main-footer .fw-semibold {
   color: var(--pbd-footer-muted, var(--bs-secondary-color));
@@ -349,3 +390,14 @@ body {
   width: 1rem;
   text-align: center;
 }
+
+/* ===============================
+   Ajustes de layout (robustez)
+   =============================== */
+/* Sidebar: usa bottom:0 para evitar recortes con 100vh en algunos entornos */
+.main-sidebar {
+  bottom: 0;
+  height: auto !important;
+}
+/* Cuando AdminLTE fija el navbar, evitamos doble offset en contenido */
+body.layout-navbar-fixed .content-wrapper { padding-top: 0 !important; }

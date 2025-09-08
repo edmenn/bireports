@@ -43,8 +43,10 @@
 
     body:not(.dark-mode), body:not(.dark-mode) .content-wrapper{ background-color: var(--app-main-bg) !important; color: var(--app-main-text); }
     body:not(.dark-mode) .main-header.navbar{ background-color: var(--app-navbar-bg) !important; color: var(--app-navbar-text) !important; }
+    body:not(.dark-mode) .main-header .navbar-brand{ background-color: var(--app-navbar-bg) !important; color: var(--app-navbar-text) !important; }
     body:not(.dark-mode) .main-header.navbar .nav-link, body:not(.dark-mode) .main-header .navbar-nav .nav-link { color: var(--app-navbar-text) !important; }
     body:not(.dark-mode) .main-sidebar{ background-color: var(--app-menu-bg) !important; color: var(--app-menu-text) !important; }
+    body:not(.dark-mode) .main-sidebar .brand-link{ background-color: var(--app-menu-bg) !important; color: var(--app-menu-text) !important; }
     body:not(.dark-mode) .sidebar .nav-link{ color: var(--app-menu-text) !important; }
     body:not(.dark-mode) .sidebar .nav-link.active, body:not(.dark-mode) .sidebar .nav-link:hover{ background-color: var(--app-hi-bg) !important; color: var(--app-hi-text) !important; }
     body:not(.dark-mode) .card{ background-color: var(--app-card-bg); color: var(--app-card-text); }
