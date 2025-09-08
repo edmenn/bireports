@@ -311,7 +311,8 @@ Route::prefix('admin')
 
 // Idiomas
 Route::get('/lang/{locale}', function (string $locale) {
-    if (! in_array($locale, ['es', 'pt', 'en'], true)) {
+    $supported = config('app.supported_locales', ['en','es','pt','ru','tr']);
+    if (! in_array($locale, $supported, true)) {
         abort(404);
     }
     session(['locale' => $locale]);
@@ -337,7 +338,6 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
-
 
 
 

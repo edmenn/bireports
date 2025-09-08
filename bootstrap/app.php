@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware de localización en el grupo web
         $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
     })
+    ->withProviders([
+        App\Providers\MenuServiceProvider::class,
+    ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',

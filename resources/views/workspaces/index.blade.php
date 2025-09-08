@@ -1,17 +1,17 @@
 @extends('adminlte::page')
 
-@section('title', 'Espacios de trabajo')
+@section('title', __('workspaces.title'))
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h1 class="mb-0">Espacios de trabajo</h1>
-            <small class="text-muted">Listado importado desde Microsoft Fabric / Power BI</small>
+            <h1 class="mb-0">{{ __('workspaces.title') }}</h1>
+            <small class="text-muted">{{ __('workspaces.subtitle') }}</small>
         </div>
 
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-cloud-download-alt"></i> Importar ahora
+                <i class="fas fa-cloud-download-alt"></i> {{ __('workspaces.import_now') }}
             </a>
         </div>
     </div>
@@ -31,8 +31,8 @@
                 <div class="mb-3">
                     <i class="fas fa-inbox fa-3x text-muted"></i>
                 </div>
-                <h5 class="mb-2">No hay workspaces importados todavía</h5>
-                <p class="text-muted mb-4">Ejecuta una importación para ver tus espacios de trabajo aquí.</p>
+                <h5 class="mb-2">{{ __("workspaces.empty_title") }}
+                <p class="text-muted mb-4">{{ __("workspaces.empty_hint") }}
                 <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary">
                     <i class="fas fa-sync"></i> Importar ahora
                 </a>
@@ -311,3 +311,4 @@
 })();
 </script>
 @endpush
+

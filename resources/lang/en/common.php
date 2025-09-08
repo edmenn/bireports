@@ -22,6 +22,8 @@ return [
     'copy' => 'Copy',
     'yes' => 'Yes',
     'no' => 'No',
+    'close' => 'Close',
+    'warning' => 'Warning',
 
     // States
     'active' => 'Active',
@@ -41,4 +43,3 @@ return [
     'folders' => 'Folders',
     'portal' => 'My Space',
 ];
-

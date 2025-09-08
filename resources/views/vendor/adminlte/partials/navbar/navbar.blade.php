@@ -22,6 +22,23 @@
         {{-- Custom right links --}}
         @yield('content_top_nav_right')
 
+        {{-- Language switcher --}}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
+                <i class="fas fa-language"></i> {{ __('language.menu') }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-right border-0 shadow">
+                @foreach(config('app.supported_locales', ['en','es','pt','ru','tr']) as $code)
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('lang.switch', $code) }}">
+                            <img src="{{ asset('storage/lang/'.$code.'.png') }}" alt="{{ $code }}" width="18" height="12" class="mr-2"/>
+                            <span>{{ __('language.'.$code) }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </li>
+
         {{-- Theme switcher --}}
         <li class="nav-item">
             <form method="POST" action="{{ route('theme.switch') }}" class="d-inline">

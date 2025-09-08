@@ -2,10 +2,14 @@
 
 return [
     'menu' => 'Idioma',
-    'english' => 'Inglês',
+    'english' => 'English',
     'spanish' => 'Espanhol',
     'portuguese' => 'Português',
     'russian' => 'Russo',
     'turkish' => 'Turco',
+    'en' => 'English',
+    'es' => 'Espanhol',
+    'pt' => 'Português',
+    'ru' => 'Russo',
+    'tr' => 'Turco',
 ];
-

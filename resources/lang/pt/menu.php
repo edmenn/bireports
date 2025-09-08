@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'search' => 'Pesquisar',
     'my_space' => 'Meu espaço',
     'home' => 'Início',
     'favorites' => 'Favoritos',

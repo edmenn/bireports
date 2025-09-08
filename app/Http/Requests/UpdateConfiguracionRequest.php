@@ -18,7 +18,7 @@ class UpdateConfiguracionRequest extends FormRequest
             'dominio_personalizado'          => ['nullable','string','max:255'],
             'google_analytics_code'          => ['nullable','string','max:255'],
             'tipo_visualizacion'             => ['nullable','in:pastas,iconos,lista'],
-            'email_locale'                   => ['nullable','in:es,pt,en'],
+            'email_locale'                   => ['nullable','in:es,pt,en,ru,tr'],
             'powerbi_client_id'              => ['nullable','string','max:255'],
             'powerbi_client_secret'          => ['nullable','string'],
             'powerbi_tenant_id'              => ['nullable','string','max:255'],

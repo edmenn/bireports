@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'search' => 'Search',
     'my_space' => 'My Space',
     'home' => 'Home',
     'favorites' => 'Favorites',
@@ -25,4 +26,3 @@ return [
     'parameters' => 'Parameters',
     'theme' => 'Theme',
 ];
-

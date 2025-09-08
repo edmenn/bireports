@@ -1,23 +1,23 @@
 @extends('adminlte::page')
 
-@section('title', 'Aplicaciones')
+@section('title', __('apps.title'))
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h1 class="h3 mb-0">Aplicaciones</h1>
-            <small class="text-muted">Power BI / Fabric Apps</small>
+            <h1 class="h3 mb-0">{{ __('apps.title') }}</h1>
+            <small class="text-muted">{{ __('apps.subtitle') }}</small>
         </div>
         @if(!empty($hasConfig) && $hasConfig)
             <form action="{{ route('apps.refresh') }}" method="POST" class="m-0">
                 @csrf
                 <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                    <i class="fas fa-sync-alt me-1"></i> Refrescar
+                    <i class="fas fa-sync-alt me-1"></i> {{ __('apps.refresh') }}
                 </button>
             </form>
         @else
-            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Configura credenciales para habilitar el refresco">
-                <i class="fas fa-cogs me-1"></i> Configurar
+            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="{{ __('apps.configure') }}">
+                <i class="fas fa-cogs me-1"></i> {{ __('apps.configure') }}
             </a>
         @endif
     </div>
@@ -51,18 +51,18 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="fas fa-th-large fa-3x text-muted mb-3"></i>
-                <h5 class="mb-2">Sin aplicaciones</h5>
-                <p class="text-muted">Usa “Refrescar” para traer las aplicaciones desde Fabric / Power BI.</p>
+                <h5 class="mb-2">{{ __('apps.empty_title') }}</h5>
+                <p class="text-muted">{{ __('apps.empty_hint') }}</p>
                 @if(!empty($hasConfig) && $hasConfig)
                     <form action="{{ route('apps.refresh') }}" method="POST">
                         @csrf
                         <button class="btn btn-primary rounded-pill px-3">
-                            <i class="fas fa-sync-alt me-1"></i> Refrescar
+                            <i class="fas fa-sync-alt me-1"></i> {{ __('apps.refresh') }}
                         </button>
                     </form>
                 @else
                     <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
-                        <i class="fas fa-cogs me-1"></i> Configurar
+                        <i class="fas fa-cogs me-1"></i> {{ __('apps.configure') }}
                     </a>
                 @endif
             </div>
@@ -73,7 +73,7 @@
             <div class="card-body">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-6">
-                        <label class="mb-1">Buscar</label>
+                        <label class="mb-1">{{ __('apps.search') }}</label>
                         <input id="app-search" type="text" class="form-control form-control-lg"
                                placeholder="Nombre, App ID, workspace, propietario…">
                     </div>
@@ -155,7 +155,7 @@
                                 <td>
                                     @if($id)
                                         <code class="me-2">{{ \Illuminate\Support\Str::limit($id, 22) }}</code>
-                                        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill js-copy" data-copy="{{ $id }}" title="Copiar App ID" aria-label="Copiar App ID">
+                                        <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill js-copy" data-copy="{{ $id }}" title="{{ __('apps.copy_app_id') }}" aria-label="{{ __('apps.copy_app_id') }}">
                                             <i class="far fa-copy"></i>
                                         </button>
                                     @else

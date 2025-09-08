@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'search' => 'Ara',
     'my_space' => 'Alanım',
     'home' => 'Ana sayfa',
     'favorites' => 'Favoriler',

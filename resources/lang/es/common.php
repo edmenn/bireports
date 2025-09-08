@@ -22,6 +22,8 @@ return [
     'copy' => 'Copiar',
     'yes' => 'Sí',
     'no' => 'No',
+    'close' => 'Cerrar',
+    'warning' => 'Aviso',
 
     // Estados
     'active' => 'Activa',
@@ -41,4 +43,3 @@ return [
     'folders' => 'Carpetas',
     'portal' => 'Mi espacio',
 ];
-

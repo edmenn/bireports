@@ -1,15 +1,15 @@
 @extends('adminlte::page')
 
-@section('title', 'Historial de actualización')
+@section('title', __('history.title'))
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
-            <h1 class="m-0">Historial de actualización</h1>
-            <small class="text-muted">Workspace: {{ $workspace->name ?? $workspace->id }} — Dataset: {{ $datasetId }}</small>
+            <h1 class="m-0">{{ __('history.title') }}</h1>
+            <small class="text-muted">Workspace: {{ $workspace->name ?? $workspace->id }} - Dataset: {{ $datasetId }}</small>
         </div>
         <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
+            <i class="fas fa-arrow-left"></i> {{ __('history.back') }}
         </a>
     </div>
 @stop
@@ -22,11 +22,11 @@
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Duración</th>
-                        <th>Iniciado por</th>
-                        <th>Detalles</th>
+                        <th>{{ __('history.th_date') }}</th>
+                        <th>{{ __('history.th_status') }}</th>
+                        <th>{{ __('history.th_duration') }}</th>
+                        <th>{{ __('history.th_requested_by') }}</th>
+                        <th>{{ __('history.th_details') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,7 +66,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Sin registros</td>
+                            <td colspan="5" class="text-center text-muted py-4">{{ __('history.empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -74,3 +74,4 @@
         </div>
     </div>
 @stop
+

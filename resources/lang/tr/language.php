@@ -2,10 +2,14 @@
 
 return [
     'menu' => 'Dil',
-    'english' => 'İngilizce',
-    'spanish' => 'İspanyolca',
-    'portuguese' => 'Portekizce',
+    'english' => 'English',
+    'spanish' => 'Español',
+    'portuguese' => 'Português',
     'russian' => 'Rusça',
     'turkish' => 'Türkçe',
+    'en' => 'English',
+    'es' => 'İspanyolca',
+    'pt' => 'Portekizce',
+    'ru' => 'Rusça',
+    'tr' => 'Türkçe',
 ];
-

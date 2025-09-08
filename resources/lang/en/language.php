@@ -7,5 +7,9 @@ return [
     'portuguese' => 'Português',
     'russian' => 'Русский',
     'turkish' => 'Türkçe',
+    'en' => 'English',
+    'es' => 'Español',
+    'pt' => 'Português',
+    'ru' => 'Русский',
+    'tr' => 'Türkçe',
 ];
-

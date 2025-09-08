@@ -1,22 +1,22 @@
 @extends('adminlte::page')
 
-@section('title', 'Conjuntos de datos')
+@section('title', __('datasets.title'))
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
-            <h1 class="m-0">Conjuntos de datos</h1>
-            <small class="text-muted">Listado desde BD; los metadatos vienen de Fabric</small>
+            <h1 class="m-0">{{ __('datasets.title') }}</h1>
+            <small class="text-muted">{{ __('datasets.subtitle') }}</small>
         </div>
         <div class="d-flex gap-2 flex-wrap justify-content-end">
             <a href="{{ route('datasets.schedules.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-clock"></i> Ver todas las programaciones
+                <i class="fas fa-clock"></i> {{ __('datasets.view_all_schedules') }}
             </a>
             <a href="{{ url()->current() }}" class="btn btn-outline-secondary">
-                <i class="fas fa-sync"></i> Recargar lista
+                <i class="fas fa-sync"></i> {{ __('datasets.reload_list') }}
             </a>
             <a href="{{ route('powerbi.import.datasets') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-cloud-download-alt"></i> Importar/recargar metadatos (todos)
+                <i class="fas fa-cloud-download-alt"></i> {{ __('datasets.import_metadata') }}
             </a>
         </div>
     </div>
@@ -24,13 +24,13 @@
 
 @section('content')
     @if(session('status'))
-        <x-adminlte-alert theme="success" title="Listo">{{ session('status') }}</x-adminlte-alert>
+        <x-adminlte-alert theme="success" title="{{ __('datasets.alert_ok') }}">{{ session('status') }}</x-adminlte-alert>
     @endif
     @if(session('error'))
-        <x-adminlte-alert theme="danger" title="Error">{{ session('error') }}</x-adminlte-alert>
+        <x-adminlte-alert theme="danger" title="{{ __('datasets.alert_error') }}">{{ session('error') }}</x-adminlte-alert>
     @endif
 
-    <div class="mb-2 small text-muted">Consejo: usa “Acciones → Recargar metadatos” por fila para evitar demoras.</div>
+    <div class="mb-2 small text-muted">{{ __('datasets.tip_reload_metadata') }}</div>
 
     @php $total = method_exists($datasets ?? null, 'count') ? $datasets->count() : (is_countable($datasets ?? []) ? count($datasets) : 0); @endphp
 
@@ -38,8 +38,8 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <div class="mb-3"><i class="fas fa-inbox fa-3x text-muted"></i></div>
-                <h5 class="mb-2">No se encontraron datasets</h5>
-                <p class="text-muted mb-0">Asegúrate de haber importado y tener acceso a los workspaces.</p>
+                <h5 class="mb-2">{{ __('datasets.empty_title') }}</h5>
+                <p class="text-muted mb-0">{{ __('datasets.empty_hint') }}</p>
             </div>
         </div>
     @else
@@ -48,10 +48,10 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th>Nombre</th>
-                            <th>Workspace</th>
-                            <th class="text-nowrap">Dataset ID</th>
-                            <th class="text-end">Acciones</th>
+                            <th>{{ __('datasets.th_name') }}</th>
+                            <th>{{ __('datasets.th_workspace') }}</th>
+                            <th class="text-nowrap">{{ __('datasets.th_dataset_id') }}</th>
+                            <th class="text-end">{{ __('datasets.th_actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,29 +70,29 @@
                                 <td class="text-end">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
-                                            Acciones
+                                            {{ __('datasets.actions') }}
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-right">
                                             <li>
-                                                <form action="{{ route('datasets.refresh', [$wsId, $dsId]) }}" method="POST" onsubmit="return confirm('¿Iniciar actualización ahora?')">
+                                                <form action="{{ route('datasets.refresh', [$wsId, $dsId]) }}" method="POST" onsubmit="return confirm('{{ __('datasets.confirm_now') }}')">
                                                     @csrf
-                                                    <button class="dropdown-item" type="submit"><i class="fas fa-sync me-2"></i>Actualizar datos ahora</button>
+                                                    <button class="dropdown-item" type="submit"><i class="fas fa-sync me-2"></i>{{ __('datasets.action_refresh_now') }}</button>
                                                 </form>
                                             </li>
-                                            <li><a class="dropdown-item" href="{{ route('datasets.history', [$wsId, $dsId]) }}"><i class="fas fa-history me-2"></i>Historial de actualización</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('datasets.schedule', [$wsId, $dsId]) }}"><i class="fas fa-clock me-2"></i>Programar actualización</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('datasets.history', [$wsId, $dsId]) }}"><i class="fas fa-history me-2"></i>{{ __('datasets.action_history') }}</a></li>
+                                            <li><a class="dropdown-item" href="{{ route('datasets.schedule', [$wsId, $dsId]) }}"><i class="fas fa-clock me-2"></i>{{ __('datasets.action_schedule') }}</a></li>
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <form action="{{ route('datasets.metadata.refresh', [$wsId, $dsId]) }}" method="POST">
                                                     @csrf
-                                                    <button class="dropdown-item" type="submit"><i class="fas fa-database me-2"></i>Recargar metadatos</button>
+                                                    <button class="dropdown-item" type="submit"><i class="fas fa-database me-2"></i>{{ __('datasets.action_reload_metadata') }}</button>
                                                 </form>
                                             </li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="{{ $webSettings }}" target="_blank" rel="noopener"><i class="fas fa-tools me-2"></i>Administrar en Power BI</a></li>
-                                            <li><a class="dropdown-item" href="{{ $webView }}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt me-2"></i>Ver en Power BI</a></li>
-                                            <li><a class="dropdown-item" href="{{ $webView }}" target="_blank" rel="noopener"><i class="fas fa-edit me-2"></i>Editar en Power BI</a></li>
-                                            <li><a class="dropdown-item" href="{{ $webLineage }}" target="_blank" rel="noopener"><i class="fas fa-project-diagram me-2"></i>Ver linaje</a></li>
+                                            <li><a class="dropdown-item" href="{{ $webSettings }}" target="_blank" rel="noopener"><i class="fas fa-tools me-2"></i>{{ __('datasets.action_manage_in_pbi') }}</a></li>
+                                            <li><a class="dropdown-item" href="{{ $webView }}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt me-2"></i>{{ __('datasets.action_view_in_pbi') }}</a></li>
+                                            <li><a class="dropdown-item" href="{{ $webView }}" target="_blank" rel="noopener"><i class="fas fa-edit me-2"></i>{{ __('datasets.action_edit_in_pbi') }}</a></li>
+                                            <li><a class="dropdown-item" href="{{ $webLineage }}" target="_blank" rel="noopener"><i class="fas fa-project-diagram me-2"></i>{{ __('datasets.action_view_lineage') }}</a></li>
                                         </ul>
                                     </div>
                                 </td>
@@ -114,5 +114,8 @@
 <style>
     /* Evitar que el dropdown quede oculto por overflow en tablas responsivas */
     .datasets-table-wrap { overflow: visible !important; }
+    .text-monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .fw-semibold { font-weight: 600; }
 </style>
 @endpush
+
