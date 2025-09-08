@@ -31,6 +31,8 @@ class UpdateConfiguracionRequest extends FormRequest
             'capacity_on_demand_message'     => ['nullable','string','max:255'],
             'capacity_start_timeout_sec'     => ['nullable','integer','min:10','max:600'],
             'capacity_start_poll_interval_sec' => ['nullable','integer','min:1','max:60'],
+            // Timeout de carga del viewer (post-embed)
+            'report_load_timeout_sec'        => ['nullable','integer','min:5','max:300'],
 
             // Tema y branding
             'theme_navbar_class'             => ['nullable','string','max:100'],

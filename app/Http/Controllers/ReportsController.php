@@ -133,6 +133,7 @@ class ReportsController extends Controller
         $capacityOnDemandMessage = (string) ($cfg?->capacity_on_demand_message ?? 'Encendiendo la capacidad, aguarde unos segundos…');
         $capacityStartTimeoutSec = (int) ($cfg?->capacity_start_timeout_sec ?? 120);
         $capacityStartPollSec    = (int) ($cfg?->capacity_start_poll_interval_sec ?? 5);
+        $reportLoadTimeoutSec    = (int) ($cfg?->report_load_timeout_sec ?? 10);
 
         // 6) Vista
         return view('reports.show', [
@@ -149,6 +150,7 @@ class ReportsController extends Controller
             'capacityOnDemandMessage' => $capacityOnDemandMessage,
             'capacityStartTimeoutSec' => $capacityStartTimeoutSec,
             'capacityStartPollSec'    => $capacityStartPollSec,
+            'reportLoadTimeoutSec'    => $reportLoadTimeoutSec,
         ]);
     }
 

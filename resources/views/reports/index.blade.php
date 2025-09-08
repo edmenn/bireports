@@ -186,22 +186,7 @@
                             </h3>
 
                             {{-- Grid de acciones: 2 columnas fijas con gap --}}
-                            <div class="actions-grid position-relative" style="z-index:2">
-                                <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
-                                   class="btn btn-sm btn-primary w-100"
-                                   title="Abrir dashboard"
-                                   onclick="event.stopPropagation();">
-                                    <i class="fas fa-chart-line me-1"></i> Abrir
-                                </a>
-                                @role('admin')
-                                    <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
-                                       class="btn btn-sm btn-outline-warning w-100"
-                                       title="Editar imagen y descripción"
-                                       onclick="event.stopPropagation();">
-                                        <i class="fas fa-edit me-1"></i> Editar
-                                    </a>
-                                @endrole
-                            </div>
+                            
                         </div>
                     </div>
 
@@ -211,6 +196,24 @@
                             {{ $r->description }}
                         </div>
                     @endif
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <div class="actions-grid position-relative" style="z-index:2">
+                                    <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
+                                    class="btn btn-sm btn-primary w-100"
+                                    title="Abrir dashboard"
+                                    onclick="event.stopPropagation();">
+                                        <i class="fas fa-chart-line me-1"></i> Abrir
+                                    </a>
+                                    @role('admin')
+                                        <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
+                                        class="btn btn-sm btn-outline-warning w-100"
+                                        title="Editar imagen y descripción"
+                                        onclick="event.stopPropagation();">
+                                            <i class="fas fa-edit me-1"></i> Editar
+                                        </a>
+                                    @endrole
+                        </div>
+                    </div>
 
                     {{-- Chips / metadatos --}}
                     <div class="px-3 mt-2 mb-3">

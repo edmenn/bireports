@@ -262,6 +262,18 @@
                                    title="Intervalos más cortos reaccionan más rápido pero generan más llamadas; 5s suele ser un buen equilibrio."></i>
                             </small>
                         </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="report_load_timeout_sec" type="number" min="5" max="300" step="1"
+                                              label="Timeout de carga del reporte (seg)"
+                                              value="{{ old('report_load_timeout_sec', $config->report_load_timeout_sec ?? 10) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
+                            </x-adminlte-input>
+                            <small class="text-muted">Se inicia después de comenzar el embed; si vence se muestra error de carga.
+                                <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
+                                   data-bs-toggle="tooltip"
+                                   title="Ajusta el umbral de espera para que Power BI reporte el evento 'loaded'."></i>
+                            </small>
+                        </div>
                     </div>
                 </x-adminlte-card>
             </div>

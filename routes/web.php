@@ -221,6 +221,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/audits', [AuditController::class, 'store'])
         ->name('api.audit.store');
 
+    // Ping de capacidad (viewer)
+    Route::post('/api/capacities/{capacity}/ping', [\App\Http\Controllers\CapacityActivityController::class, 'ping'])
+        ->name('capacities.ping');
+
     // ✅ Rutas de perfil (Breeze/propio).
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])
@@ -338,7 +342,6 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
-
 
 
 

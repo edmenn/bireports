@@ -32,6 +32,17 @@ class CapacityActivityController extends Controller
 
         $now = Carbon::now();
 
+        // 1.5) Sincronizar estado real (MyOrg/ARM) para evitar falsos "pausada"
+        try {
+            $active = $this->svc->isCapacityActive($capacity);
+            if (is_bool($active) && $capacity->is_active !== $active) {
+                $capacity->is_active = $active;
+                $capacity->save();
+            }
+        } catch (\Throwable $e) {
+            // si falla la consulta, continuamos con estado local
+        }
+
         // 2) Si está pausada y se solicita resume => decidir según reglas
         $resumed = false;
         $reason  = null;
@@ -42,7 +53,7 @@ class CapacityActivityController extends Controller
             if ($capacity->force_shutdown_on_schedule) {
                 // Si forzamos apagado por horario: solo reanudamos si estamos dentro de la ventana
                 if ($inWindow) {
-                    $this->svc->resume($capacity->capacity_uuid);
+                    $this->svc->resume($capacity);
                     $capacity->is_active = true;
                     $capacity->last_state_change_at = $now;
                     $capacity->save();
@@ -53,7 +64,7 @@ class CapacityActivityController extends Controller
                 }
             } else {
                 // Si no se fuerza por horario, reanudamos siempre al primer acceso
-                $this->svc->resume($capacity->capacity_uuid);
+                $this->svc->resume($capacity);
                 $capacity->is_active = true;
                 $capacity->last_state_change_at = $now;
                 $capacity->save();

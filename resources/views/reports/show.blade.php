@@ -199,6 +199,25 @@
         const url = `/api/capacities/${CAPACITY_DB_ID}/ping`;
         const payload = { resume: true };
 
+        // Chequeo inicial: si ya está activa no mostramos mensaje de encendido
+        try {
+            const res0 = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token())),
+                },
+                body: JSON.stringify({ resume: false }),
+            });
+            if (res0.ok) {
+                const j0 = await res0.json().catch(() => ({}));
+                if (j0?.capacity?.is_active) {
+                    return true;
+                }
+            }
+        } catch (_) { /* continuar y mostrar mensaje */ }
+
         // Mensaje de encendido
         if (loading) {
             loading.innerHTML = `<div class="text-center"><div class=\"spinner-border\" role=\"status\" aria-label=\"Encendiendo\"></div><div class=\"mt-2\">${STARTING_MSG}</div></div>`;
@@ -238,7 +257,17 @@
             loading.innerHTML = `<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\" aria-label=\"Cargando\"></div><div class=\"mt-2\">Cargando reporte...</div></div>`;
         }
         try { powerbi.reset(container); } catch (_) {}
-        return doEmbed();
+        const rpt = doEmbed();
+        // Arrancamos el timeout de carga recién cuando comenzamos a embeber
+        loaded = false;
+        if (loadTimer) { try { clearTimeout(loadTimer); } catch (_) {} loadTimer = null; }
+        loadTimer = setTimeout(() => {
+            if (loaded) return;
+            try { powerbi.reset(container); } catch (_) {}
+            showError('El reporte tardó demasiado en cargar (timeout 10s). Verifica la red, el token o la capacidad.');
+            postAudit('error', { error_message: 'load_timeout_10s' });
+        }, LOAD_TIMEOUT_MS);
+        return rpt;
     }
 
     // Encapsulamos el embed en función reutilizable
@@ -272,13 +301,8 @@
     setTimeout(scheduleFit, 60);
 
     let loaded = false;
-    const LOAD_TIMEOUT_MS = 10000;
-    const loadTimer = setTimeout(() => {
-        if (loaded) return;
-        try { powerbi.reset(container); } catch (_) {}
-        showError('El reporte tardó demasiado en cargar (timeout 10s). Verifica la red, el token o la capacidad.');
-        postAudit('error', { error_message: 'load_timeout_10s' });
-    }, LOAD_TIMEOUT_MS);
+    const LOAD_TIMEOUT_MS = @json(($reportLoadTimeoutSec ?? 10) * 1000);
+    let loadTimer = null; // Inicia al embeber, no durante warmup
 
     // ====== Solo 1 "view" al cargar ======
     function attachListeners(rpt) {
@@ -299,6 +323,7 @@
     });
 
     rpt.on('error', (event) => {
+        if (loadTimer) { try { clearTimeout(loadTimer); } catch (_) {} loadTimer = null; }
         const detail = event?.detail;
         const msg = (typeof detail === 'string') ? detail : (detail?.message || 'Error al renderizar el reporte');
         showError(msg);

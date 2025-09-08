@@ -322,6 +322,75 @@ class PowerBiCapacityService
     }
 
     /**
+     * Construye la URL de ARM para obtener el recurso de capacidad.
+     */
+    private function buildArmGetUrl(Capacity $cap): string
+    {
+        /** @var Configuracion|null $cfg */
+        $cfg = Configuracion::query()->first();
+        if (!$cfg) {
+            throw new RuntimeException('No existe fila de configuraciones.');
+        }
+
+        $subId = (string) ($cfg->azure_subscription_id ?? '');
+        $rg    = (string) ($cfg->azure_resource_group ?? '');
+
+        if ($subId === '' || $rg === '') {
+            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configuraciones.');
+        }
+
+        $provider = $this->detectProviderBySku((string) $cap->sku);
+        $api      = $this->providerApiVersion($provider);
+        $name     = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
+        if ($name === '') {
+            throw new RuntimeException('arm_resource_name/display_name vacío en la capacidad.');
+        }
+
+        return sprintf(
+            'https://management.azure.com/subscriptions/%s/resourceGroups/%s/providers/%s/capacities/%s?api-version=%s',
+            rawurlencode($subId),
+            rawurlencode($rg),
+            $provider,
+            rawurlencode($name),
+            $api
+        );
+    }
+
+    /**
+     * Verifica si la capacidad está activa consultando primero MyOrg y, si no hay dato, ARM.
+     * Devuelve true/false si pudo determinarlo, o null si no fue posible.
+     */
+    public function isCapacityActive(Capacity $cap): ?bool
+    {
+        // 1) MyOrg
+        try {
+            $json = $this->getCapacity((string) $cap->capacity_uuid);
+            $state = strtoupper((string) ($json['state'] ?? ''));
+            if ($state !== '') {
+                return $state === 'ACTIVE';
+            }
+        } catch (\Throwable $e) {
+            // ignoramos, probamos ARM
+        }
+
+        // 2) ARM
+        try {
+            $url = $this->buildArmGetUrl($cap);
+            $res = $this->armRequest('GET', $url);
+            if ($res['code'] >= 200 && $res['code'] < 300) {
+                $state = strtoupper((string) ($res['json']['properties']['state'] ?? $res['json']['state'] ?? ''));
+                if ($state !== '') {
+                    return in_array($state, ['ACTIVE','RUNNING','READY'], true);
+                }
+            }
+        } catch (\Throwable $e) {
+            // sin datos
+        }
+
+        return null;
+    }
+
+    /**
      * Pausa vía ARM.
      */
     public function pause(Capacity $cap): void
