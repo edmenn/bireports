@@ -157,6 +157,12 @@ class ConfiguracionesController extends Controller
             $path = $request->file('site_logo')->store('branding', 'public');
             $data['site_logo_path'] = $path;
         }
+        if ($request->has('site_logo_width')) {
+            $data['site_logo_width'] = $request->integer('site_logo_width');
+        }
+        if ($request->has('site_logo_height')) {
+            $data['site_logo_height'] = $request->integer('site_logo_height');
+        }
 
         if ($request->hasFile('site_favicon')) {
             $path = $request->file('site_favicon')->store('branding', 'public');
@@ -173,6 +179,12 @@ class ConfiguracionesController extends Controller
         if ($request->hasFile('site_logo_compact')) {
             $path = $request->file('site_logo_compact')->store('branding', 'public');
             $data['site_logo_compact_path'] = $path;
+        }
+        if ($request->has('site_logo_compact_width')) {
+            $data['site_logo_compact_width'] = $request->integer('site_logo_compact_width');
+        }
+        if ($request->has('site_logo_compact_height')) {
+            $data['site_logo_compact_height'] = $request->integer('site_logo_compact_height');
         }
 
         // Icono del preloader (centro al refrescar)

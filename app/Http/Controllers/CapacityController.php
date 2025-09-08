@@ -242,14 +242,20 @@ class CapacityController extends Controller
     public function settingsUpdate(Request $request, Capacity $capacity): RedirectResponse
     {
         $validated = $request->validate([
-            'force_shutdown_on_schedule'  => ['nullable','boolean'],
-            'cost_optimization_enabled'   => ['nullable','boolean'],
+            'automation_enabled'          => ['nullable','boolean'],
             'inactivity_timeout_minutes'  => ['nullable','integer','min:5','max:120'],
         ]);
 
-        $capacity->force_shutdown_on_schedule = $request->boolean('force_shutdown_on_schedule');
-        $capacity->cost_optimization_enabled  = $request->boolean('cost_optimization_enabled');
+        // Switch unificado: fuerza ambos flags en tándem
+        $auto = $request->boolean('automation_enabled');
+        $capacity->force_shutdown_on_schedule = $auto;
+        $capacity->cost_optimization_enabled  = $auto;
         $capacity->inactivity_timeout_minutes = $validated['inactivity_timeout_minutes'] ?? null;
+
+        // Si se activa la automatización y no hay timeout, usar 30m por defecto
+        if ($auto && empty($capacity->inactivity_timeout_minutes)) {
+            $capacity->inactivity_timeout_minutes = 30;
+        }
         $capacity->save();
 
         return back()->with('success','Configuración actualizada.');

@@ -45,7 +45,11 @@ class Configuracion extends Model
         'theme_sidebar_class',
         'site_title',
         'site_logo_path',
+        'site_logo_width',
+        'site_logo_height',
         'site_logo_compact_path',
+        'site_logo_compact_width',
+        'site_logo_compact_height',
         'site_favicon_path',
         'preloader_logo_path',
         'preloader_logo_width',
@@ -71,6 +75,10 @@ class Configuracion extends Model
         'capacity_start_poll_interval_sec' => 'integer',
         'preloader_logo_width' => 'integer',
         'preloader_logo_height' => 'integer',
+        'site_logo_width' => 'integer',
+        'site_logo_height' => 'integer',
+        'site_logo_compact_width' => 'integer',
+        'site_logo_compact_height' => 'integer',
     ];
 
     // Almacenar el client secret encriptado; tolera valores antiguos en texto claro

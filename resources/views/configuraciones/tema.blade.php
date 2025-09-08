@@ -93,11 +93,16 @@
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Se muestra en el encabezado. Usa un archivo liviano para mejor carga."></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
+                                    @php($siteLogoH = (int) (old('site_logo_height', $config->site_logo_height ?? 60)))
                                     @if($config->site_logo_path)
-                                        <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px;">
+                                        <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px;">
                                     @else
-                                        <img id="site-logo-preview" src="" alt="Logo" class="img-thumbnail mt-1" style="max-height: 60px; display:none;">
+                                        <img id="site-logo-preview" src="" alt="Logo" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px; display:none;">
                                     @endif
+                                    <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
+                                        <x-adminlte-input name="site_logo_width" label="Ancho (px)" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_width', $config->site_logo_width) }}"/>
+                                        <x-adminlte-input name="site_logo_height" label="Alto (px)" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoH }}"/>
+                                    </div>
                                 </div>
 
                                 {{-- Icono de Preloader (centro al refrescar) --}}
@@ -136,11 +141,16 @@
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Versión compacta del logo para espacios reducidos."></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
+                                    @php($siteLogoCH = (int) (old('site_logo_compact_height', $config->site_logo_compact_height ?? 60)))
                                     @if($config->site_logo_compact_path)
-                                        <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: 60px;">
+                                        <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px;">
                                     @else
-                                        <img id="site-logo-compact-preview" src="" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: 60px; display:none;">
+                                        <img id="site-logo-compact-preview" src="" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px; display:none;">
                                     @endif
+                                    <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
+                                        <x-adminlte-input name="site_logo_compact_width" label="Ancho (px)" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_compact_width', $config->site_logo_compact_width) }}"/>
+                                        <x-adminlte-input name="site_logo_compact_height" label="Alto (px)" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoCH }}"/>
+                                    </div>
                                 </div>
 
                                 {{-- Favicon --}}
@@ -547,6 +557,19 @@
         setupImagePreview('site_logo_compact', 'site-logo-compact-preview');
         setupImagePreview('site_favicon', 'site-favicon-preview');
         setupImagePreview('preloader_logo', 'preloader-logo-preview');
+        // Ajustar tamaño de previews de logos cuando cambian los inputs de alto
+        try {
+            const h1 = document.querySelector('input[name="site_logo_height"]');
+            const p1 = document.getElementById('site-logo-preview');
+            if (h1 && p1) {
+                h1.addEventListener('input', () => { const v = Math.max(16, Math.min(128, parseInt(h1.value||0,10))); p1.style.maxHeight = v + 'px'; });
+            }
+            const h2 = document.querySelector('input[name="site_logo_compact_height"]');
+            const p2 = document.getElementById('site-logo-compact-preview');
+            if (h2 && p2) {
+                h2.addEventListener('input', () => { const v = Math.max(16, Math.min(128, parseInt(h2.value||0,10))); p2.style.maxHeight = v + 'px'; });
+            }
+        } catch (_) {}
 
         // Actualizar vista previa del tamaño del preloader al cambiar los inputs
         (function bindPreloaderSizePreview(){

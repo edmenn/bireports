@@ -163,6 +163,18 @@
                 @enderror
             </div>
 
+            {{-- Encendido fuera de ventana (on-demand) --}}
+            <div class="form-check form-switch mt-3">
+                <input class="form-check-input" type="checkbox" role="switch"
+                       id="allow_resume_outside_window"
+                       name="allow_resume_outside_window" value="1"
+                       {{ old('allow_resume_outside_window', $report->allow_resume_outside_window ?? false) ? 'checked' : '' }}>
+                <label class="form-check-label" for="allow_resume_outside_window">
+                    Permitir encender la capacidad fuera del horario operativo para este reporte
+                </label>
+                <div class="form-text">Si está activo, cualquier usuario podrá encenderla al abrir este reporte; luego se apagará por inactividad.</div>
+            </div>
+
         </div>
 
         {{-- Footer: botones iguales y con buen aire --}}

@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 final class AuditAnalyticsController extends Controller
 {
     /** ÚNICA acción que cuenta como “acceso”. Según tu dump real. */
-    private const ACCESS_ACTION = 'render';
+    private const ACCESS_ACTIONS = ['render','view'];
 
     public function index(Request $request): View
     {
@@ -39,10 +39,11 @@ final class AuditAnalyticsController extends Controller
         $applyUserFilter = ($tab === 'user-profile');
         $userId = ($applyUserFilter && $request->filled('user_id')) ? (int)$request->input('user_id') : null;
 
-        // Base GLOBAL: renders en rango (sin filtrar usuario)
+        // Base GLOBAL: accesos en rango (sin filtrar usuario)
         $baseGlobal = Audit::query()
             ->whereBetween('occurred_at', [$from, $to])
-            ->where('action', self::ACCESS_ACTION);
+            // Para evitar doble conteo (view + render), contamos solo 'render'.
+            ->where('action', 'render');
 
         // Base SCOPED: para tarjetas si estás en perfil
         $baseScoped = (clone $baseGlobal)
@@ -108,7 +109,7 @@ final class AuditAnalyticsController extends Controller
             'userId'        => $userId,
             'usersList'     => $usersList,
             'dowLabels'     => $dowLabels,
-            'accessAction'  => self::ACCESS_ACTION,
+            'accessAction'  => 'render+view',
         ], $totals, $dashboard, [
             'usersMost'     => $usersMost,
             'usersLeast'    => $usersLeast,
@@ -124,9 +125,10 @@ final class AuditAnalyticsController extends Controller
     /** Dashboard global (renders). */
     private function buildDashboard($base, Carbon $from, Carbon $to): array
     {
-        // Meses
+        // Meses (ajustado a TZ de la app)
+        $tz = addslashes(\App\Support\AppTimezone::current() ?? config('app.timezone'));
         $monthsRaw = (clone $base)
-            ->selectRaw("to_char(date_trunc('month', occurred_at), 'YYYY-MM') AS ym, COUNT(*) AS total")
+            ->selectRaw("to_char(date_trunc('month', occurred_at AT TIME ZONE '$tz'), 'YYYY-MM') AS ym, COUNT(*) AS total")
             ->groupBy('ym')->orderBy('ym')->get()->keyBy('ym');
 
         $months = [];
@@ -141,9 +143,9 @@ final class AuditAnalyticsController extends Controller
             $cursor->addMonth();
         }
 
-        // Heatmap
+        // Heatmap (ajustado a TZ de la app)
         $gridRaw = (clone $base)
-            ->selectRaw('EXTRACT(ISODOW FROM occurred_at)::int AS dow, EXTRACT(HOUR FROM occurred_at)::int AS hr, COUNT(*) AS total')
+            ->selectRaw("EXTRACT(ISODOW FROM (occurred_at AT TIME ZONE '$tz'))::int AS dow, EXTRACT(HOUR FROM (occurred_at AT TIME ZONE '$tz'))::int AS hr, COUNT(*) AS total")
             ->groupBy('dow','hr')->get();
 
         $heatmap = [];
@@ -154,9 +156,9 @@ final class AuditAnalyticsController extends Controller
         }
         foreach ($gridRaw as $r) $heatmap[$r->hr][$r->dow] = (int)$r->total;
 
-        // Tendencia diaria
+        // Tendencia diaria (ajustado a TZ de la app)
         $dailyRaw = (clone $base)
-            ->selectRaw("DATE(occurred_at) AS d, COUNT(*) AS total")
+            ->selectRaw("DATE(occurred_at AT TIME ZONE '$tz') AS d, COUNT(*) AS total")
             ->groupBy('d')->orderBy('d')->get()->keyBy('d');
 
         $daily = [];
@@ -279,7 +281,7 @@ final class AuditAnalyticsController extends Controller
             ->select('user_id')
             ->whereNotNull('user_id')
             ->whereBetween('occurred_at', [$from, $to])
-            ->where('action', self::ACCESS_ACTION)
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('user_id');
 
         $users = User::query()
@@ -290,7 +292,7 @@ final class AuditAnalyticsController extends Controller
         $lastByUser = Audit::query()
             ->select('user_id', DB::raw('MAX(occurred_at) AS last_access'))
             ->whereNotNull('user_id')
-            ->where('action', self::ACCESS_ACTION)
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('user_id')->pluck('last_access', 'user_id');
 
         return $users->map(function ($u) use ($lastByUser) {
@@ -332,7 +334,7 @@ final class AuditAnalyticsController extends Controller
         $sub = Audit::query()
             ->select('report_uuid')
             ->whereBetween('occurred_at', [$from, $to])
-            ->where('action', self::ACCESS_ACTION)
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('report_uuid');
 
         $reports = Report::query()
@@ -342,7 +344,7 @@ final class AuditAnalyticsController extends Controller
 
         $lastByReport = Audit::query()
             ->select('report_uuid', DB::raw('MAX(occurred_at) AS last_access'))
-            ->where('action', self::ACCESS_ACTION)
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('report_uuid')->pluck('last_access', 'report_uuid');
 
         return $reports->map(function ($r) use ($lastByReport) {
@@ -365,13 +367,13 @@ final class AuditAnalyticsController extends Controller
         $base = Audit::query()
             ->where('user_id', $userId)
             ->whereBetween('occurred_at', [$from, $to])
-            ->where('action', self::ACCESS_ACTION);
+            ->whereIn('action', self::ACCESS_ACTIONS);
 
         // KPIs del usuario
         $totalAccesos   = (clone $base)->count();
         $lastAccess     = (clone $base)->max('occurred_at');
         $reportesUnicos = (clone $base)->distinct('report_uuid')->count('report_uuid');
-        $diasActivos    = (clone $base)->selectRaw("DATE(occurred_at) AS d")->groupBy('d')->get()->count();
+        $diasActivos    = (clone $base)->selectRaw("DATE(occurred_at AT TIME ZONE '$tz') AS d")->groupBy('d')->get()->count();
 
         // Top reportes del usuario
         $topReportsRows = (clone $base)
@@ -384,9 +386,9 @@ final class AuditAnalyticsController extends Controller
             return ['label' => $reportNames[$id] ?? $id, 'total' => (int)$r->total];
         })->values();
 
-        // Heatmap del usuario
+        // Heatmap del usuario (ajustado a TZ)
         $gridRaw = (clone $base)
-            ->selectRaw('EXTRACT(ISODOW FROM occurred_at)::int AS dow, EXTRACT(HOUR FROM occurred_at)::int AS hr, COUNT(*) AS total')
+            ->selectRaw("EXTRACT(ISODOW FROM (occurred_at AT TIME ZONE '$tz'))::int AS dow, EXTRACT(HOUR FROM (occurred_at AT TIME ZONE '$tz'))::int AS hr, COUNT(*) AS total")
             ->groupBy('dow','hr')->get();
 
         $heatmap = [];
@@ -463,7 +465,7 @@ final class AuditAnalyticsController extends Controller
         $base = Audit::query()
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->whereBetween('occurred_at', [$from, $to])
-            ->where('action', self::ACCESS_ACTION)
+            ->whereIn('action', self::ACCESS_ACTIONS)
             ->orderBy('occurred_at');
 
         $headers = [

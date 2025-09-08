@@ -29,6 +29,11 @@ class Report extends Model
         'dataset_id',
         'cover_url',
         'description',
+        'allow_resume_outside_window',
+    ];
+
+    protected $casts = [
+        'allow_resume_outside_window' => 'boolean',
     ];
 
     /**

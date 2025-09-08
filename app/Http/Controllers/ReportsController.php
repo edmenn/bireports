@@ -205,6 +205,11 @@ class ReportsController extends Controller
             $report->description = $desc !== '' ? $desc : null;
         }
 
+        // --- Permitir encendido fuera de ventana ---
+        if ($request->has('allow_resume_outside_window')) {
+            $report->allow_resume_outside_window = $request->boolean('allow_resume_outside_window');
+        }
+
         $report->save();
 
         return redirect()

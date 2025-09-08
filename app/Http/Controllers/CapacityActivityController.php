@@ -49,27 +49,41 @@ class CapacityActivityController extends Controller
 
         if ($resume && $capacity->isPausable() && ! $capacity->is_active) {
             $inWindow = $this->isInWindowNow($capacity, $now);
+            $hasEnabledSchedules = $capacity->schedules()->where('enabled', true)->exists();
 
-            if ($capacity->force_shutdown_on_schedule) {
-                // Si forzamos apagado por horario: solo reanudamos si estamos dentro de la ventana
-                if ($inWindow) {
-                    $this->svc->resume($capacity);
-                    $capacity->is_active = true;
-                    $capacity->last_state_change_at = $now;
-                    $capacity->save();
-                    $resumed = true;
-                    $reason  = 'resumed_in_schedule_window';
-                } else {
-                    $reason = 'outside_schedule_window';
-                }
+            // ¿Permite encender fuera de ventana según el reporte?
+            $allowOutside = false;
+            $reportUuid = (string) $request->input('report_uuid', '');
+            if ($reportUuid !== '') {
+                try {
+                    $report = \App\Models\Report::query()->find($reportUuid);
+                    $allowOutside = (bool) ($report?->allow_resume_outside_window ?? false);
+                } catch (\Throwable) {}
+            }
+
+            // Para permitir encender fuera de ventana se requiere que la programación esté activa
+            $schedulingActive = $capacity->force_shutdown_on_schedule && $hasEnabledSchedules;
+            if ($capacity->force_shutdown_on_schedule && ! $inWindow && ! ($allowOutside && $schedulingActive)) {
+                // Bloqueado fuera de ventana sin permiso del reporte
+                $reason = $hasEnabledSchedules ? 'outside_schedule_window' : 'no_schedule_defined';
             } else {
-                // Si no se fuerza por horario, reanudamos siempre al primer acceso
+                // Reanudar (dentro de ventana o con override del reporte)
                 $this->svc->resume($capacity);
                 $capacity->is_active = true;
                 $capacity->last_state_change_at = $now;
+
+                // Si se encendió fuera de ventana, establecer un período de gracia
+                if (! $inWindow) {
+                    $timeout = (int) ($capacity->inactivity_timeout_minutes ?? 0);
+                    $graceMin = $timeout > 0 ? $timeout : 30; // default 30 min
+                    $capacity->outside_window_grace_until = $now->copy()->addMinutes($graceMin);
+                } else {
+                    $capacity->outside_window_grace_until = null;
+                }
+
                 $capacity->save();
                 $resumed = true;
-                $reason  = 'resumed_on_demand';
+                $reason  = $inWindow ? 'resumed_in_schedule_window' : 'resumed_on_demand_outside_window';
             }
         }
 

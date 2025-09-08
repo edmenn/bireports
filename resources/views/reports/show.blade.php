@@ -197,7 +197,7 @@
         if (!CAPACITY_DB_ID) return true; // Nada que hacer si no hay capacidad asociada
         const start = Date.now();
         const url = `/api/capacities/${CAPACITY_DB_ID}/ping`;
-        const payload = { resume: true };
+        const payload = { resume: true, report_uuid: REPORT_UUID };
 
         // Chequeo inicial: si ya está activa no mostramos mensaje de encendido
         try {
@@ -208,7 +208,7 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token())),
                 },
-                body: JSON.stringify({ resume: false }),
+                body: JSON.stringify({ resume: false, report_uuid: REPORT_UUID }),
             });
             if (res0.ok) {
                 const j0 = await res0.json().catch(() => ({}));
@@ -353,11 +353,15 @@
         if (rpt) attachListeners(rpt);
     })();
 
-    report.on('dataSelected', async (ev) => {
-        const visual = ev?.detail?.visual || {};
-        const visualInfo = { title: visual?.title || null, type: visual?.type || null, name: visual?.name || null };
-        postAudit('click', await snapshotState('data_selected', { visual: visualInfo }));
-    });
+    try {
+        if (window.report && typeof window.report.on === 'function') {
+            window.report.on('dataSelected', async (ev) => {
+                const visual = ev?.detail?.visual || {};
+                const visualInfo = { title: visual?.title || null, type: visual?.type || null, name: visual?.name || null };
+                postAudit('click', await snapshotState('data_selected', { visual: visualInfo }));
+            });
+        }
+    } catch (_) {}
 
     // ====== Auditoría helpers ======
     const debouncers = new Map();
@@ -373,9 +377,11 @@
             const res = await fetch(url, {
                 method: 'POST',
                 signal: controller.signal,
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token())),
                 },
                 body: JSON.stringify(payload),
@@ -392,9 +398,11 @@
                 const res2 = await fetch(url, {
                     method: 'POST',
                     signal: controller2.signal,
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token())),
                     },
                     body: JSON.stringify(payload),

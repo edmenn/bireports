@@ -58,6 +58,7 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
                     $svc->resume($cap->capacity_uuid);
                     $cap->is_active = true;
                     $cap->last_state_change_at = Carbon::now();
+                    $cap->outside_window_grace_until = null; // limpiar gracia
                     $cap->save();
                     \App\Models\CapacityAudit::create([
                         'capacity_id' => $cap->id,
@@ -75,6 +76,10 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
                     ]);
                 }
             } elseif (! $inWindow && $cap->is_active) {
+                // Si hay un período de gracia vigente (encendido on-demand), no forzar pausa por horario
+                if ($cap->outside_window_grace_until && $cap->outside_window_grace_until->greaterThan(\Illuminate\Support\Carbon::now())) {
+                    return; // dejar que lo apague por inactividad
+                }
                 try {
                     $svc->pause($cap->capacity_uuid);
                     $cap->is_active = false;

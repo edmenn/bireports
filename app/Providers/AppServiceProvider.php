@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
                 $logoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_path);
                 config([
                     'adminlte.logo_img_xl' => ltrim(parse_url($logoUrl, PHP_URL_PATH), '/'),
-                    'adminlte.logo_img_xl_class' => 'brand-image-xs',
+                    'adminlte.logo_img_xl_class' => 'brand-image',
                 ]);
             }
             if (!empty($cfg->site_logo_compact_path)) {
@@ -62,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
                 $logoSmallUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_compact_path);
                 config([
                     'adminlte.logo_img' => ltrim(parse_url($logoSmallUrl, PHP_URL_PATH), '/'),
+                    'adminlte.logo_img_class' => 'brand-image',
                 ]);
             }
             if (!empty($cfg->site_favicon_path)) {
@@ -104,6 +105,22 @@ class AppServiceProvider extends ServiceProvider
                 // CSS inline en <head> SOLO si hay configuración de tema y el modo no es oscuro
                 if (!empty($vars) && ! $isDark) {
                     $view->getFactory()->startPush('css', view('partials.theme-styles', ['theme' => $vars])->render());
+                }
+
+                // Ajustes de tamaño de logos
+                $css = '';
+                $lh = (int) ($cfg->site_logo_height ?? 0);
+                $ch = (int) ($cfg->site_logo_compact_height ?? 0);
+                if ($lh > 0) {
+                    $h = max(16, min($lh, 128));
+                    $css .= ".brand-link .brand-image{height: {$h}px !important; max-height: {$h}px; width:auto; object-fit: contain;}\n";
+                }
+                if ($ch > 0) {
+                    $h = max(16, min($ch, 128));
+                    $css .= ".brand-link .brand-image-xs,.brand-link .brand-image-sm{height: {$h}px !important; max-height: {$h}px; width:auto; object-fit: contain;}\n";
+                }
+                if ($css !== '') {
+                    $view->getFactory()->startPush('css', "<style>".$css."</style>");
                 }
 
                 // Footer fijo (texto) dentro del contenedor estándar + JS de sincronización de colores

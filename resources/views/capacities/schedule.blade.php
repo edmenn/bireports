@@ -72,8 +72,8 @@
                             <div class="d-flex flex-wrap" style="gap:.5rem">
                                 @foreach($dayNames as $idx=>$name)
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="days[]" value="{{ $idx }}" id="d{{ $idx }}">
-                                        <label for="d{{ $idx }}" class="form-check-label">{{ $name }}</label>
+                                        <input type="checkbox" class="custom-control-input" name="days[]" value="{{ $idx }}" id="d{{ $idx }}">
+                                        <label for="d{{ $idx }}" class="custom-control-label">{{ $name }}</label>
                                     </div>
                                 @endforeach
                             </div>
@@ -99,18 +99,16 @@
                 <div class="card-body">
                     <form method="POST" action="{{ route('capacities.settings.update', $capacity->id) }}">
                         @csrf @method('PUT')
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="force_sched" name="force_shutdown_on_schedule" value="1" {{ $capacity->force_shutdown_on_schedule ? 'checked' : '' }}>
-                            <label class="form-check-label" for="force_sched">Forzar encendido/pausado por horario
-                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Dentro de los intervalos configurados la capacidad se encenderá; fuera de ellos se pausará automáticamente."></i>
+                        <div class="custom-control custom-switch mb-3">
+                            <input type="checkbox" class="custom-control-input" id="automation_enabled" name="automation_enabled" value="1" {{ ($capacity->force_shutdown_on_schedule && $capacity->cost_optimization_enabled) ? 'checked' : '' }}>
+                            <label class="custom-control-label" for="automation_enabled">Automatización de capacidad (horario + pausa por inactividad)
+                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Activa encendido/pausado por horario y apagado por inactividad como un único comportamiento."></i>
                             </label>
                         </div>
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="opt_inact" name="cost_optimization_enabled" value="1" {{ $capacity->cost_optimization_enabled ? 'checked' : '' }}>
-                            <label class="form-check-label" for="opt_inact">Pausar por inactividad
-                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Si no hay actividad por el tiempo configurado, la capacidad se pausará para ahorrar costo."></i>
-                            </label>
-                        </div>
+                        <div class="d-none">
+    <input type="checkbox" class="custom-control-input" id="force_sched" name="force_shutdown_on_schedule" value="{{ $capacity->force_shutdown_on_schedule ? 1 : 0 }}">
+    <input type="checkbox" class="custom-control-input" id="opt_inact" name="cost_optimization_enabled" value="{{ $capacity->cost_optimization_enabled ? 1 : 0 }}">
+</div>
                         <div class="mb-2">
                             <label class="form-label">Tiempo de inactividad (min)
                                 <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Cantidad de minutos sin uso antes de pausar. Mínimo 5, máximo 120."></i>
@@ -139,3 +137,6 @@
         </div>
     </div>
 @stop
+
+
+

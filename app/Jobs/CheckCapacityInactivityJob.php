@@ -56,6 +56,7 @@ class CheckCapacityInactivityJob implements ShouldQueue
                 $svc->pause($cap->capacity_uuid);
                 $cap->is_active = false;
                 $cap->last_state_change_at = Carbon::now();
+                $cap->outside_window_grace_until = null; // limpiar gracia al pausar por inactividad
                 $cap->save();
                 \App\Models\CapacityAudit::create([
                     'capacity_id' => $cap->id,

@@ -24,6 +24,7 @@ class Capacity extends Model
         'inactivity_timeout_minutes',
         'force_shutdown_on_schedule',
         'last_state_change_at',
+        'outside_window_grace_until',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class Capacity extends Model
         'force_shutdown_on_schedule' => 'boolean',
         'inactivity_timeout_minutes' => 'integer',
         'last_state_change_at'       => 'datetime',
+        'outside_window_grace_until' => 'datetime',
         'created_at'                 => 'datetime',
         'updated_at'                 => 'datetime',
     ];
