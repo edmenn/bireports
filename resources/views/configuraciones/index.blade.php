@@ -122,6 +122,7 @@
                         </div>
                         <div>
                             <label class="custom-toggle-switch">
+                                <input type="hidden" name="microsoft_login_enabled" value="0">
                                 <input type="checkbox" name="microsoft_login_enabled" value="1" {{ old('microsoft_login_enabled', $config->microsoft_login_enabled) ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
@@ -136,6 +137,7 @@
                         </div>
                         <div>
                             <label class="custom-toggle-switch">
+                                <input type="hidden" name="local_login_enabled" value="0">
                                 <input type="checkbox" name="local_login_enabled" value="1" {{ old('local_login_enabled', $config->local_login_enabled) ? 'checked' : '' }}>
                                 <span class="slider round"></span>
                             </label>
@@ -152,6 +154,7 @@
                             </div>
                             <div>
                                 <label class="custom-toggle-switch">
+                                    <input type="hidden" name="prewarm_enabled" value="0">
                                     <input type="checkbox" name="prewarm_enabled" value="1" {{ old('prewarm_enabled', $config->prewarm_enabled) ? 'checked' : '' }}>
                                     <span class="slider round"></span>
                                 </label>
@@ -211,6 +214,7 @@
                                    title="Si está activado, el visor intentará encender la capacidad automáticamente cuando un usuario abra un reporte y la capacidad esté pausada."></i>
                             </label>
                             <div class="form-check form-switch">
+                                <input type="hidden" name="capacity_on_demand_enable" value="0">
                                 <input class="form-check-input" type="checkbox" id="capacity_on_demand_enable"
                                        name="capacity_on_demand_enable" value="1"
                                        {{ old('capacity_on_demand_enable', $config->capacity_on_demand_enable ?? true) ? 'checked' : '' }}>
