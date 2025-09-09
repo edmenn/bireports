@@ -94,11 +94,16 @@ services:
       retries: 5
 
   # 5) One-shot: poblar el volumen 'app_code' con el código de la imagen de app
-  code_init:
-    image: birentable/php-app:prod
-    networks: [backend]
-    command: ["sh","-lc","cp -a /var/www/html/. /mnt/app_code/"]
-    volumes:
+    code_init:
+      image: birentable/php-app:prod
+      user: "0:0"  # <- ejecutar como root para poder escribir en el volumen
+      networks: [backend]
+      entrypoint: ["/bin/sh","-lc"]
+      command: |
+        mkdir -p /mnt/app_code && \
+        cp -a /var/www/html/. /mnt/app_code/ && \
+        chown -R 1000:1000 /mnt/app_code
+      volumes:
       - app_code:/mnt/app_code
 
 volumes:
