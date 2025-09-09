@@ -17,7 +17,7 @@ set -euo pipefail
 # ===============================
 
 # --------- Config local (ajusta si tu servicio tiene otro nombre)
-LARAVEL_SVC="${LARAVEL_SVC:-laravel.test}"
+LARAVEL_SVC="${LARAVEL_SVC:-birentable}"
 NODE_SVC="${NODE_SVC:-node}"
 
 # --------- Detectar comando docker compose
