@@ -89,6 +89,29 @@ class UsersController extends Controller
 
     public function destroy(User $usuario): RedirectResponse
     {
+        // No permitir eliminar la propia cuenta
+        $selfId = (int) (Auth::id() ?? 0);
+        if ($usuario->id === $selfId) {
+            return redirect()->route('users.index')
+                ->with('warning', 'No puedes eliminar tu propia cuenta.');
+        }
+
+        // Evitar eliminar al último administrador del sistema
+        try {
+            $isAdmin = method_exists($usuario, 'hasRole') && $usuario->hasRole('admin');
+            if ($isAdmin) {
+                $admins = User::role('admin')->count();
+                if ($admins <= 1) {
+                    return redirect()->route('users.index')
+                        ->with('warning', 'No se puede eliminar este usuario: es el único administrador.');
+                }
+            }
+        } catch (\Throwable $e) {
+            // Si algo falla al chequear roles, preferimos no dejar al sistema sin admin
+            return redirect()->route('users.index')
+                ->with('error', 'No se pudo validar los roles. Operación cancelada para proteger el último administrador.');
+        }
+
         $usuario->delete();
         return redirect()->route('users.index')->with('success', 'Usuario eliminado.');
     }
@@ -175,10 +198,26 @@ class UsersController extends Controller
 
         $deleted = 0;
         $errors  = 0;
+        $skippedLastAdmins = 0;
 
         $users = User::whereIn('id', $ids)->get();
+        // Contador de administradores restantes para evitar dejar el sistema sin admin
+        try {
+            $adminsRemaining = User::role('admin')->count();
+        } catch (\Throwable $e) {
+            $adminsRemaining = null; // si falla, tratamos como sin control y no borramos admins
+        }
         foreach ($users as $u) {
             try {
+                // Si es admin, evitar borrar el último
+                if ($adminsRemaining !== null && method_exists($u, 'hasRole') && $u->hasRole('admin')) {
+                    if ($adminsRemaining <= 1) {
+                        $skippedLastAdmins++;
+                        continue;
+                    }
+                    // vamos a borrar un admin, decrementar el contador de remanentes
+                    $adminsRemaining--;
+                }
                 $u->delete();
                 $deleted++;
             } catch (\Throwable $e) {
@@ -189,6 +228,7 @@ class UsersController extends Controller
         $resp = redirect()->route('users.index');
         if ($deleted > 0) { $resp->with('success', "Se eliminaron {$deleted} usuario(s)."); }
         if ($errors  > 0) { $resp->with('warning', "No se pudieron eliminar {$errors} usuario(s)."); }
+        if ($skippedLastAdmins > 0) { $resp->with('warning', "Se evitó eliminar {$skippedLastAdmins} usuario(s) por ser el último administrador."); }
 
         if (in_array($selfId, $request->input('ids', []), true)) {
             $resp->with('warning', 'Tu propio usuario no puede eliminarse.');

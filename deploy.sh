@@ -14,22 +14,55 @@ warn() { printf '\033[1;33m! %s\033[0m\n' "$*"; }
 err()  { printf '\033[1;31m✗ %s\033[0m\n' "$*"; }
 
 usage() {
-  echo "Uso: $0 [--fresh] [--seed]"
-  echo "  --fresh  = php artisan migrate:fresh --seed --force (BORRA datos)"
-  echo "  --seed   = php artisan db:seed --force (tras migración normal)"
+  echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild]"
+  echo "  (sin argumentos) = modo interactivo (elige acción en un menú)"
+  echo "  --fresh           = php artisan migrate:fresh --seed --force (BORRA datos)"
+  echo "  --seed            = php artisan db:seed --force (tras migración normal)"
+  echo "  --refresh         = Refresca código reconstruyendo imagen, repuebla app_code,"
+  echo "                      recrea app/web, limpia caches y opcache_reset"
+  echo "  --refresh-nobuild = Solo limpiar caches/opcache y recrear contenedores"
 }
 
 DO_FRESH="no"
 DO_SEED="no"
+DO_REFRESH="no"
+DO_REFRESH_NOBUILD="no"
 
 for arg in "$@"; do
   case "$arg" in
     --fresh) DO_FRESH="yes" ;;
     --seed)  DO_SEED="yes"  ;;
+    --refresh) DO_REFRESH="yes" ;;
+    --refresh-nobuild) DO_REFRESH_NOBUILD="yes" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
 done
+
+# Si no hay argumentos, ofrecer menú interactivo (si hay TTY)
+if [[ $# -eq 0 ]]; then
+  if [[ -t 0 ]]; then
+    echo "Selecciona una acción:" >&2
+    echo "  1) Deploy normal (build + migrar)" >&2
+    echo "  2) Refresh (build + repoblar + limpiar caches)" >&2
+    echo "  3) Refresh rápido (sin build, limpiar caches/opcache)" >&2
+    echo "  4) Fresh (migrate:fresh --seed --force) [BORRA DATOS]" >&2
+    echo "  5) Solo seed (db:seed --force)" >&2
+    echo "  0) Salir" >&2
+    read -r -p "Opción [1/2/3/4/5/0]: " opt
+    case "$opt" in
+      1|"") ;; # deploy normal por defecto
+      2) DO_REFRESH="yes" ;;
+      3) DO_REFRESH_NOBUILD="yes" ;;
+      4) DO_FRESH="yes" ;;
+      5) DO_SEED="yes" ;;
+      0) exit 0 ;;
+      *) echo "Opción inválida" >&2; exit 2 ;;
+    esac
+  else
+    usage; exit 2
+  fi
+fi
 
 require_file() {
   [[ -f "$1" ]] || { err "Falta $1"; exit 1; }
@@ -131,6 +164,40 @@ require_file "docker-compose.secure.yml"
 require_file ".env"
 check_env_permissions
 ensure_app_key
+
+# ---------- Refresh-only flow ----------
+if [[ "$DO_REFRESH" == "yes" ]]; then
+  log "[refresh] Construyendo imagen de la app (sin cache si se desea con DOCKER_BUILDKIT=1)."
+  $COMPOSE build app
+
+  log "[refresh] Repoblando volumen 'app_code' desde la imagen nueva."
+  $COMPOSE run --rm code_init
+
+  log "[refresh] Recreando contenedores app y web."
+  $COMPOSE up -d "$APP_SERVICE" web
+
+  # Esperar a que app responda (healthcheck php -v)
+  wait_healthy "$APP_SERVICE" 120 || true
+
+  ensure_storage_dirs
+
+  log "[refresh] Limpiando caches de Laravel y OPcache."
+  $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
+  ok "Refresh completado."
+  exit 0
+fi
+
+# ---------- Refresh-no-build flow ----------
+if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
+  log "[refresh-nobuild] Recreando contenedores app y web (sin build)."
+  $COMPOSE up -d "$APP_SERVICE" web
+  wait_healthy "$APP_SERVICE" 120 || true
+  ensure_storage_dirs
+  log "[refresh-nobuild] Limpiando caches de Laravel y OPcache."
+  $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
+  ok "Refresh (sin build) completado."
+  exit 0
+fi
 
 # ---------- Sincronizar logos por idioma a public/lang (si existe script) ----------
 if [[ -x scripts/sync-lang-assets.sh ]]; then

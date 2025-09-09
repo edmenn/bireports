@@ -138,13 +138,20 @@
                                     <a href="{{ route('users.edit', ['usuario' => $u->id]) }}" class="btn btn-sm btn-info mr-1">
                                         <i class="fas fa-edit"></i> Editar
                                     </a>
-                                    <form action="{{ route('users.destroy', ['usuario' => $u->id]) }}" method="POST" class="m-0"
-                                          onsubmit="return confirm('¿Eliminar usuario {{ $u->name }}?')">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                    @php($isSelf = (int)($u->id) === (int)auth()->id())
+                                    @if(!$isSelf)
+                                        <form action="{{ route('users.destroy', ['usuario' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form"
+                                              data-confirm-message="¿Eliminar usuario {{ $u->name }}?">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button class="btn btn-sm btn-danger" disabled title="No puedes eliminar tu propia cuenta">
+                                            <i class="fas fa-ban"></i> Eliminar
                                         </button>
-                                    </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -171,6 +178,101 @@
             </div>
         </x-slot>
     </x-adminlte-card>
+
+    {{-- Modal: Importar usuarios desde Microsoft Entra --}}
+    <div class="modal fade" id="modalSyncEntra" tabindex="-1" role="dialog" aria-labelledby="modalSyncEntraLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSyncEntraLabel"><i class="fab fa-microsoft mr-1"></i> Importar desde Microsoft Entra</h5>
+                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-4 mb-2">
+                            <label for="entraQuery" class="mb-1 small">Buscar (nombre o UPN)</label>
+                            <input type="text" id="entraQuery" class="form-control" placeholder="Ej: Juan o juan@empresa.com" autocomplete="off">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="entraDomain" class="mb-1 small">Solo dominio</label>
+                            <div class="input-group">
+                                <span class="input-group-text">@</span>
+                                <input type="text" id="entraDomain" class="form-control" placeholder="empresa.com" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <div class="form-check mt-4 pt-1">
+                                <input class="form-check-input" type="checkbox" id="entraOnlyActive">
+                                <label class="form-check-label" for="entraOnlyActive">Solo activos</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="entraAssignRole" class="mb-1 small">Asignar rol (opcional)</label>
+                            <select id="entraAssignRole" class="form-control">
+                                <option value="">(ninguno)</option>
+                                @foreach($roles as $roleName => $label)
+                                    <option value="{{ $roleName }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border rounded">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width:36px;" class="text-center">
+                                        <input type="checkbox" id="entraChkAll" aria-label="Seleccionar todos">
+                                    </th>
+                                    <th style="min-width:260px;">Nombre</th>
+                                    <th style="min-width:260px;">Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entraTbody">
+                                <tr><td colspan="3" class="text-center text-muted py-3">Usa la búsqueda para previsualizar usuarios…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small id="entraStatus" class="text-muted"></small>
+                        <button type="button" id="entraBtnMore" class="btn btn-outline-secondary" disabled>
+                            Cargar más
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" id="entraBtnImport" class="btn btn-primary" disabled>
+                        <i class="fas fa-file-import mr-1"></i> Importar seleccionados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal de confirmación genérico --}}
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirmar acción</h5>
+                    <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmMessage" class="mb-0">¿Confirmas esta acción?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="confirmOkBtn" class="btn btn-primary">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @stop
 
 @push('css')
@@ -286,24 +388,221 @@
                 .filter(c => c.checked && !c.closest('tr').classList.contains('d-none'))
                 .map(c => c.value);
             if (ids.length === 0) return;
-            if (!confirm(`¿Eliminar ${ids.length} usuario(s) seleccionados?`)) return;
 
+            openConfirmDialog(`¿Eliminar ${ids.length} usuario(s) seleccionados?`, function(){
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = @json(route('users.bulk-destroy'));
+                // csrf + method spoof
+                const t = document.createElement('input'); t.type='hidden'; t.name='_token'; t.value=@json(csrf_token());
+                const m = document.createElement('input'); m.type='hidden'; m.name='_method'; m.value='DELETE';
+                form.appendChild(t); form.appendChild(m);
+                ids.forEach((id) => {
+                    const f = document.createElement('input');
+                    f.type='hidden'; f.name='ids[]'; f.value=id;
+                    form.appendChild(f);
+                });
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    }
+})();
+
+// ====== Modal de Importación Entra ======
+(function(){
+    const modal = document.getElementById('modalSyncEntra');
+    if (!modal) return;
+
+    const tbody = document.getElementById('entraTbody');
+    const chkAll = document.getElementById('entraChkAll');
+    const btnMore = document.getElementById('entraBtnMore');
+    const btnImport = document.getElementById('entraBtnImport');
+    const statusEl = document.getElementById('entraStatus');
+
+    const inpQuery = document.getElementById('entraQuery');
+    const inpDomain = document.getElementById('entraDomain');
+    const chkOnlyActive = document.getElementById('entraOnlyActive');
+    const selAssignRole = document.getElementById('entraAssignRole');
+
+    const previewUrl = @json(route('users.sync-entra.preview'));
+    const importUrl  = @json(route('users.sync-entra.selected'));
+    const csrfToken  = @json(csrf_token());
+
+    let nextLink = null;
+    const selected = new Map(); // email -> {email,name}
+
+    function updateImportBtn(){
+        btnImport.disabled = (selected.size === 0);
+    }
+
+    function setLoading(loading, msg){
+        statusEl.textContent = msg || (loading ? 'Cargando…' : '');
+        btnMore.disabled = loading || !nextLink;
+    }
+
+    function attachRowHandlers(scope){
+        const chks = (scope || document).querySelectorAll('.js-entra-row-chk');
+        chks.forEach(chk => {
+            const email = chk.getAttribute('data-email') || '';
+            const name  = chk.getAttribute('data-name') || email;
+            if (email && selected.has(email)) {
+                chk.checked = true;
+            }
+            chk.addEventListener('change', () => {
+                if (!email) return;
+                if (chk.checked) selected.set(email, {email, name});
+                else selected.delete(email);
+                updateImportBtn();
+                // actualizar chkAll según visibles
+                syncChkAllState();
+            }, {passive:true});
+        });
+    }
+
+    function syncChkAllState(){
+        const chks = Array.from(tbody.querySelectorAll('.js-entra-row-chk'));
+        const enabled = chks.filter(c => !c.disabled);
+        chkAll.checked = (enabled.length > 0 && enabled.every(c => c.checked));
+    }
+
+    async function load(reset){
+        if (reset) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Cargando…</td></tr>';
+            nextLink = null;
+        }
+        setLoading(true);
+        try {
+            const params = new URLSearchParams();
+            const q = (inpQuery.value || '').trim();
+            const dom = (inpDomain.value || '').trim();
+            if (q) params.set('query', q);
+            if (dom) params.set('domain', dom);
+            if (chkOnlyActive.checked) params.set('only_active', '1');
+            if (nextLink) params.set('next', nextLink);
+
+            const url = previewUrl + (params.toString() ? ('?' + params.toString()) : '');
+            const resp = await fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+
+            if (reset) tbody.innerHTML = '';
+            const temp = document.createElement('tbody');
+            temp.innerHTML = data.rows || '';
+            // append rows
+            Array.from(temp.children).forEach(tr => tbody.appendChild(tr));
+            nextLink = data.next || null;
+            btnMore.disabled = !nextLink;
+
+            attachRowHandlers(tbody);
+            syncChkAllState();
+            updateImportBtn();
+            statusEl.textContent = (data.count ?? 0) + ' usuarios cargados' + (nextLink ? ' (hay más)' : '');
+        } catch (e) {
+            statusEl.textContent = 'Error al consultar Microsoft Graph';
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function debounce(fn, ms){
+        let t; return function(){ clearTimeout(t); t = setTimeout(() => fn.apply(this, arguments), ms); };
+    }
+
+    // Eventos
+    if (chkAll) {
+        chkAll.addEventListener('change', () => {
+            const chks = tbody.querySelectorAll('.js-entra-row-chk');
+            chks.forEach(c => { if (!c.disabled) { c.checked = chkAll.checked; c.dispatchEvent(new Event('change')); }});
+        });
+    }
+    if (btnMore) btnMore.addEventListener('click', () => load(false));
+
+    const triggerReload = debounce(() => load(true), 400);
+    if (inpQuery) inpQuery.addEventListener('input', triggerReload);
+    if (inpDomain) inpDomain.addEventListener('change', triggerReload);
+    if (chkOnlyActive) chkOnlyActive.addEventListener('change', triggerReload);
+
+    // Importar seleccionados
+    if (btnImport) {
+        btnImport.addEventListener('click', () => {
+            if (selected.size === 0) return;
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = @json(route('users.bulk-destroy'));
-            // csrf + method spoof
-            const t = document.createElement('input'); t.type='hidden'; t.name='_token'; t.value=@json(csrf_token());
-            const m = document.createElement('input'); m.type='hidden'; m.name='_method'; m.value='DELETE';
-            form.appendChild(t); form.appendChild(m);
-            ids.forEach((id) => {
-                const f = document.createElement('input');
-                f.type='hidden'; f.name='ids[]'; f.value=id;
-                form.appendChild(f);
+            form.action = importUrl;
+            const t = document.createElement('input'); t.type='hidden'; t.name='_token'; t.value=csrfToken; form.appendChild(t);
+            let i = 0; selected.forEach(({email,name}) => {
+                const e = document.createElement('input'); e.type='hidden'; e.name=`selected[${i}][email]`; e.value=email; form.appendChild(e);
+                const n = document.createElement('input'); n.type='hidden'; n.name=`selected[${i}][name]`;  n.value=name;  form.appendChild(n);
+                i++;
             });
+            const role = (selAssignRole?.value || '').trim();
+            if (role) {
+                const r = document.createElement('input'); r.type='hidden'; r.name='assign_role'; r.value=role; form.appendChild(r);
+            }
             document.body.appendChild(form);
             form.submit();
         });
     }
+
+    // Reiniciar y cargar al abrir
+    ['shown.bs.modal', 'show.bs.modal'].forEach(evt => {
+        modal.addEventListener(evt, () => {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Cargando…</td></tr>';
+            inpQuery.value = '';
+            inpDomain.value = '';
+            chkOnlyActive.checked = false;
+            chkAll.checked = false;
+            selected.clear();
+            updateImportBtn();
+            nextLink = null;
+            load(true);
+        });
+    });
+})();
+
+// ====== Confirmación bonita (modal) ======
+(function(){
+    const modalEl = document.getElementById('confirmModal');
+    if (!modalEl) return;
+    const msgEl = document.getElementById('confirmMessage');
+    const okBtn = document.getElementById('confirmOkBtn');
+    let onConfirm = null;
+    let bsModal = null;
+
+    function show(message, confirmCb){
+        onConfirm = typeof confirmCb === 'function' ? confirmCb : null;
+        if (msgEl) msgEl.textContent = message || '¿Confirmas esta acción?';
+        if (window.bootstrap && window.bootstrap.Modal){
+            if (!bsModal) bsModal = new bootstrap.Modal(modalEl);
+            bsModal.show();
+        } else {
+            if (window.confirm(message || '¿Confirmas esta acción?')) {
+                if (onConfirm) onConfirm();
+            }
+        }
+    }
+
+    // Exponer en ámbito global local
+    window.openConfirmDialog = show;
+
+    if (okBtn){
+        okBtn.addEventListener('click', function(){
+            try { if (onConfirm) onConfirm(); } finally {
+                if (bsModal) bsModal.hide();
+                onConfirm = null;
+            }
+        });
+    }
+
+    // Hook para formularios con clase js-confirm-delete-form
+    document.querySelectorAll('form.js-confirm-delete-form').forEach(function(form){
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            const msg = form.getAttribute('data-confirm-message') || '¿Confirma la eliminación?';
+            show(msg, function(){ form.submit(); });
+        });
+    });
 })();
 </script>
 @endsection
