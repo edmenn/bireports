@@ -21,7 +21,7 @@ FROM php:8.3-fpm-alpine
 
 # Extensiones necesarias (ajusta según tu app)
 RUN set -eux; \
-    apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev; \
+    apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev ca-certificates; \
     docker-php-ext-configure intl; \
     docker-php-ext-install -j"$(nproc)" intl mbstring pdo pdo_pgsql opcache; \
     php -m | grep -qi mbstring; \
