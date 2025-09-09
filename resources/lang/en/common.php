@@ -24,6 +24,8 @@ return [
     'no' => 'No',
     'close' => 'Close',
     'warning' => 'Warning',
+    'done' => 'Done',
+    'error' => 'Error',
 
     // States
     'active' => 'Active',

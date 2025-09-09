@@ -23,6 +23,8 @@ return [
     'no' => 'Não',
     'close' => 'Fechar',
     'warning' => 'Aviso',
+    'done' => 'Concluído',
+    'error' => 'Erro',
 
     'active' => 'Ativa',
     'paused' => 'Pausada',
@@ -40,5 +42,4 @@ return [
     'folders' => 'Pastas',
     'portal' => 'Meu espaço',
 ];
-
 

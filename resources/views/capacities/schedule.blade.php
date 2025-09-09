@@ -14,10 +14,10 @@
 
 @section('content')
     @if(session('success'))
-        <x-adminlte-alert theme="success" title="Listo">{{ session('success') }}</x-adminlte-alert>
+        <x-adminlte-alert theme="success" title="{{ __('common.done') }}">{{ session('success') }}</x-adminlte-alert>
     @endif
     @if(session('error'))
-        <x-adminlte-alert theme="danger" title="Error">{{ session('error') }}</x-adminlte-alert>
+        <x-adminlte-alert theme="danger" title="{{ __('common.error') }}">{{ session('error') }}</x-adminlte-alert>
     @endif
 
     <div class="row g-3">
@@ -60,7 +60,7 @@
                     <form method="POST" action="{{ route('capacities.schedule.store', $capacity->id) }}" class="row g-2 align-items-end">
                         @csrf
                         <div class="col-md-6">
-                            <label class="form-label">Días</label>
+                            <label class="form-label">{{ __('capacities_schedule.fields.days') }}</label>
                             <div class="d-flex flex-wrap" style="gap:.5rem">
                                 @foreach($dayNames as $idx=>$name)
                                     <div class="form-check">
@@ -93,8 +93,8 @@
                         @csrf @method('PUT')
                         <div class="custom-control custom-switch mb-3">
                             <input type="checkbox" class="custom-control-input" id="automation_enabled" name="automation_enabled" value="1" {{ ($capacity->force_shutdown_on_schedule && $capacity->cost_optimization_enabled) ? 'checked' : '' }}>
-                            <label class="custom-control-label" for="automation_enabled">Automatización de capacidad (horario + pausa por inactividad)
-                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Activa encendido/pausado por horario y apagado por inactividad como un único comportamiento."></i>
+                            <label class="custom-control-label" for="automation_enabled">{{ __('capacities_schedule.automation_switch') }}
+                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('capacities_schedule.automation_hint') }}"></i>
                             </label>
                         </div>
                         <div class="d-none">
@@ -102,11 +102,11 @@
     <input type="checkbox" class="custom-control-input" id="opt_inact" name="cost_optimization_enabled" value="{{ $capacity->cost_optimization_enabled ? 1 : 0 }}">
 </div>
                         <div class="mb-2">
-                            <label class="form-label">Tiempo de inactividad (min)
-                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Cantidad de minutos sin uso antes de pausar. Mínimo 5, máximo 120."></i>
+                            <label class="form-label">{{ __('capacities_schedule.inactivity_minutes') }}
+                                <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('capacities_schedule.inactivity_hint') }}"></i>
                             </label>
                             <input type="number" class="form-control" name="inactivity_timeout_minutes" min="5" max="120" step="5" value="{{ old('inactivity_timeout_minutes', $capacity->inactivity_timeout_minutes) }}" placeholder="ej. 30">
-                            <small class="text-muted">Mínimo 5, incrementos de 5, máximo 120.</small>
+                            <small class="text-muted">{{ __('capacities_schedule.inactivity_help') }}</small>
                         </div>
                         <button class="btn btn-primary">{{ __('common.save') }}</button>
                         @push('js')
@@ -129,7 +129,6 @@
         </div>
     </div>
 @stop
-
 
 
 

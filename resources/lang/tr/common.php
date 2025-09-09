@@ -23,6 +23,8 @@ return [
     'no' => 'Hayır',
     'close' => 'Kapat',
     'warning' => 'Uyarı',
+    'done' => 'Tamamlandı',
+    'error' => 'Hata',
 
     'active' => 'Aktif',
     'paused' => 'Duraklatıldı',

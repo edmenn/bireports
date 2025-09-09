@@ -65,12 +65,12 @@
                     <form action="{{ route('capacities.refresh') }}" method="POST">
                         @csrf
                         <button class="btn btn-primary rounded-pill px-3">
-                            <i class="fas fa-sync-alt me-1"></i> Refrescar
+                            <i class="fas fa-sync-alt me-1"></i> {{ __('capacities.refresh') }}
                         </button>
                     </form>
                 @else
                     <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
-                        <i class="fas fa-cogs me-1"></i> Configurar
+                        <i class="fas fa-cogs me-1"></i> {{ __('capacities.configure') }}
                     </a>
                 @endif
             </div>
@@ -210,33 +210,33 @@
                                     </span>
                                 @endif
                                 @if ($c->last_state_change_at)
-                                    <div><small class="text-muted">Último cambio: {{ \Illuminate\Support\Carbon::parse($c->last_state_change_at)->diffForHumans() }}</small></div>
+                                    <div><small class="text-muted">{{ __('capacities.last_change') }} {{ \Illuminate\Support\Carbon::parse($c->last_state_change_at)->diffForHumans() }}</small></div>
                                 @endif
                             </td>
                             <td class="align-middle text-end">
-                                <div class="btn-group" role="group" aria-label="Acciones">
+                                <div class="btn-group" role="group" aria-label="{{ __('capacities.actions') }}">
                                     @if ($isActive)
                                         <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('{{ __('capacities.pause_q') }}');" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-warning rounded-pill px-3">
-                                                <i class="fas fa-pause me-1"></i> Pausar
+                                                <i class="fas fa-pause me-1"></i> {{ __('capacities.pause') }}
                                             </button>
                                         </form>
                                     @else
                                         <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('{{ __('capacities.resume_q') }}');" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                                <i class="fas fa-play me-1"></i> Reanudar
+                                                <i class="fas fa-play me-1"></i> {{ __('capacities.resume') }}
                                             </button>
                                         </form>
                                     @endif
                                 </div>
                                 <div class="dropdown d-inline-block ms-2">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
-                                        Acciones
+                                        {{ __('capacities.actions') }}
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-right">
-                                        <li><a class="dropdown-item" href="{{ route('capacities.schedule', $c) }}"><i class="fas fa-clock me-2"></i> Programar encendido/pausado</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('capacities.schedule', $c) }}"><i class="fas fa-clock me-2"></i> {{ __('capacities.menu_schedule') }}</a></li>
                                         <li><a class="dropdown-item" href="{{ route('capacities.audit', $c) }}"><i class="fas fa-list me-2"></i> {{ __('capacities.menu_audit') }}</a></li>
                                     </ul>
                                 </div>
