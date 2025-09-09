@@ -18,8 +18,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     read_only: true
-    tmpfs:
-      - /tmp
+    tmpfs: [ /tmp ]
 
   # 2) Servidor web interno (solo red backend)
   web:
@@ -46,23 +45,13 @@ services:
     container_name: birentable
     restart: unless-stopped
     networks: [backend]
-    environment:
-      APP_ENV: production
-      APP_DEBUG: "false"
-      APP_URL: https://portal.birentable.com
-      DB_CONNECTION: pgsql
-      DB_HOST: pgsql
-      DB_PORT: 5432
-      DB_DATABASE: laravel
-      DB_USERNAME: sail
-      DB_PASSWORD: password
-      TRUSTED_PROXIES: "*"
-      TRUSTED_HOSTS: "portal.birentable.com"
+    # INYECTA TODAS LAS VARIABLES DESDE .env (sin hardcode)
+    env_file:
+      - .env
     depends_on: [pgsql]
     volumes:
       - app_storage:/var/www/html/storage         # escritura para storage/
       - app_cache:/var/www/html/bootstrap/cache   # escritura para cache
-      - ./.env:/var/www/html/.env:ro              # << monta tu .env del host (solo lectura)
     read_only: true
     tmpfs:
       - /tmp
@@ -79,15 +68,15 @@ services:
     container_name: pgsql
     restart: unless-stopped
     networks: [backend]
+    # Postgres espera POSTGRES_* -> los tomamos desde tus DB_* del .env
     environment:
-      PGPASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_DATABASE:-laravel}
-      POSTGRES_USER: ${DB_USERNAME:-sail}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-q", "-d", "${DB_DATABASE:-laravel}", "-U", "${DB_USERNAME:-sail}"]
+      test: ["CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -95,7 +84,7 @@ services:
   # 5) One-shot para poblar el volumen app_code con el código de la imagen
   code_init:
     image: birentable/php-app:prod
-    user: "0:0"                         # root para escribir en el volumen
+    user: "0:0"   # root para escribir en el volumen
     networks: [backend]
     entrypoint: sh
     command: -c "mkdir -p /mnt/app_code && cp -a /var/www/html/. /mnt/app_code/ && chown -R 1000:1000 /mnt/app_code"
