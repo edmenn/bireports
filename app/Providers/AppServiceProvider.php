@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,6 +22,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // En producción, forzar que las URLs absolutas usen el dominio y esquema HTTPS
+        if (app()->environment('production')) {
+            try {
+                if (config('app.url')) {
+                    URL::forceRootUrl(config('app.url'));
+                }
+            } catch (\Throwable $e) {
+                // No bloquear el arranque por problemas de configuración
+            }
+            URL::forceScheme('https');
+        }
         // Footer fijo siempre habilitado (usa layout nativo de AdminLTE)
         config(['adminlte.layout_fixed_footer' => true]);
         // Cargar branding/tema desde configuraciones (fila única)
