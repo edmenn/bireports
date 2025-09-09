@@ -17,7 +17,7 @@
                 </button>
             </form>
         @else
-            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Configura credenciales para habilitar el refresco">
+            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="{{ __('capacities.hint_configure') }}">
                 <i class="fas fa-cogs me-1"></i> {{ __('capacities.configure') }}
             </a>
         @endif
@@ -29,19 +29,19 @@
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('common.close') }}"></button>
         </div>
     @endif
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('common.close') }}"></button>
         </div>
     @endif
 
     @if(empty($hasConfig) || !$hasConfig)
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>No hay configuración activa. Carga credenciales en <a href="{{ route('configuraciones.index') }}" class="alert-link">Configuraciones</a> para habilitar el refresco y operaciones.
+            <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.no_config_html', ['url' => route('configuraciones.index')]) !!}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
@@ -59,8 +59,8 @@
         <div class="card">
             <div class="card-body text-center py-5">
                 <i class="fas fa-server fa-3x text-muted mb-3"></i>
-                <h5 class="mb-2">Sin capacidades</h5>
-                <p class="text-muted">Ejecuta “Refrescar” para traer las capacidades desde Fabric.</p>
+                <h5 class="mb-2">{{ __('capacities.empty_title') }}</h5>
+                <p class="text-muted">{{ __('capacities.empty_hint') }}</p>
                 @if(!empty($hasConfig) && $hasConfig)
                     <form action="{{ route('capacities.refresh') }}" method="POST">
                         @csrf
@@ -81,7 +81,7 @@
             <div class="col-md-4 mb-3">
                 <div class="kpi-card kpi-primary">
                     <div>
-                        <div class="kpi-label">Capacidades totales</div>
+                        <div class="kpi-label">{{ __('capacities.kpi_total') }}</div>
                         <div class="kpi-value">{{ $total }}</div>
                     </div>
                     <i class="fas fa-layer-group kpi-icon"></i>
@@ -90,7 +90,7 @@
             <div class="col-md-4 mb-3">
                 <div class="kpi-card kpi-success">
                     <div>
-                        <div class="kpi-label">Activas</div>
+                        <div class="kpi-label">{{ __('capacities.kpi_active') }}</div>
                         <div class="kpi-value">{{ $activos }}</div>
                     </div>
                     <i class="fas fa-play kpi-icon"></i>
@@ -99,7 +99,7 @@
             <div class="col-md-4 mb-3">
                 <div class="kpi-card kpi-warning">
                     <div>
-                        <div class="kpi-label">Pausadas</div>
+                        <div class="kpi-label">{{ __('capacities.kpi_paused') }}</div>
                         <div class="kpi-value">{{ $pausados }}</div>
                     </div>
                     <i class="fas fa-pause kpi-icon"></i>
@@ -112,29 +112,29 @@
             <div class="card-body">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-5">
-                        <label class="mb-1">Buscar</label>
+                        <label class="mb-1">{{ __('capacities.filters.search') }}</label>
                         <input id="cap-search" type="text" class="form-control form-control-lg"
                                placeholder="Nombre, GUID, región, SKU…">
                     </div>
                     <div class="col-md-2">
                         <label class="mb-1">Estado</label>
                         <select id="cap-state" class="form-control form-control-lg">
-                            <option value="all" selected>Todos</option>
-                            <option value="active">Activos</option>
-                            <option value="paused">Pausados</option>
+                            <option value="all" selected>{{ __('capacities.filters.all') }}</option>
+                            <option value="active">{{ __('capacities.filters.only_active') }}</option>
+                            <option value="paused">{{ __('capacities.filters.only_paused') }}</option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="mb-1">SKU</label>
+                        <label class="mb-1">{{ __('capacities.filters.sku') }}</label>
                         <select id="cap-sku" class="form-control form-control-lg">
-                            <option value="all" selected>Todos</option>
+                            <option value="all" selected>{{ __('capacities.filters.all') }}</option>
                             @foreach($skus as $s)
                                 <option value="{{ $s }}">{{ $s }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="mb-1">Región</label>
+                        <label class="mb-1">{{ __('capacities.filters.region') }}</label>
                         <select id="cap-region" class="form-control form-control-lg">
                             <option value="all" selected>Todas</option>
                             @foreach($regiones as $r)
@@ -144,7 +144,7 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center mt-2 small text-muted">
-                    <i class="far fa-lightbulb me-1"></i> Los filtros se aplican en el navegador (sin recarga).
+                    <i class="far fa-lightbulb me-1"></i> {{ __('capacities.filters.client_side_hint') }}
                     <span id="cap-visible-counter" class="ms-2"></span>
                 </div>
             </div>
@@ -156,12 +156,12 @@
                 <table id="cap-table" class="table cap-table mb-0">
                     <thead class="sticky-thead">
                     <tr>
-                        <th class="sortable" data-sort="name">Nombre <i class="fas fa-sort text-muted ms-1"></i></th>
-                        <th>GUID</th>
-                        <th class="sortable" data-sort="sku">SKU <i class="fas fa-sort text-muted ms-1"></i></th>
-                        <th class="sortable" data-sort="region">Región <i class="fas fa-sort text-muted ms-1"></i></th>
-                        <th class="sortable" data-sort="state">Estado <i class="fas fa-sort text-muted ms-1"></i></th>
-                        <th class="text-end">Acciones</th>
+                        <th class="sortable" data-sort="name">{{ __('capacities.th_name') }} <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th>{{ __('capacities.th_guid') }}</th>
+                        <th class="sortable" data-sort="sku">{{ __('capacities.th_sku') }} <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th class="sortable" data-sort="region">{{ __('capacities.th_region') }} <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th class="sortable" data-sort="state">{{ __('capacities.th_state') }} <i class="fas fa-sort text-muted ms-1"></i></th>
+                        <th class="text-end">{{ __('capacities.th_actions') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -190,7 +190,7 @@
                                 @if($guid)
                                     <code class="me-2">{{ \Illuminate\Support\Str::limit($guid, 22) }}</code>
                                     <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill js-copy"
-                                            data-copy="{{ $guid }}" title="Copiar GUID" aria-label="Copiar GUID">
+                                            data-copy="{{ $guid }}" title="{{ __('capacities.copy_guid') }}" aria-label="{{ __('capacities.copy_guid') }}">
                                         <i class="far fa-copy"></i>
                                     </button>
                                 @else
@@ -202,11 +202,11 @@
                             <td class="align-middle">
                                 @if ($isActive)
                                     <span class="badge rounded-pill bg-success px-3 py-2">
-                                        <i class="fas fa-play me-1"></i> Activa
+                                        <i class="fas fa-play me-1"></i> {{ __('capacities.state_active') }}
                                     </span>
                                 @else
                                     <span class="badge rounded-pill bg-warning px-3 py-2">
-                                        <i class="fas fa-pause me-1"></i> Pausada
+                                        <i class="fas fa-pause me-1"></i> {{ __('capacities.state_paused') }}
                                     </span>
                                 @endif
                                 @if ($c->last_state_change_at)
@@ -216,14 +216,14 @@
                             <td class="align-middle text-end">
                                 <div class="btn-group" role="group" aria-label="Acciones">
                                     @if ($isActive)
-                                        <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('¿Pausar esta capacidad?');" class="d-inline">
+                                        <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('{{ __('capacities.pause_q') }}');" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-warning rounded-pill px-3">
                                                 <i class="fas fa-pause me-1"></i> Pausar
                                             </button>
                                         </form>
                                     @else
-                                        <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('¿Reanudar esta capacidad?');" class="d-inline">
+                                        <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('{{ __('capacities.resume_q') }}');" class="d-inline">
                                             @csrf
                                             <button class="btn btn-sm btn-outline-success rounded-pill px-3">
                                                 <i class="fas fa-play me-1"></i> Reanudar
@@ -237,7 +237,7 @@
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-right">
                                         <li><a class="dropdown-item" href="{{ route('capacities.schedule', $c) }}"><i class="fas fa-clock me-2"></i> Programar encendido/pausado</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('capacities.audit', $c) }}"><i class="fas fa-list me-2"></i> Auditoría</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('capacities.audit', $c) }}"><i class="fas fa-list me-2"></i> {{ __('capacities.menu_audit') }}</a></li>
                                     </ul>
                                 </div>
                             </td>
@@ -305,6 +305,8 @@
 @push('js')
 <script>
 (function(){
+    const copyFailMsg = @json(__('capacities.copy_fail'));
+    const visiblesLabel = @json(__('capacities.visible_counter'));
     const table  = document.getElementById('cap-table');
     if(!table) return;
 
@@ -343,7 +345,7 @@
             if(show) visible++;
         });
 
-        if(counter){ counter.textContent = `— ${visible} visibles`; }
+        if(counter){ counter.textContent = `- ${visible} ${visiblesLabel}`; }
     }
 
     function getKey(tr, key){
@@ -403,7 +405,7 @@
             btn.classList.remove('btn-outline-secondary');
             btn.classList.add('btn-success');
             setTimeout(()=>{ btn.classList.add('btn-outline-secondary'); btn.classList.remove('btn-success'); }, 900);
-        }).catch(()=> alert('No se pudo copiar'));
+        }).catch(()=> alert(copyFailMsg));
     });
 
     // Inicial
@@ -411,3 +413,4 @@
 })();
 </script>
 @endpush
+
