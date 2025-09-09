@@ -19,5 +19,5 @@ portal.birentable.com {
 
 	# Redirige http -> https automáticamente (Caddy lo hace por defecto al tener bloque 443)
 	# reverse_proxy al contenedor de Laravel que escucha en 80 interno
-	reverse_proxy laravel.test:80
+	reverse_proxy birentable:80
 }

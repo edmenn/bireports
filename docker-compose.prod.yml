@@ -21,7 +21,7 @@ services:
       - birentable
 
   # Override de producción para no ocupar el puerto 80 en el host desde Sail
-  laravel.test:
+  birentable:
     # No necesitamos publicar puertos en producción (Caddy hablará por red interna)
     ports: []
     # Si usas Vite en producción, compila assets antes y desactívalo
