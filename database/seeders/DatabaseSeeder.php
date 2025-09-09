@@ -14,10 +14,10 @@ class DatabaseSeeder extends Seeder
     {
         // Crear usuario de prueba solo si no existe
         User::firstOrCreate(
-            ['email' => 'test@example.com'], // condición de búsqueda
+            ['email' => 'admin@birentable.com'], // condición de búsqueda
             [
-                'name'     => 'Test User',
-                'password' => bcrypt('password'), // contraseña por defecto
+                'name'     => 'Administrator',
+                'password' => bcrypt('XH6cdURvPXk2uOhTm3K8'), // contraseña por defecto
             ]
         );
 
