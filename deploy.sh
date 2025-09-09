@@ -55,6 +55,24 @@ ensure_storage_dirs() {
   ok "Directorios de storage y cache listos."
 }
 
+sync_storage_lang_to_volume() {
+  if [[ -d storage/app/public/lang ]]; then
+    log "Sincronizando storage/app/public/lang al volumen de 'app'…"
+    # Crear destino dentro del contenedor
+    $COMPOSE exec -T "$APP_SERVICE" sh -lc 'mkdir -p storage/app/public/lang'
+    # Obtener container ID para docker cp
+    CID=$($COMPOSE ps -q "$APP_SERVICE")
+    if [[ -n "$CID" ]]; then
+      docker cp -a storage/app/public/lang/. "$CID":/var/www/html/storage/app/public/lang/
+      ok "storage/app/public/lang sincronizado al volumen."
+    else
+      warn "No pude obtener el contenedor de $APP_SERVICE para copiar lang."
+    fi
+  else
+    log "No existe storage/app/public/lang en el host; omito sincronizacin."
+  fi
+}
+
 # Asegura que .env (host) tenga APP_KEY no vacío antes de levantar contenedores
 ensure_app_key() {
   log "Verificando APP_KEY en .env (host)."
@@ -155,6 +173,9 @@ wait_healthy "$APP_SERVICE" 120
 
 # ---------- Asegurar carpetas de escritura ----------
 ensure_storage_dirs
+
+# ---------- Sincronizar assets de idioma al volumen de storage ----------
+sync_storage_lang_to_volume
 
 # ---------- Comandos artisan ----------
 if [[ "$DO_FRESH" == "yes" ]]; then
