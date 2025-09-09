@@ -5,12 +5,12 @@ COMPOSE="docker compose -f docker-compose.secure.yml"
 APP="birentable"
 DOMAIN="${DOMAIN:-portal.birentable.com}"
 
-log(){ printf '\033[1;34m==> %s\033[0m\n' "$*"; }
-ok(){  printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
-warn(){printf '\033[1;33m! %s\033[0m\n' "$*"; }
-err(){ printf '\033[1;31m✗ %s\033[0m\n' "$*"; }
+log() { printf '\033[1;34m==> %s\033[0m\n' "$*"; }
+ok()  { printf '\033[1;32mOK %s\033[0m\n' "$*"; }
+warn(){ printf '\033[1;33m! %s\033[0m\n' "$*"; }
+err() { printf '\033[1;31mX %s\033[0m\n' "$*"; }
 
-# 0) Archivos mínimos
+# 0) Archivos minimos
 for f in docker-compose.secure.yml Dockerfile.app Caddyfile nginx/default.conf; do
   [[ -f "$f" ]] || { err "Falta $f"; exit 1; }
 done
@@ -32,9 +32,9 @@ log ".env/APP_KEY dentro del contenedor (solo lectura del entorno)."
 if $COMPOSE exec -T "$APP" sh -lc 'v=$(printenv APP_KEY || true); [ -n "$v" ] && [ "$v" != "base64:" ]'; then
   ok "APP_KEY presente en el entorno del contenedor."
 else
-  warn "APP_KEY vacío/no presente. Define APP_KEY en el host (.env) y recrea los servicios."
-  echo "  Ejemplo: KEY=$(openssl rand -base64 32); sed -i -E \"s#^APP_KEY=.*#APP_KEY=base64:${KEY}\" .env"
-  echo "           $COMPOSE up -d"
+  warn "APP_KEY vacio/no presente. Define APP_KEY en el host (.env) y recrea los servicios."
+  echo "  Ejemplo: KEY=\$(openssl rand -base64 32); sed -i -E \"s#^APP_KEY=.*#APP_KEY=base64:${KEY}\" .env"
+  echo "           docker compose -f docker-compose.secure.yml up -d"
 fi
 
 # 3) Permisos y rutas de escritura
@@ -44,7 +44,7 @@ $COMPOSE exec -T "$APP" sh -lc 'echo test > bootstrap/cache/verify.txt && rm -f 
 ok "Escritura OK en storage/ y bootstrap/cache."
 
 # 4) Verificar extensiones PHP requeridas
-log "Verificando extensiones PHP (mbstring, intl) y función mb_split."
+log "Verificando extensiones PHP (mbstring, intl) y funcion mb_split."
 if $COMPOSE exec -T "$APP" sh -lc 'php -m | grep -qi mbstring && php -m | grep -qi intl && php -r "exit(function_exists(\"mb_split\")?0:1);"'; then
   ok "Extensiones OK y mb_split presente."
 else
@@ -61,13 +61,13 @@ $COMPOSE exec -T "$APP" php artisan migrate --force
 ok "Migraciones listas."
 
 # 6) storage:link y optimizaciones
-log "Creando storage:link y limpiando cachés."
+log "Creando storage:link y limpiando caches."
 $COMPOSE exec -T "$APP" php artisan storage:link || true
 $COMPOSE exec -T "$APP" php artisan config:clear || true
 $COMPOSE exec -T "$APP" php artisan route:clear  || true
 $COMPOSE exec -T "$APP" php artisan view:clear   || true
 $COMPOSE exec -T "$APP" php artisan optimize
-ok "Optimización aplicada."
+ok "Optimizacion aplicada."
 
 # 7) Salud de servicios
 log "Chequeando salud de servicios."
@@ -76,20 +76,19 @@ for s in caddy nginx "$APP" pgsql; do
 done
 
 # 8) Verificación HTTP (opcional)
-log "Intentando acceder a https://$DOMAIN (puede tardar si TLS aún emite)."
+log "Intentando acceder a https://$DOMAIN (puede tardar si TLS aun emite)."
 set +e
 HTTP_CODE=$(curl -k -sS -o /tmp/.curl_out -w '%{http_code}' "https://$DOMAIN" || true)
 set -e
 if [[ "$HTTP_CODE" =~ ^2|3 ]]; then
   ok "Sitio responde ($HTTP_CODE)."
 else
-  warn "HTTP=$HTTP_CODE. Causas típicas: DNS sin propagar, puertos 80/443 bloqueados o error de app."
-  warn "Logs útiles:"
+  warn "HTTP=$HTTP_CODE. Causas tipicas: DNS sin propagar, puertos 80/443 bloqueados o error de app."
+  warn "Logs utiles:"
   echo "  docker logs -f caddy"
   echo "  docker logs -f nginx"
   echo "  docker logs -f $APP"
 fi
 
 echo
-ok "Verificación completa."
-
+ok "Verificacion completa."

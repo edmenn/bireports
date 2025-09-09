@@ -163,8 +163,7 @@ else
   fi
 fi
 
-log "storage:link + optimizaciones…"
-$COMPOSE exec "$APP_SERVICE" php artisan storage:link || true
+log "optimizaciones… (omito storage:link; Nginx sirve /storage por alias)"
 $COMPOSE exec "$APP_SERVICE" php artisan config:clear || true
 $COMPOSE exec "$APP_SERVICE" php artisan route:clear  || true
 $COMPOSE exec "$APP_SERVICE" php artisan view:clear   || true
