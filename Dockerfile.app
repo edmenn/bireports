@@ -16,7 +16,6 @@ COPY . .
 RUN composer dump-autoload -o \
  && php artisan package:discover --ansi || true
 
-
 # -------- Stage 2: runtime (PHP-FPM Alpine endurecido) --------
 FROM php:8.3-fpm-alpine
 

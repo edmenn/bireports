@@ -3,7 +3,7 @@ networks:
     driver: bridge
 
 services:
-  # 1) Terminador TLS + proxy exterior
+  # 1) Terminador TLS + proxy exterior (expuesto a Internet)
   caddy:
     image: caddy:2.8
     container_name: caddy
@@ -21,7 +21,7 @@ services:
     tmpfs:
       - /tmp
 
-  # 2) Servidor web interno (solo red interna)
+  # 2) Servidor web interno (solo red backend)
   web:
     image: nginx:1.27-alpine
     container_name: nginx
@@ -37,7 +37,7 @@ services:
       - /var/run
       - /tmp
 
-  # 3) PHP-FPM (Laravel) — contenedor 'birentable'
+  # 3) PHP-FPM (Laravel) — contenedor de tu app
   app:
     build:
       context: .
@@ -91,16 +91,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # 5) One-shot: poblar el volumen 'app_code' con el código de la imagen de app
+  # 5) One-shot para poblar el volumen app_code con el código de la imagen
   code_init:
     image: birentable/php-app:prod
-    user: "0:0"  # ejecutar como root para escribir en el volumen
+    user: "0:0"                         # root para escribir en el volumen
     networks: [backend]
-    entrypoint: ["/bin/sh","-lc"]
-    command: |
-      mkdir -p /mnt/app_code && \
-      cp -a /var/www/html/. /mnt/app_code/ && \
-      chown -R 1000:1000 /mnt/app_code
+    entrypoint: sh
+    command: -c "mkdir -p /mnt/app_code && cp -a /var/www/html/. /mnt/app_code/ && chown -R 1000:1000 /mnt/app_code"
     volumes:
       - app_code:/mnt/app_code
 
