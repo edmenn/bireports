@@ -1,23 +1,17 @@
 {
-	# Recibe notificaciones ACME en este correo (ajústalo)
-	email admin@birentable.com
-	# Reintentos y logs más claros (opcional)
-	admin off
+  email admin@birentable.com
+  admin off
 }
 
-# Sitio principal
 portal.birentable.com {
-	encode zstd gzip
+  encode zstd gzip
 
-	# Seguridad básica de cabeceras
-	header {
-		X-Frame-Options "SAMEORIGIN"
-		X-Content-Type-Options "nosniff"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-	}
+  header {
+    X-Frame-Options "SAMEORIGIN"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  }
 
-	# Redirige http -> https automáticamente (Caddy lo hace por defecto al tener bloque 443)
-	# reverse_proxy al contenedor de Laravel que escucha en 80 interno
-	reverse_proxy birentable:80
+  reverse_proxy web:8080
 }
