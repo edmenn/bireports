@@ -51,5 +51,17 @@ COPY --from=vendor --chown=app:app /app /var/www/html
 RUN mkdir -p bootstrap/cache storage/framework/{cache,views,sessions} \
  && chmod -R 775 bootstrap/cache storage
 
+# Copiar logos/recursos por idioma desde resources/lang/<locale> a public/lang/<locale>
+# para que sean servidos por Nginx sin pasos extra.
+RUN set -eux; \
+    mkdir -p public/lang; \
+    for d in resources/lang/*; do \
+      if [ -d "$d" ]; then \
+        loc="$(basename "$d")"; \
+        mkdir -p "public/lang/$loc"; \
+        find "$d" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.svg' -o -iname '*.webp' \) -exec cp -a {} "public/lang/$loc/" \; \
+      ; fi; \
+    done
+
 EXPOSE 9000
 CMD ["php-fpm", "-F"]
