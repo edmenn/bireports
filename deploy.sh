@@ -44,6 +44,47 @@ check_env_permissions() {
   fi
 }
 
+ensure_storage_dirs() {
+  log "Asegurando storage/* y bootstrap/cache dentro del contenedor."
+  $COMPOSE exec -T "$APP_SERVICE" sh -lc '
+    set -e
+    mkdir -p storage/framework/{cache,views,sessions} storage/logs \
+      && chmod -R 775 storage bootstrap/cache \
+      && chown -R 1000:1000 storage bootstrap/cache
+  '
+  ok "Directorios de storage y cache listos."
+}
+
+# Asegura que .env (host) tenga APP_KEY no vacío antes de levantar contenedores
+ensure_app_key() {
+  log "Verificando APP_KEY en .env (host)."
+  if grep -qE '^APP_KEY=' .env; then
+    local cur
+    cur=$(grep -E '^APP_KEY=' .env | sed 's/^APP_KEY=//')
+    if [[ -n "$cur" && "$cur" != "base64:" ]]; then
+      ok "APP_KEY ya presente."
+      return 0
+    fi
+    warn "APP_KEY vacío. Generando uno nuevo."
+  else
+    warn "No existe línea APP_KEY en .env. La crearé."
+  fi
+
+  # Generar 32 bytes aleatorios en base64
+  local key
+  if command -v openssl >/dev/null 2>&1; then
+    key=$(openssl rand -base64 32 | tr -d '\n')
+  else
+    key=$(head -c 32 /dev/urandom | base64 | tr -d '\n')
+  fi
+  if grep -qE '^APP_KEY=' .env; then
+    sed -i -E "s#^APP_KEY=.*#APP_KEY=base64:${key}#" .env
+  else
+    printf "\nAPP_KEY=base64:%s\n" "$key" >> .env
+  fi
+  ok "APP_KEY generado en .env."
+}
+
 wait_healthy() {
   # $1 = service name, $2 = timeout seconds
   local svc="$1" timeout="${2:-120}"
@@ -71,6 +112,7 @@ command -v docker >/dev/null || { err "Docker no está instalado/en PATH"; exit 
 require_file "docker-compose.secure.yml"
 require_file ".env"
 check_env_permissions
+ensure_app_key
 
 # ---------- Build frontend (si existe) ----------
 if [[ -f package.json ]]; then
@@ -101,6 +143,9 @@ $COMPOSE ps
 wait_healthy "$DB_SERVICE" 120
 # La app puede tardar un poco en levantar FPM con vendors y cache
 wait_healthy "$APP_SERVICE" 120
+
+# ---------- Asegurar carpetas de escritura ----------
+ensure_storage_dirs
 
 # ---------- Comandos artisan ----------
 if [[ "$DO_FRESH" == "yes" ]]; then
