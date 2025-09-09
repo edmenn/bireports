@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ensure language assets are synced into public/lang before committing
+if [ -x scripts/sync-lang-assets.sh ]; then
+  bash scripts/sync-lang-assets.sh
+  git add public/lang || true
+fi
+

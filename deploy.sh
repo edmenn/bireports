@@ -114,6 +114,15 @@ require_file ".env"
 check_env_permissions
 ensure_app_key
 
+# ---------- Sincronizar logos por idioma a public/lang (si existe script) ----------
+if [[ -x scripts/sync-lang-assets.sh ]]; then
+  log "Sincronizando assets de idiomas a public/lang…"
+  bash scripts/sync-lang-assets.sh || true
+  ok "Assets de idiomas sincronizados."
+else
+  log "scripts/sync-lang-assets.sh no encontrado; omito sync local."
+fi
+
 # ---------- Build frontend (si existe) ----------
 if [[ -f package.json ]]; then
   log "Compilando assets (Node 20)…"
