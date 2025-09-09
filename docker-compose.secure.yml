@@ -91,7 +91,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # 5) One-shot para poblar el volumen app_code con el código de la imagen
+  # 5) One-shot: poblar el volumen 'app_code' con el código de la imagen
   code_init:
     image: birentable/php-app:prod
     user: "0:0"                         # root para escribir en el volumen
@@ -100,6 +100,18 @@ services:
     command: -c "mkdir -p /mnt/app_code && cp -a /var/www/html/. /mnt/app_code/ && chown -R 1000:1000 /mnt/app_code"
     volumes:
       - app_code:/mnt/app_code
+
+  # 6) One-shot: copiar .env del host al volumen 'app_code' si existe
+  env_init:
+    image: alpine:3.20
+    user: "0:0"
+    networks: [backend]
+    entrypoint: sh
+    # Montamos TODO el repo como solo-lectura y copiamos .env si existe
+    command: -c "if [ -f /mnt/src/.env ]; then cp -f /mnt/src/.env /mnt/app_code/.env && chown 1000:1000 /mnt/app_code/.env; fi"
+    volumes:
+      - app_code:/mnt/app_code
+      - ./:/mnt/src:ro
 
 volumes:
   app_storage: {}
