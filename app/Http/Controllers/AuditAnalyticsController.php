@@ -286,7 +286,7 @@ final class AuditAnalyticsController extends Controller
             ->select('user_id')
             ->whereNotNull('user_id')
             ->whereBetween('occurred_at', [$from, $to])
-            ->whereIn('action', self::ACCESS_ACTIONS)
+            ->where('action', 'render')
             ->groupBy('user_id');
 
         $users = User::query()
@@ -297,7 +297,7 @@ final class AuditAnalyticsController extends Controller
         $lastByUser = Audit::query()
             ->select('user_id', DB::raw("MAX(occurred_at AT TIME ZONE '$tz') AS last_access_local"))
             ->whereNotNull('user_id')
-            ->whereIn('action', self::ACCESS_ACTIONS)
+            ->where('action', 'render')
             ->groupBy('user_id')->pluck('last_access_local', 'user_id');
 
         return $users->map(function ($u) use ($lastByUser, $displayTz) {
@@ -343,7 +343,7 @@ final class AuditAnalyticsController extends Controller
         $sub = Audit::query()
             ->select('report_uuid')
             ->whereBetween('occurred_at', [$from, $to])
-            ->whereIn('action', self::ACCESS_ACTIONS)
+            ->where('action', 'render')
             ->groupBy('report_uuid');
 
         $reports = Report::query()
@@ -353,7 +353,7 @@ final class AuditAnalyticsController extends Controller
 
         $lastByReport = Audit::query()
             ->select('report_uuid', DB::raw("MAX(occurred_at AT TIME ZONE '$tz') AS last_access_local"))
-            ->whereIn('action', self::ACCESS_ACTIONS)
+            ->where('action', 'render')
             ->groupBy('report_uuid')->pluck('last_access_local', 'report_uuid');
 
         return $reports->map(function ($r) use ($lastByReport, $displayTz) {
@@ -373,10 +373,11 @@ final class AuditAnalyticsController extends Controller
         $user = User::query()->find($userId);
         if (!$user) return [null, []];
 
+        // Para KPIs y agregaciones, contamos SOLO 'render' para evitar doble conteo
         $base = Audit::query()
             ->where('user_id', $userId)
             ->whereBetween('occurred_at', [$from, $to])
-            ->whereIn('action', self::ACCESS_ACTIONS);
+            ->where('action', 'render');
 
         // Timezone para agregaciones (alineado con buildDashboard)
         $tz = addslashes(\App\Support\AppTimezone::current() ?? config('app.timezone'));
@@ -413,6 +414,7 @@ final class AuditAnalyticsController extends Controller
         foreach ($gridRaw as $r) $heatmap[$r->hr][$r->dow] = (int)$r->total;
 
         // Timeline: TODAS las acciones del usuario (hasta 500) + nombre de reporte
+        // Timeline: queremos TODAS las acciones del usuario
         $eventsRaw = Audit::query()
             ->where('user_id', $userId)
             ->whereBetween('occurred_at', [$from, $to])
@@ -480,7 +482,7 @@ final class AuditAnalyticsController extends Controller
         $base = Audit::query()
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->whereBetween('occurred_at', [$from, $to])
-            ->whereIn('action', self::ACCESS_ACTIONS)
+            ->where('action', 'render')
             ->orderBy('occurred_at');
 
         $headers = [
