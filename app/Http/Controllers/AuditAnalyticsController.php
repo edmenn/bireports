@@ -127,6 +127,7 @@ final class AuditAnalyticsController extends Controller
     {
         // Meses (ajustado a TZ de la app)
         $tz = addslashes(\App\Support\AppTimezone::current() ?? config('app.timezone'));
+        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
         $monthsRaw = (clone $base)
             ->selectRaw("to_char(date_trunc('month', occurred_at AT TIME ZONE '$tz'), 'YYYY-MM') AS ym, COUNT(*) AS total")
             ->groupBy('ym')->orderBy('ym')->get()->keyBy('ym');
@@ -254,6 +255,7 @@ final class AuditAnalyticsController extends Controller
     /** Rankings Usuarios (renders). */
     private function usersRank($base, string $direction, int $limit): array
     {
+        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
         $rows = (clone $base)
             ->select('user_id', DB::raw('COUNT(*) AS total'), DB::raw('MAX(occurred_at) AS last_access'))
             ->whereNotNull('user_id')
@@ -261,15 +263,15 @@ final class AuditAnalyticsController extends Controller
             ->orderBy('total', $direction === 'asc' ? 'asc' : 'desc')
             ->limit($limit)->get();
 
-        return $rows->map(function ($r) {
+        return $rows->map(function ($r) use ($displayTz) {
             $u = User::query()->find($r->user_id);
             return [
                 'user_id'     => (int) $r->user_id,
                 'name'        => $u?->name ?? ('Usuario #'.$r->user_id),
                 'email'       => $u?->email,
                 'total'       => (int)$r->total,
-                'last_access' => $r->last_access ? Carbon::parse($r->last_access)->toDateTimeString() : null,
-                'created_at'  => $u?->created_at?->toDateTimeString(),
+                'last_access' => $r->last_access ? Carbon::parse($r->last_access, 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
+                'created_at'  => $u?->created_at ? Carbon::parse($u->created_at)->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -277,6 +279,7 @@ final class AuditAnalyticsController extends Controller
     /** Usuarios sin renders en rango. */
     private function usersWithoutAccess(Carbon $from, Carbon $to): array
     {
+        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
         $sub = Audit::query()
             ->select('user_id')
             ->whereNotNull('user_id')
@@ -295,13 +298,13 @@ final class AuditAnalyticsController extends Controller
             ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('user_id')->pluck('last_access', 'user_id');
 
-        return $users->map(function ($u) use ($lastByUser) {
+        return $users->map(function ($u) use ($lastByUser, $displayTz) {
             return [
                 'user_id'     => (int)$u->id,
                 'name'        => $u->name,
                 'email'       => $u->email,
-                'last_access' => isset($lastByUser[$u->id]) ? Carbon::parse($lastByUser[$u->id])->toDateTimeString() : null,
-                'created_at'  => $u->created_at?->toDateTimeString(),
+                'last_access' => isset($lastByUser[$u->id]) ? Carbon::parse($lastByUser[$u->id], 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
+                'created_at'  => $u->created_at ? Carbon::parse($u->created_at)->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -309,6 +312,7 @@ final class AuditAnalyticsController extends Controller
     /** Rankings Reportes (renders). */
     private function reportsRank($base, string $direction, int $limit): array
     {
+        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
         $rows = (clone $base)
             ->select('report_uuid', DB::raw('COUNT(*) AS total'), DB::raw('MAX(occurred_at) AS last_access'))
             ->groupBy('report_uuid')
@@ -317,13 +321,13 @@ final class AuditAnalyticsController extends Controller
 
         $names = Report::query()->whereIn('id', $rows->pluck('report_uuid'))->pluck('name', 'id');
 
-        return $rows->map(function ($r) use ($names) {
+        return $rows->map(function ($r) use ($names, $displayTz) {
             $id = (string)$r->report_uuid;
             return [
                 'report_uuid' => $id,
                 'name'        => $names[$id] ?? $id,
                 'total'       => (int)$r->total,
-                'last_access' => $r->last_access ? Carbon::parse($r->last_access)->toDateTimeString() : null,
+                'last_access' => $r->last_access ? Carbon::parse($r->last_access, 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -331,6 +335,7 @@ final class AuditAnalyticsController extends Controller
     /** Reportes sin renders en rango. */
     private function reportsWithoutAccess(Carbon $from, Carbon $to): array
     {
+        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
         $sub = Audit::query()
             ->select('report_uuid')
             ->whereBetween('occurred_at', [$from, $to])
@@ -347,13 +352,13 @@ final class AuditAnalyticsController extends Controller
             ->whereIn('action', self::ACCESS_ACTIONS)
             ->groupBy('report_uuid')->pluck('last_access', 'report_uuid');
 
-        return $reports->map(function ($r) use ($lastByReport) {
+        return $reports->map(function ($r) use ($lastByReport, $displayTz) {
             $id = (string)$r->id;
             return [
                 'report_uuid' => $id,
                 'name'        => $r->name ?? $id,
-                'last_access' => isset($lastByReport[$id]) ? Carbon::parse($lastByReport[$id])->toDateTimeString() : null,
-                'created_at'  => $r->created_at?->toDateTimeString(),
+                'last_access' => isset($lastByReport[$id]) ? Carbon::parse($lastByReport[$id], 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
+                'created_at'  => $r->created_at ? Carbon::parse($r->created_at)->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -419,10 +424,10 @@ final class AuditAnalyticsController extends Controller
             ->whereBetween('occurred_at', [$from, $to])
             ->orderByDesc('occurred_at')->limit(500)
             ->get(['occurred_at','action','report_uuid','page_name','bookmark','filters','duration_ms','success','error_message'])
-            ->map(function ($e) use ($nameMap) {
+            ->map(function ($e) use ($nameMap, $displayTz) {
                 $rid = (string)$e->report_uuid;
                 return [
-                    'occurred_at' => Carbon::parse($e->occurred_at)->toDateTimeString(),
+                    'occurred_at' => Carbon::parse($e->occurred_at, 'UTC')->setTimezone($displayTz)->toDateTimeString(),
                     'action'      => (string)$e->action,
                     'report_uuid' => $rid,
                     'report_name' => $nameMap[$rid] ?? $rid, // SIEMPRE presente
