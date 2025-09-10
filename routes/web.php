@@ -313,8 +313,8 @@ Route::prefix('admin')
             ->name('powerbi.import.datasets');
     });
 
-// Idiomas
-Route::get('/lang/{locale}', function (string $locale) {
+// Idiomas (cambiado de /lang a /locale para evitar reglas del proxy)
+Route::get('/locale/{locale}', function (string $locale) {
     $supported = config('app.supported_locales', ['en','es','pt','ru','tr']);
     if (! in_array($locale, $supported, true)) {
         abort(404);
@@ -342,7 +342,6 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
-
 
 
 
