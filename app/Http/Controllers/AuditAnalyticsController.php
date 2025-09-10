@@ -270,8 +270,8 @@ final class AuditAnalyticsController extends Controller
                 'name'        => $u?->name ?? ('Usuario #'.$r->user_id),
                 'email'       => $u?->email,
                 'total'       => (int)$r->total,
-                'last_access' => $r->last_access ? Carbon::parse($r->last_access, 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
-                'created_at'  => $u?->created_at ? Carbon::parse($u->created_at)->setTimezone($displayTz)->toDateTimeString() : null,
+                'last_access' => $r->last_access ? ( ($r->last_access instanceof Carbon ? $r->last_access->copy() : Carbon::parse($r->last_access)) )->setTimezone($displayTz)->toDateTimeString() : null,
+                'created_at'  => $u?->created_at ? ( ($u->created_at instanceof Carbon ? $u->created_at->copy() : Carbon::parse($u->created_at)) )->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -303,8 +303,8 @@ final class AuditAnalyticsController extends Controller
                 'user_id'     => (int)$u->id,
                 'name'        => $u->name,
                 'email'       => $u->email,
-                'last_access' => isset($lastByUser[$u->id]) ? Carbon::parse($lastByUser[$u->id], 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
-                'created_at'  => $u->created_at ? Carbon::parse($u->created_at)->setTimezone($displayTz)->toDateTimeString() : null,
+                'last_access' => isset($lastByUser[$u->id]) ? ( Carbon::parse($lastByUser[$u->id])->setTimezone($displayTz)->toDateTimeString() ) : null,
+                'created_at'  => $u->created_at ? ( ($u->created_at instanceof Carbon ? $u->created_at->copy() : Carbon::parse($u->created_at)) )->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -327,7 +327,7 @@ final class AuditAnalyticsController extends Controller
                 'report_uuid' => $id,
                 'name'        => $names[$id] ?? $id,
                 'total'       => (int)$r->total,
-                'last_access' => $r->last_access ? Carbon::parse($r->last_access, 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
+                'last_access' => $r->last_access ? ( ($r->last_access instanceof Carbon ? $r->last_access->copy() : Carbon::parse($r->last_access)) )->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -357,8 +357,8 @@ final class AuditAnalyticsController extends Controller
             return [
                 'report_uuid' => $id,
                 'name'        => $r->name ?? $id,
-                'last_access' => isset($lastByReport[$id]) ? Carbon::parse($lastByReport[$id], 'UTC')->setTimezone($displayTz)->toDateTimeString() : null,
-                'created_at'  => $r->created_at ? Carbon::parse($r->created_at)->setTimezone($displayTz)->toDateTimeString() : null,
+                'last_access' => isset($lastByReport[$id]) ? ( Carbon::parse($lastByReport[$id])->setTimezone($displayTz)->toDateTimeString() ) : null,
+                'created_at'  => $r->created_at ? ( ($r->created_at instanceof Carbon ? $r->created_at->copy() : Carbon::parse($r->created_at)) )->setTimezone($displayTz)->toDateTimeString() : null,
             ];
         })->values()->all();
     }
@@ -427,7 +427,7 @@ final class AuditAnalyticsController extends Controller
             ->map(function ($e) use ($nameMap, $displayTz) {
                 $rid = (string)$e->report_uuid;
                 return [
-                    'occurred_at' => Carbon::parse($e->occurred_at, 'UTC')->setTimezone($displayTz)->toDateTimeString(),
+                    'occurred_at' => ($e->occurred_at instanceof Carbon ? $e->occurred_at->copy() : Carbon::parse($e->occurred_at))->setTimezone($displayTz)->toDateTimeString(),
                     'action'      => (string)$e->action,
                     'report_uuid' => $rid,
                     'report_name' => $nameMap[$rid] ?? $rid, // SIEMPRE presente
@@ -445,7 +445,7 @@ final class AuditAnalyticsController extends Controller
             'to'             => $to->toDateString(),
             'kpis'           => [
                 'totalAccesos'   => $totalAccesos,
-                'ultimoAcceso'   => $lastAccess ? Carbon::parse($lastAccess)->toDateTimeString() : null,
+                'ultimoAcceso'   => $lastAccess ? Carbon::parse($lastAccess)->setTimezone($displayTz)->toDateTimeString() : null,
                 'reportesUnicos' => $reportesUnicos,
                 'diasActivos'    => $diasActivos,
             ],
@@ -456,15 +456,17 @@ final class AuditAnalyticsController extends Controller
         return [$profile, $events];
     }
 
-    /** Export CSV (renders) — también en UTC. */
+    /** Export CSV (renders) - en zona horaria configurada. */
     public function export(Request $request): StreamedResponse
     {
+        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
+
         $to   = $request->filled('to')
-            ? Carbon::parse((string)$request->input('to'), config('app.timezone'))->utc()->endOfDay()
+            ? Carbon::parse((string)$request->input('to'), $displayTz)->utc()->endOfDay()
             : now()->utc()->endOfDay();
 
         $from = $request->filled('from')
-            ? Carbon::parse((string)$request->input('from'), config('app.timezone'))->utc()->startOfDay()
+            ? Carbon::parse((string)$request->input('from'), $displayTz)->utc()->startOfDay()
             : (clone $to)->subDays(59)->startOfDay();
 
         $tab    = (string) $request->input('tab', 'dashboard');
@@ -481,7 +483,7 @@ final class AuditAnalyticsController extends Controller
             'Content-Disposition' => 'attachment; filename=auditoria.csv',
         ];
 
-        return response()->stream(function() use ($base) {
+        return response()->stream(function() use ($base, $displayTz) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, [
@@ -490,8 +492,11 @@ final class AuditAnalyticsController extends Controller
             ]);
             $base->chunk(1000, function($chunk) use ($out) {
                 foreach ($chunk as $r) {
+                    $occurredLocal = ($r->occurred_at instanceof Carbon ? $r->occurred_at->copy() : Carbon::parse($r->occurred_at))
+                        ->setTimezone($displayTz)
+                        ->toDateTimeString();
                     fputcsv($out, [
-                        $r->id, $r->occurred_at, $r->user_id, $r->report_uuid, $r->workspace_uuid, $r->dataset_uuid,
+                        $r->id, $occurredLocal, $r->user_id, $r->report_uuid, $r->workspace_uuid, $r->dataset_uuid,
                         $r->action, $r->page_name, $r->rls_role, $r->duration_ms, $r->success ? 1 : 0,
                         $r->ip, $r->referer, $r->user_agent ? mb_substr($r->user_agent,0,200) : null,
                         $r->filters ? json_encode($r->filters, JSON_UNESCAPED_UNICODE) : null, $r->error_message,
