@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 class Audit extends Model
 {
     protected $table = 'audits';
+    
+    // Asegura que Eloquent incluya el offset al persistir (e.g. "+00:00"),
+    // evitando que Postgres interprete timestamps sin zona en la TZ de la sesión.
+    protected $dateFormat = 'Y-m-d H:i:sP';
 
     protected $fillable = [
         'user_id',
