@@ -42,9 +42,10 @@ final class AuditService
         $action    = $this->normalizeAction($actionRaw);
 
         // Fecha/hora del evento (timestampTz). Si no llega, now()
+        // Guarda SIEMPRE en UTC para evitar desfases de tz/host/BD
         $occurredAt = isset($data['occurred_at'])
-            ? Carbon::parse((string)$data['occurred_at'])
-            : now();
+            ? Carbon::parse((string)$data['occurred_at'])->utc()
+            : now()->utc();
 
         // success: si no llega, true excepto cuando action=error
         $success = array_key_exists('success', $data)
@@ -122,7 +123,7 @@ final class AuditService
                 'user_agent'    => $userAgent,
                 'referer'       => $referer,
 
-                'occurred_at'   => now(),
+                'occurred_at'   => now()->utc(),
             ]);
         }
     }

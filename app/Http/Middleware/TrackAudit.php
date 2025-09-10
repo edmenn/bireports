@@ -27,7 +27,8 @@ class TrackAudit
                     'workspace_uuid' => $request->query('workspace_uuid') ?? $request->headers->get('X-Workspace-Id'),
                     'dataset_uuid'   => $request->query('dataset_uuid') ?? $request->headers->get('X-Dataset-Id'),
                     'action'      => 'view',
-                    'occurred_at' => now(),
+                    // Registrar SIEMPRE en UTC para evitar desfases por tz del host/BD
+                    'occurred_at' => now()->utc(),
                 ]);
             } catch (\Throwable) {
                 // silencioso
