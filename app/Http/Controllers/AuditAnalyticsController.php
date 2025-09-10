@@ -369,6 +369,9 @@ final class AuditAnalyticsController extends Controller
             ->whereBetween('occurred_at', [$from, $to])
             ->whereIn('action', self::ACCESS_ACTIONS);
 
+        // Timezone para agregaciones (alineado con buildDashboard)
+        $tz = addslashes(\App\Support\AppTimezone::current() ?? config('app.timezone'));
+
         // KPIs del usuario
         $totalAccesos   = (clone $base)->count();
         $lastAccess     = (clone $base)->max('occurred_at');
