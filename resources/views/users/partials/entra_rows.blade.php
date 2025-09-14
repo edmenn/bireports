@@ -26,9 +26,20 @@
     @endphp
     <tr>
         <td style="width:36px" class="text-center">
+            @php
+                // Construir lista completa de candidatos (preferido + upn + mail + aliases)
+                $cands = [];
+                if ($preferred !== '') $cands[] = strtolower($preferred);
+                if ($upn !== '')       $cands[] = strtolower($upn);
+                if ($mail !== '')      $cands[] = strtolower($mail);
+                foreach ($aliases as $a) { $cands[] = strtolower($a); }
+                $cands = array_values(array_unique($cands));
+                $aliasesAttr = e(implode(',', $cands));
+            @endphp
             <input type="checkbox" class="js-entra-row-chk"
                    data-email="{{ e($preferred) }}"
                    data-name="{{ e($display ?: $preferred) }}"
+                   data-aliases="{{ $aliasesAttr }}"
                    @disabled($preferred === '')
                    aria-label="Seleccionar {{ $display ?: $preferred }}">
         </td>
@@ -68,4 +79,3 @@
         <td colspan="3" class="text-center text-muted py-3">Sin resultados</td>
     </tr>
 @endforelse
-

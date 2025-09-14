@@ -430,7 +430,7 @@
     const csrfToken  = @json(csrf_token());
 
     let nextLink = null;
-    const selected = new Map(); // email -> {email,name}
+    const selected = new Map(); // email -> {email,name,aliases}
 
     function updateImportBtn(){
         btnImport.disabled = (selected.size === 0);
@@ -446,12 +446,14 @@
         chks.forEach(chk => {
             const email = chk.getAttribute('data-email') || '';
             const name  = chk.getAttribute('data-name') || email;
+            const aliasesStr = chk.getAttribute('data-aliases') || '';
+            const aliases = aliasesStr.split(',').map(s => s.trim()).filter(Boolean);
             if (email && selected.has(email)) {
                 chk.checked = true;
             }
             chk.addEventListener('change', () => {
                 if (!email) return;
-                if (chk.checked) selected.set(email, {email, name});
+                if (chk.checked) selected.set(email, {email, name, aliases});
                 else selected.delete(email);
                 updateImportBtn();
                 // actualizar chkAll según visibles
@@ -531,9 +533,14 @@
             form.method = 'POST';
             form.action = importUrl;
             const t = document.createElement('input'); t.type='hidden'; t.name='_token'; t.value=csrfToken; form.appendChild(t);
-            let i = 0; selected.forEach(({email,name}) => {
+            let i = 0; selected.forEach(({email,name,aliases}) => {
                 const e = document.createElement('input'); e.type='hidden'; e.name=`selected[${i}][email]`; e.value=email; form.appendChild(e);
                 const n = document.createElement('input'); n.type='hidden'; n.name=`selected[${i}][name]`;  n.value=name;  form.appendChild(n);
+                if (Array.isArray(aliases)) {
+                    aliases.forEach((a, j) => {
+                        const al = document.createElement('input'); al.type='hidden'; al.name=`selected[${i}][aliases][${j}]`; al.value=a; form.appendChild(al);
+                    });
+                }
                 i++;
             });
             const role = (selAssignRole?.value || '').trim();

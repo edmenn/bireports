@@ -30,8 +30,9 @@ final class EntraUserImporter
 
     /**
      * Importa SOLO los usuarios seleccionados en la previsualización.
+     * Ahora considera aliases (UPN, mail y otros) para evitar duplicados.
      *
-     * @param array<int,array{email:string,name?:string|null}> $entries
+     * @param array<int,array{email:string,name?:string|null,aliases?:array<int,string>}> $entries
      * @param string|null $assignRole Rol a asignar si el usuario es creado.
      * @return array{created:int, updated:int, skipped:int, errors:int}
      */
@@ -43,6 +44,11 @@ final class EntraUserImporter
             try {
                 $email = trim((string)($e['email'] ?? ''));
                 $name  = trim((string)($e['name'] ?? ''));
+                $aliases = [];
+                foreach ((array)($e['aliases'] ?? []) as $a) {
+                    $a = trim((string)$a);
+                    if ($a !== '') { $aliases[] = strtolower($a); }
+                }
 
                 if ($email === '') {
                     $skipped++;
@@ -52,8 +58,16 @@ final class EntraUserImporter
                     $name = $email;
                 }
 
-                // En importSelected no reconsultamos Graph, no hay id externo: marcamos provider entra.
-                $result = $this->upsertUserExact($email, $name, $assignRole, false, 'entra', null);
+                // Resolver candidatos (incluye el email preferido también)
+                $candidates = array_values(array_unique(array_merge([$email], $aliases)));
+
+                // Upsert por alias si tenemos candidatos; si no, exacto.
+                if (!empty($candidates)) {
+                    $result = $this->upsertUserByCandidates($candidates, $email, $name, $assignRole, false, 'entra', null);
+                } else {
+                    // En importSelected no reconsultamos Graph, no hay id externo: marcamos provider entra.
+                    $result = $this->upsertUserExact($email, $name, $assignRole, false, 'entra', null);
+                }
 
                 match ($result) {
                     'created' => $created++,
@@ -299,6 +313,83 @@ final class EntraUserImporter
                 } catch (Throwable $e) {
                     Log::warning('No se pudo asignar rol al usuario recién creado', [
                         'email' => $email,
+                        'role'  => $assignRole,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return 'created';
+        });
+    }
+
+    /**
+     * Upsert por lista de candidatos (emails/aliases) intentando evitar duplicados.
+     * @param array<int,string> $candidates Emails/aliases en minúsculas preferentemente
+     * @return 'created'|'updated'|'skipped'
+     */
+    private function upsertUserByCandidates(array $candidates, string $fallbackEmail, string $name, ?string $assignRole, bool $dryRun, ?string $provider, ?string $externalId): string
+    {
+        $candidates = array_values(array_unique(array_map(static function ($v) {
+            $v = trim((string)$v);
+            return $v === '' ? '' : strtolower($v);
+        }, $candidates)));
+
+        return DB::transaction(function () use ($candidates, $fallbackEmail, $name, $assignRole, $dryRun, $provider, $externalId) {
+            /** @var User|null $existing */
+            $existing = null;
+
+            if (!empty($candidates)) {
+                $existing = User::query()->whereIn('email', $candidates)->first();
+            }
+            if (!$existing && $fallbackEmail !== '') {
+                $existing = User::query()
+                    ->where('email', strtolower($fallbackEmail))
+                    ->orWhere('email', $fallbackEmail)
+                    ->first();
+            }
+
+            if ($existing) {
+                $changed = false;
+
+                if ($existing->name !== $name && $name !== '') {
+                    $existing->name = $name;
+                    $changed = true;
+                }
+                if ($provider && empty($existing->auth_provider)) {
+                    $existing->auth_provider = $provider;
+                    $changed = true;
+                }
+                if ($externalId && empty($existing->external_id)) {
+                    $existing->external_id = $externalId;
+                    $changed = true;
+                }
+
+                if ($changed && !$dryRun) {
+                    $existing->save();
+                }
+                return $changed ? 'updated' : 'skipped';
+            }
+
+            if ($dryRun) {
+                return 'created';
+            }
+
+            $emailToSave = $fallbackEmail !== '' ? $fallbackEmail : ($candidates[0] ?? '');
+            $user = new User();
+            $user->name          = $name;
+            $user->email         = $emailToSave;
+            $user->auth_provider = $provider ?: null;
+            $user->external_id   = $externalId ?: null;
+            $user->password      = Hash::make(bin2hex(random_bytes(16)));
+            $user->save();
+
+            if ($assignRole) {
+                try {
+                    $user->assignRole($assignRole);
+                } catch (Throwable $e) {
+                    Log::warning('No se pudo asignar rol al usuario recién creado', [
+                        'email' => $emailToSave,
                         'role'  => $assignRole,
                         'error' => $e->getMessage(),
                     ]);

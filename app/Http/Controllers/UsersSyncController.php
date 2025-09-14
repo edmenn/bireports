@@ -136,7 +136,7 @@ final class UsersSyncController extends Controller
      */
     public function importSelected(Request $request): RedirectResponse
     {
-        // selected[n][email], selected[n][name]
+        // selected[n][email], selected[n][name], selected[n][aliases][]
         $selected = $request->input('selected', []);
 
         if (!is_array($selected) || empty($selected)) {
@@ -150,6 +150,15 @@ final class UsersSyncController extends Controller
             }
             $email = trim((string)($row['email'] ?? ''));
             $name  = trim((string)($row['name'] ?? ''));
+            $aliases = [];
+            if (isset($row['aliases']) && is_array($row['aliases'])) {
+                foreach ($row['aliases'] as $a) {
+                    $a = strtolower(trim((string)$a));
+                    if ($a !== '') $aliases[] = $a;
+                }
+                // aseguramos único
+                $aliases = array_values(array_unique($aliases));
+            }
 
             if ($email === '') {
                 continue;
@@ -157,7 +166,7 @@ final class UsersSyncController extends Controller
             if ($name === '') {
                 $name = $email;
             }
-            $entries[] = ['email' => $email, 'name' => $name];
+            $entries[] = ['email' => $email, 'name' => $name, 'aliases' => $aliases];
         }
 
         if (empty($entries)) {

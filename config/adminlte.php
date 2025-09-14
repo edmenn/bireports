@@ -207,13 +207,14 @@ return [
         [
             'text' => 'Mi espacio',
             'icon' => 'fas fa-user-circle',
-            'can'  => 'menu.portal',
+            // Mostrar a usuarios con permiso de ver reportes
+            'can'  => 'reports.view',
             'classes' => 'menu-open',
             'submenu' => [
-                [ 'text'=>'Inicio',       'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
-                [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
-                [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                [ 'text'=>'Mis reportes', 'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'menu.portal' ],
+                [ 'text'=>'Inicio',       'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'reports.view' ],
+                [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'reports.view' ],
+                [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'reports.view' ],
+                [ 'text'=>'Mis reportes', 'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'reports.view' ],
             ],
         ],
 

@@ -27,13 +27,14 @@ class MenuServiceProvider extends ServiceProvider
                 [
                     'text' => 'my_space',
                     'icon' => 'fas fa-user-circle',
-                    'can'  => 'menu.portal',
+                    // Mostrar el portal a quien pueda ver reportes embebidos
+                    'can'  => 'reports.view',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'home',          'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
-                        [ 'text'=>'favorites',     'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
-                        [ 'text'=>'most_accessed', 'icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                        [ 'text'=>'my_reports',    'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'menu.portal' ],
+                        [ 'text'=>'home',          'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'reports.view' ],
+                        [ 'text'=>'favorites',     'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'reports.view' ],
+                        [ 'text'=>'most_accessed', 'icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'reports.view' ],
+                        [ 'text'=>'my_reports',    'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'reports.view' ],
                     ],
                 ],
 
@@ -94,4 +95,3 @@ class MenuServiceProvider extends ServiceProvider
         ]);
     }
 }
-
