@@ -135,6 +135,25 @@ body {
   box-shadow: none !important;
 }
 
+/* Navbar: ajustes para pantallas chicas (iPhone y similares) */
+@media (max-width: 576px){
+  /* Compactar paddings de los enlaces para ganar espacio */
+  .main-header .navbar-nav > .nav-item > .nav-link{ padding: .25rem .45rem; }
+  /* Ocultar utilitarios no esenciales en mobile: búsqueda y fullscreen */
+  .main-header [data-widget="navbar-search"],
+  .main-header [data-widget="fullscreen"]{ display: none !important; }
+  /* Evitar que items largos desplazen el menú de usuario */
+  .main-header .navbar-nav{ flex-wrap: nowrap; }
+  .main-header .navbar-nav.ms-auto,
+  .main-header .navbar-nav.ml-auto{ margin-left: auto !important; }
+}
+
+/* Ajustes de tablas y timelines en pantallas muy pequeñas */
+@media (max-width: 480px){
+  /* Evitar desbordes por columnas rígidas en timelines locales */
+  .timeline .when{ min-width: 120px; }
+}
+
 /* =======================
    SIDEBAR (coherente tema)
    ======================= */
