@@ -60,11 +60,19 @@
                         <td class="text-center">
                             <a href="{{ route('roles.edit', $role) }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> Editar</a>
                             @if (strtolower($role->name) !== 'admin')
-                                <form action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline"
-                                      onsubmit="return confirm('¿Eliminar el perfil {{ $role->name }}?');">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                </form>
+                                @php $count = (int)($userCounts[$role->id] ?? 0); @endphp
+                                @if ($count === 0)
+                                    <form action="{{ route('roles.destroy', $role) }}" method="POST" class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar el perfil {{ $role->name }}?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar perfil"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                @else
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                                            title="No se puede eliminar: tiene {{ $count }} usuario(s) asignado(s)">
+                                        <i class="fas fa-lock"></i>
+                                    </button>
+                                @endif
                             @endif
                         </td>
                     </tr>
@@ -78,4 +86,3 @@
         <div class="p-3">{{ $roles->links() }}</div>
     </x-adminlte-card>
 @endsection
-

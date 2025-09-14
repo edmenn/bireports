@@ -66,18 +66,7 @@
             @else
                 <span class="text-muted">Sin email</span>
             @endif
-            @if(!empty($aliases))
-                <div>
-                    @foreach(array_slice($aliases, 0, 3) as $a)
-                        @if(strtolower($a) !== strtolower($preferred))
-                            <small class="badge badge-light text-muted">{{ $a }}</small>
-                        @endif
-                    @endforeach
-                    @if(count($aliases) > 3)
-                        <small class="text-muted">+{{ count($aliases) - 3 }} alias</small>
-                    @endif
-                </div>
-            @endif
+            {{-- En esta vista no mostramos alias adicionales para evitar ruido visual --}}
         </td>
     </tr>
 @empty

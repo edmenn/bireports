@@ -167,6 +167,14 @@ body {
   overflow-x: hidden;
 }
 
+/* Indentación más clara de submenús para no confundir con el padre */
+.nav-sidebar .nav-treeview > .nav-item > .nav-link {
+  padding-left: 2.25rem; /* un poco más a la derecha que el default */
+}
+.nav-sidebar .nav-treeview .nav-treeview > .nav-item > .nav-link {
+  padding-left: 2.75rem; /* niveles anidados aún más indentados */
+}
+
 /* Branding centrado y más limpio */
 .brand-link,
 .navbar-brand {

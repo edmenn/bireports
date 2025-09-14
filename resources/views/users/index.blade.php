@@ -209,11 +209,10 @@
                             </div>
                         </div>
                         <div class="col-md-3 mb-2">
-                            <label for="entraAssignRole" class="mb-1 small">Asignar rol (opcional)</label>
+                            <label for="entraAssignRole" class="mb-1 small">Asignar rol</label>
                             <select id="entraAssignRole" class="form-control">
-                                <option value="">(ninguno)</option>
                                 @foreach($roles as $roleName => $label)
-                                    <option value="{{ $roleName }}">{{ $label }}</option>
+                                    <option value="{{ $roleName }}" @selected($roleName === 'usuario')>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>

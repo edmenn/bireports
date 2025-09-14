@@ -152,6 +152,16 @@ class RoleController extends Controller
         if (in_array(mb_strtolower($role->name), ['admin'], true)) {
             return back()->with('error', 'El rol "admin" no puede eliminarse.');
         }
+        // Bloquear eliminación si tiene usuarios asignados
+        try {
+            $assigned = (int) (\App\Models\User::role($role->name)->count());
+            if ($assigned > 0) {
+                return back()->with('warning', "No se puede eliminar el perfil: tiene {$assigned} usuario(s) asignado(s).");
+            }
+        } catch (\Throwable $e) {
+            // Si no podemos verificar, por seguridad no eliminar
+            return back()->with('error', 'No se pudo verificar usuarios asignados; no se elimina por seguridad.');
+        }
         try {
             $role->delete();
             return redirect()->route('roles.index')->with('success', 'Perfil eliminado.');
