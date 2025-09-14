@@ -91,8 +91,10 @@ class AppServiceProvider extends ServiceProvider
             if (!empty($cfg->preloader_logo_path)) {
                 $preUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->preloader_logo_path);
                 config([
-                    'adminlte.preloader.img.path' => ltrim(parse_url($preUrl, PHP_URL_PATH), '/'),
-                    'adminlte.preloader.img.alt'  => $cfg->site_title ?: 'Cargando...',
+                    'adminlte.preloader.img.path'   => ltrim(parse_url($preUrl, PHP_URL_PATH), '/'),
+                    'adminlte.preloader.img.alt'    => $cfg->site_title ?: 'Cargando...',
+                    // Evitar efectos que puedan distorsionar la percepción del ícono
+                    'adminlte.preloader.img.effect' => null,
                 ]);
             }
             if (!empty($cfg->preloader_logo_width)) {
@@ -101,12 +103,40 @@ class AppServiceProvider extends ServiceProvider
             if (!empty($cfg->preloader_logo_height)) {
                 config(['adminlte.preloader.img.height' => (int) $cfg->preloader_logo_height]);
             }
+            // Opcional: tamaño del preloader desde theme_config (si está definido allí)
+            try {
+                $varsTheme = is_array($cfg->theme_config)
+                    ? $cfg->theme_config
+                    : (is_string($cfg->theme_config) ? (json_decode($cfg->theme_config, true) ?: []) : []);
+                if (!empty($varsTheme['preloader_logo_width'])) {
+                    config(['adminlte.preloader.img.width' => (int) $varsTheme['preloader_logo_width']]);
+                }
+                if (!empty($varsTheme['preloader_logo_height'])) {
+                    config(['adminlte.preloader.img.height' => (int) $varsTheme['preloader_logo_height']]);
+                }
+            } catch (\Throwable $e) {}
             if (!empty($cfg->login_logo_path)) {
                 $authLogoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->login_logo_path);
                 config([
                     'adminlte.auth_logo.enabled' => true,
                     'adminlte.auth_logo.img.path' => ltrim(parse_url($authLogoUrl, PHP_URL_PATH), '/'),
                 ]);
+                // Tamaño opcional del logo de login desde theme_config
+                $varsAuth = is_array($cfg->theme_config) ? $cfg->theme_config : (is_string($cfg->theme_config) ? (json_decode($cfg->theme_config, true) ?: []) : []);
+                if (!empty($varsAuth['login_logo_width'])) {
+                    config(['adminlte.auth_logo.img.width' => (int) $varsAuth['login_logo_width']]);
+                }
+                if (!empty($varsAuth['login_logo_height'])) {
+                    config(['adminlte.auth_logo.img.height' => (int) $varsAuth['login_logo_height']]);
+                }
+                // Tamaño opcional del logo de login desde theme_config
+                $varsAuth = is_array($cfg->theme_config) ? $cfg->theme_config : (is_string($cfg->theme_config) ? (json_decode($cfg->theme_config, true) ?: []) : []);
+                if (!empty($varsAuth['login_logo_width'])) {
+                    config(['adminlte.auth_logo.img.width' => (int) $varsAuth['login_logo_width']]);
+                }
+                if (!empty($varsAuth['login_logo_height'])) {
+                    config(['adminlte.auth_logo.img.height' => (int) $varsAuth['login_logo_height']]);
+                }
             }
 
             // Inyectar CSS de tema y footer mediante stacks (compatibles con AdminLTE)
@@ -139,6 +169,59 @@ class AppServiceProvider extends ServiceProvider
                 $text = 'Desarrollado por Edgar Menna - 2025';
                 $view->getFactory()->startSection('footer', view('partials.footer-fixed', ['text' => $text])->render());
                 $view->getFactory()->startPush('js', view('partials.footer-sync-js')->render());
+            });
+
+            // CSS específico para login: imagen de fondo responsive (contain) + tamaño de logo
+            View::composer([
+                'adminlte::auth.auth-page',
+                'adminlte::auth.login',
+                'adminlte::auth.register',
+                'adminlte::auth.passwords.email',
+                'adminlte::auth.passwords.reset',
+            ], function ($view) use ($cfg) {
+                $css = '';
+                try {
+                    if (!empty($cfg->login_bg_path)) {
+                        $bgUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->login_bg_path);
+                        $bgRel = ltrim(parse_url($bgUrl, PHP_URL_PATH), '/');
+                        $css .= ".login-page,.register-page,.auth-page{background-image:url('/{$bgRel}');background-position:center center;background-repeat:no-repeat;background-size:contain;background-attachment:fixed;}\n";
+                    }
+                } catch (\Throwable $e) {}
+                $varsAuth = is_array($cfg->theme_config) ? $cfg->theme_config : (is_string($cfg->theme_config) ? (json_decode($cfg->theme_config, true) ?: []) : []);
+                $w = isset($varsAuth['login_logo_width']) ? (int) $varsAuth['login_logo_width'] : 0;
+                $h = isset($varsAuth['login_logo_height']) ? (int) $varsAuth['login_logo_height'] : 0;
+                if ($w > 0 || $h > 0) {
+                    $s = '';
+                    if ($w > 0) { $s .= "max-width: {$w}px;"; }
+                    if ($h > 0) { $s .= "max-height: {$h}px;"; }
+                    $css .= ".auth-logo img,.login-logo img{ {$s} width:auto; height:auto; object-fit:contain; }\n";
+                }
+                if ($css !== '') {
+                    try { $view->getFactory()->startPush('css', "<style>{$css}</style>"); } catch (\Throwable $e) {}
+                }
+            });
+            // CSS específico para login: fondo responsive y tamaño del logo
+            View::composer(['adminlte::auth.auth-page','adminlte::auth.login','adminlte::auth.register','adminlte::auth.passwords.email','adminlte::auth.passwords.reset'], function ($view) use ($cfg) {
+                $css = '';
+                try {
+                    if (!empty($cfg->login_bg_path)) {
+                        $bgUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->login_bg_path);
+                        $bgRel = ltrim(parse_url($bgUrl, PHP_URL_PATH), '/');
+                        $css .= ".login-page,.register-page,.auth-page{background-image:url('/{$bgRel}');background-position:center center;background-repeat:no-repeat;background-size:contain;background-attachment:fixed;}\n";
+                    }
+                } catch (\Throwable $e) {}
+                $varsAuth = is_array($cfg->theme_config) ? $cfg->theme_config : (is_string($cfg->theme_config) ? (json_decode($cfg->theme_config, true) ?: []) : []);
+                $w = isset($varsAuth['login_logo_width']) ? (int) $varsAuth['login_logo_width'] : 0;
+                $h = isset($varsAuth['login_logo_height']) ? (int) $varsAuth['login_logo_height'] : 0;
+                if ($w > 0 || $h > 0) {
+                    $s = '';
+                    if ($w > 0) { $s .= "max-width: {$w}px;"; }
+                    if ($h > 0) { $s .= "max-height: {$h}px;"; }
+                    $css .= ".auth-logo img,.login-logo img{ {$s} width:auto; height:auto; object-fit:contain; }\n";
+                }
+                if ($css !== '') {
+                    try { $view->getFactory()->startPush('css', "<style>{$css}</style>"); } catch (\Throwable $e) {}
+                }
             });
 
             // Cache busting para assets estáticos servidos por Nginx con cache largo

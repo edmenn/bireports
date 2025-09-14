@@ -51,6 +51,24 @@
         /* Centrado y ancho cómodo */
         .login-box{ max-width: 380px; width: 100%; }
         .login-logo{ display:none; }
+        /* Tamaño del logo (controlado por config si existe) */
+@php($loginLogoW = (int) config('adminlte.auth_logo.img.width'))
+@php($loginLogoH = (int) config('adminlte.auth_logo.img.height'))
+        .brand-logo{
+@if($loginLogoW > 0)
+            max-width: {{ $loginLogoW }}px;
+@endif
+@if($loginLogoH > 0)
+            max-height: {{ $loginLogoH }}px;
+@else
+            max-height: 48px;
+@endif
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 @endpush
 
@@ -60,9 +78,9 @@
     <div class="login-card p-3 p-md-4">
         <div class="text-center mb-2">
             @if($appCfg && $appCfg->login_logo_path)
-                <img src="{{ Storage::disk('public')->url($appCfg->login_logo_path) }}" alt="Logo" style="max-height:48px" class="mb-1">
+                <img src="{{ Storage::disk('public')->url($appCfg->login_logo_path) }}" alt="Logo" class="mb-1 brand-logo">
             @elseif($appCfg && $appCfg->site_logo_path)
-                <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" style="max-height:48px" class="mb-1">
+                <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" class="mb-1 brand-logo">
             @endif
             <h1 class="h6 mb-0">{{ __('Log in') }}</h1>
         </div>

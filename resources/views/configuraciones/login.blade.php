@@ -78,6 +78,26 @@
     </div>
 </div>
 
+{{-- Tamaño del logo de login (opcional) --}}
+<div class="row mt-3">
+    <div class="col-md-7">
+        <x-adminlte-card title="Tamaño del logo" icon="fas fa-ruler-combined text-lightblue">
+            @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
+            <div class="row">
+                <div class="col-md-4">
+                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="Ancho (px)" value="{{ old('login_logo_width', $t['login_logo_width'] ?? '') }}"/>
+                </div>
+                <div class="col-md-4">
+                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="Alto (px)" value="{{ old('login_logo_height', $t['login_logo_height'] ?? '') }}"/>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <small class="text-muted">Deja en blanco para autoajustar proporcionalmente.</small>
+                </div>
+            </div>
+        </x-adminlte-card>
+    </div>
+</div>
+
 {{-- ==================================================================== --}}
 {{-- FIN: NUEVA ESTRUCTURA                                                --}}
 {{-- ==================================================================== --}}

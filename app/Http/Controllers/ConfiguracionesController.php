@@ -106,6 +106,13 @@ class ConfiguracionesController extends Controller
             'btn_hover' => $request->string('color_btn_hover')->toString(),
             'btn_active' => $request->string('color_btn_active')->toString(),
         ];
+        // Opcionales: tamaño del logo de login desde formulario de Tema/Login
+        if ($request->filled('login_logo_width')) {
+            $themeConfig['login_logo_width'] = (int) $request->input('login_logo_width');
+        }
+        if ($request->filled('login_logo_height')) {
+            $themeConfig['login_logo_height'] = (int) $request->input('login_logo_height');
+        }
         // Filtrar vacíos
         $themeConfig = array_filter($themeConfig, fn($v) => $v !== null && $v !== '');
         if (!empty($themeConfig)) {
