@@ -61,12 +61,47 @@ final class EntraUserImporter
                 // Resolver candidatos (incluye el email preferido también)
                 $candidates = array_values(array_unique(array_merge([$email], $aliases)));
 
+                $externalId = null;
+                // Si el cliente no envió aliases, consultamos Graph para evitar duplicados por alias
+                if (empty($aliases)) {
+                    try {
+                        $found = $this->graph->findUserByAnyAddress($email);
+                        if (is_array($found)) {
+                            $id   = trim((string)($found['id'] ?? ''));
+                            $disp = trim((string)($found['displayName'] ?? ''));
+                            if ($id !== '') { $externalId = $id; }
+                            if ($name === '' && $disp !== '') { $name = $disp; }
+
+                            // Construimos candidatos al estilo sync()
+                            $upn  = trim((string)($found['userPrincipalName'] ?? ''));
+                            $mail = trim((string)($found['mail'] ?? ''));
+                            if ($upn !== '')  { $candidates[] = strtolower($upn); }
+                            if ($mail !== '') { $candidates[] = strtolower($mail); }
+                            foreach ((array)($found['otherMails'] ?? []) as $alt) {
+                                $alt = trim((string)$alt); if ($alt !== '') { $candidates[] = strtolower($alt); }
+                            }
+                            foreach ((array)($found['proxyAddresses'] ?? []) as $p) {
+                                $p = trim((string)$p); if ($p === '') { continue; }
+                                $parts = explode(':', $p, 2);
+                                $addr  = isset($parts[1]) ? $parts[1] : $parts[0];
+                                if ($addr !== '') { $candidates[] = strtolower($addr); }
+                            }
+                            $candidates = array_values(array_unique($candidates));
+                        }
+                    } catch (Throwable $gx) {
+                        Log::warning('importSelected: no se pudo consultar Graph para aliases', [
+                            'email' => $email,
+                            'exception' => $gx->getMessage(),
+                        ]);
+                    }
+                }
+
                 // Upsert por alias si tenemos candidatos; si no, exacto.
                 if (!empty($candidates)) {
-                    $result = $this->upsertUserByCandidates($candidates, $email, $name, $assignRole, false, 'entra', null);
+                    $result = $this->upsertUserByCandidates($candidates, $email, $name, $assignRole, false, 'entra', $externalId);
                 } else {
-                    // En importSelected no reconsultamos Graph, no hay id externo: marcamos provider entra.
-                    $result = $this->upsertUserExact($email, $name, $assignRole, false, 'entra', null);
+                    // Sin candidatos, hacemos upsert exacto
+                    $result = $this->upsertUserExact($email, $name, $assignRole, false, 'entra', $externalId);
                 }
 
                 match ($result) {

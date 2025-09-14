@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Configuracion;
 use App\Models\User;
+use App\Services\MicrosoftGraphService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -137,23 +138,59 @@ class MicrosoftController extends Controller
                 return redirect()->route('login')->with('status', 'No se pudo determinar el email del usuario de Microsoft.');
             }
 
+            // Buscar usuario existente por CUALQUIER alias de Entra (UPN, mail, proxyAddresses)
             $user = User::query()->where('email', $email)->first();
             if (! $user) {
-                $user = User::create([
-                    'name' => $name ?: $email,
-                    'email' => $email,
-                    // Password aleatorio; no se usará al loguear por Microsoft
-                    'password' => Str::password(32),
-                ]);
-                // Marcar email como verificado para pasar el middleware 'verified'
-                $user->forceFill(['email_verified_at' => now()])->save();
+                $candidates = [$email];
+                $externalId = null;
                 try {
-                    if (method_exists($user, 'assignRole')) {
-                        $user->assignRole('usuario');
+                    /** @var MicrosoftGraphService $graph */
+                    $graph = app(MicrosoftGraphService::class);
+                    $found = $graph->findUserByAnyAddress($email);
+                    if (is_array($found)) {
+                        $externalId = (string)($found['id'] ?? '') ?: null;
+                        $upn  = (string)($found['userPrincipalName'] ?? '');
+                        $mail = (string)($found['mail'] ?? '');
+                        if ($upn !== '')  { $candidates[] = strtolower($upn); }
+                        if ($mail !== '') { $candidates[] = strtolower($mail); }
+                        foreach ((array)($found['otherMails'] ?? []) as $alt) {
+                            $alt = strtolower(trim((string)$alt)); if ($alt !== '') $candidates[] = $alt;
+                        }
+                        foreach ((array)($found['proxyAddresses'] ?? []) as $p) {
+                            $p = trim((string)$p); if ($p === '') continue;
+                            $parts = explode(':', $p, 2);
+                            $addr  = isset($parts[1]) ? strtolower($parts[1]) : strtolower($parts[0]);
+                            if ($addr !== '') $candidates[] = $addr;
+                        }
                     }
-                } catch (Throwable $e) {
-                    Log::warning('No se pudo asignar rol por defecto al usuario: ' . $e->getMessage());
+                } catch (Throwable $gx) {
+                    Log::warning('Microsoft callback: no se pudo consultar Graph para alias: ' . $gx->getMessage());
                 }
+
+                $candidates = array_values(array_unique(array_map(static fn($v) => strtolower(trim((string)$v)), $candidates)));
+                if (!empty($candidates)) {
+                    $user = User::query()->whereIn('email', $candidates)->first();
+                }
+
+                if (! $user) {
+                    // Crear nuevo si no existía ninguno por alias
+                    $user = User::create([
+                        'name' => $name ?: $email,
+                        'email' => $email,
+                        // Password aleatorio; no se usará al loguear por Microsoft
+                        'password' => Str::password(32),
+                    ]);
+                    $user->forceFill(['email_verified_at' => now()])->save();
+                    try { if (method_exists($user, 'assignRole')) { $user->assignRole('usuario'); } } catch (Throwable $e) {
+                        Log::warning('No se pudo asignar rol por defecto al usuario: ' . $e->getMessage());
+                    }
+                }
+
+                // Asegurar provider/id externo marcados en cuenta existente o nueva
+                $changed = false;
+                if (empty($user->auth_provider)) { $user->auth_provider = 'entra'; $changed = true; }
+                if (!empty($externalId) && empty($user->external_id)) { $user->external_id = $externalId; $changed = true; }
+                if ($changed) { $user->save(); }
             }
 
             Auth::login($user, true);
@@ -180,4 +217,3 @@ class MicrosoftController extends Controller
         return json_decode($json, true);
     }
 }
-

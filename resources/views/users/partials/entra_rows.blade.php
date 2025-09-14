@@ -35,12 +35,13 @@
                 foreach ($aliases as $a) { $cands[] = strtolower($a); }
                 $cands = array_values(array_unique($cands));
                 $aliasesAttr = e(implode(',', $cands));
+                $exists = \App\Models\User::query()->whereIn('email', $cands)->exists();
             @endphp
             <input type="checkbox" class="js-entra-row-chk"
                    data-email="{{ e($preferred) }}"
                    data-name="{{ e($display ?: $preferred) }}"
                    data-aliases="{{ $aliasesAttr }}"
-                   @disabled($preferred === '')
+                   @disabled($preferred === '' || $exists)
                    aria-label="Seleccionar {{ $display ?: $preferred }}">
         </td>
         <td>
@@ -56,7 +57,12 @@
         </td>
         <td>
             @if($preferred !== '')
-                <div class="cell-ellipsis"><code>{{ $preferred }}</code></div>
+                <div class="cell-ellipsis">
+                    <code>{{ $preferred }}</code>
+                    @if($exists)
+                        <small class="badge badge-success ml-1">Ya existe</small>
+                    @endif
+                </div>
             @else
                 <span class="text-muted">Sin email</span>
             @endif
