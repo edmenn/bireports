@@ -191,10 +191,23 @@ return [
             'text' => 'Buscar',
             'topnav_right' => true,
         ],
+        // Idioma (desktop: texto + icono)
         [
             'text'         => 'Idioma',
             'icon'         => 'fas fa-language',
             'topnav_right' => true,
+            'classes'      => 'd-none d-sm-inline',
+            'submenu'      => [
+                [ 'text' => 'Español',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
+                [ 'text' => 'Portugués', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],
+            ],
+        ],
+        // Idioma (mobile: solo icono para ahorrar espacio)
+        [
+            'text'         => '',
+            'icon'         => 'fas fa-language',
+            'topnav_right' => true,
+            'classes'      => 'd-inline d-sm-none',
             'submenu'      => [
                 [ 'text' => 'Español',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
                 [ 'text' => 'Portugués', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],

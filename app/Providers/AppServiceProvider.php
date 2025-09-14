@@ -140,6 +140,34 @@ class AppServiceProvider extends ServiceProvider
                 $view->getFactory()->startSection('footer', view('partials.footer-fixed', ['text' => $text])->render());
                 $view->getFactory()->startPush('js', view('partials.footer-sync-js')->render());
             });
+
+            // Cache busting para assets estáticos servidos por Nginx con cache largo
+            try {
+                $css = public_path('css/custom.css');
+                if (is_file($css)) {
+                    $v = (string) @filemtime($css) ?: (string) time();
+                    config([
+                        'adminlte.plugins.AppTheme.files' => [
+                            ['type' => 'css', 'asset' => true, 'location' => 'css/custom.css?v=' . $v],
+                        ],
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                // Ignorar fallos de lectura
+            }
+            try {
+                $js = public_path('js/menu-state.js');
+                if (is_file($js)) {
+                    $v = (string) @filemtime($js) ?: (string) time();
+                    config([
+                        'adminlte.plugins.AppMenuState.files' => [
+                            ['type' => 'js', 'asset' => true, 'location' => 'js/menu-state.js?v=' . $v],
+                        ],
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                // Ignorar fallos de lectura
+            }
         }
     }
 }
