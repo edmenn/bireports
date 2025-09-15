@@ -12,7 +12,7 @@ body {
 }
 
 /* Altura de navbar (ajusta si cambias paddings del header) */
-:root{ --app-navbar-h: 36px; } /* antes 56px */
+:root{ --app-navbar-h: 56px; }
 
 /* ===========================================================
    VARIABLES DE TEMA (usar data-bs-theme="light" | "dark")
@@ -95,66 +95,33 @@ body {
   /* Deja que tome el color del tema (en light lo definimos arriba). */
   background: var(--bs-navbar-bg);
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 5px;                 /* aire a la derecha SIN provocar overflow */
-  z-index: 1030;              /* sobre contenido y sidebar */
+  top: 0; left: 0; right: 0;
+  z-index: 1030; /* sobre contenido y sidebar */
   min-height: var(--app-navbar-h);
-  border-bottom: 0 !important;
-  box-shadow: none !important;
-  border-radius: 0 0 1rem 0;  /* tu esquina redondeada abajo-derecha */
-  overflow: hidden;           /* respeta el radio con el gradiente */
-  box-sizing: border-box;
+  border-radius: 0 0 1rem 0;
+  margin-right: 5px;
 }
 
-/* La <nav class="navbar"> interna: alto y alineación vertical */
-.main-header .navbar{
-  min-height: var(--app-navbar-h);
-  padding-top: .15rem;
-  padding-bottom: .15rem;
-  display: flex;
-  align-items: center;
-}
+/* Empujar el contenido por debajo del navbar fijo */
+.content-wrapper { padding-top: var(--app-navbar-h); }
 
 /* Colores de links desde variables del tema (sin !important) */
 .main-header .nav-link {
   color: var(--bs-navbar-color);
-  display: flex;
-  align-items: center;
-  padding-top: .15rem;
-  padding-bottom: .15rem;
-  line-height: 1.1;
 }
 .main-header .nav-link:hover,
 .main-header .nav-link:focus {
   color: var(--bs-navbar-hover-color);
 }
 
-/* Brand/Logo: limitar alto para que no “engorde” el header */
-.navbar .navbar-brand{
-  display: flex;
-  align-items: center;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-.navbar .navbar-brand .brand-image,
-.navbar .navbar-brand .brand-image-xl{
-  height: 22px;               /* ajusta si querés aún más fino */
-  width: auto;
-  object-fit: contain;
-}
-
 /* Input group del buscador en navbar (ligero efecto en light).
    En dark, hereda de tema y se ve correctamente. */
 .main-header .input-group {
   background: rgba(255, 255, 255, .08);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 .main-header .form-control {
   color: inherit;
-  height: calc(22px + .4rem); /* acompaña el alto del brand */
-  padding-top: .15rem;
-  padding-bottom: .15rem;
 }
 
 /* Botón de cambiar tema: solo icono, sin pastilla grande */
@@ -164,16 +131,16 @@ body {
   line-height: 1;
 }
 
-/* Empujar el contenido por debajo del navbar fijo */
-.content-wrapper { padding-top: var(--app-navbar-h); }
-
-/* Si usás layout-navbar-fixed, asegurá el padding correcto (no 0) */
-body.layout-navbar-fixed .content-wrapper { padding-top: var(--app-navbar-h) !important; }
+/* Quitar borde/sombra inferior del navbar */
+.main-header.navbar {
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
 
 /* Navbar: ajustes para pantallas chicas (iPhone y similares) */
 @media (max-width: 576px){
   /* Compactar paddings de los enlaces para ganar espacio */
-  .main-header .navbar-nav > .nav-item > .nav-link{ padding: .2rem .4rem; }
+  .main-header .navbar-nav > .nav-item > .nav-link{ padding: .25rem .45rem; }
   /* Ocultar utilitarios no esenciales en mobile: búsqueda y fullscreen */
   .main-header [data-widget="navbar-search"],
   .main-header [data-widget="fullscreen"]{ display: none !important; }
@@ -235,7 +202,6 @@ body.layout-navbar-fixed .content-wrapper { padding-top: var(--app-navbar-h) !im
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 4px;
 }
 .brand-link {
   padding-left: 0 !important;
@@ -345,6 +311,14 @@ body.layout-navbar-fixed .content-wrapper { padding-top: var(--app-navbar-h) !im
   color: var(--pbd-badge-secondary-fg);
 }
 
+/* ===========
+   TIMELINE
+   =========== */
+.timeline > div > .timeline-item {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(2, 6, 23, .06);
+}
+
 /* =========
    FOOTER
    ========= */
@@ -353,13 +327,12 @@ body.layout-navbar-fixed .content-wrapper { padding-top: var(--app-navbar-h) !im
   color: var(--pbd-footer-fg, var(--bs-body-color));
   border-top: 0 !important;
   box-shadow: none !important;
-  padding-top: .25rem !important;   /* reduce de py-3 (~1rem) a .25rem */
+  padding-top: .25rem !important;   /* reduce de py-3 (~1rem) a .5rem */
   padding-bottom: .25rem !important;
   border-radius: 0 1rem 0 0;
   overflow: hidden;                 /* respeta el radio */
   line-height: 1.1;
-  /* Si querés “aire” a la derecha como en el header y es fijo, usá right:5px */
-  /* margin-right: 5px;  <- si el footer NO es fixed, podés usar margen */
+  margin-right: 5px;
 }
 .main-footer .fw-semibold {
   color: var(--pbd-footer-muted, var(--bs-secondary-color));
@@ -459,8 +432,5 @@ body.layout-navbar-fixed .content-wrapper { padding-top: var(--app-navbar-h) !im
   bottom: 0;
   height: auto !important;
 }
-/* Cuando AdminLTE fija el navbar, AHORA sí empujamos contenido según altura */
-body.layout-navbar-fixed .content-wrapper { padding-top: var(--app-navbar-h) !important; }
-
-/* Preloader: evitar efecto ovalado en la imagen y respetar tamaño de config */
-.preloader img { border-radius: 0 !important; clip-path: none !important; object-fit: contain; }
+/* Cuando AdminLTE fija el navbar, evitamos doble offset en contenido */
+body.layout-navbar-fixed .content-wrapper { padding-top: 0 !important; }
