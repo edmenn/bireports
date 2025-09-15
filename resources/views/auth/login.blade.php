@@ -82,7 +82,7 @@
             @elseif($appCfg && $appCfg->site_logo_path)
                 <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" class="mb-1 brand-logo">
             @endif
-            <h1 class="h6 mb-0">{{ __('Log in') }}</h1>
+            <!-- <h1 class="h6 mb-0">{{ __('Log in') }}</h1> -->
         </div>
         @if (session('status'))
             <div class="alert alert-success small">{{ session('status') }}</div>
@@ -133,7 +133,7 @@
 
         @if($allowMicrosoft)
             @if($allowLocal)
-                <div class="text-center my-3 text-muted small">- o -</div>
+                <!--<div class="text-center my-3 text-muted small">- o -</div>-->
             @endif
             <a href="{{ route('auth.microsoft.redirect') }}" class="btn btn-outline-primary w-100 btn-microsoft">
                 <i class="fab fa-microsoft me-1"></i> {{ __('Continue with Microsoft') }}
