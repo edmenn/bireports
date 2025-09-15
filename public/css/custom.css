@@ -398,6 +398,22 @@ body {
   .btn { flex: 1 1 auto; }
 }
 
+/* =============================================
+   Botón de favorito (estrella) – compacto y claro
+   ============================================= */
+.btn.btn-fav{ 
+  min-width: auto !important; /* no heredar min-width global */
+  width: auto; padding: .25rem .5rem; 
+  border-color: #cbd5e1; color: #475569; background: transparent;
+}
+.btn.btn-fav:hover{ background-color: #f1f5f9; color: #1e293b; }
+.btn.btn-fav.is-on{ 
+  background-color: var(--bs-warning, #f59e0b);
+  border-color: var(--bs-warning, #f59e0b);
+  color: #111827;
+}
+.btn.btn-fav.is-on:hover{ filter: brightness(0.95); }
+
 /* =========================================================
    COMPAT: MAPEO MR/ML (BS4) → MÁRGENES LÓGICOS EN BS5
    ========================================================= */
@@ -434,3 +450,6 @@ body {
 }
 /* Cuando AdminLTE fija el navbar, evitamos doble offset en contenido */
 body.layout-navbar-fixed .content-wrapper { padding-top: 0 !important; }
+
+/* Preloader: evitar efecto ovalado en la imagen y respetar tamaño de config */
+.preloader img { border-radius: 0 !important; clip-path: none !important; object-fit: contain; }

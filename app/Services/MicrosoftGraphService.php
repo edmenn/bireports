@@ -143,7 +143,8 @@ class MicrosoftGraphService
 
         $params = [
             '$top'    => '1',
-            '$select' => 'id,displayName,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled',
+            // Incluir givenName y surname para poder construir el nombre compuesto
+            '$select' => 'id,displayName,givenName,surname,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled',
             '$filter' => $filter,
         ];
 
@@ -166,5 +167,39 @@ class MicrosoftGraphService
         $data  = json_decode((string) $resp->getBody(), true) ?: [];
         $items = (array) ($data['value'] ?? []);
         return $items[0] ?? null;
+    }
+
+    /**
+     * Obtiene un usuario por Object ID (Entra) con los campos necesarios.
+     * Devuelve null si no se encuentra o hay error.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function getUserById(string $id): ?array
+    {
+        $id = trim($id);
+        if ($id === '') { return null; }
+
+        $token = $this->getAccessToken();
+
+        $select = 'id,displayName,givenName,surname,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled';
+        $url = 'https://graph.microsoft.com/v1.0/users/' . rawurlencode($id) . '?$select=' . rawurlencode($select);
+
+        $resp = $this->http->get($url, [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
+            ],
+            'http_errors' => false,
+            'timeout'     => 30,
+        ]);
+
+        $status = $resp->getStatusCode();
+        if ($status < 200 || $status >= 300) {
+            return null;
+        }
+
+        $data = json_decode((string) $resp->getBody(), true) ?: [];
+        return $data ?: null;
     }
 }

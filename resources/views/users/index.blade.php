@@ -14,6 +14,14 @@
                     data-bs-toggle="modal" data-bs-target="#modalSyncEntra">
                 <i class="fab fa-microsoft"></i> Importar Entra
             </button>
+            <form action="{{ route('users.sync-entra.refresh-existing') }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-outline-success"
+                        title="Actualiza nombre/ID de usuarios Entra ya importados"
+                        onclick="return confirm('¿Actualizar datos (nombre) de usuarios Entra ya importados?');">
+                    <i class="fas fa-sync-alt"></i> Actualizar Entra
+                </button>
+            </form>
         </div>
     </div>
 @stop
@@ -27,6 +35,7 @@
         $roles = $roles ?? \Spatie\Permission\Models\Role::query()->orderBy('name')->pluck('name','name');
         $selectedRole = request('role');
         $q = $q ?? request('q');
+        $selectedStatus = request('status');
     @endphp
 
     <x-adminlte-card title="Listado de Usuarios" icon="fas fa-users text-lightblue"
@@ -48,6 +57,13 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="form-group col-md-3 mb-2">
+                        <select name="status" id="filter_status" class="form-control">
+                            <option value="">Todos los estados</option>
+                            <option value="activo" @selected(in_array($selectedStatus, ['activo','active','0','false'], true))>Activos</option>
+                            <option value="bloqueado" @selected(in_array($selectedStatus, ['bloqueado','blocked','1','true'], true))>Bloqueados</option>
+                        </select>
+                    </div>
                     <div class="form-group col-md-3 mb-2 d-flex align-items-stretch" id="usersFilterBtns">
                         <button class="btn btn-primary mr-2 flex-fill" type="submit">
                             <i class="fas fa-search"></i> Buscar
@@ -61,9 +77,17 @@
 
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <small class="text-muted">Seleccionados: <span id="selCountUsers">0</span></small>
-                <button id="btnBulkDelete" type="button" class="btn btn-sm btn-danger" disabled>
-                    <i class="fas fa-trash-alt"></i> Eliminar seleccionados
-                </button>
+                <div class="btn-group" role="group" aria-label="Acciones masivas">
+                    <button id="btnBulkBlock" type="button" class="btn btn-sm btn-outline-warning" disabled>
+                        <i class="fas fa-user-lock"></i> Bloquear seleccionados
+                    </button>
+                    <button id="btnBulkUnblock" type="button" class="btn btn-sm btn-outline-success" disabled>
+                        <i class="fas fa-user-check"></i> Desbloquear seleccionados
+                    </button>
+                    <button id="btnBulkDelete" type="button" class="btn btn-sm btn-danger" disabled>
+                        <i class="fas fa-trash-alt"></i> Eliminar seleccionados
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -77,6 +101,8 @@
                         </th>
                         <th style="min-width:220px;">Nombre</th>
                         <th style="min-width:220px;">Email</th>
+                        <th class="text-center status-col">Estado</th>
+                        
                         <th class="text-center role-col">Rol</th>
                         <th class="text-center actions-col">Acciones</th>
                     </tr>
@@ -107,6 +133,14 @@
                             <td class="py-2">
                                 <span class="cell-ellipsis" title="{{ $u->email }}">{{ $u->email }}</span>
                             </td>
+                            <td class="py-2 text-center status-col">
+                                @if((bool)($u->is_blocked ?? false))
+                                    <span class="badge u-badge-fixed badge-danger">Bloqueado</span>
+                                @else
+                                    <span class="badge u-badge-fixed badge-success">Activo</span>
+                                @endif
+                            </td>
+                            
                             <td class="py-2 text-center role-col">
                                 @if($rolesList->isEmpty())
                                     <span class="text-muted">-</span>
@@ -139,6 +173,16 @@
                                         <i class="fas fa-edit"></i> Editar
                                     </a>
                                     @php($isSelf = (int)($u->id) === (int)auth()->id())
+                                    @if(!$isSelf)
+                                        <form action="{{ route('users.toggle-block', ['usuario' => $u->id]) }}" method="POST" class="m-0 mr-1 js-confirm-delete-form"
+                                              data-confirm-message="{{ (bool)($u->is_blocked ?? false) ? '¿Desbloquear usuario '.$u->name.'?' : '¿Bloquear usuario '.$u->name.'?' }}">
+                                            @csrf
+                                            <button class="btn btn-sm {{ (bool)($u->is_blocked ?? false) ? 'btn-success' : 'btn-warning' }}">
+                                                <i class="fas {{ (bool)($u->is_blocked ?? false) ? 'fa-unlock' : 'fa-user-lock' }}"></i>
+                                                {{ (bool)($u->is_blocked ?? false) ? 'Desbloquear' : 'Bloquear' }}
+                                            </button>
+                                        </form>
+                                    @endif
                                     @if(!$isSelf)
                                         <form action="{{ route('users.destroy', ['usuario' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form"
                                               data-confirm-message="¿Eliminar usuario {{ $u->name }}?">
@@ -286,6 +330,8 @@
 .cell-ellipsis{display:inline-block;max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* Rol: columna fija + badge tamaño uniforme */
 .role-col{ width:140px; text-align:center; }
+.status-col{ width:140px; text-align:center !important; }
+ 
 /* Base (otros roles) */
 .badge-role{ background:#eef2ff;color:#4338ca;border:1px solid rgba(67,56,202,.15);font-weight:600; }
 /* Colores solicitados */
@@ -358,6 +404,8 @@
     // ====== Selección múltiple + eliminación masiva ======
     const chkAll = document.getElementById('chkAllUsers');
     const btnBulk = document.getElementById('btnBulkDelete');
+    const btnBulkBlock = document.getElementById('btnBulkBlock');
+    const btnBulkUnblock = document.getElementById('btnBulkUnblock');
     const selCount = document.getElementById('selCountUsers');
 
     function getRowCheckboxes(){
@@ -367,7 +415,10 @@
         const chks = getRowCheckboxes();
         const count = chks.filter(c => c.checked && !c.closest('tr').classList.contains('d-none')).length;
         selCount.textContent = count;
-        btnBulk.disabled = (count === 0);
+        const disabled = (count === 0);
+        btnBulk.disabled = disabled;
+        if (btnBulkBlock) btnBulkBlock.disabled = disabled;
+        if (btnBulkUnblock) btnBulkUnblock.disabled = disabled;
         const visibles = chks.filter(c => !c.closest('tr').classList.contains('d-none'));
         chkAll.checked = (visibles.length > 0 && visibles.every(c => c.checked));
     }
@@ -404,6 +455,35 @@
                 document.body.appendChild(form);
                 form.submit();
             });
+        });
+    }
+
+    function submitBulkAction(url, message){
+        const ids = getRowCheckboxes()
+            .filter(c => c.checked && !c.closest('tr').classList.contains('d-none'))
+            .map(c => c.value);
+        if (ids.length === 0) return;
+        openConfirmDialog(message.replace('%N%', ids.length), function(){
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            const t = document.createElement('input'); t.type='hidden'; t.name='_token'; t.value=@json(csrf_token()); form.appendChild(t);
+            ids.forEach((id) => {
+                const f = document.createElement('input'); f.type='hidden'; f.name='ids[]'; f.value=id; form.appendChild(f);
+            });
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    if (btnBulkBlock){
+        btnBulkBlock.addEventListener('click', function(){
+            submitBulkAction(@json(route('users.bulk-block')), '¿Bloquear %N% usuario(s) seleccionados?');
+        });
+    }
+    if (btnBulkUnblock){
+        btnBulkUnblock.addEventListener('click', function(){
+            submitBulkAction(@json(route('users.bulk-unblock')), '¿Desbloquear %N% usuario(s) seleccionados?');
         });
     }
 })();

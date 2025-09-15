@@ -108,6 +108,20 @@ Route::middleware(['auth'])->group(function () {
         ])
         ->except(['show']);
 
+    // Toggle bloqueo individual
+    Route::post('/usuarios/{usuario}/toggle-block', [UsersController::class, 'toggleBlock'])
+        ->middleware('role:admin')
+        ->where(['usuario' => '[0-9]+'])
+        ->name('users.toggle-block');
+
+    // Bloqueo/Desbloqueo masivo de usuarios (solo admin)
+    Route::post('/usuarios/bulk-block', [UsersController::class, 'bulkBlock'])
+        ->middleware('role:admin')
+        ->name('users.bulk-block');
+    Route::post('/usuarios/bulk-unblock', [UsersController::class, 'bulkUnblock'])
+        ->middleware('role:admin')
+        ->name('users.bulk-unblock');
+
     // ABM Perfiles/Roles (solo admin)
     Route::resource('perfiles', RoleController::class)
         ->middleware('role:admin')
@@ -137,6 +151,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/usuarios/sync-entra/selected', [UsersSyncController::class, 'importSelected'])
         ->middleware('role:admin')
         ->name('users.sync-entra.selected');
+    // Actualizar usuarios existentes desde Entra (no crea nuevos)
+    Route::post('/usuarios/sync-entra/refresh-existing', [UsersSyncController::class, 'refreshExisting'])
+        ->middleware('role:admin')
+        ->name('users.sync-entra.refresh-existing');
 
     // ABM Grupos (solo admin)
     Route::resource('grupos', GruposController::class)
@@ -342,6 +360,3 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
-
-
-

@@ -41,6 +41,7 @@
                         name="name"
                         class="form-control @error('name') is-invalid @enderror"
                         value="{{ old('name', $user->name) }}"
+                        @if($isEntra) readonly @endif
                         required
                     >
                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -55,10 +56,13 @@
                         name="email"
                         class="form-control @error('email') is-invalid @enderror"
                         value="{{ old('email', $user->email) }}"
+                        @if($isEntra) readonly @endif
                         required
                     >
                     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+
+                
 
                 {{-- Contraseña (oculta si es Entra) --}}
                 @if(!$isEntra)

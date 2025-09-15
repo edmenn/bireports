@@ -46,16 +46,26 @@ class UserPortalController extends Controller
         ]);
     }
 
-    public function toggleFavorite(Report $report): RedirectResponse
+    public function toggleFavorite(Request $request, Report $report)
     {
         $user = Auth::user();
         $exists = $user->favoriteReports()->where('reports.id', $report->id)->exists();
+        $favorited = false;
         if ($exists) {
             $user->favoriteReports()->detach($report->id);
-            return back()->with('success', 'Quitado de favoritos');
+            $favorited = false;
+        } else {
+            $user->favoriteReports()->attach($report->id);
+            $favorited = true;
         }
-        $user->favoriteReports()->attach($report->id);
-        return back()->with('success', 'Agregado a favoritos');
+
+        // Si es una petición AJAX (fetch), devolver JSON 200 para evitar redirecciones
+        if ($request->ajax() || $request->wantsJson() || strtolower((string)$request->header('X-Requested-With')) === 'xmlhttprequest') {
+            return response()->json(['favorited' => $favorited]);
+        }
+
+        // Fallback clásico con redirect back
+        return back()->with('success', $favorited ? 'Agregado a favoritos' : 'Quitado de favoritos');
     }
 
     public function favorites(): View
@@ -117,4 +127,3 @@ class UserPortalController extends Controller
         return view('portal.mis_reportes', compact('reports','favIds'));
     }
 }
-

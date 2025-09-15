@@ -3,7 +3,13 @@
 @endphp
 @forelse($items as $u)
     @php
-        $display = trim((string)($u['displayName'] ?? ''));
+        // Preferir givenName + surname; si no, caer a displayName
+        $given   = trim((string)($u['givenName'] ?? ''));
+        $surname = trim((string)($u['surname'] ?? ''));
+        $display = trim($given . ' ' . $surname);
+        if ($display === '') {
+            $display = trim((string)($u['displayName'] ?? ''));
+        }
         $mail    = trim((string)($u['mail'] ?? ''));
         $upn     = trim((string)($u['userPrincipalName'] ?? ''));
         $active  = (bool)($u['accountEnabled'] ?? false);

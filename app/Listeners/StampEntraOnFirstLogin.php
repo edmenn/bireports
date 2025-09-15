@@ -48,7 +48,13 @@ final class StampEntraOnFirstLogin
             }
 
             $objectId   = (string)($entry['id'] ?? '');
-            $display    = (string)($entry['displayName'] ?? '');
+            // Preferir givenName + surname; fallback a displayName
+            $given      = trim((string)($entry['givenName'] ?? ''));
+            $surname    = trim((string)($entry['surname'] ?? ''));
+            $display    = trim($given . ' ' . $surname);
+            if ($display === '') {
+                $display = (string)($entry['displayName'] ?? '');
+            }
             // Importante: NO cambiamos el email aquí para no romper el login.
             // Solo marcamos proveedor y guardamos external_id si no lo tenía.
 

@@ -190,4 +190,20 @@ final class UsersSyncController extends Controller
             return redirect()->route('users.index')->with('error', 'Error al importar seleccionados: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Actualiza datos de usuarios ya importados desde Entra (solo existentes).
+     * POST /usuarios/sync-entra/refresh-existing
+     */
+    public function refreshExisting(Request $request): RedirectResponse
+    {
+        try {
+            $stats = $this->importer->refreshExisting();
+            $msg = "Actualización desde Entra — actualizados: {$stats['updated']}, sin cambios: {$stats['skipped']}, errores: {$stats['errors']}, total evaluados: {$stats['total']}";
+            return redirect()->route('users.index')->with('success', $msg);
+        } catch (Throwable $e) {
+            Log::error('Refresh Existing Entra error', ['exception' => $e]);
+            return redirect()->route('users.index')->with('error', 'Error al actualizar usuarios: ' . $e->getMessage());
+        }
+    }
 }

@@ -113,6 +113,8 @@ class MicrosoftController extends Controller
             $oid = (string) ($claims['oid'] ?? '');
             $email = (string) ($claims['preferred_username'] ?? ($claims['email'] ?? ''));
             $name = (string) ($claims['name'] ?? '');
+            $givenFromToken = (string) ($claims['given_name'] ?? '');
+            $surnameFromToken = (string) ($claims['family_name'] ?? '');
 
             // Si el email no viene en el id_token, intentamos userinfo (requiere access_token)
             if (! $email && $accessToken) {
@@ -143,12 +145,20 @@ class MicrosoftController extends Controller
             if (! $user) {
                 $candidates = [$email];
                 $externalId = null;
+                $namePreferred = '';
                 try {
                     /** @var MicrosoftGraphService $graph */
                     $graph = app(MicrosoftGraphService::class);
                     $found = $graph->findUserByAnyAddress($email);
                     if (is_array($found)) {
                         $externalId = (string)($found['id'] ?? '') ?: null;
+                        // Preferir givenName + surname; fallback a displayName
+                        $gn = trim((string)($found['givenName'] ?? ''));
+                        $sn = trim((string)($found['surname'] ?? ''));
+                        $namePreferred = trim($gn . ' ' . $sn);
+                        if ($namePreferred === '') {
+                            $namePreferred = trim((string)($found['displayName'] ?? ''));
+                        }
                         $upn  = (string)($found['userPrincipalName'] ?? '');
                         $mail = (string)($found['mail'] ?? '');
                         if ($upn !== '')  { $candidates[] = strtolower($upn); }
@@ -181,6 +191,17 @@ class MicrosoftController extends Controller
                         'password' => Str::password(32),
                     ]);
                     $user->forceFill(['email_verified_at' => now()])->save();
+                    // Ajustar nombre al formato solicitado (givenName + surname) si está disponible
+                    if (empty($namePreferred)) {
+                        $namePreferred = trim(trim($givenFromToken ?? '') . ' ' . trim($surnameFromToken ?? ''));
+                    }
+                    if (empty($namePreferred)) {
+                        $namePreferred = trim($name ?? '');
+                    }
+                    if (!empty($namePreferred) && $user->name !== $namePreferred) {
+                        $user->name = $namePreferred;
+                        $user->save();
+                    }
                     try { if (method_exists($user, 'assignRole')) { $user->assignRole('usuario'); } } catch (Throwable $e) {
                         Log::warning('No se pudo asignar rol por defecto al usuario: ' . $e->getMessage());
                     }
@@ -191,6 +212,42 @@ class MicrosoftController extends Controller
                 if (empty($user->auth_provider)) { $user->auth_provider = 'entra'; $changed = true; }
                 if (!empty($externalId) && empty($user->external_id)) { $user->external_id = $externalId; $changed = true; }
                 if ($changed) { $user->save(); }
+            }
+
+            // Si el usuario está bloqueado localmente, impedir login
+            if ((bool)($user->is_blocked ?? false)) {
+                return redirect()->route('login')->with('status', 'Tu cuenta está bloqueada. Contacta al administrador.');
+            }
+
+            // Intentar sincronizar nombre y estado desde Entra antes de loguear
+            try {
+                /** @var MicrosoftGraphService $graph */
+                $graph = app(MicrosoftGraphService::class);
+                $entry = null;
+                if (!empty($user->external_id)) {
+                    $entry = $graph->getUserById((string)$user->external_id);
+                }
+                if (!$entry) {
+                    $entry = $graph->findUserByAnyAddress($email);
+                }
+                if (is_array($entry)) {
+                    $accEnabled = (bool)($entry['accountEnabled'] ?? false);
+                    if (!$accEnabled) {
+                        // Bloquear e impedir login
+                        $user->forceFill(['is_blocked' => true])->save();
+                        return redirect()->route('login')->with('status', 'Tu cuenta de Microsoft Entra está deshabilitada.');
+                    }
+                    // Sincronizar nombre si difiere (givenName + surname -> displayName)
+                    $gn = trim((string)($entry['givenName'] ?? ''));
+                    $sn = trim((string)($entry['surname'] ?? ''));
+                    $preferred = trim($gn . ' ' . $sn);
+                    if ($preferred === '') { $preferred = trim((string)($entry['displayName'] ?? '')); }
+                    if ($preferred !== '' && $preferred !== (string)$user->name) {
+                        $user->forceFill(['name' => $preferred])->save();
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Microsoft login: no se pudo sincronizar nombre/estado', ['error' => $e->getMessage()]);
             }
 
             Auth::login($user, true);

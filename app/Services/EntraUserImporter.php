@@ -68,7 +68,13 @@ final class EntraUserImporter
                         $found = $this->graph->findUserByAnyAddress($email);
                         if (is_array($found)) {
                             $id   = trim((string)($found['id'] ?? ''));
-                            $disp = trim((string)($found['displayName'] ?? ''));
+                            // Construir nombre preferido con givenName + surname; fallback a displayName
+                            $gn   = trim((string)($found['givenName'] ?? ''));
+                            $sn   = trim((string)($found['surname'] ?? ''));
+                            $disp = trim($gn . ' ' . $sn);
+                            if ($disp === '') {
+                                $disp = trim((string)($found['displayName'] ?? ''));
+                            }
                             if ($id !== '') { $externalId = $id; }
                             if ($name === '' && $disp !== '') { $name = $disp; }
 
@@ -122,6 +128,84 @@ final class EntraUserImporter
     }
 
     /**
+     * Refresca datos (nombre, external_id si falta) de usuarios ya importados desde Entra.
+     * - No crea usuarios nuevos.
+     * - No cambia email.
+     *
+     * @return array{updated:int, skipped:int, errors:int, total:int}
+     */
+    public function refreshExisting(): array
+    {
+        $updated = 0; $skipped = 0; $errors = 0; $total = 0;
+
+        // Procesar en chunks para no cargar toda la tabla en memoria
+        User::query()
+            ->where('auth_provider', 'entra')
+            ->orderBy('id')
+            ->chunk(200, function ($users) use (&$updated, &$skipped, &$errors, &$total) {
+                foreach ($users as $user) {
+                    /** @var User $user */
+                    $total++;
+                    try {
+                        $entry = null;
+                        $eid = trim((string)($user->external_id ?? ''));
+                        if ($eid !== '') {
+                            $entry = $this->graph->getUserById($eid);
+                        }
+                        if (!$entry) {
+                            $entry = $this->graph->findUserByAnyAddress($user->email);
+                        }
+                        if (!is_array($entry)) {
+                            $skipped++;
+                            continue;
+                        }
+
+                        $given   = trim((string)($entry['givenName'] ?? ''));
+                        $surname = trim((string)($entry['surname'] ?? ''));
+                        $nameNew = trim($given . ' ' . $surname);
+                        if ($nameNew === '') {
+                            $nameNew = trim((string)($entry['displayName'] ?? ''));
+                        }
+                        $idNew   = trim((string)($entry['id'] ?? ''));
+                        $accEnabled = (bool)($entry['accountEnabled'] ?? false);
+
+                        $changed = false;
+                        if ($nameNew !== '' && $nameNew !== (string)$user->name) {
+                            $user->name = $nameNew;
+                            $changed = true;
+                        }
+                        if ($idNew !== '' && empty($user->external_id)) {
+                            $user->external_id = $idNew;
+                            $changed = true;
+                        }
+                        // Bloquear solo si Entra está deshabilitado. No desbloquear si está habilitado.
+                        $localBlocked = (bool)($user->is_blocked ?? false);
+                        if (!$accEnabled && !$localBlocked) {
+                            $user->is_blocked = true;
+                            $changed = true;
+                        }
+
+                        if ($changed) {
+                            $user->save();
+                            $updated++;
+                        } else {
+                            $skipped++;
+                        }
+                    } catch (Throwable $e) {
+                        $errors++;
+                        Log::warning('refreshExisting: error actualizando usuario', [
+                            'user_id' => $user->id,
+                            'email'   => $user->email,
+                            'error'   => $e->getMessage(),
+                        ]);
+                    }
+                }
+            });
+
+        return compact('updated','skipped','errors','total');
+    }
+
+    /**
      * Sincroniza usuarios desde Entra ID (Microsoft Graph) hacia la tabla users.
      *
      * @param string|null $query Prefiltro por startsWith(displayName|userPrincipalName).
@@ -155,7 +239,13 @@ final class EntraUserImporter
             foreach ($items as $it) {
                 try {
                     $id    = (string)($it['id'] ?? ''); // Object ID de Entra
-                    $name  = trim((string)($it['displayName'] ?? ''));
+                    // Preferir nombre compuesto por givenName + surname; fallback a displayName
+                    $given   = trim((string)($it['givenName'] ?? ''));
+                    $surname = trim((string)($it['surname'] ?? ''));
+                    $name    = trim($given . ' ' . $surname);
+                    if ($name === '') {
+                        $name = trim((string)($it['displayName'] ?? ''));
+                    }
                     $mail  = trim((string)($it['mail'] ?? ''));
                     $upn   = trim((string)($it['userPrincipalName'] ?? ''));
 

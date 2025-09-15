@@ -19,6 +19,7 @@ class UsersController extends Controller
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
+        $status = strtolower((string) $request->query('status', ''));
         $users = User::query()
             ->when($q !== '', function ($qr) use ($q) {
                 $needle = mb_strtolower($q);
@@ -26,6 +27,13 @@ class UsersController extends Controller
                     $w->whereRaw('LOWER(name) LIKE ?', ["%{$needle}%"]) 
                       ->orWhereRaw('LOWER(email) LIKE ?', ["%{$needle}%"]);
                 });
+            })
+            ->when($status !== '', function ($qr) use ($status) {
+                if (in_array($status, ['bloqueado','blocked','1','true'], true)) {
+                    $qr->where('is_blocked', true);
+                } elseif (in_array($status, ['activo','active','0','false'], true)) {
+                    $qr->where('is_blocked', false);
+                }
             })
             ->orderBy('name')
             ->paginate(20)
@@ -74,12 +82,25 @@ class UsersController extends Controller
             'email'    => ['required','email','max:255','unique:users,email,'.$user->id],
             'password' => ['nullable','string','min:8','max:255'],
             'role'     => ['required','in:admin,editor,usuario'],
+            'is_blocked' => ['nullable','boolean'],
         ]);
 
-        $user->name  = $data['name'];
-        $user->email = $data['email'];
-        if (!empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
+        // Permitir bloquear/desbloquear siempre (incluye Entra)
+        $requestedBlock = $request->boolean('is_blocked');
+        // No permitir bloquearse a sí mismo
+        if ($requestedBlock && (int)($user->id) === (int)(Auth::id() ?? 0)) {
+            return redirect()->route('users.edit', ['usuario' => $user->id])
+                ->with('warning', 'No puedes bloquear tu propia cuenta.');
+        }
+        $user->is_blocked = $requestedBlock;
+
+        // Si es Entra, solo permitimos editar el rol/estado desde esta pantalla
+        if (($user->auth_provider ?? null) !== 'entra') {
+            $user->name  = $data['name'];
+            $user->email = $data['email'];
+            if (!empty($data['password'])) {
+                $user->password = Hash::make($data['password']);
+            }
         }
         $user->save();
         $user->syncRoles([$data['role']]);
@@ -235,5 +256,95 @@ class UsersController extends Controller
         }
 
         return $resp;
+    }
+
+    /**
+     * Bloqueo masivo de usuarios (excepto el propio y evitando bloquear al último admin).
+     */
+    public function bulkBlock(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids'   => ['required','array','min:1'],
+            'ids.*' => ['integer','distinct','exists:users,id'],
+        ]);
+
+        $selfId = (int) (Auth::id() ?? 0);
+        $ids = collect($data['ids'])->map(fn($v)=>(int)$v)->unique()->reject(fn($id)=>$id === $selfId)->values();
+        if ($ids->isEmpty()) {
+            return redirect()->route('users.index')->with('warning', 'No hay usuarios para bloquear.');
+        }
+
+        $blocked=0; $skippedLastAdmins=0; $errors=0;
+        $users = User::whereIn('id', $ids)->get();
+        try { $adminsRemaining = User::role('admin')->whereNotIn('id', [$selfId])->count(); } catch (\Throwable) { $adminsRemaining = null; }
+        foreach ($users as $u) {
+            try {
+                if ($adminsRemaining !== null && method_exists($u,'hasRole') && $u->hasRole('admin')) {
+                    if ($adminsRemaining <= 1) { $skippedLastAdmins++; continue; }
+                    $adminsRemaining--;
+                }
+                if (! (bool)($u->is_blocked ?? false)) { $u->forceFill(['is_blocked'=>true])->save(); $blocked++; }
+            } catch (\Throwable) { $errors++; }
+        }
+
+        $resp = redirect()->route('users.index');
+        if ($blocked>0) $resp->with('success', "Se bloquearon {$blocked} usuario(s).");
+        if ($skippedLastAdmins>0) $resp->with('warning', "Se evitó bloquear {$skippedLastAdmins} administrador(es) para no dejar sin admin.");
+        if ($errors>0) $resp->with('warning', "Hubo {$errors} error(es) al bloquear.");
+        return $resp;
+    }
+
+    /**
+     * Desbloqueo masivo de usuarios (excepto el propio).
+     */
+    public function bulkUnblock(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids'   => ['required','array','min:1'],
+            'ids.*' => ['integer','distinct','exists:users,id'],
+        ]);
+
+        $selfId = (int) (Auth::id() ?? 0);
+        $ids = collect($data['ids'])->map(fn($v)=>(int)$v)->unique()->reject(fn($id)=>$id === $selfId)->values();
+        if ($ids->isEmpty()) {
+            return redirect()->route('users.index')->with('warning', 'No hay usuarios para desbloquear.');
+        }
+
+        $unblocked=0; $errors=0;
+        $users = User::whereIn('id', $ids)->get();
+        foreach ($users as $u) {
+            try {
+                if ((bool)($u->is_blocked ?? false)) { $u->forceFill(['is_blocked'=>false])->save(); $unblocked++; }
+            } catch (\Throwable) { $errors++; }
+        }
+
+        $resp = redirect()->route('users.index');
+        if ($unblocked>0) $resp->with('success', "Se desbloquearon {$unblocked} usuario(s).");
+        if ($errors>0) $resp->with('warning', "Hubo {$errors} error(es) al desbloquear.");
+        return $resp;
+    }
+
+    /**
+     * Bloquea/desbloquea un usuario individual (toggle).
+     */
+    public function toggleBlock(Request $request, User $usuario): RedirectResponse
+    {
+        $user = $usuario;
+        $selfId = (int) (Auth::id() ?? 0);
+        if ($user->id === $selfId) {
+            return back()->with('warning', 'No puedes bloquear tu propia cuenta.');
+        }
+
+        $willBlock = ! (bool) ($user->is_blocked ?? false);
+        // Si se va a bloquear y es el último admin, impedir
+        if ($willBlock && method_exists($user, 'hasRole') && $user->hasRole('admin')) {
+            try { $admins = User::role('admin')->count(); } catch (\Throwable) { $admins = null; }
+            if ($admins !== null && $admins <= 1) {
+                return back()->with('warning', 'No se puede bloquear este usuario: es el único administrador.');
+            }
+        }
+
+        $user->forceFill(['is_blocked' => $willBlock])->save();
+        return back()->with('success', $willBlock ? 'Usuario bloqueado.' : 'Usuario desbloqueado.');
     }
 }

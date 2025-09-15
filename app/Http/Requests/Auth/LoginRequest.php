@@ -41,6 +41,21 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Bloqueo: impedir autenticación si el usuario está bloqueado localmente
+        try {
+            $email = (string) $this->input('email');
+            if ($email !== '') {
+                $u = \App\Models\User::query()->where('email', $email)->first();
+                if ($u && (bool)($u->is_blocked ?? false)) {
+                    throw ValidationException::withMessages([
+                        'email' => 'Tu cuenta está bloqueada. Contacta al administrador.',
+                    ]);
+                }
+            }
+        } catch (\Throwable) {
+            // Si algo falla, continuar con autenticación normal
+        }
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
