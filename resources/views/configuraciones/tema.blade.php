@@ -88,7 +88,7 @@
                                      </x-adminlte-select>
                                     <input type="hidden" name="theme_preset_id" id="theme_preset_id" value="{{ $selectedPresetId }}">
                                     <small class="text-muted d-inline-block ms-1">
-                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Selecciona un tema guardado o crea uno nuevo con “Guardar como…”."></i>
+                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Selecciona un tema guardado o crea uno nuevo con &quot;Guardar como...&quot;."></i>
                                     </small>
                                  </div>
                                 <div class="col-12">

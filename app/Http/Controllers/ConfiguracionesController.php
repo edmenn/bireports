@@ -327,13 +327,22 @@ class ConfiguracionesController extends Controller
                 ->with('error', 'Ya existe un tema con ese nombre.');
         }
 
-        $config->themePresets()->create([
+        $preset = $config->themePresets()->create([
             'name' => $name,
             'config' => $themeConfig,
         ]);
 
+        $config->forceFill([
+            'theme_name'   => $name,
+            'theme_config' => $themeConfig ?: $this->defaultThemePalette(),
+        ])->save();
+
         return redirect()
             ->route('configuraciones.tema', ['tab' => $request->input('tab', 'pagina')])
+            ->withInput([
+                'theme_name'      => $name,
+                'theme_preset_id' => $preset->id,
+            ])
             ->with('success', sprintf('Tema guardado como "%s".', $name));
     }
 
