@@ -14,6 +14,11 @@ class Configuracion extends Model
 
     protected $table = 'configuraciones';
 
+    public function themePresets()
+    {
+        return $this->hasMany(ConfiguracionThemePreset::class);
+    }
+
     protected $fillable = [
         'nombre',
         'dominio_personalizado',

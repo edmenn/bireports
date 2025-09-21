@@ -8,6 +8,12 @@
 
 @section('content')
     {{-- Alertas --}}
+    @php($savedPresets = $savedPresets ?? collect())
+    @php($builtinPresets = $builtinPresets ?? [])
+    @php($savedPresetMap = $savedPresets->mapWithKeys(fn($preset) => [$preset->name => $preset->config ?? []])->all())
+    @php($selectedThemeName = old('theme_name', $config->theme_name))
+    @php($savedPresetIds = $savedPresets->mapWithKeys(fn($preset) => [$preset->name => $preset->id])->all())
+    @php($selectedPresetId = old('theme_preset_id', $selectedThemeName && isset($savedPresetIds[$selectedThemeName]) ? $savedPresetIds[$selectedThemeName] : null))
     @if(session('success'))
         <x-adminlte-alert theme="success" title="Éxito" dismissable>
             {{ session('success') }}
@@ -68,17 +74,28 @@
                                     </small>
                                 </div>
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-select name="theme_name" id="theme_name" label="Tema predefinido">
-                                        <option value="">Predeterminado</option>
-                                        @foreach(['Azul','Gris','Verde','Rojo','Naranja','Morado','Marrón'] as $preset)
-                                            <option value="{{ $preset }}" @selected(old('theme_name', $config->theme_name) === $preset)>{{ $preset }}</option>
-                                        @endforeach
-                                        <x-slot name="bottom"><small class="text-muted">Aplica una paleta inicial de colores.</small></x-slot>
+                                    <x-adminlte-select name="theme_name" id="theme_name" label="Tema guardado">
+                                        <option value="" @selected($selectedThemeName === null || $selectedThemeName === '')>Predeterminado</option>
+                                        @if($savedPresets->isNotEmpty())
+                                            @foreach($savedPresets as $preset)
+                                                <option value="{{ $preset->name }}" data-preset-id="{{ $preset->id }}" @selected($selectedThemeName === $preset->name)>{{ $preset->name }}</option>
+                                            @endforeach
+                                        @endif
+                                        @if($selectedThemeName === 'Personalizado')
+                                            <option value="Personalizado" selected>Personalizado</option>
+                                        @endif
+                                        <x-slot name="bottom"><small class="text-muted">Selecciona un tema guardado o ajusta los colores para crear uno nuevo.</small></x-slot>
                                      </x-adminlte-select>
+                                    <input type="hidden" name="theme_preset_id" id="theme_preset_id" value="{{ $selectedPresetId }}">
                                     <small class="text-muted d-inline-block ms-1">
-                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Aplica una paleta base; luego podés ajustar los colores debajo."></i>
+                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Selecciona un tema guardado o crea uno nuevo con “Guardar como…”."></i>
                                     </small>
                                  </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-outline-danger btn-sm mt-2" id="js-delete-preset" data-route="{{ route('configuraciones.tema.presets.destroy', ['preset' => '__PRESET__']) }}" disabled>
+                                        <i class="fas fa-trash"></i> Eliminar tema guardado
+                                    </button>
+                                </div>
                             </div>
                         </x-adminlte-card>
 
@@ -301,14 +318,50 @@
 
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex" style="gap: 0.75rem; width: 320px;">
+                <div class="d-flex flex-wrap" style="gap: 0.75rem; width: 100%; max-width: 480px;">
                     <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
+                    <button type="button" class="btn btn-outline-primary btn-eq" data-toggle="modal" data-target="#presetSaveModal">
+                        <i class="fas fa-clone"></i> Guardar como...
+                    </button>
                     <button type="button" id="js-cancel-changes" class="btn btn-secondary btn-eq" onclick="window.history.back()">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
                 </div>
             </div>
         </x-adminlte-card>
+    </form>
+    <div class="modal fade" id="presetSaveModal" tabindex="-1" role="dialog" aria-labelledby="presetSaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="preset-save-form" method="POST" action="{{ route('configuraciones.tema.presets.store') }}">
+                    @csrf
+                    <input type="hidden" name="tab" value="{{ request('tab', 'pagina') }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="presetSaveModalLabel">Guardar tema como...</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="preset-name-input">Nombre del tema</label>
+                            <input type="text" class="form-control" id="preset-name-input" name="preset_name" maxlength="50" required autocomplete="off" placeholder="Ej: Corporativo Azul">
+                            <small class="text-muted">Elige un nombre único. No se permiten nombres de los temas predeterminados.</small>
+                        </div>
+                    </div>
+                    <div id="preset-hidden-fields" class="d-none"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <form id="preset-delete-form" method="POST" class="d-none" data-route="{{ route('configuraciones.tema.presets.destroy', ['preset' => '__PRESET__']) }}">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="tab" value="{{ request('tab', 'pagina') }}">
     </form>
 @stop
 
@@ -383,16 +436,7 @@
                 });
             }
         } catch (_) {}
-        const colorInputs = document.querySelectorAll('.js-color');
-        const presets = {
-            'Azul':    { navbar_bg:'#0ea5e9', navbar_text:'#ffffff', menu_bg:'#0b4f6c', menu_text:'#e2e8f0', highlight_bg:'#2563eb', highlight_text:'#ffffff', btn_bg:'#2563eb', btn_text:'#ffffff' },
-            'Gris':    { navbar_bg:'#374151', navbar_text:'#f9fafb', menu_bg:'#1f2d37', menu_text:'#d1d5db', highlight_bg:'#6b7280', highlight_text:'#ffffff', btn_bg:'#6b7280', btn_text:'#ffffff' },
-            'Verde':   { navbar_bg:'#10b981', navbar_text:'#053b2c', menu_bg:'#064e3b', menu_text:'#d1fae5', highlight_bg:'#059669', highlight_text:'#ffffff', btn_bg:'#10b981', btn_text:'#053b2c' },
-            'Rojo':    { navbar_bg:'#ef4444', navbar_text:'#ffffff', menu_bg:'#7f1d1d', menu_text:'#fecaca', highlight_bg:'#dc2626', highlight_text:'#ffffff', btn_bg:'#ef4444', btn_text:'#ffffff' },
-            'Naranja': { navbar_bg:'#f97316', navbar_text:'#1f2937', menu_bg:'#7c2d12', menu_text:'#ffedd5', highlight_bg:'#ea580c', highlight_text:'#1f2937', btn_bg:'#f97316', btn_text:'#1f2937' },
-            'Morado':  { navbar_bg:'#8b5cf6', navbar_text:'#0f172a', menu_bg:'#4c1d95', menu_text:'#ede9fe', highlight_bg:'#7c3aed', highlight_text:'#0f172a', btn_bg:'#8b5cf6', btn_text:'#0f172a' },
-            'Marrón':  { navbar_bg:'#92400e', navbar_text:'#fef3c7', menu_bg:'#431407', menu_text:'#fde68a', highlight_bg:'#b45309', highlight_text:'#fef3c7', btn_bg:'#92400e', btn_text:'#fef3c7' },
-        };
+        const colorInputs = Array.from(document.querySelectorAll('.js-color'));
 
         const defaultPreset = {
             main_bg:'#f4f6f9',
@@ -412,12 +456,46 @@
             btn_active:'#374151',
         };
 
+        const presetsBase = {};
+        const savedPresetConfigs = @json($savedPresetMap);
+        const savedPresetIds = @json($savedPresetIds);
+        const presets = Object.assign({}, presetsBase, savedPresetConfigs || {});
+
         // Personalizado <-> Preset
         const CUSTOM_VALUE = 'Personalizado';
         let applyingPreset = false;
         let customDirty = false;
         const themeNameSelect = document.getElementById('theme_name');
         let lastThemeSelection = themeNameSelect ? themeNameSelect.value : '';
+        let customPalette = null;
+        const presetIdInput = document.getElementById('theme_preset_id');
+        const deleteBtn = document.getElementById('js-delete-preset');
+        const deleteForm = document.getElementById('preset-delete-form');
+
+        function getSelectedPresetId() {
+            if (!themeNameSelect) return null;
+            const value = themeNameSelect.value;
+            if (!value || value === CUSTOM_VALUE) return null;
+            if (savedPresetIds && Object.prototype.hasOwnProperty.call(savedPresetIds, value)) {
+                return savedPresetIds[value];
+            }
+            const currentOption = themeNameSelect.options[themeNameSelect.selectedIndex] ?? null;
+            if (currentOption && currentOption.dataset && currentOption.dataset.presetId) {
+                return currentOption.dataset.presetId;
+            }
+            return null;
+        }
+
+        function updatePresetControls() {
+            const presetId = getSelectedPresetId();
+            if (presetIdInput) {
+                presetIdInput.value = presetId ? presetId : '';
+            }
+            if (deleteBtn) {
+                deleteBtn.disabled = !presetId;
+                deleteBtn.dataset.presetId = presetId ? String(presetId) : '';
+            }
+        }
 
         function ensureCustomOption() {
             if (!themeNameSelect) return;
@@ -429,10 +507,22 @@
                 themeNameSelect.appendChild(opt);
             }
         }
-        function removeCustomOption() {
-            if (!themeNameSelect) return;
-            const opt = Array.from(themeNameSelect.options).find(o => o.value === CUSTOM_VALUE);
-            if (opt) opt.remove();
+        function collectCurrentPalette() {
+            const data = {};
+            colorInputs.forEach(input => {
+                const key = (input.name || '').replace(/^color_/,'');
+                if (key) data[key] = input.value;
+            });
+            return data;
+        }
+
+        function updatePreviewFromInputs() {
+            colorInputs.forEach(input => {
+                const cssVar = input.dataset.var;
+                if (cssVar) {
+                    document.documentElement.style.setProperty(cssVar, input.value);
+                }
+            });
         }
 
         document.addEventListener('input', function(e){
@@ -445,11 +535,16 @@
             // Si cambia manualmente un color, pasamos a Personalizado
             if (!applyingPreset) {
                 customDirty = true;
-                ensureCustomOption();
-                if (themeNameSelect && themeNameSelect.value !== CUSTOM_VALUE) {
-                    themeNameSelect.value = CUSTOM_VALUE;
-                    lastThemeSelection = CUSTOM_VALUE;
+                customPalette = collectCurrentPalette();
+                const presetId = getSelectedPresetId();
+                if (!presetId) {
+                    ensureCustomOption();
+                    if (themeNameSelect && themeNameSelect.value !== CUSTOM_VALUE) {
+                        themeNameSelect.value = CUSTOM_VALUE;
+                        lastThemeSelection = CUSTOM_VALUE;
+                    }
                 }
+                updatePresetControls();
             }
         }, {passive:true});
         function applyPresetValues(p){
@@ -467,20 +562,25 @@
         function applyPreset(name){
             const p = presets[name]; if(!p) return;
             applyPresetValues(p);
+            customPalette = collectCurrentPalette();
+            updatePreviewFromInputs();
             const sel = document.getElementById('theme_name');
             if(sel && sel.value !== name) sel.value = name;
             customDirty = false;
-            removeCustomOption();
             lastThemeSelection = name || '';
+            updatePresetControls();
         }
         if (themeNameSelect) {
             themeNameSelect.addEventListener('change', function(event) {
                 const selectedPreset = event.target.value;
                 if (selectedPreset === CUSTOM_VALUE) {
-                    if (!customDirty) {
+                    if (!customPalette) {
                         event.target.value = lastThemeSelection || '';
                         return;
                     }
+                    applyPresetValues(customPalette);
+                    customPalette = collectCurrentPalette();
+                    customDirty = false;
                     lastThemeSelection = CUSTOM_VALUE;
                     return;
                 }
@@ -489,10 +589,12 @@
                 } else {
                     // Predeterminado
                     applyPresetValues(defaultPreset);
+                    customPalette = collectCurrentPalette();
+                    updatePreviewFromInputs();
                     customDirty = false;
-                    removeCustomOption();
                     lastThemeSelection = '';
                 }
+                updatePresetControls();
             });
 
             // Detección al cargar: seleccionar preset si coincide, si no => Personalizado
@@ -511,10 +613,10 @@
 
                     // Si coincide exactamente con Predeterminado → seleccionar vacío si no hay valor guardado
                     if (equalsAll(current, defaultPreset, keysDefault)) {
+                        customDirty = false;
+                        customPalette = customPalette && Object.keys(customPalette).length ? customPalette : null;
                         if (themeNameSelect.value === '' || themeNameSelect.value === CUSTOM_VALUE) {
                             themeNameSelect.value = '';
-                            customDirty = false;
-                            removeCustomOption();
                             lastThemeSelection = '';
                         }
                         return;
@@ -531,18 +633,25 @@
                     if (matched) {
                         themeNameSelect.value = matched;
                         customDirty = false;
-                        removeCustomOption();
+                        customPalette = customPalette && Object.keys(customPalette).length ? customPalette : null;
                         lastThemeSelection = matched;
                     } else {
                         // No coincide con ningún preset → Personalizado
                         ensureCustomOption();
                         themeNameSelect.value = CUSTOM_VALUE;
-                        customDirty = true;
+                        customDirty = false;
+                        customPalette = current;
                         lastThemeSelection = CUSTOM_VALUE;
                     }
+                    updatePresetControls();
                 } catch(_) {}
             })();
+        } else {
+            customPalette = collectCurrentPalette();
         }
+
+        updatePreviewFromInputs();
+        updatePresetControls();
 
         function setupImagePreview(inputId, previewId) {
             const inputElement = document.querySelector(`input[name="${inputId}"]`);
@@ -602,6 +711,64 @@
             w.addEventListener('input', apply);
             h.addEventListener('input', apply);
         })();
+
+        const presetSaveForm = document.getElementById('preset-save-form');
+        if (presetSaveForm) {
+            presetSaveForm.addEventListener('submit', function () {
+                const hiddenContainer = document.getElementById('preset-hidden-fields');
+                if (!hiddenContainer) {
+                    return;
+                }
+                hiddenContainer.innerHTML = '';
+
+                const appendHidden = (name, value) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value ?? '';
+                    hiddenContainer.appendChild(input);
+                };
+
+                colorInputs.forEach(input => appendHidden(input.name, input.value));
+                ['login_logo_width', 'login_logo_height'].forEach(fieldName => {
+                    const el = document.querySelector(`[name="${fieldName}"]`);
+                    if (el) appendHidden(fieldName, el.value);
+                });
+            });
+
+            const presetModal = document.getElementById('presetSaveModal');
+            if (presetModal) {
+                presetModal.addEventListener('shown.bs.modal', () => {
+                    const input = document.getElementById('preset-name-input');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
+                });
+                presetModal.addEventListener('hidden.bs.modal', () => {
+                    presetSaveForm.reset();
+                    const hiddenContainer = document.getElementById('preset-hidden-fields');
+                    if (hiddenContainer) {
+                        hiddenContainer.innerHTML = '';
+                    }
+                });
+            }
+        }
+
+        if (deleteBtn && deleteForm) {
+            deleteBtn.addEventListener('click', function () {
+                const presetId = deleteBtn.dataset.presetId;
+                if (!presetId) {
+                    return;
+                }
+                if (!confirm('¿Eliminar este tema guardado?')) {
+                    return;
+                }
+                const routeTemplate = deleteForm.dataset.route || '';
+                deleteForm.action = routeTemplate.replace('__PRESET__', presetId);
+                deleteForm.submit();
+            });
+        }
     });
 })();
 </script>

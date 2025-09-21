@@ -214,6 +214,10 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
 
         Route::get('/configuraciones/tema', [ConfiguracionesController::class, 'theme'])
             ->name('configuraciones.tema');
+        Route::post('/configuraciones/tema/presets', [ConfiguracionesController::class, 'storeThemePreset'])
+            ->name('configuraciones.tema.presets.store');
+        Route::delete('/configuraciones/tema/presets/{preset}', [ConfiguracionesController::class, 'destroyThemePreset'])
+            ->name('configuraciones.tema.presets.destroy');
 
         Route::get('/configuraciones/login', [ConfiguracionesController::class, 'login'])
             ->name('configuraciones.login');
