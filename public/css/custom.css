@@ -180,6 +180,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden; /* evita que el scroll de la página afecte al sidebar */
+  
 }
 .main-sidebar .sidebar {
   flex: 1 1 auto;
@@ -202,6 +203,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 4px;
 }
 .brand-link {
   padding-left: 0 !important;
