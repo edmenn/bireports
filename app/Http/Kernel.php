@@ -31,6 +31,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            \App\Http\Middleware\EnsureUserIsNotBlocked::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SetAdminlteTheme::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
@@ -68,6 +69,7 @@ class Kernel extends HttpKernel
         // Alias opcionales propios
         'track.audit'       => \App\Http\Middleware\TrackAudit::class,
         'capacity.activity' => \App\Http\Middleware\AutoCapacityActivity::class,
+        'ensure.not.blocked' => \App\Http\Middleware\EnsureUserIsNotBlocked::class,
 
         // ⬇️ NUEVO: bloquea cambio de contraseña para usuarios Entra
         'no-external-password' => \App\Http\Middleware\ForbidExternalPasswordChange::class,

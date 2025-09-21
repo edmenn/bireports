@@ -27,6 +27,7 @@ use App\Http\Controllers\FoldersController;
 use App\Http\Controllers\UserPortalController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\UsersSyncController; // importación desde Entra
+use App\Http\Middleware\EnsureUserIsNotBlocked;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,15 +38,15 @@ use App\Http\Controllers\UsersSyncController; // importación desde Entra
 // Home -> Mi espacio (portal de usuario)
 Route::get('/', function () {
     return redirect()->route('portal.index');
-})->middleware(['auth'])->name('dashboards.index');
+})->middleware(['auth', EnsureUserIsNotBlocked::class])->name('dashboards.index');
 
 // /dashboard (compatibilidad Breeze) -> redirige al portal
 Route::get('/dashboard', function () {
     return redirect()->route('portal.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', EnsureUserIsNotBlocked::class, 'verified'])->name('dashboard');
 
 // Grupo interno protegido
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
 
     // Forzar que {usuario} sea numérico para evitar capturar strings como "bulk-destroy"
     Route::pattern('usuario', '[0-9]+');
@@ -253,7 +254,7 @@ Route::middleware(['auth'])->group(function () {
 
 // Área ADMIN (solo admin)
 Route::prefix('admin')
-    ->middleware(['auth', 'role:admin'])
+    ->middleware(['auth', EnsureUserIsNotBlocked::class, 'role:admin'])
     ->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin.dashboard');
 

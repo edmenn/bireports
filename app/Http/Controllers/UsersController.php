@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Services\MicrosoftGraphService;
 
@@ -344,7 +345,23 @@ class UsersController extends Controller
             }
         }
 
-        $user->forceFill(['is_blocked' => $willBlock])->save();
+        $attributes = ['is_blocked' => $willBlock];
+        if ($willBlock) {
+            $attributes['remember_token'] = Str::random(60);
+        }
+
+        $user->forceFill($attributes)->save();
+
+        if ($willBlock) {
+            try {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            } catch (\Throwable $e) {
+                Log::warning('No se pudieron purgar las sesiones del usuario bloqueado', [
+                    'user_id' => $user->id,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
+        }
         return back()->with('success', $willBlock ? 'Usuario bloqueado.' : 'Usuario desbloqueado.');
     }
 }
