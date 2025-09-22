@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Audit;
 use App\Models\Report;
 use App\Models\User;
+use App\Support\SimpleXlsxWriter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -14,55 +15,59 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class AuditAnalyticsController extends Controller
 {
-    /** ÚNICA acción que cuenta como “acceso”. Según tu dump real. */
+    /** ÚNICA Accion que cuenta como “acceso”. Según tu dump real. */
     private const ACCESS_ACTIONS = ['render','view'];
 
     public function index(Request $request): View
     {
-        $tab  = (string) $request->input('tab', 'dashboard');
+        $data = $this->composeViewData($request);
 
-        // ========= RANGO EN UTC (evita que todo quede fuera por TZ) =========
-        $to   = now()->utc()->endOfDay();
+        return view('auditoria.index', $data);
+    }
+
+    /**
+     * Build analytics payload reused by both the HTML view and the export.
+     */
+    private function composeViewData(Request $request, bool $loadAllTabs = false): array
+    {
+        $tab = (string) $request->input('tab', 'dashboard');
+
+        $appTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
+
+        $to = now()->utc()->endOfDay();
         $from = (clone $to)->subDays(59)->startOfDay();
 
         if ($request->filled('from')) {
-            $from = Carbon::parse((string)$request->input('from'), \App\Support\AppTimezone::current())
+            $from = Carbon::parse((string) $request->input('from'), $appTz)
                 ->utc()->startOfDay();
         }
         if ($request->filled('to')) {
-            $to = Carbon::parse((string)$request->input('to'), \App\Support\AppTimezone::current())
+            $to = Carbon::parse((string) $request->input('to'), $appTz)
                 ->utc()->endOfDay();
         }
-        // ====================================================================
 
-        // Filtro de usuario SOLO en perfil
         $applyUserFilter = ($tab === 'user-profile');
-        $userId = ($applyUserFilter && $request->filled('user_id')) ? (int)$request->input('user_id') : null;
+        $userId = ($applyUserFilter && $request->filled('user_id'))
+            ? (int) $request->input('user_id')
+            : null;
 
-        // Base GLOBAL: accesos en rango (sin filtrar usuario)
         $baseGlobal = Audit::query()
             ->whereBetween('occurred_at', [$from, $to])
-            // Para evitar doble conteo (view + render), contamos solo 'render'.
             ->where('action', 'render');
 
-        // Base SCOPED: para tarjetas si estás en perfil
         $baseScoped = (clone $baseGlobal)
             ->when($applyUserFilter && $userId, fn ($q) => $q->where('user_id', $userId));
 
-        // Lista para selector de perfil
-        $usersList = User::query()->select('id','name','email')->orderBy('name')->limit(1000)->get();
+        $usersList = User::query()->select('id', 'name', 'email')->orderBy('name')->limit(1000)->get();
 
-        // Tarjetas (cabecera)
         $totals = [
             'totalAccesos'  => (clone $baseScoped)->count(),
             'totalUsuarios' => (clone $baseScoped)->whereNotNull('user_id')->distinct('user_id')->count('user_id'),
             'totalReportes' => (clone $baseScoped)->distinct('report_uuid')->count('report_uuid'),
         ];
 
-        // Dashboard SIEMPRE GLOBAL
         $dashboard = $this->buildDashboard($baseGlobal, $from, $to);
 
-        // Pestañas
         $usersMost   = [];
         $usersLeast  = [];
         $usersNoAct  = [];
@@ -74,52 +79,65 @@ final class AuditAnalyticsController extends Controller
         $userProfile = null;
         $userEvents  = [];
 
-        switch ($tab) {
-            case 'users-most':
-                $usersMost = $this->usersRank($baseGlobal, 'desc', 100);
-                break;
-            case 'users-least':
-                $usersLeast = $this->usersRank($baseGlobal, 'asc', 100);
-                break;
-            case 'users-inactive':
-                $usersNoAct = $this->usersWithoutAccess($from, $to);
-                break;
-            case 'reports-most':
-                $reportsMost = $this->reportsRank($baseGlobal, 'desc', 100);
-                break;
-            case 'reports-least':
-                $reportsLeast = $this->reportsRank($baseGlobal, 'asc', 100);
-                break;
-            case 'reports-inactive':
-                $reportsNoAcc = $this->reportsWithoutAccess($from, $to);
-                break;
-            case 'user-profile':
-                if ($userId) {
-                    [$userProfile, $userEvents] = $this->buildUserProfile($userId, $from, $to);
-                }
-                break;
+        $tabsToHydrate = $loadAllTabs
+            ? ['users-most','users-least','users-inactive','reports-most','reports-least','reports-inactive','user-profile']
+            : [$tab];
+
+        foreach (array_unique($tabsToHydrate) as $activeTab) {
+            switch ($activeTab) {
+                case 'users-most':
+                    $usersMost = $this->usersRank($baseGlobal, 'desc', 100);
+                    break;
+                case 'users-least':
+                    $usersLeast = $this->usersRank($baseGlobal, 'asc', 100);
+                    break;
+                case 'users-inactive':
+                    $usersNoAct = $this->usersWithoutAccess($from, $to);
+                    break;
+                case 'reports-most':
+                    $reportsMost = $this->reportsRank($baseGlobal, 'desc', 100);
+                    break;
+                case 'reports-least':
+                    $reportsLeast = $this->reportsRank($baseGlobal, 'asc', 100);
+                    break;
+                case 'reports-inactive':
+                    $reportsNoAcc = $this->reportsWithoutAccess($from, $to);
+                    break;
+                case 'user-profile':
+                    if ($userId) {
+                        [$userProfile, $userEvents] = $this->buildUserProfile($userId, $from, $to);
+                    }
+                    break;
+            }
         }
 
         $dowLabels = [1=>'Lunes',2=>'Martes',3=>'Miércoles',4=>'Jueves',5=>'Viernes',6=>'Sábado',7=>'Domingo'];
 
-        return view('auditoria.index', array_merge([
-            'tab'           => $tab,
-            'from'          => $from->toDateString(),
-            'to'            => $to->toDateString(),
-            'userId'        => $userId,
-            'usersList'     => $usersList,
-            'dowLabels'     => $dowLabels,
-            'accessAction'  => 'render+view',
+        return array_merge([
+            'tab'          => $tab,
+            'from'         => $from->toDateString(),
+            'to'           => $to->toDateString(),
+            'userId'       => $userId,
+            'usersList'    => $usersList,
+            'dowLabels'    => $dowLabels,
+            'accessAction' => 'render+view',
+            'exportMeta'   => [
+                'fromUtc'          => clone $from,
+                'toUtc'            => clone $to,
+                'displayTimezone'  => $appTz,
+                'userId'           => $userId,
+                'tab'              => $tab,
+            ],
         ], $totals, $dashboard, [
-            'usersMost'     => $usersMost,
-            'usersLeast'    => $usersLeast,
-            'usersNoAct'    => $usersNoAct,
-            'reportsMost'   => $reportsMost,
-            'reportsLeast'  => $reportsLeast,
-            'reportsNoAcc'  => $reportsNoAcc,
-            'userProfile'   => $userProfile,
-            'userEvents'    => $userEvents,
-        ]));
+            'usersMost'    => $usersMost,
+            'usersLeast'   => $usersLeast,
+            'usersNoAct'   => $usersNoAct,
+            'reportsMost'  => $reportsMost,
+            'reportsLeast' => $reportsLeast,
+            'reportsNoAcc' => $reportsNoAcc,
+            'userProfile'  => $userProfile,
+            'userEvents'   => $userEvents,
+        ]);
     }
 
     /** Dashboard global (renders). */
@@ -229,7 +247,7 @@ final class AuditAnalyticsController extends Controller
 
         $alerts = [];
         if ($delta7 !== null && $delta7 <= -30.0) {
-            $alerts[] = ['type'=>'warning','msg'=>"Caída de uso ≥30%: últimos 7 días ($cnt7) vs previos ($cntp7) → {$delta7}%."]; }
+            $alerts[] = ['type'=>'warning','msg'=>"Caída de uso ≥30%: Ultimos 7 días ($cnt7) vs previos ($cntp7) → {$delta7}%."]; }
         if ($errorRate7 >= 5.0 && $errors7 >= 5) {
             $alerts[] = ['type'=>'danger','msg'=>"Tasa de errores alta en 7 días: {$errorRate7}% ({$errors7} errores / {$views7} accesos)."];
         }
@@ -463,54 +481,349 @@ final class AuditAnalyticsController extends Controller
         return [$profile, $events];
     }
 
-    /** Export CSV (renders) - en zona horaria configurada. */
+    /** Exporta la vista de analítica a un libro Excel con múltiples hojas. */
     public function export(Request $request): StreamedResponse
     {
-        $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
+        $data = $this->composeViewData($request, true);
 
-        $to   = $request->filled('to')
-            ? Carbon::parse((string)$request->input('to'), $displayTz)->utc()->endOfDay()
-            : now()->utc()->endOfDay();
+        $sheets = $this->buildExportSheets($data);
+        if (empty($sheets)) {
+            $sheets[] = [
+                'name'    => 'Datos',
+                'headers' => ['Mensaje'],
+                'rows'    => [['No hay datos para exportar']],
+            ];
+        }
 
-        $from = $request->filled('from')
-            ? Carbon::parse((string)$request->input('from'), $displayTz)->utc()->startOfDay()
-            : (clone $to)->subDays(59)->startOfDay();
+        $writer = new SimpleXlsxWriter();
+        foreach ($sheets as $sheet) {
+            $writer->addSheet($sheet['name'], $sheet['headers'], $sheet['rows']);
+        }
 
-        $tab    = (string) $request->input('tab', 'dashboard');
-        $userId = ($tab === 'user-profile' && $request->filled('user_id')) ? (int)$request->input('user_id') : null;
+        $filename = 'auditoria_' . now()->format('Ymd_His') . '.xlsx';
 
-        $base = Audit::query()
-            ->when($userId, fn ($q) => $q->where('user_id', $userId))
-            ->whereBetween('occurred_at', [$from, $to])
-            ->where('action', 'render')
-            ->orderBy('occurred_at');
-
-        $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename=auditoria.csv',
-        ];
-
-        return response()->stream(function() use ($base, $displayTz) {
-            $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, [
-                'id','occurred_at','user_id','report_uuid','workspace_uuid','dataset_uuid',
-                'action','page_name','rls_role','duration_ms','success','ip','referer','user_agent','filters','error_message'
-            ]);
-            $base->chunk(1000, function($chunk) use ($out) {
-                foreach ($chunk as $r) {
-                    $occurredLocal = ($r->occurred_at instanceof Carbon ? $r->occurred_at->copy() : Carbon::parse($r->occurred_at))
-                        ->setTimezone($displayTz)
-                        ->toDateTimeString();
-                    fputcsv($out, [
-                        $r->id, $occurredLocal, $r->user_id, $r->report_uuid, $r->workspace_uuid, $r->dataset_uuid,
-                        $r->action, $r->page_name, $r->rls_role, $r->duration_ms, $r->success ? 1 : 0,
-                        $r->ip, $r->referer, $r->user_agent ? mb_substr($r->user_agent,0,200) : null,
-                        $r->filters ? json_encode($r->filters, JSON_UNESCAPED_UNICODE) : null, $r->error_message,
-                    ]);
-                }
-            });
-            fclose($out);
-        }, 200, $headers);
+        return response()->streamDownload(function () use ($writer) {
+            $writer->output();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
+    /**
+     * Prepara las hojas que se exportarán al libro de Excel.
+     *
+     * @param array<string, mixed> $data
+     * @return array<int, array{name: string, headers: array<int, string>, rows: array<int, array<int, int|float|string|bool|null>>}>
+     */
+    private function buildExportSheets(array $data): array
+    {
+        $sheets = [];
+
+        $appendSheet = static function (string $name, array $headers, array $rows) use (&$sheets): void {
+            $normalisedRows = array_map(static fn (array $row): array => array_values($row), $rows);
+            $sheets[] = [
+                'name'    => $name,
+                'headers' => array_values($headers),
+                'rows'    => $normalisedRows,
+            ];
+        };
+
+        $meta = $data['exportMeta'] ?? [];
+        $tzLabel = '';
+        if (isset($meta['displayTimezone'])) {
+            $tz = $meta['displayTimezone'];
+            if ($tz instanceof \DateTimeZone) {
+                $tzLabel = $tz->getName();
+            } elseif (is_string($tz)) {
+                $tzLabel = $tz;
+            }
+        }
+
+        $summaryRows = [
+            ['Rango desde', $data['from'] ?? ''],
+            ['Rango hasta', $data['to'] ?? ''],
+        ];
+        if ($tzLabel !== '') {
+            $summaryRows[] = ['Zona horaria (visualizacion)', $tzLabel];
+        }
+        if (array_key_exists('totalAccesos', $data)) {
+            $summaryRows[] = ['Total accesos', $data['totalAccesos']];
+        }
+        if (array_key_exists('totalUsuarios', $data)) {
+            $summaryRows[] = ['Total usuarios', $data['totalUsuarios']];
+        }
+        if (array_key_exists('totalReportes', $data)) {
+            $summaryRows[] = ['Total reportes', $data['totalReportes']];
+        }
+        if (!empty($meta['tab'])) {
+            $summaryRows[] = ['Pestana solicitada', $meta['tab']];
+        }
+        $appendSheet('Resumen', ['Indicador', 'Valor'], $summaryRows);
+
+        $monthsRows = [];
+        foreach ($data['months'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $monthsRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
+        }
+        if (!empty($monthsRows)) {
+            $appendSheet('Dashboard - Mensual', ['Mes', 'Accesos'], $monthsRows);
+        }
+
+        $dailyRows = [];
+        foreach ($data['daily'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $dailyRows[] = [$row['date'] ?? '', $row['total'] ?? 0];
+        }
+        if (!empty($dailyRows)) {
+            $appendSheet('Dashboard - Diario', ['Fecha', 'Accesos'], $dailyRows);
+        }
+
+        $heatmapRows = [];
+        foreach ($data['heatmap'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $heatmapRows[] = [
+                $row['hour'] ?? '',
+                $row[1] ?? 0,
+                $row[2] ?? 0,
+                $row[3] ?? 0,
+                $row[4] ?? 0,
+                $row[5] ?? 0,
+                $row[6] ?? 0,
+                $row[7] ?? 0,
+            ];
+        }
+        if (!empty($heatmapRows)) {
+            $appendSheet('Dashboard - Heatmap', ['Hora', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'], $heatmapRows);
+        }
+
+        $topUsersRows = [];
+        foreach (collect($data['topUsers'] ?? []) as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $topUsersRows[] = [$row['name'] ?? '', $row['total'] ?? 0];
+        }
+        if (!empty($topUsersRows)) {
+            $appendSheet('Dashboard - Top usuarios', ['Usuario', 'Accesos'], $topUsersRows);
+        }
+
+        $topReportsRows = [];
+        foreach (collect($data['topReports'] ?? []) as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $topReportsRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
+        }
+        if (!empty($topReportsRows)) {
+            $appendSheet('Dashboard - Top reportes', ['Reporte', 'Accesos'], $topReportsRows);
+        }
+
+        $topErrorRows = [];
+        foreach (collect($data['topErrorReports'] ?? []) as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $topErrorRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
+        }
+        if (!empty($topErrorRows)) {
+            $appendSheet('Dashboard - Errores', ['Reporte', 'Errores'], $topErrorRows);
+        }
+
+        $alertsRows = [];
+        foreach ($data['alerts'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $alertsRows[] = [$row['type'] ?? '', $row['msg'] ?? ''];
+        }
+        if (!empty($alertsRows)) {
+            $appendSheet('Dashboard - Alertas', ['Tipo', 'Mensaje'], $alertsRows);
+        }
+
+        $userSheetHeaders = ['ID usuario', 'Nombre', 'Email', 'Accesos', 'Ultimo acceso', 'Creado'];
+        $usersMostRows = [];
+        foreach ($data['usersMost'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $usersMostRows[] = [
+                $row['user_id'] ?? null,
+                $row['name'] ?? '',
+                $row['email'] ?? '',
+                $row['total'] ?? 0,
+                $row['last_access'] ?? '',
+                $row['created_at'] ?? '',
+            ];
+        }
+        $appendSheet('Usuarios - Mas activos', $userSheetHeaders, $usersMostRows);
+
+        $usersLeastRows = [];
+        foreach ($data['usersLeast'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $usersLeastRows[] = [
+                $row['user_id'] ?? null,
+                $row['name'] ?? '',
+                $row['email'] ?? '',
+                $row['total'] ?? 0,
+                $row['last_access'] ?? '',
+                $row['created_at'] ?? '',
+            ];
+        }
+        $appendSheet('Usuarios - Menos activos', $userSheetHeaders, $usersLeastRows);
+
+        $usersInactiveHeaders = ['ID usuario', 'Nombre', 'Email', 'Ultimo acceso', 'Creado'];
+        $usersInactiveRows = [];
+        foreach ($data['usersNoAct'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $usersInactiveRows[] = [
+                $row['user_id'] ?? null,
+                $row['name'] ?? '',
+                $row['email'] ?? '',
+                $row['last_access'] ?? '',
+                $row['created_at'] ?? '',
+            ];
+        }
+        $appendSheet('Usuarios - Sin accesos', $usersInactiveHeaders, $usersInactiveRows);
+
+        $reportHeaders = ['ID reporte', 'Nombre', 'Accesos', 'Ultimo acceso'];
+        $reportsMostRows = [];
+        foreach ($data['reportsMost'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $reportsMostRows[] = [
+                $row['report_uuid'] ?? '',
+                $row['name'] ?? '',
+                $row['total'] ?? 0,
+                $row['last_access'] ?? '',
+            ];
+        }
+        $appendSheet('Reportes - Mas accesados', $reportHeaders, $reportsMostRows);
+
+        $reportsLeastRows = [];
+        foreach ($data['reportsLeast'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $reportsLeastRows[] = [
+                $row['report_uuid'] ?? '',
+                $row['name'] ?? '',
+                $row['total'] ?? 0,
+                $row['last_access'] ?? '',
+            ];
+        }
+        $appendSheet('Reportes - Menos accesados', $reportHeaders, $reportsLeastRows);
+
+        $reportsInactiveHeaders = ['ID reporte', 'Nombre', 'Ultimo acceso', 'Creado'];
+        $reportsInactiveRows = [];
+        foreach ($data['reportsNoAcc'] ?? [] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $reportsInactiveRows[] = [
+                $row['report_uuid'] ?? '',
+                $row['name'] ?? '',
+                $row['last_access'] ?? '',
+                $row['created_at'] ?? '',
+            ];
+        }
+        $appendSheet('Reportes - Sin accesos', $reportsInactiveHeaders, $reportsInactiveRows);
+
+        $userProfile = $data['userProfile'] ?? null;
+        if (is_array($userProfile)) {
+            $profileRows = [];
+            $userInfo = $userProfile['user'] ?? [];
+            $profileRows[] = ['Usuario ID', $userInfo['id'] ?? ''];
+            $profileRows[] = ['Nombre', $userInfo['name'] ?? ''];
+            $profileRows[] = ['Email', $userInfo['email'] ?? ''];
+            $profileRows[] = ['Rango desde', $userProfile['from'] ?? ''];
+            $profileRows[] = ['Rango hasta', $userProfile['to'] ?? ''];
+
+            $kpis = $userProfile['kpis'] ?? [];
+            if (is_array($kpis)) {
+                foreach ($kpis as $label => $value) {
+                    $profileRows[] = [ucwords(str_replace(['_', '-'], ' ', (string) $label)), $value];
+                }
+            }
+            $appendSheet('Perfil - Resumen', ['Clave', 'Valor'], $profileRows);
+
+            $profileHeatmapRows = [];
+            foreach ($userProfile['heatmap'] ?? [] as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $profileHeatmapRows[] = [
+                    $row['hour'] ?? '',
+                    $row[1] ?? 0,
+                    $row[2] ?? 0,
+                    $row[3] ?? 0,
+                    $row[4] ?? 0,
+                    $row[5] ?? 0,
+                    $row[6] ?? 0,
+                    $row[7] ?? 0,
+                ];
+            }
+            if (!empty($profileHeatmapRows)) {
+                $appendSheet('Perfil - Heatmap', ['Hora', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'], $profileHeatmapRows);
+            }
+
+            $profileTopReportsRows = [];
+            foreach (collect($userProfile['topReports'] ?? []) as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $profileTopReportsRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
+            }
+            if (!empty($profileTopReportsRows)) {
+                $appendSheet('Perfil - Top reportes', ['Reporte', 'Accesos'], $profileTopReportsRows);
+            }
+        }
+
+        $userEvents = $data['userEvents'] ?? [];
+        if (!empty($userEvents)) {
+            $eventRows = [];
+            foreach ($userEvents as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                $eventRows[] = [
+                    $row['occurred_at'] ?? '',
+                    $row['action'] ?? '',
+                    $row['report_uuid'] ?? '',
+                    $row['report_name'] ?? '',
+                    $row['page_name'] ?? '',
+                    $row['bookmark'] ?? '',
+                    $row['duration_ms'] ?? null,
+                    isset($row['success']) ? ($row['success'] ? 'Si' : 'No') : '',
+                    $row['error'] ?? '',
+                ];
+            }
+            $appendSheet('Perfil - Eventos', ['Fecha', 'Accion', 'Reporte ID', 'Reporte', 'Pagina', 'Bookmark', 'Duracion (ms)', 'Exito', 'Error'], $eventRows);
+        }
+
+        return $sheets;
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

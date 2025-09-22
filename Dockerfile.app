@@ -21,9 +21,9 @@ FROM php:8.3-fpm-alpine
 
 # Extensiones necesarias (ajusta según tu app)
 RUN set -eux; \
-    apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev ca-certificates; \
+    apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev ca-certificates libzip-dev; \
     docker-php-ext-configure intl; \
-    docker-php-ext-install -j"$(nproc)" intl mbstring pdo pdo_pgsql opcache; \
+    docker-php-ext-install -j"$(nproc)" intl mbstring pdo pdo_pgsql opcache zip; \
     php -m | grep -qi mbstring; \
     php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}';
 
@@ -65,3 +65,4 @@ RUN set -eux; \
 
 EXPOSE 9000
 CMD ["php-fpm", "-F"]
+

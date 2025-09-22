@@ -11,8 +11,14 @@ DOMAIN="${DOMAIN:-portal.birentable.com}"
 log()  { printf '\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()   { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$*"; }
-err()  { printf '\033[1;31m✗ %s\033[0m\n' "$*"; }
-
+ensure_zip_extension() {
+  log "Verificando extension ZipArchive..."
+  if ! $COMPOSE exec -T "$APP_SERVICE" php -r "exit(extension_loaded('zip') ? 0 : 1);"; then
+    err "ZipArchive no esta habilitada en la imagen. Revisa Dockerfile.app."
+    exit 1
+  fi
+  ok "ZipArchive disponible."
+}
 usage() {
   echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild]"
   echo "  (sin argumentos) = modo interactivo (elige acción en un menú)"
@@ -180,6 +186,7 @@ if [[ "$DO_REFRESH" == "yes" ]]; then
   wait_healthy "$APP_SERVICE" 120 || true
 
   ensure_storage_dirs
+  ensure_zip_extension
 
   log "[refresh] Limpiando caches de Laravel y OPcache."
   $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
@@ -193,6 +200,7 @@ if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
   $COMPOSE up -d "$APP_SERVICE" web
   wait_healthy "$APP_SERVICE" 120 || true
   ensure_storage_dirs
+  ensure_zip_extension
   log "[refresh-nobuild] Limpiando caches de Laravel y OPcache."
   $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
   ok "Refresh (sin build) completado."
@@ -240,6 +248,7 @@ wait_healthy "$APP_SERVICE" 120
 
 # ---------- Asegurar carpetas de escritura ----------
 ensure_storage_dirs
+ensure_zip_extension
 
 # ---------- Sincronizar assets de idioma al volumen de storage ----------
 sync_storage_lang_to_volume
@@ -269,3 +278,8 @@ ok "Optimización OK."
 
 echo
 ok "Deploy completado. Revisa https://${DOMAIN}"
+
+
+
+
+

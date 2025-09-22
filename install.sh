@@ -19,6 +19,7 @@ set -euo pipefail
 # --------- Config local (ajusta si tu servicio tiene otro nombre)
 LARAVEL_SVC="${LARAVEL_SVC:-birentable}"
 NODE_SVC="${NODE_SVC:-node}"
+NODE_IMAGE="${NODE_IMAGE:-node:20}"
 
 # --------- Detectar comando docker compose
 if command -v docker &>/dev/null && docker compose version &>/dev/null; then
@@ -53,17 +54,59 @@ ok()  { printf "\033[1;32m✓ %s\033[0m\n" "$*"; }
 warn(){ printf "\033[1;33m! %s\033[0m\n" "$*"; }
 err() { printf "\033[1;31m✗ %s\033[0m\n" "$*"; }
 
+ensure_zip_extension() {
+  log "Verificando ZipArchive en $LARAVEL_SVC..."
+  if $DC exec "$LARAVEL_SVC" php -r "exit(extension_loaded('zip') ? 0 : 1);"; then
+    ok "ZipArchive presente."
+    return
+  fi
+
+  warn "ZipArchive no esta disponible. Intentando instalarla dentro del contenedor..."
+  $DC exec --user root "$LARAVEL_SVC" bash -lc 'set -e
+if command -v apt-get >/dev/null 2>&1; then
+  apt-get update
+  (apt-get install -y php-zip || apt-get install -y php8.4-zip)
+  apt-get clean
+elif command -v apk >/dev/null 2>&1; then
+  apk add --no-cache php82-zip || apk add --no-cache php8-zip || apk add --no-cache php-zip
+else
+  echo "No se pudo determinar el gestor de paquetes para instalar ZipArchive" >&2
+  exit 1
+fi'
+
+  if ! $DC exec "$LARAVEL_SVC" php -r "exit(extension_loaded('zip') ? 0 : 1);"; then
+    err "ZipArchive sigue ausente despues del intento de instalacion."
+    exit 1
+  fi
+
+  ok "ZipArchive instalada."
+}
 # --------- Verificaciones básicas
 log "Verificando que el servicio '$LARAVEL_SVC' esté corriendo..."
 $DC ps --services | grep -qx "$LARAVEL_SVC" || { err "No existe el servicio '$LARAVEL_SVC' en docker compose."; exit 1; }
 
 log "Verificando que el servicio '$NODE_SVC' exista (para NPM/Vite)..."
-$DC ps --services | grep -qx "$NODE_SVC" || { err "No existe el servicio '$NODE_SVC' en docker compose. Define un servicio Node para ejecutar NPM."; exit 1; }
+if $DC ps --services | grep -qx "$NODE_SVC"; then
+  NODE_RUNNER="compose"
+else
+  warn "No existe el servicio '$NODE_SVC' en docker compose. Se usará la imagen $NODE_IMAGE para ejecutar npm."
+  NODE_RUNNER="docker-run"
+fi
+
+run_node() {
+  if [ "$NODE_RUNNER" = "compose" ]; then
+    $DC run --rm "$NODE_SVC" "$@"
+  else
+    docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/app" -w /app "$NODE_IMAGE" "$@"
+  fi
+}
 
 # --------- Composer install
 log "Instalando dependencias PHP (composer install)..."
 $DC exec "$LARAVEL_SVC" composer install --no-interaction --prefer-dist
 ok "Composer install ok."
+
+ensure_zip_extension
 
 # --------- Preparar .env y APP_KEY
 if ! $DC exec "$LARAVEL_SVC" test -f .env; then
@@ -104,7 +147,7 @@ ok "storage:link listo."
 
 # --------- NPM / Vite
 log "Instalando dependencias Node (npm ci)..."
-$DC run --rm "$NODE_SVC" npm ci
+run_node npm ci
 ok "Dependencias Node instaladas."
 
 if [ "$NPM_MODE" = "dev" ]; then
@@ -112,11 +155,11 @@ if [ "$NPM_MODE" = "dev" ]; then
   warn "Este proceso suele quedarse 'vivo'. Ejecuta este comando en otra terminal si lo necesitas en segundo plano:"
   echo "$DC run --rm $NODE_SVC npm run dev"
   # Ejecutamos una sola vez para validar; no lo dejamos colgado
-  $DC run --rm "$NODE_SVC" npm run dev -- --debug --force --host || true
+  run_node npm run dev -- --debug --force --host || true
   ok "Vite dev lanzado (verifica logs)."
 else
   log "Compilando assets de producción (npm run build)..."
-  $DC run --rm "$NODE_SVC" npm run build
+  run_node npm run build
   ok "Build Vite ok."
 fi
 
@@ -141,3 +184,6 @@ fi
 
 echo
 ok "Init completo. Proyecto listo."
+
+
+
