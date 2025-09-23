@@ -4,6 +4,13 @@
         <p class="text-muted small mb-0">{{ __("Update your account's profile information and email address.") }}</p>
     </header>
 
+    @php($isEntra = isset($user) && (method_exists($user, 'isEntra') ? $user->isEntra() : strtolower((string)($user->auth_provider ?? '')) === 'entra'))
+    @if($isEntra)
+        <x-adminlte-alert theme="info" title="Informacion" class="mb-2">
+            Este perfil proviene de Microsoft Entra. El nombre se sincroniza con tu directorio corporativo y no puede cambiarse desde la aplicacion.
+        </x-adminlte-alert>
+    @endif
+
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
@@ -14,15 +21,15 @@
 
         <div class="form-group mb-3">
             <label for="name">{{ __('Name') }}</label>
-            <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name">
+            <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" @if($isEntra) readonly @endif required autocomplete="name">
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
 
         <div class="form-group mb-2">
             <label for="email">{{ __('Email') }}</label>
-            {{-- Política: el email no es editable por el usuario (solo lectura). --}}
+            {{-- Politica: el email no es editable por el usuario (solo lectura). --}}
             <input id="email" type="email" class="form-control" value="{{ $user->email }}" disabled>
-            {{-- Hidden para cumplir validación del request sin permitir cambios --}}
+            {{-- Hidden para cumplir validacion del request sin permitir cambios --}}
             <input type="hidden" name="email" value="{{ $user->email }}">
             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
 
