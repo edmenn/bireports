@@ -6,22 +6,31 @@ namespace App\Http\Controllers;
 use App\Models\Audit;
 use App\Models\Report;
 use App\Models\User;
-use App\Support\SimpleXlsxWriter;
+
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Response;
+
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
+
+// PhpSpreadsheet (librería completa de Excel)
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 final class AuditAnalyticsController extends Controller
 {
-    /** ÚNICA Accion que cuenta como “acceso”. Según tu dump real. */
+    /** ÚNICA Acción que cuenta como “acceso”. Según tu dump real. */
     private const ACCESS_ACTIONS = ['render','view'];
 
     public function index(Request $request): View
     {
         $data = $this->composeViewData($request);
-
         return view('auditoria.index', $data);
     }
 
@@ -143,9 +152,9 @@ final class AuditAnalyticsController extends Controller
     /** Dashboard global (renders). */
     private function buildDashboard($base, Carbon $from, Carbon $to): array
     {
-        // Meses (ajustado a TZ de la app)
         $tz = addslashes(\App\Support\AppTimezone::current() ?? config('app.timezone'));
         $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
+
         $monthsRaw = (clone $base)
             ->selectRaw("to_char(date_trunc('month', occurred_at AT TIME ZONE '$tz'), 'YYYY-MM') AS ym, COUNT(*) AS total")
             ->groupBy('ym')->orderBy('ym')->get()->keyBy('ym');
@@ -162,7 +171,6 @@ final class AuditAnalyticsController extends Controller
             $cursor->addMonth();
         }
 
-        // Heatmap (ajustado a TZ de la app)
         $gridRaw = (clone $base)
             ->selectRaw("EXTRACT(ISODOW FROM (occurred_at AT TIME ZONE '$tz'))::int AS dow, EXTRACT(HOUR FROM (occurred_at AT TIME ZONE '$tz'))::int AS hr, COUNT(*) AS total")
             ->groupBy('dow','hr')->get();
@@ -175,7 +183,6 @@ final class AuditAnalyticsController extends Controller
         }
         foreach ($gridRaw as $r) $heatmap[$r->hr][$r->dow] = (int)$r->total;
 
-        // Tendencia diaria (ajustado a TZ de la app)
         $dailyRaw = (clone $base)
             ->selectRaw("DATE(occurred_at AT TIME ZONE '$tz') AS d, COUNT(*) AS total")
             ->groupBy('d')->orderBy('d')->get()->keyBy('d');
@@ -188,7 +195,6 @@ final class AuditAnalyticsController extends Controller
             $cur->addDay();
         }
 
-        // Top usuarios
         $topUsers = (clone $base)
             ->select('user_id', DB::raw('COUNT(*) AS total'))
             ->whereNotNull('user_id')
@@ -198,7 +204,6 @@ final class AuditAnalyticsController extends Controller
                 return ['name' => $u?->name ?? ('Usuario #'.$r->user_id), 'total' => (int)$r->total];
             })->values();
 
-        // Top reportes
         $topReportsRows = (clone $base)
             ->select('report_uuid', DB::raw('COUNT(*) AS total'))
             ->groupBy('report_uuid')->orderByDesc('total')->limit(10)->get();
@@ -209,7 +214,6 @@ final class AuditAnalyticsController extends Controller
             return ['label' => $reportNames[$id] ?? $id, 'total' => (int)$r->total];
         })->values();
 
-        // KPIs 7/30 días (renders)
         $since7  = (clone $to)->copy()->subDays(6)->startOfDay();
         $since30 = (clone $to)->copy()->subDays(29)->startOfDay();
 
@@ -218,12 +222,10 @@ final class AuditAnalyticsController extends Controller
         $activeReports7 = (clone $base)->where('occurred_at','>=',$since7 )->distinct('report_uuid')->count('report_uuid');
         $activeReports30= (clone $base)->where('occurred_at','>=',$since30)->distinct('report_uuid')->count('report_uuid');
 
-        // Errores 7d
         $errors7    = Audit::query()->whereBetween('occurred_at', [$since7, $to])->where('action','error')->count();
         $views7     = (clone $base)->where('occurred_at','>=',$since7)->count();
         $errorRate7 = $views7 > 0 ? round(($errors7 / $views7) * 100, 1) : 0.0;
 
-        // Top errores 30d
         $topErrorReportsRows = Audit::query()
             ->whereBetween('occurred_at', [$since30, $to])
             ->where('action','error')
@@ -236,7 +238,6 @@ final class AuditAnalyticsController extends Controller
             return ['label'=>$errReportNames[$id] ?? $id, 'total'=>(int)$r->total];
         })->values();
 
-        // Variación 7d vs previos
         $since7_from = $since7;
         $prev7_from = (clone $since7_from)->subDays(7);
         $prev7_to   = (clone $since7_from)->subDay()->endOfDay();
@@ -391,23 +392,20 @@ final class AuditAnalyticsController extends Controller
         $user = User::query()->find($userId);
         if (!$user) return [null, []];
 
-        // Para KPIs y agregaciones, contamos SOLO 'render' para evitar doble conteo
+        // Para KPIs y agregaciones, contamos SOLO 'render'
         $base = Audit::query()
             ->where('user_id', $userId)
             ->whereBetween('occurred_at', [$from, $to])
             ->where('action', 'render');
 
-        // Timezone para agregaciones (alineado con buildDashboard)
         $tz = addslashes(\App\Support\AppTimezone::current() ?? config('app.timezone'));
         $displayTz = \App\Support\AppTimezone::current() ?? config('app.timezone');
 
-        // KPIs del usuario
         $totalAccesos   = (clone $base)->count();
         $lastAccess     = (clone $base)->selectRaw("MAX(occurred_at AT TIME ZONE '$tz') AS la")->value('la');
         $reportesUnicos = (clone $base)->distinct('report_uuid')->count('report_uuid');
         $diasActivos    = (clone $base)->selectRaw("DATE(occurred_at AT TIME ZONE '$tz') AS d")->groupBy('d')->get()->count();
 
-        // Top reportes del usuario
         $topReportsRows = (clone $base)
             ->select('report_uuid', DB::raw('COUNT(*) AS total'))
             ->groupBy('report_uuid')->orderByDesc('total')->limit(10)->get();
@@ -418,7 +416,7 @@ final class AuditAnalyticsController extends Controller
             return ['label' => $reportNames[$id] ?? $id, 'total' => (int)$r->total];
         })->values();
 
-        // Heatmap del usuario (ajustado a TZ)
+        // Heatmap por día/hora
         $gridRaw = (clone $base)
             ->selectRaw("EXTRACT(ISODOW FROM (occurred_at AT TIME ZONE '$tz'))::int AS dow, EXTRACT(HOUR FROM (occurred_at AT TIME ZONE '$tz'))::int AS hr, COUNT(*) AS total")
             ->groupBy('dow','hr')->get();
@@ -431,8 +429,7 @@ final class AuditAnalyticsController extends Controller
         }
         foreach ($gridRaw as $r) $heatmap[$r->hr][$r->dow] = (int)$r->total;
 
-        // Timeline: TODAS las acciones del usuario (hasta 500) + nombre de reporte
-        // Timeline: queremos TODAS las acciones del usuario
+        // Timeline: TODAS las acciones (hasta 500) + nombre de reporte
         $eventsRaw = Audit::query()
             ->where('user_id', $userId)
             ->whereBetween('occurred_at', [$from, $to])
@@ -455,7 +452,7 @@ final class AuditAnalyticsController extends Controller
                     'occurred_at' => ($e->occurred_at instanceof Carbon ? $e->occurred_at->copy() : Carbon::parse($e->occurred_at))->setTimezone($displayTz)->toDateTimeString(),
                     'action'      => (string)$e->action,
                     'report_uuid' => $rid,
-                    'report_name' => $nameMap[$rid] ?? $rid, // SIEMPRE presente
+                    'report_name' => $nameMap[$rid] ?? $rid,
                     'page_name'   => $e->page_name,
                     'bookmark'    => $e->bookmark,
                     'duration_ms' => $e->duration_ms,
@@ -481,9 +478,18 @@ final class AuditAnalyticsController extends Controller
         return [$profile, $events];
     }
 
-    /** Exporta la vista de analítica a un libro Excel con múltiples hojas. */
+    /** Exporta la vista de analítica a un libro Excel con múltiples hojas (PhpSpreadsheet). */
     public function export(Request $request): StreamedResponse
     {
+        // Evitar bytes extra
+        if (class_exists(\Debugbar::class)) {
+            \Debugbar::disable();
+        }
+        @ini_set('zlib.output_compression', 'Off');
+        while (ob_get_level() > 0) {
+            @ob_end_clean();
+        }
+
         $data = $this->composeViewData($request, true);
 
         $sheets = $this->buildExportSheets($data);
@@ -495,19 +501,82 @@ final class AuditAnalyticsController extends Controller
             ];
         }
 
-        $writer = new SimpleXlsxWriter();
-        foreach ($sheets as $sheet) {
-            $writer->addSheet($sheet['name'], $sheet['headers'], $sheet['rows']);
-        }
+        // === PhpSpreadsheet ===
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getProperties()
+            ->setCreator('Auditoría')
+            ->setTitle('Auditoría de Métricas de Uso');
+
+        // Escribir hojas
+        foreach ($sheets as $idx => $sheet) {
+            $name    = (string)($sheet['name'] ?? ('Hoja '.($idx+1)));
+            $headers = (array)($sheet['headers'] ?? []);
+            $rows    = (array)($sheet['rows'] ?? []);
+
+            /** @var Worksheet $ws */
+            if ($idx === 0) {
+                $ws = $spreadsheet->getActiveSheet();
+                $ws->setTitle(mb_substr($name, 0, 31));
+            } else {
+                $ws = new Worksheet($spreadsheet, mb_substr($name, 0, 31));
+                $spreadsheet->addSheet($ws, $idx);
+            }
+
+            // Headers (fila 1)
+            $col = 1;
+            foreach ($headers as $h) {
+                $colLetter = Coordinate::stringFromColumnIndex($col);
+                $coord     = $colLetter . '1';
+                $ws->setCellValue($coord, (string)$h);
+                $ws->getStyle($coord)->getFont()->setBold(true);
+                $col++;
+            }
+
+            // Datos (desde fila 2)
+            $r = 2;
+            foreach ($rows as $row) {
+                $c = 1;
+                foreach ((array)$row as $val) {
+                    $colLetter = Coordinate::stringFromColumnIndex($c);
+                    $coord     = $colLetter . (string)$r;
+
+                    if (is_int($val) || is_float($val)) {
+                        $ws->setCellValueExplicit($coord, $val, DataType::TYPE_NUMERIC);
+                    } elseif (is_bool($val)) {
+                        $ws->setCellValueExplicit($coord, $val ? 'TRUE' : 'FALSE', DataType::TYPE_STRING);
+                    } elseif ($val === null) {
+                        $ws->setCellValueExplicit($coord, '', DataType::TYPE_STRING);
+                    } else {
+                        $ws->setCellValueExplicit($coord, (string)$val, DataType::TYPE_STRING);
+                    }
+                    $c++;
+                }
+                $r++;
+            }
+
+            // Auto-size columnas
+            $maxCol = max(1, count($headers));
+            for ($i = 1; $i <= $maxCol; $i++) {
+                $colLetter = Coordinate::stringFromColumnIndex($i);
+                $ws->getColumnDimension($colLetter)->setAutoSize(true);
+            }
+        } // ← cierre del foreach de hojas ✅
+
+        $spreadsheet->setActiveSheetIndex(0);
 
         $filename = 'auditoria_' . now()->format('Ymd_His') . '.xlsx';
+        $writer   = new Xlsx($spreadsheet);
 
+        // Stream limpio
         return response()->streamDownload(function () use ($writer) {
-            $writer->output();
+            $writer->save('php://output');
         }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma'              => 'no-cache',
         ]);
     }
+
     /**
      * Prepara las hojas que se exportarán al libro de Excel.
      *
@@ -561,9 +630,7 @@ final class AuditAnalyticsController extends Controller
 
         $monthsRows = [];
         foreach ($data['months'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $monthsRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
         }
         if (!empty($monthsRows)) {
@@ -572,9 +639,7 @@ final class AuditAnalyticsController extends Controller
 
         $dailyRows = [];
         foreach ($data['daily'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $dailyRows[] = [$row['date'] ?? '', $row['total'] ?? 0];
         }
         if (!empty($dailyRows)) {
@@ -583,29 +648,24 @@ final class AuditAnalyticsController extends Controller
 
         $heatmapRows = [];
         foreach ($data['heatmap'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $heatmapRows[] = [
                 $row['hour'] ?? '',
-                $row[1] ?? 0,
-                $row[2] ?? 0,
-                $row[3] ?? 0,
-                $row[4] ?? 0,
-                $row[5] ?? 0,
-                $row[6] ?? 0,
-                $row[7] ?? 0,
+                $row[1] ?? 0, $row[2] ?? 0, $row[3] ?? 0, $row[4] ?? 0,
+                $row[5] ?? 0, $row[6] ?? 0, $row[7] ?? 0,
             ];
         }
         if (!empty($heatmapRows)) {
-            $appendSheet('Dashboard - Heatmap', ['Hora', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'], $heatmapRows);
+            $appendSheet(
+                'Dashboard - Heatmap',
+                ['Hora', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'],
+                $heatmapRows
+            );
         }
 
         $topUsersRows = [];
         foreach (collect($data['topUsers'] ?? []) as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $topUsersRows[] = [$row['name'] ?? '', $row['total'] ?? 0];
         }
         if (!empty($topUsersRows)) {
@@ -614,9 +674,7 @@ final class AuditAnalyticsController extends Controller
 
         $topReportsRows = [];
         foreach (collect($data['topReports'] ?? []) as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $topReportsRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
         }
         if (!empty($topReportsRows)) {
@@ -625,9 +683,7 @@ final class AuditAnalyticsController extends Controller
 
         $topErrorRows = [];
         foreach (collect($data['topErrorReports'] ?? []) as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $topErrorRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
         }
         if (!empty($topErrorRows)) {
@@ -636,9 +692,7 @@ final class AuditAnalyticsController extends Controller
 
         $alertsRows = [];
         foreach ($data['alerts'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $alertsRows[] = [$row['type'] ?? '', $row['msg'] ?? ''];
         }
         if (!empty($alertsRows)) {
@@ -648,9 +702,7 @@ final class AuditAnalyticsController extends Controller
         $userSheetHeaders = ['ID usuario', 'Nombre', 'Email', 'Accesos', 'Ultimo acceso', 'Creado'];
         $usersMostRows = [];
         foreach ($data['usersMost'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $usersMostRows[] = [
                 $row['user_id'] ?? null,
                 $row['name'] ?? '',
@@ -664,9 +716,7 @@ final class AuditAnalyticsController extends Controller
 
         $usersLeastRows = [];
         foreach ($data['usersLeast'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $usersLeastRows[] = [
                 $row['user_id'] ?? null,
                 $row['name'] ?? '',
@@ -681,9 +731,7 @@ final class AuditAnalyticsController extends Controller
         $usersInactiveHeaders = ['ID usuario', 'Nombre', 'Email', 'Ultimo acceso', 'Creado'];
         $usersInactiveRows = [];
         foreach ($data['usersNoAct'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $usersInactiveRows[] = [
                 $row['user_id'] ?? null,
                 $row['name'] ?? '',
@@ -697,9 +745,7 @@ final class AuditAnalyticsController extends Controller
         $reportHeaders = ['ID reporte', 'Nombre', 'Accesos', 'Ultimo acceso'];
         $reportsMostRows = [];
         foreach ($data['reportsMost'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $reportsMostRows[] = [
                 $row['report_uuid'] ?? '',
                 $row['name'] ?? '',
@@ -711,9 +757,7 @@ final class AuditAnalyticsController extends Controller
 
         $reportsLeastRows = [];
         foreach ($data['reportsLeast'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $reportsLeastRows[] = [
                 $row['report_uuid'] ?? '',
                 $row['name'] ?? '',
@@ -726,9 +770,7 @@ final class AuditAnalyticsController extends Controller
         $reportsInactiveHeaders = ['ID reporte', 'Nombre', 'Ultimo acceso', 'Creado'];
         $reportsInactiveRows = [];
         foreach ($data['reportsNoAcc'] ?? [] as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
+            if (!is_array($row)) continue;
             $reportsInactiveRows[] = [
                 $row['report_uuid'] ?? '',
                 $row['name'] ?? '',
@@ -758,18 +800,11 @@ final class AuditAnalyticsController extends Controller
 
             $profileHeatmapRows = [];
             foreach ($userProfile['heatmap'] ?? [] as $row) {
-                if (!is_array($row)) {
-                    continue;
-                }
+                if (!is_array($row)) continue;
                 $profileHeatmapRows[] = [
                     $row['hour'] ?? '',
-                    $row[1] ?? 0,
-                    $row[2] ?? 0,
-                    $row[3] ?? 0,
-                    $row[4] ?? 0,
-                    $row[5] ?? 0,
-                    $row[6] ?? 0,
-                    $row[7] ?? 0,
+                    $row[1] ?? 0, $row[2] ?? 0, $row[3] ?? 0, $row[4] ?? 0,
+                    $row[5] ?? 0, $row[6] ?? 0, $row[7] ?? 0,
                 ];
             }
             if (!empty($profileHeatmapRows)) {
@@ -778,9 +813,7 @@ final class AuditAnalyticsController extends Controller
 
             $profileTopReportsRows = [];
             foreach (collect($userProfile['topReports'] ?? []) as $row) {
-                if (!is_array($row)) {
-                    continue;
-                }
+                if (!is_array($row)) continue;
                 $profileTopReportsRows[] = [$row['label'] ?? '', $row['total'] ?? 0];
             }
             if (!empty($profileTopReportsRows)) {
@@ -792,9 +825,7 @@ final class AuditAnalyticsController extends Controller
         if (!empty($userEvents)) {
             $eventRows = [];
             foreach ($userEvents as $row) {
-                if (!is_array($row)) {
-                    continue;
-                }
+                if (!is_array($row)) continue;
                 $eventRows[] = [
                     $row['occurred_at'] ?? '',
                     $row['action'] ?? '',
@@ -812,18 +843,4 @@ final class AuditAnalyticsController extends Controller
 
         return $sheets;
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
