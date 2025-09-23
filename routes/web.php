@@ -28,6 +28,7 @@ use App\Http\Controllers\UserPortalController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\UsersSyncController; // importación desde Entra
 use App\Http\Middleware\EnsureUserIsNotBlocked;
+use App\Http\Middleware\ForbidExternalPasswordChange;
 
 /*
 |--------------------------------------------------------------------------
@@ -251,7 +252,7 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
     // ✅ Rutas de perfil (Breeze/propio).
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])
-        ->middleware('no-external-password')
+        ->middleware(ForbidExternalPasswordChange::class)
         ->name('profile.update');
 
 });
@@ -365,3 +366,4 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
+
