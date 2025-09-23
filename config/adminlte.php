@@ -226,7 +226,7 @@ return [
                 [ 'text'=>'Inicio',       'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
                 [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
                 [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                [ 'text'=>'Mis reportes', 'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'menu.portal' ],
+                [ 'text'=>'Aplicaciones', 'icon'=>'fas fa-th-large',   'route'=>'portal.apps',     'can'=>'menu.portal' ],
             ],
         ],
 
@@ -399,3 +399,6 @@ return [
     */
     'livewire' => false,
 ];
+
+
+

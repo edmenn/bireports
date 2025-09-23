@@ -33,7 +33,7 @@ class MenuServiceProvider extends ServiceProvider
                         [ 'text'=>'home',          'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
                         [ 'text'=>'favorites',     'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
                         [ 'text'=>'most_accessed', 'icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                        [ 'text'=>'my_reports',    'icon'=>'fas fa-chart-line', 'route'=>'portal.reportes',  'can'=>'menu.portal' ],
+                        [ 'text'=>'apps',          'icon'=>'fas fa-th-large',   'route'=>'portal.apps',      'can'=>'menu.portal' ],
                     ],
                 ],
 
@@ -94,3 +94,4 @@ class MenuServiceProvider extends ServiceProvider
         ]);
     }
 }
+

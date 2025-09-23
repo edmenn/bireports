@@ -194,7 +194,7 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
         Route::get('/favoritos', [UserPortalController::class, 'favorites'])->name('portal.favoritos');
         Route::post('/favoritos/{report}/toggle', [UserPortalController::class, 'toggleFavorite'])->name('portal.fav.toggle');
         Route::get('/mas-accedidos', [UserPortalController::class, 'mostAccessed'])->name('portal.mas');
-        Route::get('/reportes', [UserPortalController::class, 'myReports'])->name('portal.reportes');
+        Route::get('/aplicaciones', [UserPortalController::class, 'apps'])->name('portal.apps');
     });
 
     // Auditoría (analítica y export)
@@ -366,4 +366,5 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
+
 

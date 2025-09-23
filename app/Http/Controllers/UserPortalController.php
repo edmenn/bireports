@@ -72,7 +72,12 @@ class UserPortalController extends Controller
     {
         $user = Auth::user();
         $reports = $user->favoriteReports()->orderBy('name')->paginate(24)->withQueryString();
-        return view('portal.favoritos', compact('reports'));
+        $favIds = $reports->pluck('id')->all();
+
+        return view('portal.favoritos', [
+            'reports' => $reports,
+            'favIds'  => $favIds,
+        ]);
     }
 
     public function mostAccessed(): View
@@ -103,27 +108,8 @@ class UserPortalController extends Controller
         return view('portal.mas_accedidos', ['items' => $list]);
     }
 
-    public function myReports(): View
+    public function apps(): View
     {
-        $user = Auth::user();
-
-        // Reportes que puede ver por pertenecer a carpetas accesibles
-        $folderIds = Folder::query()
-            ->where(function ($q) use ($user) {
-                $q->whereHas('users', fn($w)=> $w->where('users.id', $user->id))
-                  ->orWhereHas('groups.users', fn($w)=> $w->where('users.id', $user->id));
-            })
-            ->pluck('id');
-
-        $reportIds = DB::table('folder_report')
-            ->whereIn('folder_id', $folderIds)
-            ->pluck('report_id')
-            ->unique()
-            ->values();
-
-        $reports = Report::query()->whereIn('id', $reportIds)->orderBy('name')->paginate(24)->withQueryString();
-        $favIds = $user->favoriteReports()->pluck('reports.id')->all();
-
-        return view('portal.mis_reportes', compact('reports','favIds'));
+        return view('portal.aplicaciones');
     }
 }

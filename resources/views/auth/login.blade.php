@@ -136,7 +136,7 @@
                 <!--<div class="text-center my-3 text-muted small">- o -</div>-->
             @endif
             <a href="{{ route('auth.microsoft.redirect') }}" class="btn btn-outline-primary w-100 btn-microsoft">
-                <i class="fab fa-microsoft me-1"></i> {{ __('Continue with Microsoft') }}
+                <i class="fab fa-microsoft me-1"></i> {{ __('Microsoft') }}
             </a>
         @endif
     </div>
