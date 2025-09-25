@@ -11,6 +11,7 @@ return [
     'reports' => 'Raporlar',
     'datasets' => 'Veri kümeleri',
     'apps' => 'Uygulamalar',
+    'applications' => 'Uygulamalar',
     'workspaces' => 'Çalışma alanları',
     'capacities' => 'Kapasiteler',
     'organization' => 'Organizasyon',

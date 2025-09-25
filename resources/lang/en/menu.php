@@ -11,6 +11,7 @@ return [
     'reports' => 'Reports',
     'datasets' => 'Datasets',
     'apps' => 'Apps',
+    'applications' => 'Applications',
     'workspaces' => 'Workspaces',
     'capacities' => 'Capacities',
     'organization' => 'Organization',
@@ -26,3 +27,4 @@ return [
     'parameters' => 'Parameters',
     'theme' => 'Theme',
 ];
+

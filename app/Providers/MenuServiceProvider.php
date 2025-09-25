@@ -33,7 +33,7 @@ class MenuServiceProvider extends ServiceProvider
                         [ 'text'=>'home',          'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
                         [ 'text'=>'favorites',     'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
                         [ 'text'=>'most_accessed', 'icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                        [ 'text'=>'apps',          'icon'=>'fas fa-th-large',   'route'=>'portal.apps',      'can'=>'menu.portal' ],
+                        [ 'text'=>'applications',  'icon'=>'fas fa-th-large',   'route'=>'portal.apps',      'can'=>'menu.portal' ],
                     ],
                 ],
 
@@ -44,11 +44,11 @@ class MenuServiceProvider extends ServiceProvider
                     'can'  => 'menu.reports_index',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'reports',    'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
-                        [ 'text'=>'datasets',   'icon'=>'fas fa-database',        'route'=>'datasets.index',    'can'=>'menu.reports_index' ],
-                        [ 'text'=>'apps',       'icon'=>'fas fa-th-large',        'route'=>'apps.index',        'can'=>'menu.apps' ],
-                        [ 'text'=>'workspaces', 'icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
-                        [ 'text'=>'capacities', 'icon'=>'fas fa-cogs',            'route'=>'capacities.index',  'can'=>'menu.capacities'],
+                        [ 'text'=>'reports',       'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',         'can'=>'menu.reports_index' ],
+                        [ 'text'=>'datasets',      'icon'=>'fas fa-database',        'route'=>'datasets.index',        'can'=>'menu.reports_index' ],
+                        [ 'text'=>'applications',  'icon'=>'fas fa-th',              'route'=>'applications.index',    'can'=>'menu.applications' ],
+                        [ 'text'=>'workspaces',    'icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',      'can'=>'menu.workspaces' ],
+                        [ 'text'=>'capacities',    'icon'=>'fas fa-cogs',            'route'=>'capacities.index',      'can'=>'menu.capacities' ],
                     ],
                 ],
 
@@ -59,10 +59,10 @@ class MenuServiceProvider extends ServiceProvider
                     'can'  => 'menu.users',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'users',   'icon'=>'fas fa-users',         'route'=>'users.index',   'can'=>'menu.users' ],
-                        [ 'text'=>'groups',  'icon'=>'fas fa-user-friends',  'route'=>'grupos.index',  'can'=>'menu.groups' ],
-                        [ 'text'=>'folders', 'icon'=>'fas fa-folder',        'route'=>'folders.index', 'can'=>'menu.folders' ],
-                        [ 'text'=>'roles',   'icon'=>'fas fa-user-shield',   'route'=>'roles.index',   'can'=>'menu.users' ],
+                        [ 'text'=>'users',    'icon'=>'fas fa-users',        'route'=>'users.index',   'can'=>'menu.users' ],
+                        [ 'text'=>'groups',   'icon'=>'fas fa-user-friends', 'route'=>'grupos.index',  'can'=>'menu.groups' ],
+                        [ 'text'=>'folders',  'icon'=>'fas fa-folder',       'route'=>'folders.index', 'can'=>'menu.folders' ],
+                        [ 'text'=>'roles',    'icon'=>'fas fa-user-shield',  'route'=>'roles.index',   'can'=>'menu.users' ],
                     ],
                 ],
 
@@ -94,4 +94,3 @@ class MenuServiceProvider extends ServiceProvider
         ]);
     }
 }
-

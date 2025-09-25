@@ -11,6 +11,7 @@ return [
     'reports' => 'Relatórios',
     'datasets' => 'Conjuntos de dados',
     'apps' => 'Aplicativos',
+    'applications' => 'Aplicativos',
     'workspaces' => 'Espaços de trabalho',
     'capacities' => 'Capacidades',
     'organization' => 'Organização',

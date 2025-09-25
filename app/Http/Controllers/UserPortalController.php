@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
 use App\Models\Folder;
 use App\Models\Report;
 use Illuminate\Contracts\View\View;
@@ -18,12 +19,11 @@ class UserPortalController extends Controller
     {
         $user = Auth::user();
 
-        // Carpetas a las que tiene acceso (por usuario o por grupo)
         $folders = Folder::query()
-            ->withCount(['users','groups','reports'])
+            ->withCount(['users', 'groups', 'reports'])
             ->where(function ($q) use ($user) {
-                $q->whereHas('users', fn($w)=> $w->where('users.id', $user->id))
-                  ->orWhereHas('groups.users', fn($w)=> $w->where('users.id', $user->id));
+                $q->whereHas('users', fn ($w) => $w->where('users.id', $user->id))
+                    ->orWhereHas('groups.users', fn ($w) => $w->where('users.id', $user->id));
             })
             ->orderBy('name')
             ->get();
@@ -39,10 +39,10 @@ class UserPortalController extends Controller
         $favIds = $user->favoriteReports()->pluck('reports.id')->all();
 
         return view('portal.index', [
-            'folders'   => $folders,
-            'selected'  => $selected,
-            'reports'   => $reports,
-            'favIds'    => $favIds,
+            'folders'  => $folders,
+            'selected' => $selected,
+            'reports'  => $reports,
+            'favIds'   => $favIds,
         ]);
     }
 
@@ -59,12 +59,10 @@ class UserPortalController extends Controller
             $favorited = true;
         }
 
-        // Si es una petición AJAX (fetch), devolver JSON 200 para evitar redirecciones
-        if ($request->ajax() || $request->wantsJson() || strtolower((string)$request->header('X-Requested-With')) === 'xmlhttprequest') {
+        if ($request->ajax() || $request->wantsJson() || strtolower((string) $request->header('X-Requested-With')) === 'xmlhttprequest') {
             return response()->json(['favorited' => $favorited]);
         }
 
-        // Fallback clásico con redirect back
         return back()->with('success', $favorited ? 'Agregado a favoritos' : 'Quitado de favoritos');
     }
 
@@ -98,9 +96,9 @@ class UserPortalController extends Controller
         $list = $rows->map(function ($r) use ($reports) {
             $rep = $reports->get($r->id);
             return [
-                'id'    => $r->id,
-                'name'  => $rep->name ?? $r->id,
-                'total' => (int) $r->total,
+                'id'           => $r->id,
+                'name'         => $rep->name ?? $r->id,
+                'total'        => (int) $r->total,
                 'workspace_id' => $rep->workspace_id ?? null,
             ];
         });
@@ -108,8 +106,75 @@ class UserPortalController extends Controller
         return view('portal.mas_accedidos', ['items' => $list]);
     }
 
-    public function apps(): View
+    public function apps(Request $request): View
     {
-        return view('portal.aplicaciones');
+        $user = $request->user();
+
+        $applications = Application::accessibleFor($user)
+            ->withCount(['reports', 'sections'])
+            ->orderBy('name')
+            ->get();
+
+        return view('portal.aplicaciones', [
+            'applications' => $applications,
+        ]);
+    }
+
+    public function application(Request $request, Application $application): View
+    {
+        $user = $request->user();
+
+        abort_unless($application->is_active, 404);
+
+        $canAccess = Application::accessibleFor($user)
+            ->whereKey($application->getKey())
+            ->exists();
+
+        if (! $canAccess) {
+            abort(403);
+        }
+
+        $sections = $application->sections()
+            ->with(['reports' => fn ($q) => $q->orderBy('name')])
+            ->orderBy('name')
+            ->get();
+
+        $looseReports = $application->reports()
+            ->wherePivotNull('section_id')
+            ->orderBy('reports.name')
+            ->get();
+
+        $orderedReports = collect();
+
+        foreach ($sections as $section) {
+            foreach ($section->reports as $report) {
+                $orderedReports->push($report);
+            }
+        }
+
+        foreach ($looseReports as $report) {
+            $orderedReports->push($report);
+        }
+
+        $currentReportId = (string) $request->query('report');
+        $currentReport = $orderedReports->firstWhere('id', $currentReportId) ?? $orderedReports->first();
+
+        $iframeUrl = null;
+        if ($currentReport) {
+            $iframeUrl = route('reports.show', [
+                'workspace' => $currentReport->workspace_id,
+                'report'    => $currentReport->id,
+                'embedded'  => 1,
+            ]);
+        }
+
+        return view('portal.application', [
+            'application'   => $application,
+            'sections'      => $sections,
+            'looseReports'  => $looseReports,
+            'currentReport' => $currentReport,
+            'iframeUrl'     => $iframeUrl,
+        ]);
     }
 }
+

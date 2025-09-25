@@ -12,7 +12,8 @@ class PermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Taxonom?a de permisos por m?dulo/acci?n
+        // Taxonomia de permisos por modulo/accion
+        Permission::query()->where('name', 'apps.view')->where('guard_name', 'web')->delete();
         $perms = [
             // Portal
             'portal.view',
@@ -23,8 +24,11 @@ class PermissionsSeeder extends Seeder
             // Datasets
             'datasets.view', 'datasets.refresh', 'datasets.schedule.view', 'datasets.schedule.edit', 'datasets.export',
 
-            // Workspaces / Apps
-            'workspaces.view', 'apps.view',
+            // Workspaces
+            'workspaces.view',
+
+            // Applications
+            'applications.view', 'applications.create', 'applications.edit', 'applications.delete', 'application_sections.manage',
 
             // Capacities
             'capacities.view', 'capacities.pause', 'capacities.resume', 'capacities.schedule.view', 'capacities.schedule.edit', 'capacities.audit.view',
@@ -45,7 +49,7 @@ class PermissionsSeeder extends Seeder
             Permission::findOrCreate($name, 'web');
         }
 
-        // Asignaci?n de permisos por rol
+        // Asignacion de permisos por rol
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $editor = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
         $usuario = Role::firstOrCreate(['name' => 'usuario', 'guard_name' => 'web']);
@@ -58,7 +62,8 @@ class PermissionsSeeder extends Seeder
             'portal.view',
             'reports.view', 'reports.create', 'reports.edit', 'reports.export',
             'datasets.view', 'datasets.refresh', 'datasets.schedule.view', 'datasets.schedule.edit', 'datasets.export',
-            'workspaces.view', 'apps.view',
+            'workspaces.view',
+            'applications.view',
             'capacities.view', 'capacities.pause', 'capacities.resume', 'capacities.schedule.view', 'capacities.schedule.edit', 'capacities.audit.view',
             'audit.view', 'audit.export',
         ];
@@ -69,7 +74,8 @@ class PermissionsSeeder extends Seeder
             'portal.view',
             'reports.view',
             'datasets.view',
-            'workspaces.view', 'apps.view',
+            'workspaces.view',
+            'applications.view',
         ];
         $usuario->syncPermissions($usuarioPerms);
     }

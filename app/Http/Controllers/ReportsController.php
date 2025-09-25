@@ -139,6 +139,7 @@ class ReportsController extends Controller
         return view('reports.show', [
             'report'       => $report,
             'workspace'    => $workspace,
+            'embedded'     => $request->boolean('embedded'),
             'embed'        => $embedArr,
             'error'        => $errShort,   // mensaje corto arriba
             'error_debug'  => $errDetail,  // detalle dentro de <details> para copiar

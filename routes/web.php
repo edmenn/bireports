@@ -24,6 +24,8 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\FoldersController;
+use App\Http\Controllers\ApplicationsController;
+use App\Http\Controllers\ApplicationSectionsController;
 use App\Http\Controllers\UserPortalController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\UsersSyncController; // importación desde Entra
@@ -53,7 +55,6 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
     Route::pattern('usuario', '[0-9]+');
 
     // Menú principal
-    Route::view('/aplicaciones', 'apps.index')->name('apps.index');
 
     // Capacidades (solo admin/editor)
     Route::prefix('capacidades')->middleware('role:admin|editor')->group(function () {
@@ -187,7 +188,10 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
             'show'    => 'folders.show',
         ])
         ->except(['show']);
-
+    // Applications (admin)
+    Route::resource('applications', ApplicationsController::class)
+        ->middleware('role:admin')
+        ->except(['show']);
     // Portal de usuario
     Route::prefix('mi')->group(function () {
         Route::get('/', [UserPortalController::class, 'index'])->name('portal.index');
@@ -195,6 +199,7 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
         Route::post('/favoritos/{report}/toggle', [UserPortalController::class, 'toggleFavorite'])->name('portal.fav.toggle');
         Route::get('/mas-accedidos', [UserPortalController::class, 'mostAccessed'])->name('portal.mas');
         Route::get('/aplicaciones', [UserPortalController::class, 'apps'])->name('portal.apps');
+        Route::get('/aplicaciones/{application:slug}', [UserPortalController::class, 'application'])->name('portal.applications.show');
     });
 
     // Auditoría (analítica y export)
@@ -366,5 +371,14 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
+
+
+
+
+
+
+
+
+
 
 

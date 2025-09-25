@@ -15,10 +15,10 @@ return [
                 'menu.reports_index' => 'Power BI: Informes',
                 'menu.workspaces' => 'Power BI: Espacios de trabajo',
                 'menu.capacities' => 'Power BI: Capacidades',
-                'menu.apps' => 'Power BI: Aplicaciones',
                 'menu.users' => 'Organización: Usuarios',
                 'menu.groups' => 'Organización: Grupos',
                 'menu.folders'=> 'Organización: Carpetas',
+                'menu.applications' => 'Organización: Aplicaciones',
                 'menu.configuraciones' => 'Configuraciones',
                 'menu.auditoria' => 'Auditoría',
                 // 'menu.roles' => 'Organización: Perfiles y Accesos', // opcional si lo agregas al seeder
@@ -32,4 +32,8 @@ return [
         ],
     ],
 ];
+
+
+
+
 

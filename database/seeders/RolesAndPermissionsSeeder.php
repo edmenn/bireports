@@ -11,13 +11,14 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         // Permisos base de menú/acciones
+        Permission::query()->where('name', 'menu.apps')->where('guard_name', 'web')->delete();
         $perms = [
             'reports.view',            // ver informes/embed
             'menu.portal',             // ver menú del portal de usuario
             'menu.reports_index',      // ver menú Informes (admin/editor)
             'menu.workspaces',         // ver menú Espacios de trabajo
             'menu.capacities',         // ver menú Capacidades
-            'menu.apps',               // ver menú Aplicaciones
+            'menu.applications',       // ver ABM Aplicaciones
             'menu.users',              // ver ABM Usuarios
             'menu.groups',             // ver ABM Grupos
             'menu.folders',            // ver ABM Carpetas
@@ -52,7 +53,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // si falla por cache/config, al menos aseguramos menú principal
             $admin->givePermissionTo([
                 'reports.view', 'menu.portal', 'menu.reports_index', 'menu.workspaces', 'menu.capacities',
-                'menu.apps', 'menu.users', 'menu.groups', 'menu.folders', 'menu.configuraciones', 'menu.auditoria',
+                'menu.applications', 'menu.users', 'menu.groups', 'menu.folders', 'menu.configuraciones', 'menu.auditoria',
                 'menu.roles'
             ]);
         }
@@ -70,3 +71,4 @@ class RolesAndPermissionsSeeder extends Seeder
         }
     }
 }
+

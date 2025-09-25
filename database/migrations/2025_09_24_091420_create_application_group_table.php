@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('application_group', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('application_id')->constrained('applications')->cascadeOnDelete();
+            $table->foreignId('group_id')->constrained('groups')->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->unique(['application_id', 'group_id']);
+            $table->index(['application_id', 'group_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('application_group');
+    }
+};

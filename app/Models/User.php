@@ -27,8 +27,8 @@ class User extends Authenticatable
         'email',
         'password',
         'theme',
-        'auth_provider',   // ⬅️ nuevo
-        'external_id',     // ⬅️ nuevo
+        'auth_provider',   // ?? nuevo
+        'external_id',     // ?? nuevo
     ];
 
     /**
@@ -55,7 +55,7 @@ class User extends Authenticatable
     }
 
     /**
-     * === Métodos esperados por AdminLTE ===
+     * === Metodos esperados por AdminLTE ===
      */
 
     public function adminlte_profile_url(): string
@@ -86,6 +86,11 @@ class User extends Authenticatable
     public function folders()
     {
         return $this->belongsToMany(\App\Models\Folder::class);
+    }
+
+    public function applications()
+    {
+        return $this->belongsToMany(\App\Models\Application::class, 'application_user')->withTimestamps();
     }
 
     public function favoriteReports()

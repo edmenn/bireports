@@ -11,6 +11,7 @@ return [
     'reports' => 'Informes',
     'datasets' => 'Conjuntos de datos',
     'apps' => 'Aplicaciones',
+    'applications' => 'Aplicaciones',
     'workspaces' => 'Espacios de trabajo',
     'capacities' => 'Capacidades',
     'organization' => 'Organización',
@@ -26,3 +27,4 @@ return [
     'parameters' => 'Parámetros',
     'theme' => 'Tema',
 ];
+

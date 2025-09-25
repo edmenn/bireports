@@ -21,8 +21,8 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Ejecutamos los seeders necesarios
         $this->call([
+            PermissionsSeeder::class,
             RolesAndPermissionsSeeder::class,
             ConfiguracionSeeder::class,
         ]);

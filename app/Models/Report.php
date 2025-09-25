@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 
 class Report extends Model
@@ -42,6 +43,16 @@ class Report extends Model
     public function workspace()
     {
         return $this->belongsTo(Workspace::class, 'workspace_id', 'id');
+    }
+
+    /**
+     * Asociaciones con aplicaciones publicadas en el portal.
+     */
+    public function applications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'application_report')
+            ->withPivot(['section_id', 'display_order'])
+            ->withTimestamps();
     }
 
     /**

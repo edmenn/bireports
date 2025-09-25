@@ -238,7 +238,6 @@ return [
             'submenu' => [
                 [ 'text'=>'Informes',           'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
                 [ 'text'=>'Conjuntos de datos', 'icon'=>'fas fa-database',        'route'=>'datasets.index',    'can'=>'menu.reports_index' ],
-                [ 'text'=>'Aplicaciones',       'icon'=>'fas fa-th-large',        'route'=>'apps.index',        'can'=>'menu.apps' ],
                 [ 'text'=>'Espacios de trabajo','icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
                 [ 'text'=>'Capacidades',        'icon'=>'fas fa-cogs',            'route'=>'capacities.index',  'can'=>'menu.capacities'],
             ],
@@ -253,6 +252,7 @@ return [
                 [ 'text'=>'Usuarios', 'icon'=>'fas fa-users',         'route'=>'users.index',   'can'=>'menu.users' ],
                 [ 'text'=>'Grupos',   'icon'=>'fas fa-user-friends',  'route'=>'grupos.index',  'can'=>'menu.groups' ],
                 [ 'text'=>'Carpetas', 'icon'=>'fas fa-folder',        'route'=>'folders.index', 'can'=>'menu.folders' ],
+                [ 'text'=>'Aplicaciones', 'icon'=>'fas fa-th',            'route'=>'applications.index', 'can'=>'menu.applications' ],
                 [ 'text'=>'Perfiles y Accesos', 'icon'=>'fas fa-user-shield', 'route'=>'roles.index', 'can'=>'menu.users' ],
             ],
         ],
@@ -399,6 +399,7 @@ return [
     */
     'livewire' => false,
 ];
+
 
 
 

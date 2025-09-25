@@ -11,6 +11,7 @@ return [
     'reports' => 'Отчёты',
     'datasets' => 'Наборы данных',
     'apps' => 'Приложения',
+    'applications' => 'Приложения',
     'workspaces' => 'Рабочие области',
     'capacities' => 'Вместимости',
     'organization' => 'Организация',

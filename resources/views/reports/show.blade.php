@@ -5,6 +5,12 @@
 
 @section('css')
 <style>
+    @if($embedded)
+    body.sidebar-mini .main-header,
+    body.sidebar-mini .main-sidebar,
+    body.sidebar-mini .content-header { display: none !important; }
+    body.sidebar-mini .content-wrapper { margin-left: 0 !important; }
+    @endif
     :root{
         --pbi-min-height: 460px; /* Mínimo para que se vean tabs cómodamente */
     }
@@ -37,17 +43,19 @@
 @endsection
 
 @section('content_header')
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="h5 mb-0">
-        {{ $report->name ?? 'Reporte' }}
-        @if(!empty($workspace?->name))
-            <small class="text-muted">/ {{ $workspace->name }}</small>
-        @endif
-    </h1>
-    <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> {{ __("common.back") }}
-    </a>
-</div>
+    @if (! $embedded)
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h5 mb-0">
+                {{ $report->name ?? 'Reporte' }}
+                @if(!empty($workspace?->name))
+                    <small class="text-muted">/ {{ $workspace->name }}</small>
+                @endif
+            </h1>
+            <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> {{ __('common.back') }}
+            </a>
+        </div>
+    @endif
 @stop
 
 @section('content')
@@ -512,3 +520,4 @@
 })();
 </script>
 @endsection
+
