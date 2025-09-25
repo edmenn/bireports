@@ -10,6 +10,7 @@
     body.sidebar-mini .main-sidebar,
     body.sidebar-mini .content-header { display: none !important; }
     body.sidebar-mini .content-wrapper { margin-left: 0 !important; }
+    .preloader { display: none !important; }
     @endif
     :root{
         --pbi-min-height: 460px; /* Mínimo para que se vean tabs cómodamente */
@@ -520,4 +521,3 @@
 })();
 </script>
 @endsection
-

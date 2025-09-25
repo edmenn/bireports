@@ -27,9 +27,28 @@ class ApplicationRequest extends FormRequest
         return false;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $sections = $this->input('report_sections');
+
+        if (is_array($sections)) {
+            $normalized = [];
+            foreach ($sections as $reportId => $sectionId) {
+                $normalized[$reportId] = $sectionId === '' ? null : $sectionId;
+            }
+
+            $this->merge(['report_sections' => $normalized]);
+        }
+    }
+
     public function rules(): array
     {
         $applicationId = (int) optional($this->route('application'))->id;
+        $sectionRule = Rule::exists('application_sections', 'id');
+
+        if ($applicationId > 0) {
+            $sectionRule = $sectionRule->where(fn ($query) => $query->where('application_id', $applicationId));
+        }
 
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('applications', 'name')->ignore($applicationId)],
@@ -49,6 +68,9 @@ class ApplicationRequest extends FormRequest
 
             'reports' => ['nullable', 'array'],
             'reports.*' => ['string', 'exists:reports,id'],
+
+            'report_sections' => ['nullable', 'array'],
+            'report_sections.*' => ['nullable', 'integer', $sectionRule],
 
             'sections' => ['nullable', 'array'],
             'sections.*' => ['nullable', 'string', 'max:255'],

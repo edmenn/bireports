@@ -85,6 +85,7 @@
 
 @push('css')
 <style>
+.preloader { display: none !important; }
 .application-layout { min-height: 70vh; }
 .application-sidebar { max-height: 70vh; overflow-y: auto; }
 .application-sidebar__item.active { background-color: #0d6efd; color: #fff; font-weight: 600; }
