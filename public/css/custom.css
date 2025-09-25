@@ -450,8 +450,6 @@ body {
   bottom: 0;
   height: auto !important;
 }
-/* Cuando AdminLTE fija el navbar, evitamos doble offset en contenido */
-body.layout-navbar-fixed .content-wrapper { padding-top: 0 !important; }
 
 /* Preloader: evitar efecto ovalado en la imagen y respetar tamaño de config */
 .preloader img { border-radius: 0 !important; clip-path: none !important; object-fit: contain; }
