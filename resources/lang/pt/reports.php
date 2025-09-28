@@ -7,6 +7,8 @@ return [
         'import_now' => 'Importar agora',
     ],
     'show' => [
-        'loading' => 'Carregando relatório...'
+        'loading' => 'Carregando relatório...',
+        'fullscreen_enter' => 'Ver em tela cheia',
+        'fullscreen_exit' => 'Sair de tela cheia',
     ],
 ];

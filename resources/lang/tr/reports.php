@@ -7,6 +7,8 @@ return [
         'import_now' => 'Şimdi içe aktar',
     ],
     'show' => [
-        'loading' => 'Rapor yükleniyor...'
+        'loading' => 'Rapor yükleniyor...',
+        'fullscreen_enter' => 'Tam ekran g�r�nt�le',
+        'fullscreen_exit' => 'Tam ekrandan ��k',
     ],
 ];

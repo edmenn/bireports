@@ -13,6 +13,15 @@
             @endif
         </div>
         <div class="d-flex flex-wrap gap-2">
+            <button type="button"
+                    id="appFullscreenBtn"
+                    class="btn btn-outline-primary"
+                    data-label-enter="{{ __('reports.show.fullscreen_enter') }}"
+                    data-label-exit="{{ __('reports.show.fullscreen_exit') }}"
+                    title="{{ __('reports.show.fullscreen_enter') }}"
+                    aria-label="{{ __('reports.show.fullscreen_enter') }}">
+                <i class="fas fa-expand me-1" aria-hidden="true"></i> {{ __('reports.show.fullscreen_enter') }}
+            </button>
             <a href="{{ route('portal.apps') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> {{ __('applications.actions.exit_application') }}
             </a>
@@ -108,6 +117,7 @@ body.portal-application-runtime { overflow: auto !important; }
 .application-layout,
 .application-viewer,
 .app-wrapper {
+    position: relative;
     display: flex;
     flex-direction: column;
     min-height: 0 !important;
@@ -121,6 +131,23 @@ body.portal-application-runtime { overflow: auto !important; }
 .application-content-wrapper { padding-top: 0; }
 
 /* Contenedor del iframe: toma altura exacta y NO scrollea él */
+.app-wrapper.fullscreen-active,
+.app-wrapper:fullscreen,
+.app-wrapper:-webkit-full-screen{
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background-color: #000;
+    padding: 0;
+    box-sizing: border-box;
+}
+.app-wrapper.fullscreen-active #appContainer,
+.app-wrapper:fullscreen #appContainer,
+.app-wrapper:-webkit-full-screen #appContainer{
+    height: 100%;
+    min-height: 100%;
+}
+body.fullscreen-scroll-lock{ overflow: hidden !important; }
 #appContainer{
     position: relative;
     width: 100%;
@@ -275,6 +302,88 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     })();
+
+    const appWrapper    = document.querySelector('.app-wrapper');
+    const fullscreenBtn = document.getElementById('appFullscreenBtn');
+
+    if (appWrapper && fullscreenBtn) {
+        const labelEnter = fullscreenBtn.dataset.labelEnter || fullscreenBtn.getAttribute('title') || '';
+        const labelExit  = fullscreenBtn.dataset.labelExit || labelEnter;
+        const getFsElement = () => document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+        const exitFs = () => {
+            if (document.exitFullscreen) return document.exitFullscreen();
+            if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+            if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+            if (document.msExitFullscreen) return document.msExitFullscreen();
+            return Promise.resolve();
+        };
+        const setFallback = (active) => {
+            appWrapper.classList.toggle('fullscreen-active', active);
+            document.body.classList.toggle('fullscreen-scroll-lock', active);
+        };
+        const syncFsState = () => {
+            const fsEl = getFsElement();
+            const isApiActive = fsEl === appWrapper;
+            const isFallback = appWrapper.classList.contains('fullscreen-active');
+            const active = isApiActive || isFallback;
+            const nextLabel = active ? labelExit : labelEnter;
+            fullscreenBtn.setAttribute('title', nextLabel);
+            fullscreenBtn.setAttribute('aria-label', nextLabel);
+            fullscreenBtn.classList.toggle('d-none', active);
+        };
+        const enterFs = async () => {
+            const request = appWrapper.requestFullscreen || appWrapper.webkitRequestFullscreen || appWrapper.mozRequestFullScreen || appWrapper.msRequestFullscreen;
+            if (!request) {
+                setFallback(true);
+                syncFsState();
+                return;
+            }
+            try {
+                const result = request.call(appWrapper, { navigationUI: 'hide' });
+                if (result && typeof result.then === 'function') {
+                    await result;
+                }
+            } catch (_) {
+                setFallback(true);
+            }
+            syncFsState();
+        };
+        const leaveFs = async () => {
+            try { await exitFs(); }
+            catch (_) {}
+            setFallback(false);
+            syncFsState();
+        };
+        fullscreenBtn.addEventListener('click', async () => {
+            const fsEl = getFsElement();
+            const isFallback = appWrapper.classList.contains('fullscreen-active');
+            if (fsEl === appWrapper || isFallback) {
+                await leaveFs();
+                return;
+            }
+            if (fsEl && fsEl !== appWrapper) {
+                await exitFs().catch(() => {});
+            }
+            await enterFs();
+        });
+        const onFsChange = () => {
+            const fsEl = getFsElement();
+            if (fsEl !== appWrapper) {
+                setFallback(appWrapper.classList.contains('fullscreen-active'));
+            }
+            syncFsState();
+        };
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach((evt) => {
+            document.addEventListener(evt, onFsChange);
+        });
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape' && appWrapper.classList.contains('fullscreen-active')) {
+                setFallback(false);
+                syncFsState();
+            }
+        });
+        syncFsState();
+    }
 
     /* ====== Altura EXACTA a pantalla ====== */
     const container = document.getElementById('appContainer');

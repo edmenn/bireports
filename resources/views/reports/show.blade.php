@@ -20,11 +20,30 @@
         height: 100%;
     }
     .pbi-wrapper{
+        position: relative;
         display: flex;
         flex-direction: column;
         min-height: calc(100vh - 120px);
         overflow: hidden;
     }
+
+    .pbi-wrapper.fullscreen-active,
+    .pbi-wrapper:fullscreen,
+    .pbi-wrapper:-webkit-full-screen{
+        position: fixed;
+        inset: 0;
+        z-index: 1050;
+        background-color: #000;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .pbi-wrapper.fullscreen-active #reportContainer,
+    .pbi-wrapper:fullscreen #reportContainer,
+    .pbi-wrapper:-webkit-full-screen #reportContainer{
+        height: 100%;
+        min-height: 100%;
+    }
+    body.fullscreen-scroll-lock{ overflow: hidden !important; }
     #reportContainer{
         position: relative;
         width: 100%;
@@ -46,16 +65,27 @@
 
 @section('content_header')
     @if (! $embedded)
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h1 class="h5 mb-0">
                 {{ $report->name ?? 'Reporte' }}
                 @if(!empty($workspace?->name))
                     <small class="text-muted">/ {{ $workspace->name }}</small>
                 @endif
             </h1>
-            <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> {{ __('common.back') }}
-            </a>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button type="button"
+                        id="reportFullscreenBtn"
+                        class="btn btn-sm btn-outline-primary"
+                        data-label-enter="{{ __('reports.show.fullscreen_enter') }}"
+                        data-label-exit="{{ __('reports.show.fullscreen_exit') }}"
+                        title="{{ __('reports.show.fullscreen_enter') }}"
+                        aria-label="{{ __('reports.show.fullscreen_enter') }}">
+                    <i class="fas fa-expand me-1" aria-hidden="true"></i> {{ __('reports.show.fullscreen_enter') }}
+                </button>
+                <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> {{ __('common.back') }}
+                </a>
+            </div>
         </div>
     @endif
 @stop
@@ -97,6 +127,7 @@
     @endif
 
     <div class="pbi-wrapper">
+
         <div id="reportContainer" aria-live="polite" aria-busy="true">
             <div id="reportLoading">
                 <div class="text-center">
@@ -124,6 +155,88 @@
 <script>
 (function () {
     'use strict';
+
+    const wrapper     = document.querySelector('.pbi-wrapper');
+    const fullscreenBtn = document.getElementById('reportFullscreenBtn');
+
+    if (wrapper && fullscreenBtn) {
+        const labelEnter = fullscreenBtn.dataset.labelEnter || fullscreenBtn.getAttribute('title') || '';
+        const labelExit  = fullscreenBtn.dataset.labelExit || labelEnter;
+        const getFsElement = () => document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+        const exitFs = () => {
+            if (document.exitFullscreen) return document.exitFullscreen();
+            if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+            if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+            if (document.msExitFullscreen) return document.msExitFullscreen();
+            return Promise.resolve();
+        };
+        const setFallback = (active) => {
+            wrapper.classList.toggle('fullscreen-active', active);
+            document.body.classList.toggle('fullscreen-scroll-lock', active);
+        };
+        const syncFsState = () => {
+            const fsEl = getFsElement();
+            const isApiActive = fsEl === wrapper;
+            const isFallback = wrapper.classList.contains('fullscreen-active');
+            const active = isApiActive || isFallback;
+            const nextLabel = active ? labelExit : labelEnter;
+            fullscreenBtn.setAttribute('title', nextLabel);
+            fullscreenBtn.setAttribute('aria-label', nextLabel);
+            fullscreenBtn.classList.toggle('d-none', active);
+        };
+        const enterFs = async () => {
+            const request = wrapper.requestFullscreen || wrapper.webkitRequestFullscreen || wrapper.mozRequestFullScreen || wrapper.msRequestFullscreen;
+            if (!request) {
+                setFallback(true);
+                syncFsState();
+                return;
+            }
+            try {
+                const result = request.call(wrapper, { navigationUI: 'hide' });
+                if (result && typeof result.then === 'function') {
+                    await result;
+                }
+            } catch (_) {
+                setFallback(true);
+            }
+            syncFsState();
+        };
+        const leaveFs = async () => {
+            try { await exitFs(); }
+            catch (_) {}
+            setFallback(false);
+            syncFsState();
+        };
+        fullscreenBtn.addEventListener('click', async () => {
+            const fsEl = getFsElement();
+            const isFallback = wrapper.classList.contains('fullscreen-active');
+            if (fsEl === wrapper || isFallback) {
+                await leaveFs();
+                return;
+            }
+            if (fsEl && fsEl !== wrapper) {
+                await exitFs().catch(() => {});
+            }
+            await enterFs();
+        });
+        const onFsChange = () => {
+            const fsEl = getFsElement();
+            if (fsEl !== wrapper) {
+                setFallback(wrapper.classList.contains('fullscreen-active'));
+            }
+            syncFsState();
+        };
+        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach((evt) => {
+            document.addEventListener(evt, onFsChange);
+        });
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Escape' && wrapper.classList.contains('fullscreen-active')) {
+                setFallback(false);
+                syncFsState();
+            }
+        });
+        syncFsState();
+    }
 
     const container   = document.getElementById('reportContainer');
     const loading     = document.getElementById('reportLoading');
