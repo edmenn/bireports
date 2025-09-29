@@ -106,49 +106,55 @@ class ConfiguracionesController extends Controller
             }
         }
 
-        // Reset a colores de fábrica
-        if ($request->boolean('reset_theme')) {
+        // Empaquetar configuración de colores en JSON (theme_config)
+        $themeConfig = $this->extractThemePalette($request);
+        $themePresetId = (int) $request->input('theme_preset_id', 0);
+        $themeNameInput = $request->input('theme_name');
+
+        $shouldResetTheme = $request->boolean('reset_theme');
+        $shouldUpdateTheme = $shouldResetTheme
+            || $themePresetId > 0
+            || $request->has('theme_preset_id')
+            || $request->has('theme_name')
+            || !empty($themeConfig);
+
+        if ($shouldResetTheme) {
+            // Reset a colores de fábrica
             $data['theme_config'] = null;
             $data['theme_name'] = null;
             $data['theme_navbar_class'] = null;
             $data['theme_sidebar_class'] = null;
-        }
-
-        // Empaquetar configuración de colores en JSON (theme_config)
-        $themeConfig = $this->extractThemePalette($request);
-        if (!empty($themeConfig)) {
-            $data['theme_config'] = $themeConfig;
-        }
-
-        $themePresetId = (int) $request->input('theme_preset_id', 0);
-        $themeName = (string) ($request->input('theme_name') ?? '');
-        $themeName = $this->normalizePresetName($themeName) ?? '';
-
-        if (Str::lower($themeName) === Str::lower('Personalizado')) {
-            $themeName = '';
-        }
-
-        if ($themeName === '') {
-            $data['theme_name'] = null;
-        } else {
-            $data['theme_name'] = $themeName;
-        }
-
-        if ($themePresetId > 0 && $themeName !== '') {
-            $preset = $configuracion->themePresets()->find($themePresetId);
-            if ($preset) {
-                $preset->update(['config' => $themeConfig ?: $this->defaultThemePalette()]);
-                $data['theme_name'] = $preset->name;
+        } elseif ($shouldUpdateTheme) {
+            if (!empty($themeConfig)) {
+                $data['theme_config'] = $themeConfig;
             }
-        } else {
-            $themePresetId = 0;
-        }
 
-        // Si no se eligió preset y tampoco se enviaron valores de colores, aplicamos el default
-        if ($themeName === '' && empty($themeConfig)) {
-            $data['theme_config'] = $this->defaultThemePalette();
-        }
+            $themeName = (string) ($themeNameInput ?? '');
+            $themeName = $this->normalizePresetName($themeName) ?? '';
 
+            if (Str::lower($themeName) === Str::lower('Personalizado')) {
+                $themeName = '';
+            }
+
+            if ($themeName === '') {
+                $data['theme_name'] = null;
+            } else {
+                $data['theme_name'] = $themeName;
+            }
+
+            if ($themePresetId > 0 && $themeName !== '') {
+                $preset = $configuracion->themePresets()->find($themePresetId);
+                if ($preset) {
+                    $preset->update(['config' => $themeConfig ?: $this->defaultThemePalette()]);
+                    $data['theme_name'] = $preset->name;
+                }
+            }
+
+            // Si no se eligió preset ni colores personalizados, mantenemos la paleta por defecto
+            if ($themeName === '' && empty($themeConfig)) {
+                $data['theme_config'] = $this->defaultThemePalette();
+            }
+        }
         // Toggles de login (checkbox): solo actualizar si vienen en la request
         if ($request->has('microsoft_login_enabled')) {
             $data['microsoft_login_enabled'] = $request->boolean('microsoft_login_enabled');
