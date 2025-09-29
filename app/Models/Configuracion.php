@@ -38,6 +38,7 @@ class Configuracion extends Model
         'capacity_on_demand_message',
         'capacity_start_timeout_sec',
         'capacity_start_poll_interval_sec',
+        'report_load_timeout_sec',
         'microsoft_login_enabled',
         'local_login_enabled',
 
@@ -78,6 +79,7 @@ class Configuracion extends Model
         'capacity_on_demand_enable' => 'boolean',
         'capacity_start_timeout_sec' => 'integer',
         'capacity_start_poll_interval_sec' => 'integer',
+        'report_load_timeout_sec' => 'integer',
         'preloader_logo_width' => 'integer',
         'preloader_logo_height' => 'integer',
         'site_logo_width' => 'integer',

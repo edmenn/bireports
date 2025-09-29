@@ -171,6 +171,35 @@ require_file ".env"
 check_env_permissions
 ensure_app_key
 
+if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
+  log "[sync] Copiando cambios al volumen app_code (rsync incremental)."
+  $COMPOSE run --rm code_sync
+  ok "[sync] Código sincronizado."
+
+  log "[sync] Reiniciando contenedores app y web (sin rebuild)."
+  $COMPOSE up -d "$APP_SERVICE" web
+  wait_healthy "$APP_SERVICE" 120 || true
+  ensure_storage_dirs
+  ensure_zip_extension
+  sync_storage_lang_to_volume
+
+  log "[sync] Ejecutando migraciones pendientes."
+  $COMPOSE exec -T "$APP_SERVICE" php artisan migrate --force
+  ok "[sync] Migraciones OK."
+  if [[ "$DO_SEED" == "yes" ]]; then
+    log "[sync] Ejecutando seeders (opcional)."
+    $COMPOSE exec -T "$APP_SERVICE" php artisan db:seed --force
+    ok "[sync] Seeders OK."
+  fi
+
+  log "[sync] Limpiando caches de Laravel y OPcache."
+  $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
+  $COMPOSE exec -T "$APP_SERVICE" php artisan optimize
+  ok "[sync] Deploy incremental completado."
+  exit 0
+fi
+
+
 # ---------- Refresh-only flow ----------
 if [[ "$DO_REFRESH" == "yes" ]]; then
   log "[refresh] Construyendo imagen de la app (sin cache si se desea con DOCKER_BUILDKIT=1)."
