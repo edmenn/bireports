@@ -7,6 +7,10 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Folder;
 use App\Models\Report;
+use App\Models\Capacity;
+use App\Models\Configuracion;
+use App\Services\PowerBiService;
+use Throwable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -159,21 +163,99 @@ class UserPortalController extends Controller
         $currentReportId = (string) $request->query('report');
         $currentReport = $orderedReports->firstWhere('id', $currentReportId) ?? $orderedReports->first();
 
-        $iframeUrl = null;
+        $workspace               = null;
+        $embed                   = [];
+        $errorShort              = null;
+        $errorDetail             = null;
+        $capacityModelId         = null;
+        $capacityUuid            = null;
+        $capacityOnDemandEnable  = true;
+        $capacityOnDemandMessage = 'Encendiendo la capacidad, aguarde unos segundos…';
+        $capacityStartTimeoutSec = 120;
+        $capacityStartPollSec    = 5;
+        $reportLoadTimeoutSec    = 10;
+
         if ($currentReport) {
-            $iframeUrl = route('reports.show', [
-                'workspace' => $currentReport->workspace_id,
-                'report'    => $currentReport->id,
-                'embedded'  => 1,
-            ]);
+            $currentReport->loadMissing('workspace');
+            $workspace = $currentReport->workspace;
+
+            if (! $workspace) {
+                $errorShort = 'El reporte seleccionado no tiene un workspace asociado.';
+            } else {
+                $capacityUuid = (string) ($workspace->capacity_id ?? '');
+                if ($capacityUuid !== '') {
+                    $capModel = Capacity::query()->where('capacity_uuid', $capacityUuid)->first();
+                    $capacityModelId = $capModel?->id;
+                }
+
+                $cfg = Configuracion::first();
+                if ($cfg) {
+                    $capacityOnDemandEnable  = (bool) ($cfg->capacity_on_demand_enable ?? true);
+                    $capacityOnDemandMessage = (string) ($cfg->capacity_on_demand_message ?? 'Encendiendo la capacidad, aguarde unos segundos…');
+                    $capacityStartTimeoutSec = (int) ($cfg->capacity_start_timeout_sec ?? 120);
+                    $capacityStartPollSec    = (int) ($cfg->capacity_start_poll_interval_sec ?? 5);
+                    $reportLoadTimeoutSec    = (int) ($cfg->report_load_timeout_sec ?? 10);
+                }
+
+                $hasConfig = Configuracion::query()
+                    ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
+                    ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
+                    ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
+                    ->exists();
+
+                if (! $hasConfig) {
+                    $errorShort = 'Faltan credenciales de Power BI en Configuraciones.';
+                } else {
+                    try {
+                        $svc = app(PowerBiService::class);
+                        $embed = $svc->generateReportEmbedToken(
+                            workspaceId: $workspace->id,
+                            reportId:    $currentReport->id,
+                            datasetId:   $currentReport->dataset_id,
+                            rlsUser:     null,
+                            rlsRoles:    []
+                        );
+
+                        $embed = is_array($embed) ? $embed : (array) $embed;
+                        $embed['accessToken'] = $embed['accessToken'] ?? ($embed['token'] ?? null) ?? ($embed['access_token'] ?? null);
+                        $embed['embedUrl']    = $embed['embedUrl']    ?? ($embed['embed_url'] ?? null);
+                        $embed['reportId']    = $embed['reportId']    ?? $currentReport->id;
+                        $embed['tokenType']   = $embed['tokenType']   ?? 'Embed';
+                        $embed['datasetId']   = $embed['datasetId']   ?? $currentReport->dataset_id;
+                        $embed['workspaceId'] = $embed['workspaceId'] ?? $workspace->id;
+                    } catch (Throwable $e) {
+                        $errorShort = 'No se pudo preparar el embed del reporte. Verifica credenciales/capacidad/permisos.';
+                        $errorDetail = sprintf(
+                            "%s: %s\nCode: %s\nFile: %s:%d\n\nTrace:\n%s",
+                            get_class($e),
+                            $e->getMessage(),
+                            (string) ($e->getCode() ?? '0'),
+                            $e->getFile(),
+                            $e->getLine(),
+                            $e->getTraceAsString()
+                        );
+                        $embed = [];
+                    }
+                }
+            }
         }
 
         return view('portal.application', [
-            'application'   => $application,
-            'sections'      => $sections,
-            'looseReports'  => $looseReports,
-            'currentReport' => $currentReport,
-            'iframeUrl'     => $iframeUrl,
+            'application'             => $application,
+            'sections'                => $sections,
+            'looseReports'            => $looseReports,
+            'currentReport'           => $currentReport,
+            'workspace'               => $workspace,
+            'embed'                   => $embed,
+            'error'                   => $errorShort,
+            'error_debug'             => $errorDetail,
+            'capacityModelId'         => $capacityModelId,
+            'capacityUuid'            => $capacityUuid,
+            'capacityOnDemandEnable'  => $capacityOnDemandEnable,
+            'capacityOnDemandMessage' => $capacityOnDemandMessage,
+            'capacityStartTimeoutSec' => $capacityStartTimeoutSec,
+            'capacityStartPollSec'    => $capacityStartPollSec,
+            'reportLoadTimeoutSec'    => $reportLoadTimeoutSec,
         ]);
     }
 }
