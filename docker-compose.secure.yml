@@ -57,6 +57,7 @@ services:
       TZ: ${APP_TIMEZONE:-UTC}
     depends_on: [pgsql]
     volumes:
+      - app_code:/var/www/html:ro
       - app_storage:/var/www/html/storage         # escritura para storage/
       - app_cache:/var/www/html/bootstrap/cache   # escritura para cache
     read_only: true
@@ -98,6 +99,33 @@ services:
     command: -c "mkdir -p /mnt/app_code && cp -a /var/www/html/. /mnt/app_code/ && chown -R 1000:1000 /mnt/app_code"
     volumes:
       - app_code:/mnt/app_code
+
+  # 6) Sincronizador incremental de código (rsync)
+  code_sync:
+    image: alpine:3.20
+    working_dir: /src
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        set -e
+        apk add --no-cache rsync >/dev/null
+        rsync -av --delete \
+          --chown=1000:1000 \
+          --exclude='.git/' \
+          --exclude='.github/' \
+          --exclude='node_modules/' \
+          --exclude='vendor/' \
+          --exclude='storage/' \
+          --exclude='bootstrap/cache/' \
+          --exclude='.env' \
+          --exclude='.env.example' \
+          --exclude='.env.local' \
+          --exclude='docker-compose*.yml' \
+          /src/ /dest/
+    volumes:
+      - ./:/src:ro
+      - app_code:/dest
 
 volumes:
   app_storage: {}

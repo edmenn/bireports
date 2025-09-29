@@ -11,6 +11,7 @@ DOMAIN="${DOMAIN:-portal.birentable.com}"
 log()  { printf '\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()   { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$*"; }
+err()  { printf '\033[1;31m!! %s\033[0m\n' "$*"; }
 ensure_zip_extension() {
   log "Verificando extension ZipArchive..."
   if ! $COMPOSE exec -T "$APP_SERVICE" php -r "exit(extension_loaded('zip') ? 0 : 1);"; then
@@ -21,6 +22,7 @@ ensure_zip_extension() {
 }
 usage() {
   echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild]"
+  echo "  --sync           = Sincroniza solo archivos (rsync) + reinicia app/web + migraciones"
   echo "  (sin argumentos) = modo interactivo (elige acción en un menú)"
   echo "  --fresh           = php artisan migrate:fresh --seed --force (BORRA datos)"
   echo "  --seed            = php artisan db:seed --force (tras migración normal)"
@@ -33,6 +35,7 @@ DO_FRESH="no"
 DO_SEED="no"
 DO_REFRESH="no"
 DO_REFRESH_NOBUILD="no"
+DO_SYNC_ONLY="no"
 
 for arg in "$@"; do
   case "$arg" in
@@ -40,10 +43,18 @@ for arg in "$@"; do
     --seed)  DO_SEED="yes"  ;;
     --refresh) DO_REFRESH="yes" ;;
     --refresh-nobuild) DO_REFRESH_NOBUILD="yes" ;;
+    --sync) DO_SYNC_ONLY="yes" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
 done
+if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
+  if [[ "$DO_REFRESH" == "yes" || "$DO_REFRESH_NOBUILD" == "yes" || "$DO_FRESH" == "yes" ]]; then
+    err "--sync no se puede combinar con --refresh/--refresh-nobuild/--fresh"
+    exit 2
+  fi
+fi
+
 
 # Si no hay argumentos, ofrecer menú interactivo (si hay TTY)
 if [[ $# -eq 0 ]]; then
@@ -54,14 +65,16 @@ if [[ $# -eq 0 ]]; then
     echo "  3) Refresh rápido (sin build, limpiar caches/opcache)" >&2
     echo "  4) Fresh (migrate:fresh --seed --force) [BORRA DATOS]" >&2
     echo "  5) Solo seed (db:seed --force)" >&2
+    echo "  6) Sync rápido (solo archivos cambiados + migrar)" >&2
     echo "  0) Salir" >&2
-    read -r -p "Opción [1/2/3/4/5/0]: " opt
+    read -r -p "Opción [1/2/3/4/5/6/0]: " opt
     case "$opt" in
       1|"") ;; # deploy normal por defecto
       2) DO_REFRESH="yes" ;;
       3) DO_REFRESH_NOBUILD="yes" ;;
       4) DO_FRESH="yes" ;;
       5) DO_SEED="yes" ;;
+      6) DO_SYNC_ONLY="yes" ;;
       0) exit 0 ;;
       *) echo "Opción inválida" >&2; exit 2 ;;
     esac
