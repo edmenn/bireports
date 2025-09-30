@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Throwable;
 
 class PowerBiService
 {
@@ -290,7 +291,9 @@ class PowerBiService
 
         // cross-workspace (reporte en un WS y dataset en otro)
         $tw = [];
-        if ($workspaceId) $tw[] = ['id' => $workspaceId];
+        if ($workspaceId) {
+            $tw[] = ['id' => $workspaceId];
+        }
         if ($datasetWorkspaceId && $datasetWorkspaceId !== $workspaceId) {
             $tw[] = ['id' => $datasetWorkspaceId];
         }
@@ -311,16 +314,33 @@ class PowerBiService
             $payload['identities'] = [$ident];
         }
 
-        // 3) GenerateToken
-        $tokResp = $this->http->post("{$this->base}/GenerateToken", [
-            'headers' => $H,
-            'json'    => $payload,
-        ]);
-        $tok = json_decode((string) $tokResp->getBody(), true);
-
-        if (empty($tok['token'])) {
-            Log::error('GenerateToken sin token', ['payload' => $payload, 'response' => $tok]);
-            throw new RuntimeException('No se pudo obtener el embed token (GenerateToken).');
+        // 3) GenerateToken (modern endpoint + legacy fallback)
+        $tok = [];
+        try {
+            $tokResp = $this->http->post("{$this->base}/GenerateToken", [
+                'headers' => $H,
+                'json'    => $payload,
+            ]);
+            $tok = json_decode((string) $tokResp->getBody(), true) ?? [];
+            if (empty($tok['token'])) {
+                Log::warning('GenerateToken sin token en endpoint moderno, se intentará fallback', [
+                    'payload'     => $payload,
+                    'workspaceId' => $workspaceId,
+                    'reportId'    => $reportId,
+                ]);
+                throw new RuntimeException('No se obtuvo token en endpoint moderno.');
+            }
+        } catch (ClientException|RuntimeException $modernException) {
+            $tok = $this->generateReportEmbedTokenLegacy(
+                workspaceId: $workspaceId,
+                reportId: $reportId,
+                headers: $H,
+                datasetId: $finalDatasetId,
+                rlsUser: $rlsUser,
+                rlsRoles: $roles,
+                previous: $modernException,
+                modernPayload: $payload
+            );
         }
 
         return [
@@ -333,6 +353,75 @@ class PowerBiService
         ];
     }
 
+    private function generateReportEmbedTokenLegacy(
+        string $workspaceId,
+        string $reportId,
+        array $headers,
+        ?string $datasetId,
+        ?string $rlsUser,
+        array $rlsRoles,
+        Throwable $previous,
+        array $modernPayload
+    ): array {
+        if ($workspaceId === '' || $reportId === '') {
+            throw new RuntimeException('Faltan identificadores para el fallback de GenerateToken.', 0, $previous);
+        }
+
+        Log::warning('PowerBI GenerateToken moderno falló, se intentará endpoint legacy', [
+            'workspaceId' => $workspaceId,
+            'reportId'    => $reportId,
+            'datasetId'   => $datasetId,
+            'previous'    => [
+                'type'    => get_class($previous),
+                'message' => $previous->getMessage(),
+                'status'  => $previous instanceof ClientException ? ($previous->getResponse()?->getStatusCode() ?? null) : null,
+            ],
+            'modern_payload' => $modernPayload,
+        ]);
+
+        $payload = [
+            'accessLevel' => 'View',
+        ];
+
+        if ($datasetId && ($rlsUser || !empty($rlsRoles))) {
+            $identity = [
+                'username' => $rlsUser ?: 'anonymous@local',
+                'datasets' => [['id' => $datasetId]],
+            ];
+            if (!empty($rlsRoles)) {
+                $identity['roles'] = $rlsRoles;
+            }
+            $payload['identities'] = [$identity];
+        }
+
+        try {
+            $resp = $this->http->post("{$this->base}/groups/{$workspaceId}/reports/{$reportId}/GenerateToken", [
+                'headers' => $headers,
+                'json'    => $payload,
+            ]);
+            $tok = json_decode((string) $resp->getBody(), true) ?? [];
+        } catch (ClientException $legacyException) {
+            $this->logHttpError("POST /groups/{$workspaceId}/reports/{$reportId}/GenerateToken (legacy)", $legacyException);
+            throw new RuntimeException('No se pudo obtener el embed token (fallback legacy).', 0, $legacyException);
+        }
+
+        if (empty($tok['token'])) {
+            Log::error('GenerateToken (legacy) sin token', [
+                'payload'     => $payload,
+                'workspaceId' => $workspaceId,
+                'reportId'    => $reportId,
+                'response'    => $tok,
+            ]);
+            throw new RuntimeException('No se pudo obtener el embed token (fallback legacy sin token).', 0, $previous);
+        }
+
+        Log::info('PowerBI GenerateToken legacy fallback exitoso', [
+            'workspaceId' => $workspaceId,
+            'reportId'    => $reportId,
+        ]);
+
+        return $tok;
+    }
     /* =========================================================
      * Helpers
      * ========================================================= */
@@ -347,3 +436,4 @@ class PowerBiService
         ], $extra));
     }
 }
+
