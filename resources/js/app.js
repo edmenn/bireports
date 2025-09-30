@@ -1,5 +1,4 @@
 import './bootstrap';
-import './layout-state';
 
 import Alpine from 'alpinejs';
 
