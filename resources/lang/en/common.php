@@ -44,4 +44,13 @@ return [
     'groups' => 'Groups',
     'folders' => 'Folders',
     'portal' => 'My Space',
+    'days' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday',
+    ],
 ];

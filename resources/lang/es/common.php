@@ -44,4 +44,13 @@ return [
     'groups' => 'Grupos',
     'folders' => 'Carpetas',
     'portal' => 'Mi espacio',
+    'days' => [
+        'monday' => 'Lunes',
+        'tuesday' => 'Martes',
+        'wednesday' => 'Miércoles',
+        'thursday' => 'Jueves',
+        'friday' => 'Viernes',
+        'saturday' => 'Sábado',
+        'sunday' => 'Domingo',
+    ],
 ];
