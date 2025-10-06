@@ -85,7 +85,7 @@ return [
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     // Supported UI locales for language switcher
-    'supported_locales' => ['en', 'es', 'pt', 'ru', 'tr'],
+    'supported_locales' => ['en', 'es', 'pt'],
 
     /*
     |--------------------------------------------------------------------------

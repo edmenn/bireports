@@ -4,7 +4,8 @@
     $kpis  = $userProfile['kpis']    ?? [];
     $hmap  = $userProfile['heatmap'] ?? [];
     $tops  = $userProfile['topReports'] ?? [];
-    $uid   = (string)($u['id'] ?? '—');
+    $placeholder = __('audit.tables.placeholder');
+    $uid   = (string)($u['id'] ?? $placeholder);
     $uname = trim((string)($u['name'] ?? ''));
     $mail  = trim((string)($u['email'] ?? ''));
     $initials = '';
@@ -20,7 +21,7 @@
     $totalAccesos   = (int)($kpis['totalAccesos']   ?? 0);
     $reportesUnicos = (int)($kpis['reportesUnicos'] ?? 0);
     $diasActivos    = (int)($kpis['diasActivos']    ?? 0);
-    $ultimoAcceso   = (string)($kpis['ultimoAcceso'] ?? '—');
+    $ultimoAcceso   = (string)($kpis['ultimoAcceso'] ?? $placeholder);
 
     $maxTop = 0;
     foreach ($tops as $tr) { $maxTop = max($maxTop, (int)($tr['total'] ?? 0)); }
@@ -28,7 +29,7 @@
 @endphp
 
 <div class="card shadow-sm border-0 overflow-hidden mb-3">
-    {{-- Header sin botones, alto contraste --}}
+    {{-- Header without buttons, high contrast --}}
     <div class="up-header p-3 p-md-4">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
@@ -36,9 +37,9 @@
                     {{ $initials }}
                 </div>
                 <div class="text-white">
-                    <div class="h5 fw-bold mb-1">{{ $uname !== '' ? $uname : 'Usuario sin nombre' }}</div>
+                    <div class="h5 fw-bold mb-1">{{ $uname !== '' ? $uname : __('audit.user_profile.user_without_name') }}</div>
                     <div class="small opacity-90 d-flex flex-wrap align-items-center gap-2">
-                        <span><i class="far fa-id-badge me-1"></i>ID: <code class="text-white-50">{{ $uid }}</code></span>
+                        <span><i class="far fa-id-badge me-1"></i>{{ __('audit.user_profile.id_label') }}: <code class="text-white-50">{{ $uid }}</code></span>
                         @if($mail !== '')
                             <span class="text-white-75"><i class="far fa-envelope ms-1 me-1"></i>{{ $mail }}</span>
                         @endif
@@ -53,7 +54,7 @@
         @if(empty($userProfile))
             <div class="alert alert-light border d-flex align-items-center mb-0">
                 <i class="far fa-user-circle me-2"></i>
-                <div class="text-muted">Seleccioná un usuario para ver su actividad.</div>
+                <div class="text-muted">{{ __('audit.user_profile.no_user_selected') }}</div>
             </div>
         @else
             {{-- KPIs --}}
@@ -62,28 +63,28 @@
                     <div class="up-kpi up-kpi-blue">
                         <div class="up-kpi-icon"><i class="fas fa-chart-bar"></i></div>
                         <div class="up-kpi-value">{{ number_format($totalAccesos, 0, ',', '.') }}</div>
-                        <div class="up-kpi-label">Accesos (render)</div>
+                        <div class="up-kpi-label">{{ __('audit.user_profile.kpis.accesses') }}</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="up-kpi up-kpi-violet">
                         <div class="up-kpi-icon"><i class="fas fa-layer-group"></i></div>
                         <div class="up-kpi-value">{{ number_format($reportesUnicos, 0, ',', '.') }}</div>
-                        <div class="up-kpi-label">Reportes únicos</div>
+                        <div class="up-kpi-label">{{ __('audit.user_profile.kpis.unique_reports') }}</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="up-kpi up-kpi-green">
                         <div class="up-kpi-icon"><i class="far fa-calendar-check"></i></div>
                         <div class="up-kpi-value">{{ number_format($diasActivos, 0, ',', '.') }}</div>
-                        <div class="up-kpi-label">Días activos</div>
+                        <div class="up-kpi-label">{{ __('audit.user_profile.kpis.active_days') }}</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="up-kpi up-kpi-orange">
                         <div class="up-kpi-icon"><i class="far fa-clock"></i></div>
                         <div class="up-kpi-value small mb-1">{{ $ultimoAcceso }}</div>
-                        <div class="up-kpi-label">Último acceso</div>
+                        <div class="up-kpi-label">{{ __('audit.user_profile.kpis.last_access') }}</div>
                     </div>
                 </div>
             </div>
@@ -91,15 +92,15 @@
             {{-- Heatmap --}}
             <div class="mt-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="fw-600">Actividad por día y hora</div>
+                    <div class="fw-600">{{ __('audit.user_profile.heatmap_title') }}</div>
                     <div class="small text-muted">
-                        <span>Menor</span>
+                        <span>{{ __('audit.user_profile.heatmap_legend_min') }}</span>
                         <span class="up-legend up-hm-0"></span>
                         <span class="up-legend up-hm-2"></span>
                         <span class="up-legend up-hm-4"></span>
                         <span class="up-legend up-hm-6"></span>
                         <span class="up-legend up-hm-7"></span>
-                        <span>Mayor</span>
+                        <span>{{ __('audit.user_profile.heatmap_legend_max') }}</span>
                     </div>
                 </div>
 
@@ -108,7 +109,7 @@
                         <table class="table table-borderless align-middle mb-0 up-hm-table">
                             <thead>
                                 <tr>
-                                    <th class="sticky-col text-muted small">Hora</th>
+                                    <th class="sticky-col text-muted small">{{ __('audit.dashboard.heatmap.hour') }}</th>
                                     @foreach($dowLabels as $lbl)
                                         <th class="text-muted small">{{ $lbl }}</th>
                                     @endforeach
@@ -124,14 +125,14 @@
                                             $lvl = ($v===0?0:($v<=20?1:($v<=40?2:($v<=60?3:($v<=80?4:($v<=100?5:($v<=300?6:7)))))));
                                         @endphp
                                         <td class="text-center">
-                                            <div class="up-hm-cell up-hm-{{ $lvl }}" title="{{ $dowLabels[$d-1] ?? '' }} @ {{ $row['hour'] }} — {{ $v }} eventos">
+                                            <div class="up-hm-cell up-hm-{{ $lvl }}" title="{{ __('audit.user_profile.heatmap_cell', ['day' => $dowLabels[$d-1] ?? '', 'hour' => $row['hour'], 'count' => $v]) }}">
                                                 <span class="visually-hidden">{{ $v }}</span>
                                             </div>
                                         </td>
                                     @endfor
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="text-center text-muted p-3">Sin datos.</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted p-3">{{ __('audit.user_profile.top_reports_empty') }}</td></tr>
                             @endforelse
                             </tbody>
                         </table>
@@ -139,16 +140,16 @@
                 </div>
             </div>
 
-            {{-- Top reportes --}}
+            {{-- Top reports --}}
             <div class="mt-4">
-                <div class="fw-600 mb-2">Reportes más usados</div>
+                <div class="fw-600 mb-2">{{ __('audit.user_profile.top_reports') }}</div>
                 @if(empty($tops))
-                    <div class="text-muted">Sin datos</div>
+                    <div class="text-muted">{{ __('audit.user_profile.top_reports_empty') }}</div>
                 @else
                     <div class="d-flex flex-column gap-2">
                         @foreach($tops as $r)
                             @php
-                                $label = (string)($r['label'] ?? '—');
+                                $label = (string)($r['label'] ?? $placeholder);
                                 $tot   = (int)($r['total'] ?? 0);
                                 $pct   = max(6, min(100, round(($tot / $maxTop) * 100)));
                             @endphp
@@ -168,19 +169,19 @@
                 @endif
             </div>
 
-            {{-- Feed --}}
+            {{-- Activity feed --}}
             <div class="mt-4">
-                <div class="fw-600 mb-2">Actividad reciente</div>
+                <div class="fw-600 mb-2">{{ __('audit.user_profile.recent_activity') }}</div>
                 @if(empty($userEvents))
-                    <div class="text-muted">Sin actividad</div>
+                    <div class="text-muted">{{ __('audit.user_profile.recent_activity_empty') }}</div>
                 @else
                     <ul class="up-feed list-unstyled mb-0">
                         @foreach($userEvents as $e)
                             @php
                                 $ok = (isset($e['success']) && $e['success']);
                                 $action = (string)($e['action'] ?? '');
-                                $report = $e['report_name'] ?? ($e['report_uuid'] ?? '—');
-                                $page   = $e['page_name'] ?? '—';
+                                $report = $e['report_name'] ?? ($e['report_uuid'] ?? $placeholder);
+                                $page   = $e['page_name'] ?? $placeholder;
                                 $errMsg = (string)($e['error'] ?? '');
                                 $when   = (string)($e['occurred_at'] ?? '');
                             @endphp
@@ -189,12 +190,12 @@
                                 <div class="up-feed-body">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div class="small text-muted"><i class="far fa-clock me-1"></i>{{ $when }}</div>
-                                        <span class="badge {{ $ok ? 'bg-success' : 'bg-secondary' }}">{{ $ok ? 'OK' : '—' }}</span>
+                                        <span class="badge {{ $ok ? 'bg-success' : 'bg-secondary' }}">{{ $ok ? __('audit.user_profile.status.ok') : __('audit.user_profile.status.pending') }}</span>
                                     </div>
                                     <div class="mt-1">
                                         <code class="me-2">{{ $action }}</code>
                                         <span class="text-truncate d-inline-block" style="max-width: 50ch;" title="{{ $report }}">{{ $report }}</span>
-                                        @if($page && $page !== '—')
+                                        @if($page && $page !== $placeholder)
                                             <span class="text-muted">· {{ $page }}</span>
                                         @endif
                                     </div>

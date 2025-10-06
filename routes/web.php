@@ -344,7 +344,7 @@ Route::prefix('admin')
 
 // Idiomas (cambiado de /lang a /locale para evitar reglas del proxy)
 Route::get('/locale/{locale}', function (string $locale) {
-    $supported = config('app.supported_locales', ['en','es','pt','ru','tr']);
+    $supported = config('app.supported_locales', ['en','es','pt']);
     if (! in_array($locale, $supported, true)) {
         abort(404);
     }

@@ -1,14 +1,23 @@
 {{-- resources/views/auditoria/partials/dashboard.blade.php --}}
+@php
+    $auditHeatmapLegend = __('audit.dashboard.heatmap.legend.buckets');
+    if (! is_array($auditHeatmapLegend)) {
+        $auditHeatmapLegend = [];
+    }
+    $auditChartLabels = [
+        'accesses' => __('audit.dashboard.labels.accesses'),
+    ];
+@endphp
 <div class="row mt-3">
     <div class="col-12 col-xl-6 mb-3">
         <div class="dash-card h-100 d-flex flex-column">
             <div class="dash-head">
-                <strong class="dash-title">Accesos por mes</strong>
-                <span class="dash-sub">Distribución mensual</span>
+                <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_month.title') }}</strong>
+                <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_month.subtitle') }}</span>
             </div>
             <div class="dash-body d-flex flex-column">
                 <div class="chart-wrap flex-grow-1">
-                    <canvas id="chartMonths" role="img" aria-label="Gráfico de barras de accesos por mes"></canvas>
+                    <canvas id="chartMonths" role="img" aria-label="{{ __('audit.dashboard.cards.access_by_month.aria') }}"></canvas>
                 </div>
             </div>
         </div>
@@ -16,12 +25,12 @@
     <div class="col-12 col-xl-6 mb-3">
         <div class="dash-card h-100 d-flex flex-column">
             <div class="dash-head violet">
-                <strong class="dash-title">Accesos por día (tendencia)</strong>
-                <span class="dash-sub">Últimos registros</span>
+                <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_day.title') }}</strong>
+                <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_day.subtitle') }}</span>
             </div>
             <div class="dash-body d-flex flex-column">
                 <div class="chart-wrap flex-grow-1">
-                    <canvas id="chartDaily" role="img" aria-label="Gráfico de líneas de accesos diarios"></canvas>
+                    <canvas id="chartDaily" role="img" aria-label="{{ __('audit.dashboard.cards.access_by_day.aria') }}"></canvas>
                 </div>
             </div>
         </div>
@@ -32,12 +41,12 @@
     <div class="col-12 col-xl-6 mb-3">
         <div class="dash-card h-100 d-flex flex-column">
             <div class="dash-head green">
-                <strong class="dash-title">Accesos por usuario (Top 10)</strong>
-                <span class="dash-sub">Usuarios más activos</span>
+                <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_user.title') }}</strong>
+                <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_user.subtitle') }}</span>
             </div>
             <div class="dash-body d-flex flex-column">
                 <div class="chart-wrap flex-grow-1">
-                    <canvas id="chartUsers" role="img" aria-label="Gráfico de barras de usuarios con más accesos"></canvas>
+                    <canvas id="chartUsers" role="img" aria-label="{{ __('audit.dashboard.cards.access_by_user.aria') }}"></canvas>
                 </div>
             </div>
         </div>
@@ -45,25 +54,25 @@
     <div class="col-12 col-xl-6 mb-3">
         <div class="dash-card h-100 d-flex flex-column">
             <div class="dash-head orange">
-                <strong class="dash-title">Accesos por reporte (Top 10)</strong>
-                <span class="dash-sub">Dashboards más consultados</span>
+                <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_report.title') }}</strong>
+                <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_report.subtitle') }}</span>
             </div>
             <div class="dash-body d-flex flex-column">
                 <div class="chart-wrap flex-grow-1">
-                    <canvas id="chartReports" role="img" aria-label="Gráfico de barras de reportes con más accesos"></canvas>
+                    <canvas id="chartReports" role="img" aria-label="{{ __('audit.dashboard.cards.access_by_report.aria') }}"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- HEATMAP: sin scroll interno; totales destacados; hover y foco accesibles --}}
+{{-- Heatmap area: no inner scroll, totals highlighted, accessible hover/focus --}}
 <div class="row mt-3">
     <div class="col-12 mb-3">
         <div class="dash-card">
             <div class="dash-head slate">
-                <strong class="dash-title">Accesos por día y horario</strong>
-                <span class="dash-sub">Mapa de calor semanal (1=lun … 7=dom)</span>
+                <strong class="dash-title">{{ __('audit.dashboard.heatmap.title') }}</strong>
+                <span class="dash-sub">{{ __('audit.dashboard.heatmap.subtitle') }}</span>
             </div>
 
             <div class="dash-body">
@@ -72,17 +81,17 @@
                         <table class="hm-table w-100" id="heatTable">
                             <thead>
                                 <tr>
-                                    <th scope="col" data-col="H">Hora</th>
+                                    <th scope="col" data-col="H">{{ __('audit.dashboard.heatmap.hour') }}</th>
                                     @foreach($dowLabels as $i => $lbl)
                                         <th scope="col" data-col="{{ $i+1 }}">{{ $lbl }}</th>
                                     @endforeach
-                                    <th scope="col" class="total-col" data-col="T">Total</th>
+                                    <th scope="col" class="total-col" data-col="T">{{ __('audit.dashboard.heatmap.total') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="heatBody"></tbody>
                             <tfoot>
                                 <tr id="heatTotalsRow" class="total-row">
-                                    <th scope="row" data-col="H">Total</th>
+                                    <th scope="row" data-col="H">{{ __('audit.dashboard.heatmap.total') }}</th>
                                     @for($d=1; $d<=7; $d++)
                                         <th class="total-row" data-col="{{ $d }}" data-day="{{ $d }}">0</th>
                                     @endfor
@@ -94,15 +103,10 @@
                 </div>
 
                 <div class="mt-3 hm-legend d-flex align-items-center flex-wrap gap-2">
-                    <span class="text-muted small">Intensidad</span>
-                    <span class="box hm-0" title="0"></span>
-                    <span class="box hm-1" title="1–20"></span>
-                    <span class="box hm-2" title="21–40"></span>
-                    <span class="box hm-3" title="41–60"></span>
-                    <span class="box hm-4" title="61–80"></span>
-                    <span class="box hm-5" title="81–100"></span>
-                    <span class="box hm-6" title="101–300"></span>
-                    <span class="box hm-7" title="300+"></span>
+                    <span class="text-muted small">{{ __('audit.dashboard.heatmap.legend.label') }}</span>
+                    @foreach($auditHeatmapLegend as $bucket => $label)
+                        <span class="box hm-{{ $bucket }}" title="{{ $label }}"></span>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -210,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const reports = @json($topReports);
     const heatmap = @json($heatmap);
     const daily   = @json($daily);
+    const auditLabels = @json($auditChartLabels);
 
     // === Tema Chart.js usando variables Bootstrap/AdminLTE ===
     const styles = getComputedStyle(document.documentElement);
@@ -234,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function(){
         plugins:{
             legend:{ display:false },
             tooltip:{ mode:'index', intersect:false, callbacks:{
-                label: (item)=> `${item.dataset.label || 'Accesos'}: ${Number(item.parsed.y ?? item.parsed).toLocaleString()}`
+                label: (item)=> `${item.dataset.label || auditLabels.accesses}: ${Number(item.parsed.y ?? item.parsed).toLocaleString()}`
             }}
         },
         scales:{
@@ -252,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function(){
             data: {
                 labels: months.map(m => m.label),
                 datasets: [{
-                    label: 'Accesos',
+                    label: auditLabels.accesses,
                     data: months.map(m => m.total),
                     backgroundColor: cPrimary,
                     borderRadius: 6,
@@ -273,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function(){
             data: {
                 labels: daily.map(d => d.date),
                 datasets: [{
-                    label: 'Accesos',
+                    label: auditLabels.accesses,
                     data: daily.map(d => d.total),
                     borderColor: cInfo,
                     backgroundColor: grad,
@@ -297,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function(){
             data: {
                 labels: users.map(u => u.name),
                 datasets: [{
-                    label: 'Accesos',
+                    label: auditLabels.accesses,
                     data: users.map(u => u.total),
                     backgroundColor: cPrimary,
                     borderRadius: 6,
@@ -317,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function(){
             data: {
                 labels: reports.map(r => r.label),
                 datasets: [{
-                    label: 'Accesos',
+                    label: auditLabels.accesses,
                     data: reports.map(r => r.total),
                     backgroundColor: cPrimary,
                     borderRadius: 6,

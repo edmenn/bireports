@@ -8,10 +8,10 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th scope="col">Reporte</th>
-                        <th scope="col">UUID</th>
-                        <th scope="col">Último acceso</th>
-                        <th scope="col">Creado</th>
+                        <th scope="col">{{ __('audit.tables.report') }}</th>
+                        <th scope="col">{{ __('audit.tables.uuid') }}</th>
+                        <th scope="col">{{ __('audit.tables.last_access') }}</th>
+                        <th scope="col">{{ __('audit.tables.created') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,7 +24,7 @@
                                      style="width:32px;height:32px;font-size:0.9rem;">
                                     <i class="far fa-file-alt"></i>
                                 </div>
-                                <span>{{ $r['name'] ?? $r['report_uuid'] }}</span>
+                                <span>{{ $r['name'] ?? __('audit.tables.report_fallback', ['id' => $r['report_uuid'] ?? __('audit.tables.placeholder')]) }}</span>
                             </div>
                         </td>
 
@@ -42,19 +42,19 @@
                                     <i class="far fa-clock me-1"></i>{{ $r['last_access'] }}
                                 </span>
                             @else
-                                <span class="badge bg-secondary-subtle text-secondary px-2 py-1">—</span>
+                                <span class="badge bg-secondary-subtle text-secondary px-2 py-1">{{ __('audit.tables.placeholder') }}</span>
                             @endif
                         </td>
 
                         {{-- Fecha de creación --}}
                         <td class="text-muted small">
-                            <i class="far fa-calendar-alt me-1"></i>{{ $r['created_at'] ?? '—' }}
+                            <i class="far fa-calendar-alt me-1"></i>{{ $r['created_at'] ?? __('audit.tables.placeholder') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="4" class="text-center text-muted p-4">
-                            <i class="fas fa-info-circle me-1"></i> Sin datos
+                            <i class="fas fa-info-circle me-1"></i> {{ __('audit.alerts.no_data') }}
                         </td>
                     </tr>
                 @endforelse

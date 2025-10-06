@@ -9,17 +9,17 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Reporte</th>
-                        <th>UUID</th>
-                        <th>Accesos</th>
-                        <th>Último acceso</th>
+                        <th>{{ __('audit.tables.report') }}</th>
+                        <th>{{ __('audit.tables.uuid') }}</th>
+                        <th>{{ __('audit.tables.accesses') }}</th>
+                        <th>{{ __('audit.tables.last_access') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                 @forelse($rows as $r)
                     <tr>
                         <td class="fw-semibold">
-                            {{ $r['name'] ?? $r['report_uuid'] }}
+                            {{ $r['name'] ?? __('audit.tables.report_fallback', ['id' => $r['report_uuid'] ?? __('audit.tables.placeholder')]) }}
                         </td>
                         <td>
                             <code class="text-muted">{{ $r['report_uuid'] }}</code>
@@ -30,13 +30,13 @@
                             </span>
                         </td>
                         <td class="text-muted small">
-                            {{ $r['last_access'] ?? '—' }}
+                            {{ $r['last_access'] ?? __('audit.tables.placeholder') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="4" class="text-center text-muted p-3">
-                            <i class="far fa-folder-open me-1"></i>Sin datos
+                            <i class="far fa-folder-open me-1"></i>{{ __('audit.alerts.no_data') }}
                         </td>
                     </tr>
                 @endforelse
