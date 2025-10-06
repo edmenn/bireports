@@ -37,6 +37,10 @@ return [
         'reports_inactive' => 'Reports without access in range',
     ],
 
+    'charts' => [
+        'monthly_access' => 'Monthly access',
+    ],
+
     'tables' => [
         'records' => '{0} No records|{1} 1 record|[2,*] :count records',
         'user' => 'User',
@@ -201,3 +205,5 @@ return [
         'high_error_rate' => 'High error rate in 7 days: :rate% (:errors errors / :views accesses).',
     ],
 ];
+
+

@@ -37,6 +37,10 @@ return [
         'reports_inactive' => 'Relatórios não acessados no intervalo',
     ],
 
+    'charts' => [
+        'monthly_access' => 'Acessos mensais',
+    ],
+
     'tables' => [
         'records' => '{0} Sem registros|{1} 1 registro|[2,*] :count registros',
         'user' => 'Usuário',
@@ -201,3 +205,5 @@ return [
         'high_error_rate' => 'Taxa de erros alta em 7 dias: :rate% (:errors erros / :views acessos).',
     ],
 ];
+
+

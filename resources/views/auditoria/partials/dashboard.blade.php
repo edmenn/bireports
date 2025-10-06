@@ -11,7 +11,7 @@
 <div class="row mt-3">
     <div class="col-12 col-xl-6 mb-3">
         <div class="dash-card h-100 d-flex flex-column">
-            <div class="dash-head">
+            <div class="dash-head blue">
                 <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_month.title') }}</strong>
                 <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_month.subtitle') }}</span>
             </div>
@@ -132,6 +132,7 @@
 .dash-head.green { background: linear-gradient(135deg, #059669, #10b981); }
 .dash-head.orange{ background: linear-gradient(135deg, #ea580c, #f59e0b); }
 .dash-head.slate { background: linear-gradient(135deg, #334155, #64748b); }
+.dash-head.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
 .dash-title{ font-weight:800; letter-spacing:.2px; }
 .dash-sub{ font-size:.85rem; opacity:.9; }
 .dash-body{ padding:1rem; }
@@ -472,3 +473,4 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 @endpush
+
