@@ -1,0 +1,117 @@
+<?php
+
+return [
+    'page' => [
+        'title' => 'Usuarios',
+        'create' => 'Nuevo usuario',
+        'edit' => 'Editar usuario',
+    ],
+
+    'alerts' => [
+        'success' => 'Éxito',
+        'warning' => 'Atención',
+        'error' => 'Error',
+        'entra_managed_html' => 'Este usuario está administrado por <strong>Microsoft Entra</strong>. La contraseña se gestiona en tu directorio corporativo y no puede cambiarse desde la aplicación.',
+    ],
+
+    'header' => [
+        'new' => 'Nuevo usuario',
+        'import' => 'Importar Entra',
+        'refresh' => 'Actualizar Entra',
+        'refresh_title' => 'Actualiza nombre/ID de usuarios Entra ya importados',
+        'refresh_confirm' => '¿Actualizar datos (nombre) de usuarios Entra ya importados?',
+    ],
+
+    'index' => [
+        'card_title' => 'Listado de Usuarios',
+        'filters' => [
+            'search_placeholder' => 'Buscar por nombre o email',
+            'role_all' => 'Todos los roles',
+            'status_all' => 'Todos los estados',
+            'status_active' => 'Activos',
+            'status_blocked' => 'Bloqueados',
+            'search' => 'Buscar',
+            'clear' => 'Limpiar',
+        ],
+        'bulk' => [
+            'selected_prefix' => 'Seleccionados:',
+            'block' => 'Bloquear seleccionados',
+            'unblock' => 'Desbloquear seleccionados',
+            'delete' => 'Eliminar seleccionados',
+        ],
+        'table' => [
+            'select_all' => 'Seleccionar todos',
+            'name' => 'Nombre',
+            'email' => 'Email',
+            'status' => 'Estado',
+            'role' => 'Rol',
+            'actions' => 'Acciones',
+        ],
+        'badges' => [
+            'active' => 'Activo',
+            'blocked' => 'Bloqueado',
+            'entra' => 'Microsoft Entra',
+            'exists' => 'Ya existe',
+            'no_email' => 'Sin email',
+            'no_name' => 'Sin nombre',
+            'inactive' => 'Inactivo',
+        ],
+        'messages' => [
+            'empty' => 'Sin usuarios.',
+            'showing' => 'Mostrando :from–:to de :total',
+            'self_delete' => 'No puedes eliminar tu propia cuenta',
+            'self_block' => 'No puedes bloquear tu propia cuenta',
+            'entra_use_search' => 'Usa la búsqueda para previsualizar usuarios.',
+            'entra_no_results' => 'Sin resultados',
+            'entra_status_loading' => 'Cargando…',
+            'entra_status_error' => 'Error al consultar Microsoft Graph',
+            'entra_status_loaded' => ':count usuarios cargados',
+            'entra_status_loaded_more' => ':count usuarios cargados (hay más)',
+        ],
+        'buttons' => [
+            'edit' => 'Editar',
+            'delete' => 'Eliminar',
+            'block' => 'Bloquear',
+            'unblock' => 'Desbloquear',
+            'load_more' => 'Cargar más',
+            'import_selected' => 'Importar seleccionados',
+            'close' => 'Cerrar',
+            'confirm' => 'Confirmar',
+        ],
+        'confirm' => [
+            'title' => 'Confirmar acción',
+            'general' => '¿Confirmas esta acción?',
+            'delete_user' => '¿Eliminar usuario :name?',
+            'block_user' => '¿Bloquear usuario :name?',
+            'unblock_user' => '¿Desbloquear usuario :name?',
+            'bulk_delete' => '¿Eliminar :count usuario(s) seleccionados?',
+            'bulk_block' => '¿Bloquear :count usuario(s) seleccionados?',
+            'bulk_unblock' => '¿Desbloquear :count usuario(s) seleccionados?',
+        ],
+        'entra' => [
+            'title' => 'Importar desde Microsoft Entra',
+            'search_label' => 'Buscar (nombre o UPN)',
+            'search_placeholder' => 'Ej: Juan o juan@empresa.com',
+            'domain_label' => 'Solo dominio',
+            'domain_placeholder' => 'empresa.com',
+            'only_active' => 'Solo activos',
+            'assign_role' => 'Asignar rol',
+            'select_all' => 'Seleccionar todos',
+        ],
+    ],
+
+    'form' => [
+        'name' => 'Nombre',
+        'email' => 'Email',
+        'password' => 'Contraseña',
+        'password_hint' => '(dejar vacía para no cambiar)',
+        'role' => 'Rol',
+        'provider' => 'Proveedor',
+        'object_id' => 'Object ID (Entra)',
+        'entra_label' => 'Entra',
+        'buttons' => [
+            'save' => 'Guardar',
+            'cancel' => 'Cancelar',
+        ],
+    ],
+];

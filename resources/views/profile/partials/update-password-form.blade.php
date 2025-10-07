@@ -6,8 +6,8 @@
 
     @php($isEntra = isset($user) && strtolower((string)($user->auth_provider ?? '')) === 'entra')
     @if($isEntra)
-        <x-adminlte-alert theme="info" title="Información" class="mb-2">
-            Usas inicio de sesión con Microsoft Entra. La contraseña se administra en tu proveedor.
+        <x-adminlte-alert theme="info" title="{{ __('profiles.alerts.entra.title') }}" class="mb-2">
+            {{ __('profiles.alerts.entra.password_message') }}
         </x-adminlte-alert>
         <fieldset disabled>
             <div class="form-group mb-3">

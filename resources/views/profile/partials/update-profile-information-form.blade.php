@@ -6,8 +6,8 @@
 
     @php($isEntra = isset($user) && (method_exists($user, 'isEntra') ? $user->isEntra() : strtolower((string)($user->auth_provider ?? '')) === 'entra'))
     @if($isEntra)
-        <x-adminlte-alert theme="info" title="Informacion" class="mb-2">
-            Este perfil proviene de Microsoft Entra. El nombre se sincroniza con tu directorio corporativo y no puede cambiarse desde la aplicacion.
+        <x-adminlte-alert theme="info" title="{{ __('profiles.alerts.entra.title') }}" class="mb-2">
+            {{ __('profiles.alerts.entra.profile_message') }}
         </x-adminlte-alert>
     @endif
 

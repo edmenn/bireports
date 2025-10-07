@@ -1,0 +1,117 @@
+<?php
+
+return [
+    'page' => [
+        'title' => 'Users',
+        'create' => 'New user',
+        'edit' => 'Edit user',
+    ],
+
+    'alerts' => [
+        'success' => 'Success',
+        'warning' => 'Warning',
+        'error' => 'Error',
+        'entra_managed_html' => 'This user is managed by <strong>Microsoft Entra</strong>. The password is handled in your corporate directory and cannot be changed from the application.',
+    ],
+
+    'header' => [
+        'new' => 'New user',
+        'import' => 'Import Entra',
+        'refresh' => 'Refresh Entra',
+        'refresh_title' => 'Refresh name/ID for already imported Entra users',
+        'refresh_confirm' => 'Refresh details (name) for already imported Entra users?',
+    ],
+
+    'index' => [
+        'card_title' => 'User list',
+        'filters' => [
+            'search_placeholder' => 'Search by name or email',
+            'role_all' => 'All roles',
+            'status_all' => 'All statuses',
+            'status_active' => 'Active',
+            'status_blocked' => 'Blocked',
+            'search' => 'Search',
+            'clear' => 'Clear',
+        ],
+        'bulk' => [
+            'selected_prefix' => 'Selected:',
+            'block' => 'Block selected',
+            'unblock' => 'Unblock selected',
+            'delete' => 'Delete selected',
+        ],
+        'table' => [
+            'select_all' => 'Select all',
+            'name' => 'Name',
+            'email' => 'Email',
+            'status' => 'Status',
+            'role' => 'Role',
+            'actions' => 'Actions',
+        ],
+        'badges' => [
+            'active' => 'Active',
+            'blocked' => 'Blocked',
+            'entra' => 'Microsoft Entra',
+            'exists' => 'Already exists',
+            'no_email' => 'No email',
+            'no_name' => 'No name',
+            'inactive' => 'Inactive',
+        ],
+        'messages' => [
+            'empty' => 'No users.',
+            'showing' => 'Showing :from–:to of :total',
+            'self_delete' => 'You cannot delete your own account',
+            'self_block' => 'You cannot block your own account',
+            'entra_use_search' => 'Use the search to preview users.',
+            'entra_no_results' => 'No results',
+            'entra_status_loading' => 'Loading…',
+            'entra_status_error' => 'Error while querying Microsoft Graph',
+            'entra_status_loaded' => ':count users loaded',
+            'entra_status_loaded_more' => ':count users loaded (more available)',
+        ],
+        'buttons' => [
+            'edit' => 'Edit',
+            'delete' => 'Delete',
+            'block' => 'Block',
+            'unblock' => 'Unblock',
+            'load_more' => 'Load more',
+            'import_selected' => 'Import selected',
+            'close' => 'Close',
+            'confirm' => 'Confirm',
+        ],
+        'confirm' => [
+            'title' => 'Confirm action',
+            'general' => 'Do you confirm this action?',
+            'delete_user' => 'Delete user :name?',
+            'block_user' => 'Block user :name?',
+            'unblock_user' => 'Unblock user :name?',
+            'bulk_delete' => 'Delete :count selected user(s)?',
+            'bulk_block' => 'Block :count selected user(s)?',
+            'bulk_unblock' => 'Unblock :count selected user(s)?',
+        ],
+        'entra' => [
+            'title' => 'Import from Microsoft Entra',
+            'search_label' => 'Search (name or UPN)',
+            'search_placeholder' => 'e.g., Jane or jane@company.com',
+            'domain_label' => 'Domain only',
+            'domain_placeholder' => 'company.com',
+            'only_active' => 'Only active',
+            'assign_role' => 'Assign role',
+            'select_all' => 'Select all',
+        ],
+    ],
+
+    'form' => [
+        'name' => 'Name',
+        'email' => 'Email',
+        'password' => 'Password',
+        'password_hint' => '(leave blank to keep current)',
+        'role' => 'Role',
+        'provider' => 'Provider',
+        'object_id' => 'Object ID (Entra)',
+        'entra_label' => 'Entra',
+        'buttons' => [
+            'save' => 'Save',
+            'cancel' => 'Cancel',
+        ],
+    ],
+];

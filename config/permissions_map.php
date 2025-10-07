@@ -4,31 +4,35 @@ return [
     // Orden sugerido de secciones y labels
     'order' => ['menu', 'reports', 'otros'],
 
-    'unknown_section_label' => 'Otros permisos',
+    'unknown_section_label' => 'profiles.permissions.unknown_section',
 
     // Mapa de secciones a labels y permisos con descripciones claras
     'sections' => [
         'menu' => [
-            'label' => 'Menú y Navegación',
+            'label' => 'profiles.permissions.sections.menu',
             'permissions' => [
-                'menu.portal' => 'Portal: Mi espacio',
-                'menu.reports_index' => 'Power BI: Informes',
-                'menu.workspaces' => 'Power BI: Espacios de trabajo',
-                'menu.capacities' => 'Power BI: Capacidades',
-                'menu.users' => 'Organización: Usuarios',
-                'menu.groups' => 'Organización: Grupos',
-                'menu.folders'=> 'Organización: Carpetas',
-                'menu.applications' => 'Organización: Aplicaciones',
-                'menu.configuraciones' => 'Configuraciones',
-                'menu.auditoria' => 'Auditoría',
-                // 'menu.roles' => 'Organización: Perfiles y Accesos', // opcional si lo agregas al seeder
+                'menu.portal' => 'profiles.permissions.labels.menu.portal',
+                'menu.reports_index' => 'profiles.permissions.labels.menu.reports_index',
+                'menu.workspaces' => 'profiles.permissions.labels.menu.workspaces',
+                'menu.capacities' => 'profiles.permissions.labels.menu.capacities',
+                'menu.users' => 'profiles.permissions.labels.menu.users',
+                'menu.groups' => 'profiles.permissions.labels.menu.groups',
+                'menu.folders'=> 'profiles.permissions.labels.menu.folders',
+                'menu.applications' => 'profiles.permissions.labels.menu.applications',
+                'menu.configuraciones' => 'profiles.permissions.labels.menu.configuraciones',
+                'menu.auditoria' => 'profiles.permissions.labels.menu.auditoria',
+                // 'menu.roles' => 'profiles.permissions.labels.menu.roles', // opcional si lo agregas al seeder
             ],
         ],
         'reports' => [
-            'label' => 'Informes y Embebido',
+            'label' => 'profiles.permissions.sections.reports',
             'permissions' => [
-                'reports.view' => 'Ver y acceder a informes',
+                'reports.view' => 'profiles.permissions.labels.reports.view',
             ],
+        ],
+        'otros' => [
+            'label' => 'profiles.permissions.sections.otros',
+            'permissions' => [],
         ],
     ],
 ];

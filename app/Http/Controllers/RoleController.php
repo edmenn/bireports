@@ -75,7 +75,7 @@ class RoleController extends Controller
             $role->syncPermissions($perms);
         }
 
-        return redirect()->route('roles.index')->with('success', 'Perfil creado.');
+        return redirect()->route('roles.index')->with('success', __('profiles.flash.created'));
     }
 
     public function edit(Role $rol): View
@@ -100,7 +100,7 @@ class RoleController extends Controller
 
         // Evitar renombrar el rol admin para no perder reglas de negocio implícitas
         if (mb_strtolower($role->name) === 'admin' && mb_strtolower($data['name']) !== 'admin') {
-            return back()->with('error', 'El rol "admin" no puede ser renombrado.');
+            return back()->with('error', __('profiles.flash.cannot_rename_admin'));
         }
 
         $role->name = $data['name'];
@@ -143,30 +143,30 @@ class RoleController extends Controller
             }
         }
 
-        return redirect()->route('roles.index')->with('success', 'Perfil actualizado.');
+        return redirect()->route('roles.index')->with('success', __('profiles.flash.updated'));
     }
 
     public function destroy(Role $rol): RedirectResponse
     {
         $role = $rol;
         if (in_array(mb_strtolower($role->name), ['admin'], true)) {
-            return back()->with('error', 'El rol "admin" no puede eliminarse.');
+            return back()->with('error', __('profiles.flash.cannot_delete_admin'));
         }
         // Bloquear eliminación si tiene usuarios asignados
         try {
             $assigned = (int) (\App\Models\User::role($role->name)->count());
             if ($assigned > 0) {
-                return back()->with('warning', "No se puede eliminar el perfil: tiene {$assigned} usuario(s) asignado(s).");
+                return back()->with('warning', __('profiles.flash.cannot_delete_assigned', ['count' => $assigned]));
             }
         } catch (\Throwable $e) {
             // Si no podemos verificar, por seguridad no eliminar
-            return back()->with('error', 'No se pudo verificar usuarios asignados; no se elimina por seguridad.');
+            return back()->with('error', __('profiles.flash.assignments_unknown'));
         }
         try {
             $role->delete();
-            return redirect()->route('roles.index')->with('success', 'Perfil eliminado.');
+            return redirect()->route('roles.index')->with('success', __('profiles.flash.deleted'));
         } catch (\Throwable $e) {
-            return back()->with('error', 'No se pudo eliminar el perfil.');
+            return back()->with('error', __('profiles.flash.delete_failed'));
         }
     }
 
@@ -183,7 +183,8 @@ class RoleController extends Controller
         // Carga mapa opcional desde config
         $map = config('permissions_map.sections', []);
         $order = config('permissions_map.order', []);
-        $fallbackLabel = config('permissions_map.unknown_section_label', 'Otros permisos');
+        $unknownSectionKey = config('permissions_map.unknown_section_label', 'profiles.permissions.unknown_section');
+        $fallbackLabel = __($unknownSectionKey);
 
         // Construir catálogo base desde permisos existentes
         $bySection = [];
@@ -224,7 +225,10 @@ class RoleController extends Controller
         $items = [];
         $configured = $conf['permissions'] ?? [];
         foreach ($configured as $pName => $label) {
-            $items[] = [ 'name' => $pName, 'label' => $label ];
+            $items[] = [
+                'name' => $pName,
+                'label' => is_string($label) ? __($label) : $label,
+            ];
         }
 
         // Agregar no mapeados en orden alfabético
@@ -235,9 +239,15 @@ class RoleController extends Controller
             $items[] = [ 'name' => $p, 'label' => $this->humanizePermission($p) ];
         }
 
+        $sectionLabel = $conf['label'] ?? null;
+        if (is_string($sectionLabel)) {
+            $sectionLabel = __($sectionLabel);
+        }
+        $sectionLabel ??= ($key === 'otros' ? $fallbackLabel : $this->humanize($key));
+
         return [
             'key' => $key,
-            'label' => $conf['label'] ?? ($key === 'otros' ? $fallbackLabel : $this->humanize($key)),
+            'label' => $sectionLabel,
             'items' => $items,
         ];
     }
@@ -253,7 +263,7 @@ class RoleController extends Controller
         // Ej: "menu.reports_index" => "Menú: reports index"
         if (strpos($perm, '.') !== false) {
             [$sec, $rest] = explode('.', $perm, 2);
-            $sec = $sec === 'menu' ? 'Menú' : $this->humanize($sec);
+            $sec = $sec === 'menu' ? __('profiles.permissions.section_prefix.menu') : $this->humanize($sec);
             return $sec . ': ' . str_replace(['_', '-'], ' ', $rest);
         }
         return $this->humanize($perm);

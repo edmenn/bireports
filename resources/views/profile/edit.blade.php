@@ -22,7 +22,7 @@
                         </style>
                         {{-- Roles asignados (solo lectura) --}}
                         <div class="mb-3">
-                            <label class="form-label d-block">Perfiles asignados</label>
+                            <label class="form-label d-block">{{ __('profiles.assigned_roles.label') }}</label>
                             @foreach(($user->roles ?? collect()) as $role)
                                 @php
                                     $key = strtolower($role->name ?? '');
