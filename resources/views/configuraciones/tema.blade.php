@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Configuración del Tema')
+@section('title', __('config_theme.title'))
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Configuración del Tema</h1>
+    <h1 class="m-0 text-dark">{{ __('config_theme.title') }}</h1>
 @stop
 
 @section('content')
@@ -15,12 +15,12 @@
     @php($savedPresetIds = $savedPresets->mapWithKeys(fn($preset) => [$preset->name => $preset->id])->all())
     @php($selectedPresetId = old('theme_preset_id', $selectedThemeName && isset($savedPresetIds[$selectedThemeName]) ? $savedPresetIds[$selectedThemeName] : null))
     @if(session('success'))
-        <x-adminlte-alert theme="success" title="Éxito" dismissable>
+        <x-adminlte-alert theme="success" title="{{ __('settings.alerts.success') }}" dismissable>
             {{ session('success') }}
         </x-adminlte-alert>
     @endif
     @if ($errors->any())
-        <x-adminlte-alert theme="danger" title="Errores de validación" dismissable>
+        <x-adminlte-alert theme="danger" title="{{ __('settings.alerts.validation') }}" dismissable>
             <ul class="mb-0 ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -42,12 +42,12 @@
                     <ul class="nav nav-tabs border-0" id="themeTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link {{ $active === 'pagina' ? 'active' : '' }}" id="tab-pagina" data-toggle="tab" href="#pane-pagina" role="tab" aria-controls="pane-pagina" aria-selected="{{ $active === 'pagina' ? 'true' : 'false' }}">
-                                <i class="fas fa-desktop mr-1"></i> Tema Principal
+                                <i class="fas fa-desktop mr-1"></i> {{ __('config_theme.tabs.page') }}
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
                             <a class="nav-link {{ $active === 'login' ? 'active' : '' }}" id="tab-login" data-toggle="tab" href="#pane-login" role="tab" aria-controls="pane-login" aria-selected="{{ $active === 'login' ? 'true' : 'false' }}">
-                                <i class="fas fa-sign-in-alt mr-1"></i> Tema del Login
+                                <i class="fas fa-sign-in-alt mr-1"></i> {{ __('config_theme.tabs.login') }}
                             </a>
                         </li>
                     </ul>
@@ -63,187 +63,187 @@
                     <div class="tab-pane fade {{ $active === 'pagina' ? 'show active' : '' }}" id="pane-pagina" role="tabpanel" aria-labelledby="tab-pagina">
 
                         {{-- Configuración General (mantengo dos campos lado a lado en pantallas grandes) --}}
-                        <x-adminlte-card title="Configuración General" icon="fas fa-cog text-lightblue" class="mb-3">
+                        <x-adminlte-card title="{{ __('config_theme.cards.general.title') }}" icon="fas fa-cog text-lightblue" class="mb-3">
                             <div class="form-row">
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-input name="site_title" label="Nombre de la página (título)" placeholder="Ej: Mi Portal BI" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
-                                        <x-slot name="bottom"><small class="text-muted">Se muestra en la pestaña del navegador.</small></x-slot>
+                                    <x-adminlte-input name="site_title" label="{{ __('config_theme.cards.general.fields.site_title.label') }}" placeholder="{{ __('config_theme.cards.general.fields.site_title.placeholder') }}" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
+                                        <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.general.fields.site_title.help') }}</small></x-slot>
                                     </x-adminlte-input>
                                     <small class="text-muted d-inline-block ms-1">
-                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Título que verá el usuario en la pestaña del navegador."></i>
+                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.general.fields.site_title.tooltip') }}"></i>
                                     </small>
                                 </div>
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-select name="theme_name" id="theme_name" label="Tema guardado">
-                                        <option value="" @selected($selectedThemeName === null || $selectedThemeName === '')>Predeterminado</option>
+                                    <x-adminlte-select name="theme_name" id="theme_name" label="{{ __('config_theme.cards.general.fields.theme_name.label') }}">
+                                        <option value="" @selected($selectedThemeName === null || $selectedThemeName === '')> {{ __('config_theme.cards.general.fields.theme_name.default') }}</option>
                                         @if($savedPresets->isNotEmpty())
                                             @foreach($savedPresets as $preset)
                                                 <option value="{{ $preset->name }}" data-preset-id="{{ $preset->id }}" @selected($selectedThemeName === $preset->name)>{{ $preset->name }}</option>
                                             @endforeach
                                         @endif
                                         @if($selectedThemeName === 'Personalizado')
-                                            <option value="Personalizado" selected>Personalizado</option>
+                                            <option value="Personalizado" selected> {{ __('config_theme.cards.general.fields.theme_name.custom') }}</option>
                                         @endif
-                                        <x-slot name="bottom"><small class="text-muted">Selecciona un tema guardado o ajusta los colores para crear uno nuevo.</small></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.general.fields.theme_name.help') }}</small></x-slot>
                                      </x-adminlte-select>
                                     <input type="hidden" name="theme_preset_id" id="theme_preset_id" value="{{ $selectedPresetId }}">
                                     <small class="text-muted d-inline-block ms-1">
-                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="Selecciona un tema guardado o crea uno nuevo con &quot;Guardar como...&quot;."></i>
+                                        <i class="far fa-question-circle" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.general.fields.theme_name.tooltip') }}"></i>
                                     </small>
                                  </div>
                                 <div class="col-12">
                                     <button type="button" class="btn btn-outline-danger btn-sm mt-2" id="js-delete-preset" data-route="{{ route('configuraciones.tema.presets.destroy', ['preset' => '__PRESET__']) }}" disabled>
-                                        <i class="fas fa-trash"></i> Eliminar tema guardado
+                                        <i class="fas fa-trash"></i> {{ __('config_theme.cards.general.fields.theme_name.delete') }}
                                     </button>
                                 </div>
                             </div>
                         </x-adminlte-card>
 
                         {{-- Logos y Favicon (grilla 3→2→1 columnas) --}}
-                        <x-adminlte-card title="Logos, Favicon y Preloader" icon="far fa-images text-lightblue" class="mb-3">
+                        <x-adminlte-card title="{{ __('config_theme.cards.branding.title') }}" icon="far fa-images text-lightblue" class="mb-3">
                             <div class="grid-logos">
                                 {{-- Logo principal --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_logo" label="Logo principal" placeholder="Elegir archivo..." accept="image/*">
+                                    <x-adminlte-input-file name="site_logo" label="{{ __('config_theme.cards.branding.fields.site_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo.placeholder') }}" accept="image/*">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                        <x-slot name="bottom"><small class="text-muted">Formato PNG/JPG/SVG. Recomendado fondo transparente y altura ≤ 60px.
-                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Se muestra en el encabezado. Usa un archivo liviano para mejor carga."></i>
+                                        <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_logo.help') }}
+                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_logo.tooltip') }}"></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
                                     @php($siteLogoH = (int) (old('site_logo_height', $config->site_logo_height ?? 60)))
                                     @if($config->site_logo_path)
-                                        <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="Logo" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px;">
+                                        <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="{{ __('config_theme.cards.branding.fields.site_logo.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px;">
                                     @else
-                                        <img id="site-logo-preview" src="" alt="Logo" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px; display:none;">
+                                        <img id="site-logo-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_logo.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px; display:none;">
                                     @endif
                                     <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
-                                        <x-adminlte-input name="site_logo_width" label="Ancho (px)" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_width', $config->site_logo_width) }}"/>
-                                        <x-adminlte-input name="site_logo_height" label="Alto (px)" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoH }}"/>
+                                        <x-adminlte-input name="site_logo_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_width', $config->site_logo_width) }}"/>
+                                        <x-adminlte-input name="site_logo_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoH }}"/>
                                     </div>
                                 </div>
 
                                 {{-- Icono de Preloader (centro al refrescar) --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="preloader_logo" label="Icono de preloader (centrado al cargar)" placeholder="Elegir archivo..." accept="image/*">
+                                    <x-adminlte-input-file name="preloader_logo" label="{{ __('config_theme.cards.branding.fields.preloader_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.preloader_logo.placeholder') }}" accept="image/*">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                        <x-slot name="bottom"><small class="text-muted">Se muestra en el centro mientras carga la página.</small></x-slot>
+                                        <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.preloader_logo.help') }}</small></x-slot>
                                     </x-adminlte-input-file>
 
                                     <div class="d-flex align-items-end gap-2">
                                         <div>
                                             @php($pw = (int) (old('preloader_logo_width', $config->preloader_logo_width ?? 60)))
                                             @php($ph = (int) (old('preloader_logo_height', $config->preloader_logo_height ?? 60)))
-                                            <label class="form-label mb-1">Ancho × Alto (px)</label>
+                                            <label class="form-label mb-1">{{ __('config_theme.cards.branding.fields.preloader_logo.size_label') }}</label>
                                             <div class="d-flex align-items-center" style="gap:.5rem; max-width: 260px;">
                                                 <input type="number" name="preloader_logo_width" class="form-control" min="16" max="512" step="1" value="{{ $pw }}" style="width:100px" />
                                                 <span class="text-muted">×</span>
                                                 <input type="number" name="preloader_logo_height" class="form-control" min="16" max="512" step="1" value="{{ $ph }}" style="width:100px" />
                                             </div>
-                                            <small class="text-muted">Recomendado: 60–120 px.</small>
+                                            <small class="text-muted">{{ __('config_theme.cards.branding.fields.preloader_logo.hint') }}</small>
                                         </div>
                                     </div>
 
                                     @if($config->preloader_logo_path)
-                                        <img id="preloader-logo-preview" src="{{ Storage::disk('public')->url($config->preloader_logo_path) }}" alt="Preloader" class="img-thumbnail mt-2" style="height: {{ $ph }}px; width: {{ $pw }}px;">
+                                        <img id="preloader-logo-preview" src="{{ Storage::disk('public')->url($config->preloader_logo_path) }}" alt="{{ __('config_theme.cards.branding.fields.preloader_logo.preview_alt') }}" class="img-thumbnail mt-2" style="height: {{ $ph }}px; width: {{ $pw }}px;">
                                     @else
-                                        <img id="preloader-logo-preview" src="" alt="Preloader" class="img-thumbnail mt-2" style="height: {{ $ph }}px; width: {{ $pw }}px; display:none;">
+                                        <img id="preloader-logo-preview" src="" alt="{{ __('config_theme.cards.branding.fields.preloader_logo.preview_alt') }}" class="img-thumbnail mt-2" style="height: {{ $ph }}px; width: {{ $pw }}px; display:none;">
                                     @endif
                                 </div>
 
                                 {{-- Logo reducido --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_logo_compact" label="Logo reducido" placeholder="Elegir archivo..." accept="image/*">
+                                    <x-adminlte-input-file name="site_logo_compact" label="{{ __('config_theme.cards.branding.fields.site_logo_compact.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo_compact.placeholder') }}" accept="image/*">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                        <x-slot name="bottom"><small class="text-muted">Se usa con sidebar colapsada. Altura sugerida ≤ 60px.
-                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Versión compacta del logo para espacios reducidos."></i>
+                                        <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_logo_compact.help') }}
+                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_logo_compact.tooltip') }}"></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
                                     @php($siteLogoCH = (int) (old('site_logo_compact_height', $config->site_logo_compact_height ?? 60)))
                                     @if($config->site_logo_compact_path)
-                                        <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px;">
+                                        <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="{{ __('config_theme.cards.branding.fields.site_logo_compact.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px;">
                                     @else
-                                        <img id="site-logo-compact-preview" src="" alt="Logo Compacto" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px; display:none;">
+                                        <img id="site-logo-compact-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_logo_compact.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px; display:none;">
                                     @endif
                                     <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
-                                        <x-adminlte-input name="site_logo_compact_width" label="Ancho (px)" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_compact_width', $config->site_logo_compact_width) }}"/>
-                                        <x-adminlte-input name="site_logo_compact_height" label="Alto (px)" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoCH }}"/>
+                                        <x-adminlte-input name="site_logo_compact_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_compact_width', $config->site_logo_compact_width) }}"/>
+                                        <x-adminlte-input name="site_logo_compact_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoCH }}"/>
                                     </div>
                                 </div>
 
                                 {{-- Favicon --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_favicon" label="Favicon" placeholder="Elegir archivo..." accept="image/x-icon,image/png">
+                                    <x-adminlte-input-file name="site_favicon" label="{{ __('config_theme.cards.branding.fields.site_favicon.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_favicon.placeholder') }}" accept="image/x-icon,image/png">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
-                                        <x-slot name="bottom"><small class="text-muted">ICO o PNG 32×32 recomendado.
-                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Pequeño ícono de pestaña del navegador."></i>
+                                        <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_favicon.help') }}
+                                            <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_favicon.tooltip') }}"></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
                                     @if($config->site_favicon_path)
-                                        <img id="site-favicon-preview" src="{{ Storage::disk('public')->url($config->site_favicon_path) }}" alt="Favicon" class="img-thumbnail mt-1" style="height: 32px; width: 32px;">
+                                        <img id="site-favicon-preview" src="{{ Storage::disk('public')->url($config->site_favicon_path) }}" alt="{{ __('config_theme.cards.branding.fields.site_favicon.preview_alt') }}" class="img-thumbnail mt-1" style="height: 32px; width: 32px;">
                                     @else
-                                        <img id="site-favicon-preview" src="" alt="Favicon" class="img-thumbnail mt-1" style="height: 32px; width: 32px; display:none;">
+                                        <img id="site-favicon-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_favicon.preview_alt') }}" class="img-thumbnail mt-1" style="height: 32px; width: 32px; display:none;">
                                     @endif
                                 </div>
                             </div>
                         </x-adminlte-card>
 
                         {{-- Paleta de colores (sub-secciones en 2 columnas, auto-wrap) --}}
-                        <x-adminlte-card title="Paleta de Colores Personalizada" icon="fas fa-palette text-lightblue" class="mb-1">
+                        <x-adminlte-card title="{{ __('config_theme.cards.palette.title') }}" icon="fas fa-palette text-lightblue" class="mb-1">
                             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
 
                             <div class="grid-colors-2">
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-square mr-1 text-muted"></i> Base
-                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Colores principales de la interfaz (fondo y texto base)."></i>
+                                    <div class="color-card__header"><i class="fas fa-square mr-1 text-muted"></i> {{ __('config_theme.cards.palette.groups.base.title') }}
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.base.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid">
-                                        <label class="color-item"><span>Fondo principal</span><input type="color" name="color_main_bg" value="{{ $t['main_bg'] ?? '#f4f6f9' }}" class="color-item__swatch js-color" data-var="--app-main-bg"></label>
-                                        <label class="color-item"><span>Texto principal</span><input type="color" name="color_main_text" value="{{ $t['main_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-main-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.base.fields.main_bg') }}</span><input type="color" name="color_main_bg" value="{{ $t['main_bg'] ?? '#f4f6f9' }}" class="color-item__swatch js-color" data-var="--app-main-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.base.fields.main_text') }}</span><input type="color" name="color_main_text" value="{{ $t['main_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-main-text"></label>
                                     </div>
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-window-maximize mr-1 text-muted"></i> Navbar
-                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Barra superior: fondo y texto del encabezado."></i>
+                                    <div class="color-card__header"><i class="fas fa-window-maximize mr-1 text-muted"></i> {{ __('config_theme.cards.palette.groups.navbar.title') }}
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.navbar.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid">
-                                        <label class="color-item"><span>Fondo</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
-                                        <label class="color-item"><span>Texto</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
                                     </div>
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-columns mr-1 text-muted"></i> Sidebar
-                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Menú lateral: colores de fondo y textos."></i>
+                                    <div class="color-card__header"><i class="fas fa-columns mr-1 text-muted"></i> {{ __('config_theme.cards.palette.groups.sidebar.title') }}
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.sidebar.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid">
-                                        <label class="color-item"><span>Fondo</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#343a40' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
-                                        <label class="color-item"><span>Texto</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#c2c7d0' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#343a40' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#c2c7d0' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
                                     </div>
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="far fa-clone mr-1 text-muted"></i> Contenido (cards)
-                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Tarjetas y contenedores: fondos y texto."></i>
+                                    <div class="color-card__header"><i class="far fa-clone mr-1 text-muted"></i> {{ __('config_theme.cards.palette.groups.content.title') }}
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.content.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid">
-                                        <label class="color-item"><span>Card fondo</span><input type="color" name="color_container_bg" value="{{ $t['container_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-card-bg"></label>
-                                        <label class="color-item"><span>Header fondo</span><input type="color" name="color_container_alt_bg" value="{{ $t['container_alt_bg'] ?? '#f8fafc' }}" class="color-item__swatch js-color" data-var="--app-card-alt-bg"></label>
-                                        <label class="color-item"><span>Texto</span><input type="color" name="color_container_text" value="{{ $t['container_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-card-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.content.fields.card_background') }}</span><input type="color" name="color_container_bg" value="{{ $t['container_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-card-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.content.fields.header_background') }}</span><input type="color" name="color_container_alt_bg" value="{{ $t['container_alt_bg'] ?? '#f8fafc' }}" class="color-item__swatch js-color" data-var="--app-card-alt-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_container_text" value="{{ $t['container_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-card-text"></label>
                                     </div>
                                 </div>
 
                                 <div class="color-card">
-                                    <div class="color-card__header"><i class="fas fa-highlighter mr-1 text-muted"></i> Acentos y Botones
-                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="Resaltados y botones: estados normal, hover y activo."></i>
+                                    <div class="color-card__header"><i class="fas fa-highlighter mr-1 text-muted"></i> {{ __('config_theme.cards.palette.groups.accents.title') }}
+                                        <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.accents.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                        <label class="color-item"><span>Destacado</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
-                                        <label class="color-item"><span>Texto destacado</span><input type="color" name="color_highlight_text" value="{{ $t['highlight_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-hi-text"></label>
-                                        <label class="color-item"><span>Botón</span><input type="color" name="color_btn_bg" value="{{ $t['btn_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-btn-bg"></label>
-                                        <label class="color-item"><span>Texto botón</span><input type="color" name="color_btn_text" value="{{ $t['btn_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-btn-text"></label>
-                                        <label class="color-item"><span>Botón hover</span><input type="color" name="color_btn_hover" value="{{ $t['btn_hover'] ?? '#1d4ed8' }}" class="color-item__swatch js-color" data-var="--app-btn-hover"></label>
-                                        <label class="color-item"><span>Botón activo</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#1e40af' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.highlight') }}</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.highlight_text') }}</span><input type="color" name="color_highlight_text" value="{{ $t['highlight_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-hi-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button') }}</span><input type="color" name="color_btn_bg" value="{{ $t['btn_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-btn-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_text') }}</span><input type="color" name="color_btn_text" value="{{ $t['btn_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-btn-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_hover') }}</span><input type="color" name="color_btn_hover" value="{{ $t['btn_hover'] ?? '#1d4ed8' }}" class="color-item__swatch js-color" data-var="--app-btn-hover"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_active') }}</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#1e40af' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
                                     </div>
                                 </div>
                             </div>
@@ -255,58 +255,58 @@
                     {{-- ============================================= --}}
                     <div class="tab-pane fade {{ $active === 'login' ? 'show active' : '' }}" id="pane-login" role="tabpanel" aria-labelledby="tab-login">
 
-                        <x-adminlte-card title="Archivos a Subir" icon="fas fa-upload text-lightblue" class="mb-3">
+                        <x-adminlte-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue" class="mb-3">
                             <div class="d-flex flex-column">
-                                <x-adminlte-input-file name="login_logo" label="Logo de login (PNG/JPG/SVG)" placeholder="Elegir un archivo..." accept="image/png,image/jpeg,image/svg+xml"/>
-                                <x-adminlte-input-file name="login_bg" label="Imagen de fondo (pantalla completa)" placeholder="Elegir un archivo..." accept="image/png,image/jpeg">
+                                <x-adminlte-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg,image/svg+xml"/>
+                                <x-adminlte-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/png,image/jpeg">
                                     <x-slot name="bottom">
-                                        <small class="text-muted">Se ajustará para cubrir toda la pantalla en la página de login.</small>
+                                        <small class="text-muted">{{ __('settings.login.cards.uploads.fields.background.help') }}</small>
                                     </x-slot>
                                 </x-adminlte-input-file>
                             </div>
                         </x-adminlte-card>
 
-                        <x-adminlte-card title="Vistas Previa Actuales" icon="fas fa-eye text-lightblue" class="mb-1">
+                        <x-adminlte-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="mb-1">
                             @if($config->login_logo_path ?? false)
                                 <div class="mb-3">
-                                    <p class="mb-1 text-secondary">Logo de Login:</p>
+                                    <p class="mb-1 text-secondary">{{ __('settings.login.cards.preview.logo_heading') }}</p>
                                     <div class="p-2 border rounded text-center bg-light">
-                                         <img src="{{ Storage::disk('public')->url($config->login_logo_path) }}" alt="Login Logo" style="max-height:90px; max-width: 100%;" id="logo-preview">
+                                         <img src="{{ Storage::disk('public')->url($config->login_logo_path) }}" alt="{{ __('settings.login.cards.preview.logo_alt') }}" style="max-height:90px; max-width: 100%;" id="logo-preview">
                                     </div>
                                 </div>
                             @else
                                 <div class="text-muted text-center py-5">
-                                    No hay un logo de login cargado.
-                                    <img src="" alt="" style="max-height:90px; max-width: 100%; display: none;" id="logo-preview" class="p-2 border rounded text-center bg-light mt-2">
+                                    {{ __('settings.login.cards.preview.no_logo') }}
+                                    <img src="" alt="{{ __('settings.login.cards.preview.logo_alt') }}" style="max-height:90px; max-width: 100%; display: none;" id="logo-preview" class="p-2 border rounded text-center bg-light mt-2">
                                 </div>
                             @endif
 
                             @if($config->login_bg_path ?? false)
                                 <div class="mt-2">
-                                    <p class="mb-1 text-secondary">Imagen de Fondo:</p>
+                                    <p class="mb-1 text-secondary">{{ __('settings.login.cards.preview.background_heading') }}</p>
                                     <div class="border rounded">
-                                        <img src="{{ Storage::disk('public')->url($config->login_bg_path) }}" alt="Login BG" style="width: 100%; height: 180px; object-fit: cover;" id="bg-preview">
+                                        <img src="{{ Storage::disk('public')->url($config->login_bg_path) }}" alt="{{ __('settings.login.cards.preview.background_alt') }}" style="width: 100%; height: 180px; object-fit: cover;" id="bg-preview">
                                     </div>
                                 </div>
                             @else
                                 <div class="text-muted text-center py-5 @if($config->login_logo_path ?? false) border-top mt-3 pt-3 @endif">
-                                    No hay una imagen de fondo cargada.
-                                    <img src="" alt="" style="width: 100%; height: 180px; object-fit: cover; display: none;" id="bg-preview" class="border rounded mt-2">
+                                    {{ __('settings.login.cards.preview.no_background') }}
+                                    <img src="" alt="{{ __('settings.login.cards.preview.background_alt') }}" style="width: 100%; height: 180px; object-fit: cover; display: none;" id="bg-preview" class="border rounded mt-2">
                                 </div>
                             @endif
                         </x-adminlte-card>
 
-                        <x-adminlte-card title="Tamaño del logo de login" icon="fas fa-ruler-combined text-lightblue" class="mb-3">
+                        <x-adminlte-card title="{{ __('settings.login.cards.size.title') }}" icon="fas fa-ruler-combined text-lightblue" class="mb-3">
                             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
                             <div class="row g-2">
                                 <div class="col-md-3">
-                                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="Ancho (px)" value="{{ old('login_logo_width', $t['login_logo_width'] ?? '') }}"/>
+                                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ old('login_logo_width', $t['login_logo_width'] ?? '') }}"/>
                                 </div>
                                 <div class="col-md-3">
-                                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="Alto (px)" value="{{ old('login_logo_height', $t['login_logo_height'] ?? '') }}"/>
+                                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ old('login_logo_height', $t['login_logo_height'] ?? '') }}"/>
                                 </div>
                                 <div class="col-md-6 d-flex align-items-end">
-                                    <small class="text-muted">Deja en blanco para autoajustar proporcionalmente.</small>
+                                    <small class="text-muted">{{ __('settings.login.cards.size.hint') }}</small>
                                 </div>
                             </div>
                         </x-adminlte-card>
@@ -319,12 +319,12 @@
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="d-flex flex-wrap" style="gap: 0.75rem; width: 100%; max-width: 480px;">
-                    <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
+                    <x-adminlte-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <button type="button" class="btn btn-outline-primary btn-eq" data-toggle="modal" data-target="#presetSaveModal">
-                        <i class="fas fa-clone"></i> Guardar como...
+                        <i class="fas fa-clone"></i> {{ __('config_theme.buttons.save_as') }}
                     </button>
                     <button type="button" id="js-cancel-changes" class="btn btn-secondary btn-eq" onclick="window.history.back()">
-                        <i class="fas fa-times"></i> Cancelar
+                        <i class="fas fa-times"></i> {{ __('settings.actions.cancel') }}
                     </button>
                 </div>
             </div>
@@ -337,22 +337,22 @@
                     @csrf
                     <input type="hidden" name="tab" value="{{ request('tab', 'pagina') }}">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="presetSaveModalLabel">Guardar tema como...</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <h5 class="modal-title" id="presetSaveModalLabel">{{ __('config_theme.modal.save.title') }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="{{ __('config_theme.modal.save.close') }}">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="preset-name-input">Nombre del tema</label>
-                            <input type="text" class="form-control" id="preset-name-input" name="preset_name" maxlength="50" required autocomplete="off" placeholder="Ej: Corporativo Azul">
-                            <small class="text-muted">Elige un nombre único. No se permiten nombres de los temas predeterminados.</small>
+                            <label for="preset-name-input">{{ __('config_theme.modal.save.name_label') }}</label>
+                            <input type="text" class="form-control" id="preset-name-input" name="preset_name" maxlength="50" required autocomplete="off" placeholder="{{ __('config_theme.modal.save.name_placeholder') }}">
+                            <small class="text-muted">{{ __('config_theme.modal.save.name_help') }}</small>
                         </div>
                     </div>
                     <div id="preset-hidden-fields" class="d-none"></div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('settings.actions.cancel') }}</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ __('settings.actions.save') }}</button>
                     </div>
                 </form>
             </div>
@@ -761,7 +761,7 @@
                 if (!presetId) {
                     return;
                 }
-                if (!confirm('¿Eliminar este tema guardado?')) {
+                if (!confirm('{{ __('config_theme.modal.delete_confirm') }}')) {
                     return;
                 }
                 const routeTemplate = deleteForm.dataset.route || '';

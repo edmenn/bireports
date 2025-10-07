@@ -1,15 +1,15 @@
 @extends('adminlte::page')
 
-@section('title', 'Auditoría de Configuraciones')
+@section('title', __('settings.audit.page.title'))
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
-            <h1 class="m-0">Auditoría de Configuraciones</h1>
-            <small class="text-muted">Cambios agrupados por evento</small>
+            <h1 class="m-0">{{ __('settings.audit.page.title') }}</h1>
+            <small class="text-muted">{{ __('settings.audit.page.subtitle') }}</small>
         </div>
         <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Volver a Configuraciones
+            <i class="fas fa-arrow-left"></i> {{ __('settings.audit.actions.back') }}
         </a>
     </div>
 @stop
@@ -19,15 +19,15 @@
         <div class="card-body">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-6">
-                    <label class="form-label mb-1">Buscar</label>
-                    <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control" placeholder="Campo/valor…">
+                    <label class="form-label mb-1">{{ __('settings.audit.form.search_label') }}</label>
+                    <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control" placeholder="{{ __('settings.audit.form.search_placeholder') }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label mb-1">Usuario (ID)</label>
+                    <label class="form-label mb-1">{{ __('settings.audit.form.user_label') }}</label>
                     <input type="number" name="user" value="{{ $user ?? '' }}" class="form-control" min="1">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-primary"><i class="fas fa-filter"></i> Filtrar</button>
+                    <button class="btn btn-primary"><i class="fas fa-filter"></i> {{ __('settings.audit.form.submit') }}</button>
                 </div>
             </form>
         </div>
@@ -38,10 +38,10 @@
             <table class="table table-hover align-middle mb-0">
                 <thead>
                 <tr>
-                    <th>Fecha</th>
-                    <th>Usuario</th>
-                    <th>IP</th>
-                    <th>Cambios</th>
+                    <th>{{ __('settings.audit.table.date') }}</th>
+                    <th>{{ __('settings.audit.table.user') }}</th>
+                    <th>{{ __('settings.audit.table.ip') }}</th>
+                    <th>{{ __('settings.audit.table.changes') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -52,10 +52,10 @@
                         <td class="text-monospace small">{{ $a->ip ?? '-' }}</td>
                         <td>
                             <details>
-                                <summary class="small text-muted">Ver {{ is_countable($a->changes ?? []) ? count($a->changes) : 0 }} cambio(s)</summary>
+                                <summary class="small text-muted">{{ __('settings.audit.table.summary', ['count' => is_countable($a->changes ?? []) ? count($a->changes) : 0]) }}</summary>
                                 <div class="mt-2">
                                     <table class="table table-sm">
-                                        <thead><tr><th>Campo</th><th>Antes</th><th>Después</th></tr></thead>
+                                        <thead><tr><th>{{ __('settings.audit.table.field') }}</th><th>{{ __('settings.audit.table.before') }}</th><th>{{ __('settings.audit.table.after') }}</th></tr></thead>
                                         <tbody>
                                         @foreach(($a->changes ?? []) as $ch)
                                             <tr>
@@ -71,7 +71,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="text-center text-muted py-4">Sin registros</td></tr>
+                    <tr><td colspan="4" class="text-center text-muted py-4">{{ __('settings.audit.table.empty') }}</td></tr>
                 @endforelse
                 </tbody>
             </table>
