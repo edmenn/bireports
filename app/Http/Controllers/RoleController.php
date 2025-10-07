@@ -260,12 +260,17 @@ class RoleController extends Controller
 
     private function humanizePermission(string $perm): string
     {
-        // Ej: "menu.reports_index" => "Menú: reports index"
+        // Ej: "menu.reports_index" => "Menu: reports index"
         if (strpos($perm, '.') !== false) {
             [$sec, $rest] = explode('.', $perm, 2);
-            $sec = $sec === 'menu' ? __('profiles.permissions.section_prefix.menu') : $this->humanize($sec);
-            return $sec . ': ' . str_replace(['_', '-'], ' ', $rest);
+            $prefixKey = 'profiles.permissions.section_prefix.' . $sec;
+            $sectionName = __($prefixKey);
+            if ($sectionName === $prefixKey) {
+                $sectionName = $this->humanize($sec);
+            }
+            return $sectionName . ': ' . str_replace(['_', '-'], ' ', $rest);
         }
+
         return $this->humanize($perm);
     }
 }

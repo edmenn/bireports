@@ -45,6 +45,9 @@
         $sectionKey = $extractScalar($section['key'] ?? '');
         $sectionLabel = $extractScalar($section['label'] ?? '');
         $items = is_iterable($section['items'] ?? []) ? $section['items'] : [];
+        if (empty($items)) {
+            continue;
+        }
         $domId = 'sec-' . $slugify($sectionKey !== '' ? $sectionKey : (string) $index, 'sec-' . $index);
     @endphp
 
