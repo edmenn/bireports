@@ -51,7 +51,7 @@ class FoldersController extends Controller
         $f->users()->sync($data['users'] ?? []);
         $f->groups()->sync($data['groups'] ?? []);
         $f->reports()->sync($data['reports'] ?? []);
-        return redirect()->route('folders.index')->with('success','Carpeta creada.');
+        return redirect()->route('folders.index')->with('success', __('folders.flash.created'));
     }
 
     public function edit(Folder $carpeta): View
@@ -78,12 +78,12 @@ class FoldersController extends Controller
         $carpeta->users()->sync($data['users'] ?? []);
         $carpeta->groups()->sync($data['groups'] ?? []);
         $carpeta->reports()->sync($data['reports'] ?? []);
-        return redirect()->route('folders.index')->with('success','Carpeta actualizada.');
+        return redirect()->route('folders.index')->with('success', __('folders.flash.updated'));
     }
 
     public function destroy(Folder $carpeta): RedirectResponse
     {
         $carpeta->delete();
-        return redirect()->route('folders.index')->with('success','Carpeta eliminada.');
+        return redirect()->route('folders.index')->with('success', __('folders.flash.deleted'));
     }
 }

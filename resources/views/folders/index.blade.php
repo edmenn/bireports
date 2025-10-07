@@ -1,20 +1,20 @@
 @extends('adminlte::page')
 
-@section('title', 'Carpetas')
+@section('title', __('folders.page.title'))
 
 @section('content_header')
     {{-- Título y botón Crear --}}
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h1 class="m-0 text-dark">Carpetas</h1>
+        <h1 class="m-0 text-dark">{{ __('folders.page.title') }}</h1>
         <a href="{{ route('folders.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-1"></i> Nueva Carpeta
+            <i class="fas fa-plus mr-1"></i> {{ __('folders.index.create_button') }}
         </a>
     </div>
 @stop
 
 @section('content')
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="Éxito" dismissable>
+        <x-adminlte-alert theme="success" title="{{ __('folders.alerts.success_title') }}" dismissable>
             {{ session('success') }}
         </x-adminlte-alert>
     @endif
@@ -24,7 +24,7 @@
         $hasQuery = strlen(trim($q)) > 0;
     @endphp
 
-    <x-adminlte-card title="Listado de Carpetas" icon="fas fa-folder text-lightblue"
+    <x-adminlte-card title="{{ __('folders.index.card_title') }}" icon="fas fa-folder text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
         <div class="p-3">
@@ -38,12 +38,12 @@
                                name="q"
                                value="{{ $q }}"
                                class="form-control field-input"
-                               placeholder="Buscar por nombre...">
+                               placeholder="{{ __('folders.search.placeholder') }}">
                     </div>
 
-                    <button type="submit" class="btn btn-dark btn-ctl">Buscar</button>
+                    <button type="submit" class="btn btn-dark btn-ctl">{{ __('folders.search.submit') }}</button>
                     @if($hasQuery)
-                        <a href="{{ route('folders.index') }}" class="btn btn-outline-secondary btn-ctl">Limpiar</a>
+                        <a href="{{ route('folders.index') }}" class="btn btn-outline-secondary btn-ctl">{{ __('folders.search.clear') }}</a>
                     @endif
                 </div>
             </form>
@@ -53,12 +53,12 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">Nombre</th>
-                        <th style="width: 40%;">Descripción</th>
-                        <th class="text-center">Usuarios</th>
-                        <th class="text-center">Grupos</th>
-                        <th class="text-center">Reportes</th>
-                        <th class="text-right">Acciones</th>
+                        <th style="width: 25%;">{{ __('folders.table.name') }}</th>
+                        <th style="width: 40%;">{{ __('folders.table.description') }}</th>
+                        <th class="text-center">{{ __('folders.table.users') }}</th>
+                        <th class="text-center">{{ __('folders.table.groups') }}</th>
+                        <th class="text-center">{{ __('folders.table.reports') }}</th>
+                        <th class="text-right">{{ __('folders.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,15 +78,15 @@
                             <span class="badge badge-success">{{ $f->reports()->count() }}</span>
                         </td>
                         <td class="text-right align-middle">
-                            <a href="{{ route('folders.edit', $f) }}" class="btn btn-sm btn-default btn-action-text-eq" title="Editar">
-                                <i class="fas fa-edit mr-1"></i> Editar
+                            <a href="{{ route('folders.edit', $f) }}" class="btn btn-sm btn-default btn-action-text-eq" title="{{ __('folders.table.edit_title') }}">
+                                <i class="fas fa-edit mr-1"></i> {{ __('folders.table.edit') }}
                             </a>
                             <form action="{{ route('folders.destroy', $f) }}" method="POST" class="d-inline ml-1"
-                                  onsubmit="return confirm('¿Eliminar esta carpeta? Esta acción no se puede deshacer.');">
+                                  onsubmit="return confirm('{{ __('folders.table.delete_confirm') }}');">
                                 @csrf 
                                 @method('DELETE')
-                                <button class="btn btn-sm btn-default btn-action-text-eq" title="Eliminar">
-                                    <i class="fas fa-trash mr-1"></i> Eliminar
+                                <button class="btn btn-sm btn-default btn-action-text-eq" title="{{ __('folders.table.delete_title') }}">
+                                    <i class="fas fa-trash mr-1"></i> {{ __('folders.table.delete') }}
                                 </button>
                             </form>
                         </td>
@@ -95,7 +95,7 @@
                     <tr>
                         <td colspan="6" class="text-center p-4 text-muted">
                             <i class="fas fa-folder-open fa-2x mb-2"></i>
-                            <p class="mb-0">Aún no hay carpetas creadas.</p>
+                            <p class="mb-0">{{ __('folders.empty.list') }}</p>
                         </td>
                     </tr>
                 @endforelse
