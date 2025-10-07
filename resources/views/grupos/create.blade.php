@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Nuevo Grupo')
+@section('title', __('groups.page.create'))
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Nuevo Grupo</h1>
+    <h1 class="m-0 text-dark">{{ __('groups.page.create') }}</h1>
 @stop
 
 @section('content')
@@ -11,19 +11,19 @@
         @csrf
 
         {{-- TARJETA 1: DATOS DEL GRUPO --}}
-        <x-adminlte-card title="Datos del Grupo" icon="fas fa-users text-lightblue"
+        <x-adminlte-card title="{{ __('groups.cards.details.title') }}" icon="fas fa-users text-lightblue"
                          theme="primary" theme-mode="outline">
             <div class="row">
                 <div class="col-12">
-                    <x-adminlte-input name="name" label="Nombre del Grupo" placeholder="Ej: Equipo Comercial"
+                    <x-adminlte-input name="name" label="{{ __('groups.form.name_label') }}" placeholder="{{ __('groups.form.name_placeholder') }}"
                         value="{{ old('name') }}" required
                         class="@error('name') is-invalid @enderror"/>
                     @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="col-12">
-                    <x-adminlte-textarea name="description" label="Descripción (Opcional)" rows="3"
-                        placeholder="Describe el propósito del grupo."
+                    <x-adminlte-textarea name="description" label="{{ __('groups.form.description_label') }}" rows="3"
+                        placeholder="{{ __('groups.form.description_placeholder') }}"
                         class="@error('description') is-invalid @enderror">{{ old('description') }}</x-adminlte-textarea>
                     @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
@@ -31,11 +31,11 @@
         </x-adminlte-card>
 
         {{-- TARJETA 2: ASIGNACIONES (solo Usuarios) --}}
-        <x-adminlte-card title="Asignaciones" icon="fas fa-user-check text-lightblue"
+        <x-adminlte-card title="{{ __('groups.cards.assignments.title') }}" icon="fas fa-user-check text-lightblue"
                          theme="primary" theme-mode="outline">
             <div class="row">
                 <div class="col-md-12 d-flex flex-column">
-                    <label>Usuarios del Grupo</label>
+                    <label>{{ __('groups.form.users_label') }}</label>
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
                         @forelse($users as $user)
                             <div class="custom-control custom-checkbox">
@@ -47,7 +47,7 @@
                                 </label>
                             </div>
                         @empty
-                            <p class="text-muted mb-0">No hay usuarios disponibles.</p>
+                            <p class="text-muted mb-0">{{ __('groups.empty.users') }}</p>
                         @endforelse
                     </div>
                 </div>
@@ -58,9 +58,9 @@
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="d-flex" style="gap: 0.75rem; width: 320px;">
-                    <x-adminlte-button type="submit" theme="primary" label="Guardar" icon="fas fa-save" class="btn-eq"/>
+                    <x-adminlte-button type="submit" theme="primary" label="{{ __('groups.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
 
-                    <x-adminlte-button :href="route('grupos.index')" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
+                    <x-adminlte-button :href="route('grupos.index')" theme="secondary" label="{{ __('groups.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq"/>
                 </div>
             </div>
         </x-adminlte-card>

@@ -44,7 +44,7 @@ class GruposController extends Controller
             'description' => $data['description'] ?? null,
         ]);
         $g->users()->sync($data['users'] ?? []);
-        return redirect()->route('grupos.index')->with('success','Grupo creado.');
+        return redirect()->route('grupos.index')->with('success', __('groups.flash.created'));
     }
 
     public function edit(Group $grupo): View
@@ -66,12 +66,12 @@ class GruposController extends Controller
             'description' => $data['description'] ?? null,
         ]);
         $grupo->users()->sync($data['users'] ?? []);
-        return redirect()->route('grupos.index')->with('success','Grupo actualizado.');
+        return redirect()->route('grupos.index')->with('success', __('groups.flash.updated'));
     }
 
     public function destroy(Group $grupo): RedirectResponse
     {
         $grupo->delete();
-        return redirect()->route('grupos.index')->with('success','Grupo eliminado.');
+        return redirect()->route('grupos.index')->with('success', __('groups.flash.deleted'));
     }
 }

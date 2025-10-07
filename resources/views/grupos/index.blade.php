@@ -1,20 +1,20 @@
 @extends('adminlte::page')
 
-@section('title', 'Grupos')
+@section('title', __('groups.page.title'))
 
 @section('content_header')
     {{-- Título y botón Crear --}}
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h1 class="m-0 text-dark">Grupos</h1>
+        <h1 class="m-0 text-dark">{{ __('groups.page.title') }}</h1>
         <a href="{{ route('grupos.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-1"></i> Nuevo Grupo
+            <i class="fas fa-plus mr-1"></i> {{ __('groups.index.create_button') }}
         </a>
     </div>
 @stop
 
 @section('content')
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="Éxito" dismissable>
+        <x-adminlte-alert theme="success" title="{{ __('groups.alerts.success_title') }}" dismissable>
             {{ session('success') }}
         </x-adminlte-alert>
     @endif
@@ -24,7 +24,7 @@
         $hasQuery = strlen(trim($q)) > 0;
     @endphp
 
-    <x-adminlte-card title="Listado de Grupos" icon="fas fa-users text-lightblue"
+    <x-adminlte-card title="{{ __('groups.index.card_title') }}" icon="fas fa-users text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
         <div class="p-3">
@@ -38,13 +38,13 @@
                                name="q"
                                value="{{ $q }}"
                                class="form-control field-input"
-                               placeholder="Buscar por nombre...">
+                               placeholder="{{ __('groups.search.placeholder') }}">
                     </div>
 
                     {{-- Botones con misma altura y línea que el input --}}
-                    <button type="submit" class="btn btn-dark btn-ctl">Buscar</button>
+                    <button type="submit" class="btn btn-dark btn-ctl">{{ __('groups.search.submit') }}</button>
                     @if($hasQuery)
-                        <a href="{{ route('grupos.index') }}" class="btn btn-outline-secondary btn-ctl">Limpiar</a>
+                        <a href="{{ route('grupos.index') }}" class="btn btn-outline-secondary btn-ctl">{{ __('groups.search.clear') }}</a>
                     @endif
                 </div>
             </form>
@@ -54,9 +54,9 @@
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 65%;">Nombre y Descripción</th>
-                        <th class="text-center">Miembros</th>
-                        <th class="text-right">Acciones</th>
+                        <th style="width: 65%;">{{ __('groups.table.name_description') }}</th>
+                        <th class="text-center">{{ __('groups.table.members') }}</th>
+                        <th class="text-right">{{ __('groups.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,15 +77,15 @@
                             <span class="badge badge-primary">{{ $membersCount }}</span>
                         </td>
                         <td class="text-right align-middle">
-                            <a href="{{ route('grupos.edit', $g) }}" class="btn btn-sm btn-default btn-action-text-eq" title="Editar">
-                                <i class="fas fa-edit mr-1"></i> Editar
+                            <a href="{{ route('grupos.edit', $g) }}" class="btn btn-sm btn-default btn-action-text-eq" title="{{ __('groups.table.edit_title') }}">
+                                <i class="fas fa-edit mr-1"></i> {{ __('groups.table.edit') }}
                             </a>
                             <form action="{{ route('grupos.destroy', $g) }}" method="POST" class="d-inline ml-1"
-                                  onsubmit="return confirm('¿Eliminar el grupo \"{{ $g->name }}\"? Esta acción no se puede deshacer.');">
+                                  onsubmit="return confirm('{{ __('groups.table.delete_confirm', ['name' => $g->name]) }}');">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-sm btn-default btn-action-text-eq" title="Eliminar">
-                                    <i class="fas fa-trash mr-1"></i> Eliminar
+                                <button class="btn btn-sm btn-default btn-action-text-eq" title="{{ __('groups.table.delete_title') }}">
+                                    <i class="fas fa-trash mr-1"></i> {{ __('groups.table.delete') }}
                                 </button>
                             </form>
                         </td>
@@ -94,7 +94,7 @@
                     <tr>
                         <td colspan="3" class="text-center p-4 text-muted">
                             <i class="fas fa-users-slash fa-2x mb-2"></i>
-                            <p class="mb-0">Aún no hay grupos creados.</p>
+                            <p class="mb-0">{{ __('groups.empty.list') }}</p>
                         </td>
                     </tr>
                 @endforelse
@@ -167,7 +167,7 @@
         white-space: nowrap;
     }
 
-    /* Acciones tabla: ancho uniforme */
+    /* {{ __('groups.table.actions') }} tabla: ancho uniforme */
     .btn-action-text-eq {
         width: 100px;
         display: inline-flex;
