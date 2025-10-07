@@ -23,7 +23,7 @@ return [
     ],
 
     'index' => [
-        'card_title' => 'Listado de Usuarios',
+        'card_title' => 'Listado de usuarios',
         'filters' => [
             'search_placeholder' => 'Buscar por nombre o email',
             'role_all' => 'Todos los roles',
@@ -38,9 +38,12 @@ return [
             'block' => 'Bloquear seleccionados',
             'unblock' => 'Desbloquear seleccionados',
             'delete' => 'Eliminar seleccionados',
+            'actions_aria' => 'Acciones masivas',
         ],
         'table' => [
             'select_all' => 'Seleccionar todos',
+            'select_user' => 'Seleccionar usuario :name',
+            'name_description' => 'Nombre y descripción',
             'name' => 'Nombre',
             'email' => 'Email',
             'status' => 'Estado',
@@ -58,7 +61,7 @@ return [
         ],
         'messages' => [
             'empty' => 'Sin usuarios.',
-            'showing' => 'Mostrando :from–:to de :total',
+            'showing' => 'Mostrando :from-:to de :total',
             'self_delete' => 'No puedes eliminar tu propia cuenta',
             'self_block' => 'No puedes bloquear tu propia cuenta',
             'entra_use_search' => 'Usa la búsqueda para previsualizar usuarios.',
@@ -113,5 +116,30 @@ return [
             'save' => 'Guardar',
             'cancel' => 'Cancelar',
         ],
+    ],
+
+    'flash' => [
+        'created' => 'Usuario creado.',
+        'updated' => 'Usuario actualizado.',
+        'deleted' => 'Usuario eliminado.',
+        'blocked' => 'Usuario bloqueado.',
+        'unblocked' => 'Usuario desbloqueado.',
+        'import_none' => 'No se crearon usuarios nuevos.',
+        'import_some' => 'Se importaron :count usuario(s).',
+        'none_to_delete' => 'No se eliminaron usuarios.',
+        'none_to_block' => 'No hay usuarios para bloquear.',
+        'none_to_unblock' => 'No hay usuarios para desbloquear.',
+        'bulk_deleted' => 'Se eliminaron :count usuario(s).',
+        'bulk_delete_errors' => 'No se pudieron eliminar :count usuario(s).',
+        'bulk_delete_skipped_admins' => 'Se evitó eliminar :count usuario(s) por ser el último administrador.',
+        'bulk_blocked' => 'Se bloquearon :count usuario(s).',
+        'bulk_block_skipped_admins' => 'Se evitó bloquear :count administrador(es) para no dejar sin admin.',
+        'bulk_block_errors' => 'Hubo :count error(es) al bloquear.',
+        'bulk_unblocked' => 'Se desbloquearon :count usuario(s).',
+        'bulk_unblock_errors' => 'Hubo :count error(es) al desbloquear.',
+        'only_admin_warning' => 'No se puede eliminar este usuario: es el único administrador.',
+        'roles_validation_error' => 'No se pudo validar los roles. Operación cancelada para proteger el último administrador.',
+        'self_delete' => 'Tu propio usuario no puede eliminarse.',
+        'self_block' => 'No puedes bloquear tu propia cuenta.',
     ],
 ];

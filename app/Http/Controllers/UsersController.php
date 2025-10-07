@@ -65,7 +65,7 @@ class UsersController extends Controller
         ]);
         $user->syncRoles([$data['role']]);
 
-        return redirect()->route('users.index')->with('success', 'Usuario creado.');
+        return redirect()->route('users.index')->with('success', __('users.flash.created'));
     }
 
     public function edit(User $usuario): View
@@ -91,7 +91,7 @@ class UsersController extends Controller
         // No permitir bloquearse a sí mismo
         if ($requestedBlock && (int)($user->id) === (int)(Auth::id() ?? 0)) {
             return redirect()->route('users.edit', ['usuario' => $user->id])
-                ->with('warning', 'No puedes bloquear tu propia cuenta.');
+                ->with('warning', __('users.flash.self_block'));
         }
         $user->is_blocked = $requestedBlock;
 
@@ -106,7 +106,7 @@ class UsersController extends Controller
         $user->save();
         $user->syncRoles([$data['role']]);
 
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado.');
+        return redirect()->route('users.index')->with('success', __('users.flash.updated'));
     }
 
     public function destroy(User $usuario): RedirectResponse
@@ -115,7 +115,7 @@ class UsersController extends Controller
         $selfId = (int) (Auth::id() ?? 0);
         if ($usuario->id === $selfId) {
             return redirect()->route('users.index')
-                ->with('warning', 'No puedes eliminar tu propia cuenta.');
+                ->with('warning', __('users.flash.self_delete'));
         }
 
         // Evitar eliminar al último administrador del sistema
@@ -125,17 +125,17 @@ class UsersController extends Controller
                 $admins = User::role('admin')->count();
                 if ($admins <= 1) {
                     return redirect()->route('users.index')
-                        ->with('warning', 'No se puede eliminar este usuario: es el único administrador.');
+                        ->with('warning', __('users.flash.only_admin_warning'));
                 }
             }
         } catch (\Throwable $e) {
             // Si algo falla al chequear roles, preferimos no dejar al sistema sin admin
             return redirect()->route('users.index')
-                ->with('error', 'No se pudo validar los roles. Operación cancelada para proteger el último administrador.');
+                ->with('error', __('users.flash.roles_validation_error'));
         }
 
         $usuario->delete();
-        return redirect()->route('users.index')->with('success', 'Usuario eliminado.');
+        return redirect()->route('users.index')->with('success', __('users.flash.deleted'));
     }
 
     public function importForm(Request $request): View
@@ -192,7 +192,7 @@ class UsersController extends Controller
         }
 
         return redirect()->route('users.index')
-            ->with('success', $created > 0 ? ("Se importaron {$created} usuario(s).") : 'No se crearon usuarios nuevos.');
+            ->with('success', $created > 0 ? __('users.flash.import_some', ['count' => $created]) : __('users.flash.import_none'));
     }
 
     /**
@@ -215,7 +215,7 @@ class UsersController extends Controller
 
         if ($ids->isEmpty()) {
             return redirect()->route('users.index')
-                ->with('warning', 'No se eliminaron usuarios.');
+                ->with('warning', __('users.flash.none_to_delete'));
         }
 
         $deleted = 0;
@@ -248,12 +248,12 @@ class UsersController extends Controller
         }
 
         $resp = redirect()->route('users.index');
-        if ($deleted > 0) { $resp->with('success', "Se eliminaron {$deleted} usuario(s)."); }
-        if ($errors  > 0) { $resp->with('warning', "No se pudieron eliminar {$errors} usuario(s)."); }
-        if ($skippedLastAdmins > 0) { $resp->with('warning', "Se evitó eliminar {$skippedLastAdmins} usuario(s) por ser el último administrador."); }
+        if ($deleted > 0) { $resp->with('success', __('users.flash.bulk_deleted', ['count' => $deleted])); }
+        if ($errors  > 0) { $resp->with('warning', __('users.flash.bulk_delete_errors', ['count' => $errors])); }
+        if ($skippedLastAdmins > 0) { $resp->with('warning', __('users.flash.bulk_delete_skipped_admins', ['count' => $skippedLastAdmins])); }
 
         if (in_array($selfId, $request->input('ids', []), true)) {
-            $resp->with('warning', 'Tu propio usuario no puede eliminarse.');
+            $resp->with('warning', __('users.flash.self_delete'));
         }
 
         return $resp;
@@ -272,7 +272,7 @@ class UsersController extends Controller
         $selfId = (int) (Auth::id() ?? 0);
         $ids = collect($data['ids'])->map(fn($v)=>(int)$v)->unique()->reject(fn($id)=>$id === $selfId)->values();
         if ($ids->isEmpty()) {
-            return redirect()->route('users.index')->with('warning', 'No hay usuarios para bloquear.');
+            return redirect()->route('users.index')->with('warning', __('users.flash.none_to_block'));
         }
 
         $blocked=0; $skippedLastAdmins=0; $errors=0;
@@ -289,9 +289,9 @@ class UsersController extends Controller
         }
 
         $resp = redirect()->route('users.index');
-        if ($blocked>0) $resp->with('success', "Se bloquearon {$blocked} usuario(s).");
-        if ($skippedLastAdmins>0) $resp->with('warning', "Se evitó bloquear {$skippedLastAdmins} administrador(es) para no dejar sin admin.");
-        if ($errors>0) $resp->with('warning', "Hubo {$errors} error(es) al bloquear.");
+        if ($blocked>0) $resp->with('success', __('users.flash.bulk_blocked', ['count' => $blocked]));
+        if ($skippedLastAdmins>0) $resp->with('warning', __('users.flash.bulk_block_skipped_admins', ['count' => $skippedLastAdmins]));
+        if ($errors>0) $resp->with('warning', __('users.flash.bulk_block_errors', ['count' => $errors]));
         return $resp;
     }
 
@@ -308,7 +308,7 @@ class UsersController extends Controller
         $selfId = (int) (Auth::id() ?? 0);
         $ids = collect($data['ids'])->map(fn($v)=>(int)$v)->unique()->reject(fn($id)=>$id === $selfId)->values();
         if ($ids->isEmpty()) {
-            return redirect()->route('users.index')->with('warning', 'No hay usuarios para desbloquear.');
+            return redirect()->route('users.index')->with('warning', __('users.flash.none_to_unblock'));
         }
 
         $unblocked=0; $errors=0;
@@ -320,8 +320,8 @@ class UsersController extends Controller
         }
 
         $resp = redirect()->route('users.index');
-        if ($unblocked>0) $resp->with('success', "Se desbloquearon {$unblocked} usuario(s).");
-        if ($errors>0) $resp->with('warning', "Hubo {$errors} error(es) al desbloquear.");
+        if ($unblocked>0) $resp->with('success', __('users.flash.bulk_unblocked', ['count' => $unblocked]));
+        if ($errors>0) $resp->with('warning', __('users.flash.bulk_unblock_errors', ['count' => $errors]));
         return $resp;
     }
 
@@ -333,7 +333,7 @@ class UsersController extends Controller
         $user = $usuario;
         $selfId = (int) (Auth::id() ?? 0);
         if ($user->id === $selfId) {
-            return back()->with('warning', 'No puedes bloquear tu propia cuenta.');
+            return back()->with('warning', __('users.flash.self_block'));
         }
 
         $willBlock = ! (bool) ($user->is_blocked ?? false);
@@ -341,7 +341,7 @@ class UsersController extends Controller
         if ($willBlock && method_exists($user, 'hasRole') && $user->hasRole('admin')) {
             try { $admins = User::role('admin')->count(); } catch (\Throwable) { $admins = null; }
             if ($admins !== null && $admins <= 1) {
-                return back()->with('warning', 'No se puede bloquear este usuario: es el único administrador.');
+                return back()->with('warning', __('users.flash.only_admin_warning'));
             }
         }
 
@@ -362,6 +362,6 @@ class UsersController extends Controller
                 ]);
             }
         }
-        return back()->with('success', $willBlock ? 'Usuario bloqueado.' : 'Usuario desbloqueado.');
+        return back()->with('success', $willBlock ? __('users.flash.blocked') : __('users.flash.unblocked'));
     }
 }
