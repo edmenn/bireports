@@ -40,9 +40,9 @@ class DatasetsController extends Controller
                 }
             }
             $svc->refreshDataset($workspaceId, $datasetId);
-            return back()->with('status', 'Actualización iniciada para el dataset.');
+            return back()->with('status', __('datasets.flash.refresh_started'));
         } catch (Throwable $e) {
-            return back()->with('error', 'No se pudo iniciar la actualización: ' . $e->getMessage());
+            return back()->with('error', __('datasets.flash.refresh_failed', ['message' => $e->getMessage()]));
         }
     }
 
@@ -100,9 +100,9 @@ class DatasetsController extends Controller
                     ]
                 );
             }
-            return back()->with('status', 'Metadatos recargados para el dataset.');
+            return back()->with('status', __('datasets.flash.metadata_refreshed'));
         } catch (Throwable $e) {
-            return back()->with('error', 'No se pudieron recargar los metadatos: ' . $e->getMessage());
+            return back()->with('error', __('datasets.flash.metadata_failed', ['message' => $e->getMessage()]));
         }
     }
 
@@ -309,7 +309,7 @@ class DatasetsController extends Controller
         }
         $times = array_values(array_unique($times));
         if (empty($times)) {
-            return back()->with('error','Debes indicar al menos un horario válido (HH:mm).')->withInput();
+            return back()->with('error', __('datasets.flash.local_invalid_times'))->withInput();
         }
 
         $days = array_values(array_unique(array_intersect($validated['days'], ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'])));
@@ -322,7 +322,7 @@ class DatasetsController extends Controller
             $dInt = array_intersect($days, (array)$ex->days);
             $tInt = array_intersect($times, (array)$ex->times);
             if (!empty($dInt) && !empty($tInt)) {
-                $warning = 'Atención: hay solapamientos con otra programación local.';
+                $warning = __('datasets.flash.local_overlap');
                 break;
             }
         }
@@ -334,7 +334,7 @@ class DatasetsController extends Controller
         ]);
 
         return redirect()->route('datasets.schedule', [$workspaceId, $datasetId])
-            ->with($warning ? 'warning' : 'status', $warning ?: 'Programación local creada.');
+            ->with($warning ? 'warning' : 'status', $warning ?: __('datasets.flash.local_created'));
     }
 
     public function localScheduleToggle(string $workspaceId, string $datasetId, int $scheduleId): RedirectResponse
@@ -343,7 +343,7 @@ class DatasetsController extends Controller
         $sch = $dataset->schedules()->where('id',$scheduleId)->firstOrFail();
         $sch->enabled = ! $sch->enabled;
         $sch->save();
-        return back()->with('status', $sch->enabled ? 'Programación activada.' : 'Programación desactivada.');
+        return back()->with('status', $sch->enabled ? __('datasets.flash.local_enabled') : __('datasets.flash.local_disabled'));
     }
 
     public function localScheduleDelete(string $workspaceId, string $datasetId, int $scheduleId): RedirectResponse
@@ -351,6 +351,6 @@ class DatasetsController extends Controller
         $dataset = \App\Models\Dataset::findOrFail($datasetId);
         $sch = $dataset->schedules()->where('id',$scheduleId)->firstOrFail();
         $sch->delete();
-        return back()->with('status', 'Programación eliminada.');
+        return back()->with('status', __('datasets.flash.local_deleted'));
     }
 }

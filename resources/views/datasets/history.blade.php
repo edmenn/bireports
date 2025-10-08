@@ -1,15 +1,15 @@
 @extends('adminlte::page')
 
-@section('title', __('history.title'))
+@section('title', __('datasets.history.title'))
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
-            <h1 class="m-0">{{ __('history.title') }}</h1>
-            <small class="text-muted">Workspace: {{ $workspace->name ?? $workspace->id }} - Dataset: {{ $datasetId }}</small>
+            <h1 class="m-0">{{ __('datasets.history.title') }}</h1>
+            <small class="text-muted">{{ __('datasets.history.subtitle', ['workspace' => $workspace->name ?? $workspace->id, 'dataset' => $datasetId]) }}</small>
         </div>
         <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ __('history.back') }}
+            <i class="fas fa-arrow-left"></i> {{ __('datasets.history.back') }}
         </a>
     </div>
 @stop
@@ -22,11 +22,11 @@
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>{{ __('history.th_date') }}</th>
-                        <th>{{ __('history.th_status') }}</th>
-                        <th>{{ __('history.th_duration') }}</th>
-                        <th>{{ __('history.th_requested_by') }}</th>
-                        <th>{{ __('history.th_details') }}</th>
+                        <th>{{ __('datasets.history.table.date') }}</th>
+                        <th>{{ __('datasets.history.table.status') }}</th>
+                        <th>{{ __('datasets.history.table.duration') }}</th>
+                        <th>{{ __('datasets.history.table.requested_by') }}</th>
+                        <th>{{ __('datasets.history.table.details') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,7 +66,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">{{ __('history.empty') }}</td>
+                            <td colspan="5" class="text-center text-muted py-4">{{ __('datasets.history.empty') }}</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -74,4 +74,3 @@
         </div>
     </div>
 @stop
-
