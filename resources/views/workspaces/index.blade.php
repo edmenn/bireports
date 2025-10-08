@@ -1,17 +1,17 @@
 @extends('adminlte::page')
 
-@section('title', __('workspaces.title'))
+@section('title', __('folders.workspaces.page.title'))
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h1 class="mb-0">{{ __('workspaces.title') }}</h1>
-            <small class="text-muted">{{ __('workspaces.subtitle') }}</small>
+            <h1 class="mb-0">{{ __('folders.workspaces.page.title') }}</h1>
+            <small class="text-muted">{{ __('folders.workspaces.page.subtitle') }}</small>
         </div>
 
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-cloud-download-alt"></i> {{ __('workspaces.import_now') }}
+                <i class="fas fa-cloud-download-alt"></i> {{ __('folders.workspaces.actions.import_now') }}
             </a>
         </div>
     </div>
@@ -31,10 +31,10 @@
                 <div class="mb-3">
                     <i class="fas fa-inbox fa-3x text-muted"></i>
                 </div>
-                <h5 class="mb-2">{{ __("workspaces.empty_title") }}
-                <p class="text-muted mb-4">{{ __("workspaces.empty_hint") }}
+                <h5 class="mb-2">{{ __('folders.workspaces.empty.title') }}
+                <p class="text-muted mb-4">{{ __('folders.workspaces.empty.hint') }}
                 <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary">
-                    <i class="fas fa-sync"></i> Importar ahora
+                    <i class="fas fa-sync"></i> {{ __('folders.workspaces.actions.import_now') }}
                 </a>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 <div class="small-box bg-primary">
                     <div class="inner">
                         <h3 class="mb-0">{{ $total }}</h3>
-                        <p class="mb-0">Workspaces totales</p>
+                        <p class="mb-0">{{ __('folders.workspaces.kpis.total') }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-layer-group"></i></div>
                 </div>
@@ -56,7 +56,7 @@
                 <div class="small-box bg-success">
                     <div class="inner">
                         <h3 class="mb-0">{{ $premium }}</h3>
-                        <p class="mb-0">En capacidad Premium</p>
+                        <p class="mb-0">{{ __('folders.workspaces.kpis.premium') }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-bolt"></i></div>
                 </div>
@@ -66,7 +66,7 @@
                 <div class="small-box bg-secondary">
                     <div class="inner">
                         <h3 class="mb-0">{{ $sinCap }}</h3>
-                        <p class="mb-0">Sin Capacity asignada</p>
+                        <p class="mb-0">{{ __('folders.workspaces.kpis.no_capacity') }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
                 </div>
@@ -78,25 +78,25 @@
             <div class="card-body">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-6">
-                        <label for="ws-search" class="form-label mb-1">Buscar</label>
-                        <input id="ws-search" type="text" class="form-control" placeholder="Filtra por nombre, tipo o capacity id…">
+                        <label for="ws-search" class="form-label mb-1">{{ __('folders.workspaces.filters.search_label') }}</label>
+                        <input id="ws-search" type="text" class="form-control" placeholder="{{ __('folders.workspaces.filters.search_placeholder') }}">
                     </div>
                     <div class="col-md-3">
-                        <label for="ws-premium" class="form-label mb-1">Premium</label>
+                        <label for="ws-premium" class="form-label mb-1">{{ __('folders.workspaces.filters.premium_label') }}</label>
                         <select id="ws-premium" class="form-control">
-                            <option value="all" selected>Todos</option>
-                            <option value="yes">Solo Premium</option>
-                            <option value="no">Solo No Premium</option>
+                            <option value="all" selected>{{ __('folders.workspaces.filters.premium_all') }}</option>
+                            <option value="yes">{{ __('folders.workspaces.filters.premium_yes') }}</option>
+                            <option value="no">{{ __('folders.workspaces.filters.premium_no') }}</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="ws-type" class="form-label mb-1">Tipo</label>
+                        <label for="ws-type" class="form-label mb-1">{{ __('folders.workspaces.filters.type_label') }}</label>
                         <select id="ws-type" class="form-control">
-                            <option value="all" selected>Todos</option>
+                            <option value="all" selected>{{ __('folders.workspaces.filters.type_all') }}</option>
                             @foreach($workspaces->pluck('type')->filter()->unique()->values() as $tipo)
                                 <option value="{{ $tipo }}">{{ $tipo }}</option>
                             @endforeach
-                            <option value="_vacio_">Sin tipo</option>
+                            <option value="_vacio_">{{ __('folders.workspaces.filters.type_empty') }}</option>
                         </select>
                     </div>
                 </div>
@@ -110,11 +110,11 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width: 38px;"></th>
-                            <th class="sortable" data-sort="name">Nombre <i class="fas fa-sort ms-1 text-muted"></i></th>
-                            <th class="sortable" data-sort="type">Tipo <i class="fas fa-sort ms-1 text-muted"></i></th>
-                            <th class="sortable" data-sort="premium">Premium <i class="fas fa-sort ms-1 text-muted"></i></th>
-                            <th class="sortable" data-sort="capacity">Capacity ID <i class="fas fa-sort ms-1 text-muted"></i></th>
-                            <th class="text-right" style="width:160px;">Acciones</th>
+                            <th class="sortable" data-sort="name">{{ __('folders.workspaces.table.headers.name') }} <i class="fas fa-sort ms-1 text-muted"></i></th>
+                            <th class="sortable" data-sort="type">{{ __('folders.workspaces.table.headers.type') }} <i class="fas fa-sort ms-1 text-muted"></i></th>
+                            <th class="sortable" data-sort="premium">{{ __('folders.workspaces.table.headers.premium') }} <i class="fas fa-sort ms-1 text-muted"></i></th>
+                            <th class="sortable" data-sort="capacity">{{ __('folders.workspaces.table.headers.capacity') }} <i class="fas fa-sort ms-1 text-muted"></i></th>
+                            <th class="text-right" style="width:160px;">{{ __('folders.workspaces.table.headers.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -144,27 +144,27 @@
                                 <td>
                                     <div class="fw-600">{{ $name }}</div>
                                     @if(!empty($w->id))
-                                        <small class="text-muted">ID: <code>{{ $w->id }}</code></small>
+                                        <small class="text-muted">{{ __('folders.workspaces.table.id_label') }} <code>{{ $w->id }}</code></small>
                                     @endif
                                 </td>
                                 <td>
                                     @if($typeVal)
                                         <span class="badge bg-info">{{ $typeVal }}</span>
                                     @else
-                                        <span class="badge bg-secondary">Sin tipo</span>
+                                        <span class="badge bg-secondary">{{ __('folders.workspaces.badges.no_type') }}</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($isPremium)
-                                        <span class="badge bg-success">Sí</span>
+                                        <span class="badge bg-success">{{ __('folders.workspaces.badges.yes') }}</span>
                                     @else
-                                        <span class="badge bg-secondary">No</span>
+                                        <span class="badge bg-secondary">{{ __('folders.workspaces.badges.no') }}</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($cap)
                                         <code class="me-2">{{ Str::limit($cap, 22) }}</code>
-                                        <button type="button" class="btn btn-xs btn-outline-secondary js-copy" data-copy="{{ $cap }}" title="Copiar Capacity ID">
+                                        <button type="button" class="btn btn-xs btn-outline-secondary js-copy" data-copy="{{ $cap }}" title="{{ __('folders.workspaces.actions.copy_capacity') }}">
                                             <i class="far fa-copy"></i>
                                         </button>
                                     @else
@@ -173,7 +173,7 @@
                                 </td>
                                 <td class="text-right">
                                     <a href="{{ route('workspaces.show', $w->id) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-chart-bar"></i> Ver reportes
+                                        <i class="fas fa-chart-bar"></i> {{ __('folders.workspaces.actions.view_reports') }}
                                     </a>
                                 </td>
                             </tr>
@@ -214,6 +214,7 @@
     const search = document.getElementById('ws-search');
     const premium = document.getElementById('ws-premium');
     const type = document.getElementById('ws-type');
+    const copyErrorMessage = @json(__('folders.workspaces.js.copy_failed'));
 
     let sortKey = null;
     let sortDir = 'asc';
@@ -303,7 +304,7 @@
                 btn.classList.remove('btn-success');
                 btn.classList.add('btn-outline-secondary');
             }, 900);
-        }).catch(()=>{ alert('No se pudo copiar'); });
+        }).catch(()=>{ alert(copyErrorMessage); });
     });
 
     // Inicial

@@ -1,22 +1,22 @@
 @extends('adminlte::page')
 
-@section('title', 'Workspace: '.$workspace->name)
+@section('title', __('folders.workspaces.show.title', ['name' => $workspace->name]))
 
 @section('content_header')
-    <h1>Workspace: {{ $workspace->name }}</h1>
+    <h1>{{ __('folders.workspaces.show.title', ['name' => $workspace->name]) }}</h1>
 @stop
 
 @section('content')
     @if($reports->isEmpty())
-        <div class="alert alert-info">Este workspace no tiene reportes importados.</div>
+        <div class="alert alert-info">{{ __('folders.workspaces.show.empty') }}</div>
     @else
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th>Título</th>
-                    <th>Dataset ID</th>
-                    <th class="text-right">Acciones</th>
+                    <th>{{ __('folders.workspaces.show.table.title') }}</th>
+                    <th>{{ __('folders.workspaces.show.table.dataset') }}</th>
+                    <th class="text-right">{{ __('folders.workspaces.show.table.actions') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -27,7 +27,7 @@
                         <td class="text-right">
                             <a class="btn btn-sm btn-primary"
                                href="{{ route('reports.show', [$workspace->id, $r->id]) }}">
-                                Abrir
+                                {{ __('folders.workspaces.show.table.open') }}
                             </a>
                         </td>
                     </tr>

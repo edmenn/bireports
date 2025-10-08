@@ -71,4 +71,73 @@ return [
         'reports' => 'No reports available.',
         'list' => 'No folders found.',
     ],
+
+    'workspaces' => [
+        'page' => [
+            'title' => 'Workspaces',
+            'subtitle' => 'Imported list from Microsoft Fabric / Power BI',
+        ],
+
+        'actions' => [
+            'import_now' => 'Import now',
+            'copy_capacity' => 'Copy Capacity ID',
+            'view_reports' => 'View reports',
+        ],
+
+        'empty' => [
+            'title' => 'No workspaces imported yet',
+            'hint' => 'Run an import to see your workspaces here.',
+        ],
+
+        'kpis' => [
+            'total' => 'Total workspaces',
+            'premium' => 'On Premium capacity',
+            'no_capacity' => 'Without assigned Capacity',
+        ],
+
+        'filters' => [
+            'search_label' => 'Search',
+            'search_placeholder' => 'Filter by name, type or capacity id…',
+            'premium_label' => 'Premium',
+            'premium_all' => 'All',
+            'premium_yes' => 'Only Premium',
+            'premium_no' => 'Only Non-Premium',
+            'type_label' => 'Type',
+            'type_all' => 'All',
+            'type_empty' => 'No type',
+        ],
+
+        'table' => [
+            'headers' => [
+                'name' => 'Name',
+                'type' => 'Type',
+                'premium' => 'Premium',
+                'capacity' => 'Capacity ID',
+                'actions' => 'Actions',
+            ],
+            'id_label' => 'ID:',
+        ],
+
+        'badges' => [
+            'no_type' => 'No type',
+            'yes' => 'Yes',
+            'no' => 'No',
+        ],
+
+        'js' => [
+            'copy_failed' => 'Could not copy',
+        ],
+
+        'show' => [
+            'title' => 'Workspace: :name',
+            'empty' => 'This workspace has no imported reports.',
+            'table' => [
+                'title' => 'Title',
+                'dataset' => 'Dataset ID',
+                'actions' => 'Actions',
+                'open' => 'Open',
+            ],
+        ],
+    ],
+
 ];

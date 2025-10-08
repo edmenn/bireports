@@ -71,4 +71,73 @@ return [
         'reports' => 'Sin reportes disponibles.',
         'list' => 'Sin carpetas.',
     ],
+
+    'workspaces' => [
+        'page' => [
+            'title' => 'Workspaces',
+            'subtitle' => 'Lista importada desde Microsoft Fabric / Power BI',
+        ],
+
+        'actions' => [
+            'import_now' => 'Importar ahora',
+            'copy_capacity' => 'Copiar Capacity ID',
+            'view_reports' => 'Ver reportes',
+        ],
+
+        'empty' => [
+            'title' => 'Aún no se importaron workspaces',
+            'hint' => 'Ejecuta una importación para ver tus workspaces aquí.',
+        ],
+
+        'kpis' => [
+            'total' => 'Workspaces totales',
+            'premium' => 'En capacidad Premium',
+            'no_capacity' => 'Sin Capacity asignada',
+        ],
+
+        'filters' => [
+            'search_label' => 'Buscar',
+            'search_placeholder' => 'Filtra por nombre, tipo o capacity id…',
+            'premium_label' => 'Premium',
+            'premium_all' => 'Todos',
+            'premium_yes' => 'Solo Premium',
+            'premium_no' => 'Solo No Premium',
+            'type_label' => 'Tipo',
+            'type_all' => 'Todos',
+            'type_empty' => 'Sin tipo',
+        ],
+
+        'table' => [
+            'headers' => [
+                'name' => 'Nombre',
+                'type' => 'Tipo',
+                'premium' => 'Premium',
+                'capacity' => 'Capacity ID',
+                'actions' => 'Acciones',
+            ],
+            'id_label' => 'ID:',
+        ],
+
+        'badges' => [
+            'no_type' => 'Sin tipo',
+            'yes' => 'Sí',
+            'no' => 'No',
+        ],
+
+        'js' => [
+            'copy_failed' => 'No se pudo copiar',
+        ],
+
+        'show' => [
+            'title' => 'Workspace: :name',
+            'empty' => 'Este workspace no tiene reportes importados.',
+            'table' => [
+                'title' => 'Título',
+                'dataset' => 'Dataset ID',
+                'actions' => 'Acciones',
+                'open' => 'Abrir',
+            ],
+        ],
+    ],
+
 ];
