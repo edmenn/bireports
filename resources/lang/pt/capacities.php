@@ -6,7 +6,7 @@ return [
     'refresh' => 'Atualizar',
     'configure' => 'Configurar',
     'hint_configure' => 'Configure credenciais para habilitar a atualização',
-    'no_config_html' => 'Não há configuração ativa. Carregue as credenciais em <a href=":url" class="alert-link">Configurações</a> para habilitar a atualização e operações.',
+    'no_config_html' => 'Não há configuração ativa. Carregue as credenciais em <a href=":url" class="alert-link">Configurações</a> para habilitar a atualização e as operações.',
     'empty_title' => 'Sem capacidades',
     'empty_hint' => 'Clique em "Atualizar" para buscar capacidades do Fabric.',
     'kpi_total' => 'Capacidades totais',
@@ -14,6 +14,8 @@ return [
     'kpi_paused' => 'Pausadas',
     'filters' => [
         'search' => 'Buscar',
+        'search_placeholder' => 'Nome, GUID, região, SKU…',
+        'state' => 'Status',
         'all' => 'Todos',
         'only_active' => 'Apenas ativas',
         'only_paused' => 'Apenas pausadas',
@@ -36,8 +38,24 @@ return [
     'resume_q' => 'Retomar esta capacidade?',
     'pause' => 'Pausar',
     'resume' => 'Retomar',
-    'menu_schedule' => 'Programar ligar/pausar',
+    'menu_schedule' => 'Agendar ligar/pausar',
     'menu_audit' => 'Auditoria',
     'visible_counter' => 'visíveis',
     'copy_fail' => 'Não foi possível copiar',
+    'shared' => [
+        'sku_region' => 'SKU :sku — :region',
+    ],
+    'audit' => [
+        'title' => 'Auditoria de capacidade',
+        'header' => 'Auditoria: :name',
+        'refresh_confirm' => 'Atualizar metadados desta capacidade?',
+        'empty' => 'Sem registros.',
+        'table' => [
+            'date' => 'Data',
+            'action' => 'Ação',
+            'result' => 'Resultado',
+            'source' => 'Origem',
+            'detail' => 'Detalhe',
+        ],
+    ],
 ];

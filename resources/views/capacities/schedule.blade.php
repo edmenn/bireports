@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <h1 class="h3 mb-0">{{ __('capacities_schedule.title', ['name' => $capacity->display_name]) }}</h1>
-            <small class="text-muted">SKU {{ $capacity->sku }} — {{ $capacity->region }}</small>
+            <small class="text-muted">{{ __('capacities.shared.sku_region', ['sku' => $capacity->sku, 'region' => $capacity->region]) }}</small>
         </div>
         <a href="{{ route('capacities.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> {{ __('common.back') }}</a>
     </div>
@@ -105,7 +105,7 @@
                             <label class="form-label">{{ __('capacities_schedule.inactivity_minutes') }}
                                 <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('capacities_schedule.inactivity_hint') }}"></i>
                             </label>
-                            <input type="number" class="form-control" name="inactivity_timeout_minutes" min="5" max="120" step="5" value="{{ old('inactivity_timeout_minutes', $capacity->inactivity_timeout_minutes) }}" placeholder="ej. 30">
+                            <input type="number" class="form-control" name="inactivity_timeout_minutes" min="5" max="120" step="5" value="{{ old('inactivity_timeout_minutes', $capacity->inactivity_timeout_minutes) }}" placeholder="{{ __('capacities_schedule.inactivity_placeholder') }}">
                             <small class="text-muted">{{ __('capacities_schedule.inactivity_help') }}</small>
                         </div>
                         <button class="btn btn-primary">{{ __('common.save') }}</button>

@@ -15,7 +15,7 @@ return [
         'day' => 'Dia',
         'from' => 'De',
         'to' => 'Até',
-        'status' => 'Estado',
+        'status' => 'Status',
         'actions' => 'Ações',
     ],
     'state_active' => 'Ativo',
@@ -27,7 +27,10 @@ return [
     ],
     'options' => 'Opções',
     'automation_switch' => 'Automação da capacidade (horário + pausa por inatividade)',
+    'automation_hint' => 'Ativa o ligar/pausar por horário e a pausa por inatividade em um único comportamento.',
     'inactivity_minutes' => 'Tempo de inatividade (min)',
+    'inactivity_hint' => 'Minutos sem uso antes de pausar. Mínimo 5 e máximo 120.',
+    'inactivity_help' => 'Mínimo 5, em incrementos de 5, máximo 120.',
+    'inactivity_placeholder' => 'Ex.: 30',
     'delete_q' => 'Excluir horário?',
 ];
-

@@ -1,19 +1,19 @@
 @extends('adminlte::page')
 
-@section('title', 'Auditoría de capacidad')
+@section('title', __('capacities.audit.title'))
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
-            <h1 class="h3 mb-0">Auditoría: {{ $capacity->display_name }}</h1>
-            <small class="text-muted">SKU {{ $capacity->sku }} — {{ $capacity->region }}</small>
+            <h1 class="h3 mb-0">{{ __('capacities.audit.header', ['name' => $capacity->display_name]) }}</h1>
+            <small class="text-muted">{{ __('capacities.shared.sku_region', ['sku' => $capacity->sku, 'region' => $capacity->region]) }}</small>
         </div>
         <div class="d-flex" style="gap: .5rem;">
-            <form action="{{ route('capacities.audit.refresh', $capacity) }}" method="POST" onsubmit="return confirm('¿Actualizar metadatos de esta capacidad?');">
+            <form action="{{ route('capacities.audit.refresh', $capacity) }}" method="POST" onsubmit="return confirm('{{ __('capacities.audit.refresh_confirm') }}');">
                 @csrf
-                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-sync-alt"></i> {{ __('common.refresh') }}</button>
             </form>
-            <a href="{{ route('capacities.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Volver</a>
+            <a href="{{ route('capacities.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> {{ __('common.back') }}</a>
         </div>
     </div>
 @stop
@@ -24,11 +24,11 @@
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Acción</th>
-                        <th>Resultado</th>
-                        <th>Fuente</th>
-                        <th>Detalle</th>
+                        <th>{{ __('capacities.audit.table.date') }}</th>
+                        <th>{{ __('capacities.audit.table.action') }}</th>
+                        <th>{{ __('capacities.audit.table.result') }}</th>
+                        <th>{{ __('capacities.audit.table.source') }}</th>
+                        <th>{{ __('capacities.audit.table.detail') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +44,7 @@
                             <td class="small">{{ $l->message }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted py-4">Sin registros</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">{{ __('capacities.audit.empty') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

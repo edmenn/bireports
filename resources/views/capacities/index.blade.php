@@ -42,7 +42,7 @@
     @if(empty($hasConfig) || !$hasConfig)
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.no_config_html', ['url' => route('configuraciones.index')]) !!}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('common.close') }}"></button>
         </div>
     @endif
 
@@ -114,10 +114,10 @@
                     <div class="col-md-5">
                         <label class="mb-1">{{ __('capacities.filters.search') }}</label>
                         <input id="cap-search" type="text" class="form-control form-control-lg"
-                               placeholder="Nombre, GUID, región, SKU…">
+                               placeholder="{{ __('capacities.filters.search_placeholder') }}">
                     </div>
                     <div class="col-md-2">
-                        <label class="mb-1">Estado</label>
+                        <label class="mb-1">{{ __('capacities.filters.state') }}</label>
                         <select id="cap-state" class="form-control form-control-lg">
                             <option value="all" selected>{{ __('capacities.filters.all') }}</option>
                             <option value="active">{{ __('capacities.filters.only_active') }}</option>
@@ -136,7 +136,7 @@
                     <div class="col-md-3">
                         <label class="mb-1">{{ __('capacities.filters.region') }}</label>
                         <select id="cap-region" class="form-control form-control-lg">
-                            <option value="all" selected>Todas</option>
+                            <option value="all" selected>{{ __('capacities.filters.all') }}</option>
                             @foreach($regiones as $r)
                                 <option value="{{ $r }}">{{ $r }}</option>
                             @endforeach

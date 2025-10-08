@@ -31,5 +31,6 @@ return [
     'inactivity_minutes' => 'Inactivity time (min)',
     'inactivity_hint' => 'Minutes without use before pausing. Minimum 5, maximum 120.',
     'inactivity_help' => 'Minimum 5, increments of 5, maximum 120.',
+    'inactivity_placeholder' => 'e.g. 30',
     'delete_q' => 'Delete schedule?',
 ];

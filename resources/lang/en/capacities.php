@@ -14,6 +14,8 @@ return [
     'kpi_paused' => 'Paused',
     'filters' => [
         'search' => 'Search',
+        'search_placeholder' => 'Name, GUID, region, SKU…',
+        'state' => 'State',
         'all' => 'All',
         'only_active' => 'Only active',
         'only_paused' => 'Only paused',
@@ -40,4 +42,20 @@ return [
     'menu_audit' => 'Audit',
     'visible_counter' => 'visible',
     'copy_fail' => 'Could not copy',
+    'shared' => [
+        'sku_region' => 'SKU :sku — :region',
+    ],
+    'audit' => [
+        'title' => 'Capacity audit',
+        'header' => 'Audit: :name',
+        'refresh_confirm' => 'Refresh metadata for this capacity?',
+        'empty' => 'No records.',
+        'table' => [
+            'date' => 'Date',
+            'action' => 'Action',
+            'result' => 'Result',
+            'source' => 'Source',
+            'detail' => 'Detail',
+        ],
+    ],
 ];
