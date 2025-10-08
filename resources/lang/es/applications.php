@@ -6,22 +6,18 @@ return [
         'subtitle' => 'Organizá tus reportes de Power BI por aplicación',
         'empty' => 'Todavía no hay aplicaciones creadas.',
     ],
-
     'create' => [
         'title' => 'Nueva aplicación',
     ],
-
     'edit' => [
         'title' => 'Editar :name',
         'subtitle' => 'Gestioná accesos, secciones y reportes asignados',
     ],
-
     'flash' => [
         'created' => 'Aplicación creada correctamente.',
         'updated' => 'Aplicación actualizada correctamente.',
         'deleted' => 'Aplicación eliminada correctamente.',
     ],
-
     'sections' => [
         'flash' => [
             'created' => 'Sección agregada a la aplicación.',
@@ -30,12 +26,10 @@ return [
         ],
         'none' => 'Sin asignar',
     ],
-
     'status' => [
         'active' => 'Activa',
         'inactive' => 'Inactiva',
     ],
-
     'actions' => [
         'create' => 'Crear aplicación',
         'save' => 'Guardar',
@@ -50,11 +44,9 @@ return [
         'add_section' => 'Agregar sección',
         'close_alert' => 'Cerrar alerta',
     ],
-
     'confirm' => [
-        'delete' => '¿Querés eliminar esta aplicación?'
+        'delete' => '¿Querés eliminar esta aplicación?',
     ],
-
     'fields' => [
         'name' => 'Nombre',
         'slug' => 'Slug',
@@ -76,12 +68,10 @@ return [
         'new_sections' => 'Nuevas secciones',
         'report_name' => 'Reporte',
     ],
-
     'placeholders' => [
         'slug' => 'dejar vacío para autogenerar',
         'section_name' => 'Nombre de la sección',
     ],
-
     'cards' => [
         'details_title' => 'Detalles de la aplicación',
         'assignments_title' => 'Asignaciones de acceso',
@@ -89,32 +79,29 @@ return [
         'sections_title' => 'Secciones de la aplicación',
         'report_sections_title' => 'Secciones por reporte',
     ],
-
     'hints' => [
-        'users' => 'Los usuarios agregados verán esta aplicación cuando esté activa.',
+        'users' => 'Los usuarios agregados van a ver esta aplicación cuando esté activa.',
         'groups' => 'Los grupos heredan el acceso a la aplicación.',
         'reports' => 'Seleccioná los reportes que forman parte de la aplicación.',
-        'sections_existing' => 'Renombrá o marcá secciones para eliminarlas. Los reportes que contengan pasarán a “sin asignar”.',
+        'sections_existing' => 'Renombrá o marcá secciones para eliminarlas. Los reportes que contengan pasarán a "Sin asignar".',
         'sections_order' => 'Las secciones y reportes se ordenan alfabéticamente.',
-        'report_sections' => 'Organizá los reportes por sección. Dejá “Sin asignar” para mantenerlos fuera de secciones.',
+        'report_sections' => 'Organizá los reportes por sección. Dejá "Sin asignar" para mantenerlos fuera de secciones.',
     ],
-
     'tooltips' => [
         'name' => 'Nombre que verán los administradores y usuarios.',
-        'slug' => 'Identificador en la URL; si lo dejás vacío se genera automático.',
+        'slug' => 'Identificador en la URL; si lo dejás vacío se genera automáticamente.',
         'description' => 'Descripción opcional que se muestra en el encabezado del portal.',
         'display_order' => 'Reservado para ordenar manualmente en el futuro. Hoy no afecta la vista.',
         'is_active' => 'Solo las aplicaciones activas aparecen en el portal de usuarios.',
         'users' => 'Personas que tendrán acceso directo a la aplicación.',
-        'groups' => 'Grupos completos que heredarán el acceso.',
+        'groups' => 'Grupos completos que heredan el acceso automáticamente.',
         'reports' => 'Reportes incluidos dentro de la aplicación.',
         'sections' => 'Creá secciones para organizar los reportes en el menú lateral.',
         'report_sections' => 'Elegí la sección en la que se mostrará cada reporte.',
         'section_name' => 'Actualizá el nombre de la sección si querés renombrarla.',
-        'section_delete' => 'Marcá para eliminar la sección. Sus reportes pasan a “Sin asignar”.',
+        'section_delete' => 'Marcá para eliminar la sección. Sus reportes pasan a "Sin asignar".',
         'add_section' => 'Agregá otro campo vacío para crear una nueva sección.',
     ],
-
     'portal' => [
         'title' => 'Mis aplicaciones',
         'subtitle' => 'Accedé a una aplicación para navegar sus reportes',
@@ -123,7 +110,6 @@ return [
         'reports_count' => 'Reportes',
         'sections_count' => 'Secciones',
     ],
-
     'runtime' => [
         'subtitle' => 'Explorá los reportes vinculados a esta aplicación',
         'no_reports' => 'Esta aplicación todavía no tiene reportes.',
