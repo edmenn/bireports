@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -42,6 +44,29 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $supported = config('app.supported_locales', ['en', 'es', 'pt']);
+        $fallbackLocale = config('app.locale');
+
+        $user = $request->user();
+        $userLocale = $user && in_array($user->locale, $supported, true)
+            ? $user->locale
+            : null;
+
+        $cookieLocale = $request->cookie('locale');
+        if (! in_array($cookieLocale, $supported, true)) {
+            $cookieLocale = null;
+        }
+
+        $locale = $userLocale ?? $cookieLocale ?? $fallbackLocale;
+
+        $request->session()->put('locale', $locale);
+        Cookie::queue('locale', $locale, 60 * 24 * 365);
+        App::setLocale($locale);
+
+        if (! $userLocale && $user && $cookieLocale === $locale && $locale !== $fallbackLocale) {
+            $user->forceFill(['locale' => $locale])->save();
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

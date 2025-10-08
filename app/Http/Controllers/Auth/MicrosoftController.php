@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Services\MicrosoftGraphService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
@@ -251,6 +253,8 @@ class MicrosoftController extends Controller
             }
 
             Auth::login($user, true);
+            $request->session()->regenerate();
+            $this->applyLocalePreference($request, $user);
             return redirect()->intended(route('dashboards.index'));
         } catch (Throwable $e) {
             Log::error('Error en callback Microsoft: ' . $e->getMessage());
@@ -272,5 +276,30 @@ class MicrosoftController extends Controller
             return null;
         }
         return json_decode($json, true);
+    }
+
+    private function applyLocalePreference(Request $request, User $user): void
+    {
+        $supported = config('app.supported_locales', ['en', 'es', 'pt']);
+        $fallbackLocale = config('app.locale');
+
+        $userLocale = in_array($user->locale, $supported, true)
+            ? $user->locale
+            : null;
+
+        $cookieLocale = $request->cookie('locale');
+        if (! in_array($cookieLocale, $supported, true)) {
+            $cookieLocale = null;
+        }
+
+        $locale = $userLocale ?? $cookieLocale ?? $fallbackLocale;
+
+        $request->session()->put('locale', $locale);
+        Cookie::queue('locale', $locale, 60 * 24 * 365);
+        App::setLocale($locale);
+
+        if (! $userLocale && $cookieLocale === $locale && $locale !== $fallbackLocale) {
+            $user->forceFill(['locale' => $locale])->save();
+        }
     }
 }

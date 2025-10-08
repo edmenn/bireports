@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Route;
 
 // Controllers
 use App\Http\Controllers\ProfileController;
@@ -343,12 +344,19 @@ Route::prefix('admin')
     });
 
 // Idiomas (cambiado de /lang a /locale para evitar reglas del proxy)
-Route::get('/locale/{locale}', function (string $locale) {
-    $supported = config('app.supported_locales', ['en','es','pt']);
+Route::get('/locale/{locale}', function (Request $request, string $locale) {
+    $supported = config('app.supported_locales', ['en', 'es', 'pt']);
     if (! in_array($locale, $supported, true)) {
         abort(404);
     }
-    session(['locale' => $locale]);
+    $request->session()->put('locale', $locale);
+    Cookie::queue('locale', $locale, 60 * 24 * 365);
+
+    $user = $request->user();
+    if ($user && $user->locale !== $locale) {
+        $user->forceFill(['locale' => $locale])->save();
+    }
+
     return back();
 })->name('lang.switch');
 

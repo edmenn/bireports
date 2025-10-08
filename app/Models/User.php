@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'theme',
+        'locale',
         'auth_provider',   // ?? nuevo
         'external_id',     // ?? nuevo
     ];

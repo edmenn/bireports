@@ -15,12 +15,35 @@ class SetLocale
      */
     public function handle($request, Closure $next)
     {
-        // Busca el idioma en la sesión, si no está usa el default de config/app.php
-        $locale = session('locale', config('app.locale'));
+        $supported = config('app.supported_locales', ['en', 'es', 'pt']);
 
-        // Forzamos el idioma en la app
+        $locale = $request->session()->get('locale');
+
+        $userLocale = optional($request->user())->locale;
+        if (! $this->isSupported($locale, $supported) && $this->isSupported($userLocale, $supported)) {
+            $locale = $userLocale;
+        }
+
+        $cookieLocale = $request->cookie('locale');
+        if (! $this->isSupported($locale, $supported) && $this->isSupported($cookieLocale, $supported)) {
+            $locale = $cookieLocale;
+        }
+
+        if (! $this->isSupported($locale, $supported)) {
+            $locale = config('app.locale');
+        }
+
+        if ($request->session()->get('locale') !== $locale) {
+            $request->session()->put('locale', $locale);
+        }
+
         App::setLocale($locale);
 
         return $next($request);
+    }
+
+    private function isSupported(?string $locale, array $supported): bool
+    {
+        return is_string($locale) && in_array($locale, $supported, true);
     }
 }
