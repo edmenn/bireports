@@ -2,7 +2,6 @@
 
 return [
     'app_name' => 'PowerBIDash',
-
     'actions' => 'Ações',
     'back' => 'Voltar',
     'save' => 'Salvar',
@@ -25,10 +24,8 @@ return [
     'warning' => 'Aviso',
     'done' => 'Concluído',
     'error' => 'Erro',
-
     'active' => 'Ativa',
     'paused' => 'Pausada',
-
     'capacities' => 'Capacidades',
     'datasets' => 'Conjuntos de dados',
     'reports' => 'Relatórios',
@@ -51,4 +48,3 @@ return [
         'sunday' => 'Domingo',
     ],
 ];
-

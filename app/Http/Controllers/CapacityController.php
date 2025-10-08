@@ -84,7 +84,7 @@ class CapacityController extends Controller
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
             ->exists();
         if (! $hasConfig) {
-            return back()->with('error', 'Primero configura credenciales en Configuraciones.');
+            return back()->with('error', __('capacities.messages.missing_config'));
         }
         try {
             $svc = app(PowerBiCapacityService::class);
@@ -94,11 +94,14 @@ class CapacityController extends Controller
 
             return back()->with(
                 'success',
-                "Refrescado: nuevas {$res['created']}, actualizadas {$res['updated']}."
+                __('capacities.messages.refresh_success', [
+                    'created' => $res['created'],
+                    'updated' => $res['updated'],
+                ])
             );
         } catch (\Throwable $e) {
             Log::error('Capacities manual refresh error: ' . $e->getMessage(), ['exception' => $e]);
-            return back()->with('error', 'Error al refrescar: ' . $e->getMessage());
+            return back()->with('error', __('capacities.messages.refresh_error', ['message' => $e->getMessage()]));
         }
     }
 
@@ -114,7 +117,7 @@ class CapacityController extends Controller
                 ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
                 ->exists();
             if (! $hasConfig) {
-                return back()->with('error', 'No hay configuración activa para pausar capacidades.');
+                return back()->with('error', __('capacities.messages.pause_missing_config'));
             }
             $svc = app(PowerBiCapacityService::class);
             $svc->pause($capacity);
@@ -125,13 +128,13 @@ class CapacityController extends Controller
                 'capacity_id' => $capacity->id,
                 'action'      => 'pause',
                 'result'      => 'success',
-                'message'     => 'Paused by user',
+                'message'     => __('capacities.audit.log.paused_by_user'),
             ]);
 
             // Al cambiar estado, borramos la marca para permitir una próxima sync fresca
             Cache::forget('capacities:last_sync_at');
 
-            return back()->with('success', "Capacidad '{$capacity->display_name}' pausada.");
+            return back()->with('success', __('capacities.messages.pause_success', ['name' => $capacity->display_name]));
         } catch (\Throwable $e) {
             Log::error('Pause capacity error: '.$e->getMessage(), [
                 'capacity_id' => $capacity->id,
@@ -143,7 +146,7 @@ class CapacityController extends Controller
                 'result'      => 'error',
                 'message'     => (string) $e->getMessage(),
             ]);
-            return back()->with('error', "No se pudo pausar: {$e->getMessage()}");
+            return back()->with('error', __('capacities.messages.pause_error', ['message' => $e->getMessage()]));
         }
     }
 
@@ -159,7 +162,7 @@ class CapacityController extends Controller
                 ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
                 ->exists();
             if (! $hasConfig) {
-                return back()->with('error', 'No hay configuración activa para reanudar capacidades.');
+                return back()->with('error', __('capacities.messages.resume_missing_config'));
             }
             $svc = app(PowerBiCapacityService::class);
             $svc->resume($capacity);
@@ -170,12 +173,12 @@ class CapacityController extends Controller
                 'capacity_id' => $capacity->id,
                 'action'      => 'resume',
                 'result'      => 'success',
-                'message'     => 'Resumed by user',
+                'message'     => __('capacities.audit.log.resumed_by_user'),
             ]);
 
             Cache::forget('capacities:last_sync_at');
 
-            return back()->with('success', "Capacidad '{$capacity->display_name}' reanudada.");
+            return back()->with('success', __('capacities.messages.resume_success', ['name' => $capacity->display_name]));
         } catch (\Throwable $e) {
             Log::error('Resume capacity error: '.$e->getMessage(), [
                 'capacity_id' => $capacity->id,
@@ -187,7 +190,7 @@ class CapacityController extends Controller
                 'result'      => 'error',
                 'message'     => (string) $e->getMessage(),
             ]);
-            return back()->with('error', "No se pudo reanudar: {$e->getMessage()}");
+            return back()->with('error', __('capacities.messages.resume_error', ['message' => $e->getMessage()]));
         }
     }
 
@@ -195,7 +198,15 @@ class CapacityController extends Controller
     public function schedule(Capacity $capacity): View
     {
         $capacity->load('schedules');
-        $dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+        $dayNames = [
+            __('common.days.sunday'),
+            __('common.days.monday'),
+            __('common.days.tuesday'),
+            __('common.days.wednesday'),
+            __('common.days.thursday'),
+            __('common.days.friday'),
+            __('common.days.saturday'),
+        ];
         return view('capacities.schedule', [
             'capacity'  => $capacity,
             'schedules' => $capacity->schedules()->orderBy('weekday')->orderBy('start_time')->get(),
@@ -222,7 +233,7 @@ class CapacityController extends Controller
                 'enabled'    => true,
             ]);
         }
-        return back()->with('success','Horario agregado.');
+        return back()->with('success', __('capacities.messages.schedule_added'));
     }
 
     public function scheduleToggle(Capacity $capacity, int $slot): RedirectResponse
@@ -230,13 +241,13 @@ class CapacityController extends Controller
         $slot = \App\Models\CapacitySchedule::query()->where('capacity_id',$capacity->id)->where('id',$slot)->firstOrFail();
         $slot->enabled = ! $slot->enabled;
         $slot->save();
-        return back()->with('success', $slot->enabled ? 'Horario activado.' : 'Horario desactivado.');
+        return back()->with('success', $slot->enabled ? __('capacities.messages.schedule_enabled') : __('capacities.messages.schedule_disabled'));
     }
 
     public function scheduleDelete(Capacity $capacity, int $slot): RedirectResponse
     {
         \App\Models\CapacitySchedule::query()->where('capacity_id',$capacity->id)->where('id',$slot)->delete();
-        return back()->with('success','Horario eliminado.');
+        return back()->with('success', __('capacities.messages.schedule_deleted'));
     }
 
     public function settingsUpdate(Request $request, Capacity $capacity): RedirectResponse
@@ -258,7 +269,7 @@ class CapacityController extends Controller
         }
         $capacity->save();
 
-        return back()->with('success','Configuración actualizada.');
+        return back()->with('success', __('capacities.messages.settings_saved'));
     }
 
     public function audit(Capacity $capacity): View
@@ -334,7 +345,7 @@ class CapacityController extends Controller
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
             ->exists();
         if (! $hasConfig) {
-            return back()->with('error', 'Primero configura credenciales en Configuraciones.');
+            return back()->with('error', __('capacities.messages.missing_config'));
         }
 
         try {
@@ -343,7 +354,7 @@ class CapacityController extends Controller
             $r   = $svc->getCapacity($capacity->capacity_uuid);
 
             if (empty($r)) {
-                return back()->with('error', 'No se pudo obtener metadatos de la capacidad.');
+                return back()->with('error', __('capacities.messages.metadata_fetch_error'));
             }
 
             $display = (string) ($r['displayName'] ?? $r['name'] ?? $capacity->display_name);
@@ -363,9 +374,9 @@ class CapacityController extends Controller
                 'is_active'      => $state !== '' ? strtoupper($state) === 'ACTIVE' : $capacity->is_active,
             ])->save();
 
-            return redirect()->route('capacities.audit', $capacity)->with('success', 'Metadatos actualizados.');
+            return redirect()->route('capacities.audit', $capacity)->with('success', __('capacities.messages.metadata_updated'));
         } catch (\Throwable $e) {
-            return back()->with('error', 'Error al actualizar metadatos: ' . $e->getMessage());
+            return back()->with('error', __('capacities.messages.metadata_update_error', ['message' => $e->getMessage()]));
         }
     }
 

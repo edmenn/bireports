@@ -35,11 +35,29 @@
                     @forelse($logs as $l)
                         <tr>
                             <td class="text-nowrap text-monospace small">{{ optional($l->created_at)->format('d-m-Y H:i:s') }}</td>
-                            <td>{{ $l->action }}</td>
-                            <td><span class="badge {{ ($l->result==='success') ? 'bg-success' : (($l->result==='error')?'bg-danger':'bg-secondary') }}">{{ $l->result ?? '-' }}</span></td>
+                            @php
+                                $actionKey = strtolower($l->action ?? 'other');
+                                $actionLabelKey = 'capacities.audit.actions.' . ($actionKey !== '' ? $actionKey : 'other');
+                                $actionLabel = app('translator')->has($actionLabelKey)
+                                    ? __($actionLabelKey)
+                                    : ($l->action ?? __('capacities.audit.actions.other'));
+                                $resultKey = strtolower($l->result ?? '');
+                                $resultLabelKey = 'capacities.audit.results.' . ($resultKey !== '' ? $resultKey : 'unknown');
+                                $resultLabel = app('translator')->has($resultLabelKey)
+                                    ? __($resultLabelKey)
+                                    : ($l->result ?? __('capacities.audit.results.unknown'));
+                            @endphp
+                            <td>{{ $actionLabel }}</td>
+                            <td><span class="badge {{ ($resultKey==='success') ? 'bg-success' : (($resultKey==='error')?'bg-danger':'bg-secondary') }}">{{ $resultLabel }}</span></td>
                             <td>
-                                @php $src = strtolower($l->source ?? 'local'); @endphp
-                                <span class="badge {{ $src==='api' ? 'bg-primary' : 'bg-secondary' }}">{{ strtoupper($src) }}</span>
+                                @php
+                                    $src = strtolower($l->source ?? 'local');
+                                    $sourceLabelKey = 'capacities.audit.sources.' . $src;
+                                    $sourceLabel = app('translator')->has($sourceLabelKey)
+                                        ? __($sourceLabelKey)
+                                        : strtoupper($src);
+                                @endphp
+                                <span class="badge {{ $src==='api' ? 'bg-primary' : 'bg-secondary' }}">{{ $sourceLabel }}</span>
                             </td>
                             <td class="small">{{ $l->message }}</td>
                         </tr>

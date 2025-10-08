@@ -2,8 +2,6 @@
 
 return [
     'app_name' => 'PowerBIDash',
-
-    // UI genérico
     'actions' => 'Acciones',
     'back' => 'Volver',
     'save' => 'Guardar',
@@ -26,12 +24,8 @@ return [
     'warning' => 'Aviso',
     'done' => 'Listo',
     'error' => 'Error',
-
-    // Estados
     'active' => 'Activa',
     'paused' => 'Pausada',
-
-    // Secciones
     'capacities' => 'Capacidades',
     'datasets' => 'Conjuntos de datos',
     'reports' => 'Informes',
