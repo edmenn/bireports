@@ -1,10 +1,10 @@
 @extends('adminlte::page')
 
-@section('title', 'Editar reporte')
+@section('title', __('reports.edit.title'))
 
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h1 class="m-0">Editar reporte</h1>
+        <h1 class="m-0">{{ __('reports.edit.title') }}</h1>
 
         {{-- Acciones de header: ancho fijo + buen espaciado --}}
         <div class="d-flex flex-wrap gap-2">
@@ -12,7 +12,7 @@
                 <i class="fas fa-arrow-left me-1"></i> {{ __("common.back") }}
             </a>
             <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-eq">
-                <i class="fas fa-chart-line me-1"></i> Ver reporte
+                <i class="fas fa-chart-line me-1"></i> {{ __('reports.edit.view_report') }}
             </a>
         </div>
     </div>
@@ -22,19 +22,19 @@
     @if(session('status'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}"></button>
         </div>
     @endif
 
     @if($errors->any())
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Revisa los errores:</strong>
+            <strong>{{ __('reports.edit.alerts.errors_title') }}</strong>
             <ul class="mb-0">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}"></button>
         </div>
     @endif
 
@@ -49,15 +49,15 @@
             {{-- Datos base (solo lectura) --}}
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">Título</label>
+                    <label class="form-label">{{ __('reports.edit.form.read_only.title') }}</label>
                     <input type="text" class="form-control" value="{{ $report->name }}" readonly>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Workspace ID</label>
+                    <label class="form-label">{{ __('reports.edit.form.read_only.workspace_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->workspace_id }}" readonly>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Report ID</label>
+                    <label class="form-label">{{ __('reports.edit.form.read_only.report_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->id }}" readonly>
                 </div>
             </div>
@@ -66,7 +66,7 @@
 
             {{-- Preview actual (usa effective_cover_url) --}}
             <div class="mb-3">
-                <label class="form-label">Vista previa</label>
+                <label class="form-label">{{ __('reports.edit.form.preview.label') }}</label>
                 <div id="previewBox"
                      class="border rounded p-3 d-flex align-items-center gap-3"
                      style="background:#fff8e1; min-height:140px;">
@@ -76,7 +76,7 @@
                         @if($cover !== '')
                             <img id="previewImg"
                                  src="{{ $cover }}"
-                                 alt="cover"
+                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
                                  style="max-width:100%; max-height:100%; object-fit:cover;">
                         @else
                             {{-- Fallback: ícono BI amarillo/blanco --}}
@@ -101,14 +101,14 @@
                         @endif
                     </div>
                     <div class="text-muted small">
-                        Si no subes archivo ni defines una URL válida, se mostrará el cover predeterminado (si existe) o el ícono BI.
+                        {{ __('reports.edit.form.preview.hint') }}
                     </div>
                 </div>
             </div>
 
             {{-- Subir archivo (prioridad sobre URL) --}}
             <div class="mb-2">
-                <label for="cover_file" class="form-label">Subir imagen (opcional)</label>
+                <label for="cover_file" class="form-label">{{ __('reports.edit.form.upload.label') }}</label>
                 <input type="file"
                        name="cover_file"
                        id="cover_file"
@@ -117,7 +117,7 @@
                 @error('cover_file')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @else
-                    <div class="form-text">Formatos: JPG, PNG, WEBP, GIF o SVG. Máximo 2MB.</div>
+                    <div class="form-text">{{ __('reports.edit.form.upload.hint') }}</div>
                 @enderror
             </div>
 
@@ -126,29 +126,30 @@
                 <input class="form-check-input" type="checkbox" value="1" id="make_default" name="make_default"
                        {{ old('make_default') ? 'checked' : '' }}>
                 <label class="form-check-label" for="make_default">
-                    Usar esta imagen como <strong>predeterminada</strong> para reportes sin portada
+                    {{ __('reports.edit.form.make_default.label') }}
                 </label>
+                <div class="form-text">{{ __('reports.edit.form.make_default.hint') }}</div>
             </div>
 
             {{-- URL de imagen (opcional) --}}
             <div class="mb-3">
-                <label for="cover_url" class="form-label">URL de imagen (opcional)</label>
+                <label for="cover_url" class="form-label">{{ __('reports.edit.form.url.label') }}</label>
                 <input type="url"
                        name="cover_url"
                        id="cover_url"
                        class="form-control @error('cover_url') is-invalid @enderror"
-                       placeholder="https://tu-cdn/portadas/reporte.png"
+                       placeholder="{{ __('reports.edit.form.url.placeholder') }}"
                        value="{{ old('cover_url', $report->cover_url) }}">
                 @error('cover_url')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @else
-                    <div class="form-text">Si subes archivo, la URL será ignorada. La casilla de predeterminado solo aplica al archivo.</div>
+                    <div class="form-text">{{ __('reports.edit.form.url.hint') }}</div>
                 @enderror
             </div>
 
             {{-- Descripción --}}
             <div class="mb-1 d-flex justify-content-between align-items-center">
-                <label for="description" class="form-label mb-0">Descripción (opcional)</label>
+                <label for="description" class="form-label mb-0">{{ __('reports.edit.form.description.label') }}</label>
                 <small class="text-muted"><span id="descCount">0</span>/2000</small>
             </div>
             <div class="mb-3">
@@ -157,7 +158,7 @@
                           rows="4"
                           maxlength="2000"
                           class="form-control @error('description') is-invalid @enderror"
-                          placeholder="Breve descripción del contenido, público objetivo, filtros destacados, etc.">{{ old('description', $report->description) }}</textarea>
+                          placeholder="{{ __('reports.edit.form.description.placeholder') }}">{{ old('description', $report->description) }}</textarea>
                 @error('description')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -170,17 +171,17 @@
                        name="allow_resume_outside_window" value="1"
                        {{ old('allow_resume_outside_window', $report->allow_resume_outside_window ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="allow_resume_outside_window">
-                    Permitir encender la capacidad fuera del horario operativo para este reporte
+                    {{ __('reports.edit.form.allow_resume.label') }}
                 </label>
-                <div class="form-text">Si está activo, cualquier usuario podrá encenderla al abrir este reporte; luego se apagará por inactividad.</div>
+                <div class="form-text">{{ __('reports.edit.form.allow_resume.hint') }}</div>
             </div>
 
         </div>
 
         {{-- Footer: botones iguales y con buen aire --}}
         <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">Cancelar</a>
-            <button type="submit" class="btn btn-primary btn-eq">Guardar cambios</button>
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">{{ __('reports.edit.buttons.cancel') }}</a>
+            <button type="submit" class="btn btn-primary btn-eq">{{ __('reports.edit.buttons.save') }}</button>
         </div>
     </form>
 @stop

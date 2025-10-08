@@ -38,10 +38,10 @@
                 <div class="mb-3">
                     <i class="fas fa-inbox fa-3x text-muted" aria-hidden="true"></i>
                 </div>
-                <h5 class="mb-2">No hay reportes importados</h5>
-                <p class="text-muted mb-4">Ejecuta una importación para ver tus dashboards aquí.</p>
+                <h5 class="mb-2">{{ __('reports.index.empty.title') }}</h5>
+                <p class="text-muted mb-4">{{ __('reports.index.empty.hint') }}</p>
                 <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary">
-                    <i class="fas fa-sync"></i> Importar ahora
+                    <i class="fas fa-sync"></i> {{ __('reports.index.empty.action') }}
                 </a>
             </div>
         </div>
@@ -53,7 +53,7 @@
                 <div class="small-box bg-primary">
                     <div class="inner">
                         <h3 class="mb-0">{{ $total }}</h3>
-                        <p class="mb-0">Reportes totales</p>
+                        <p class="mb-0">{{ __('reports.index.metrics.total') }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></div>
                 </div>
@@ -62,7 +62,7 @@
                 <div class="small-box bg-success">
                     <div class="inner">
                         <h3 class="mb-0">{{ $conCover }}</h3>
-                        <p class="mb-0">Con portada</p>
+                        <p class="mb-0">{{ __('reports.index.metrics.with_cover') }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-image" aria-hidden="true"></i></div>
                 </div>
@@ -71,7 +71,7 @@
                 <div class="small-box bg-secondary">
                     <div class="inner">
                         <h3 class="mb-0">{{ $sinCover }}</h3>
-                        <p class="mb-0">Sin portada</p>
+                        <p class="mb-0">{{ __('reports.index.metrics.without_cover') }}</p>
                     </div>
                     <div class="icon"><i class="fas fa-image-slash" aria-hidden="true"></i></div>
                 </div>
@@ -83,41 +83,41 @@
             <div class="card-body">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-6">
-                        <label for="rpt-search" class="form-label mb-1">Buscar</label>
-                        <input id="rpt-search" type="text" class="form-control" placeholder="Título, Report ID, Workspace o Dataset ID…">
+                        <label for="rpt-search" class="form-label mb-1">{{ __('reports.index.filters.search_label') }}</label>
+                        <input id="rpt-search" type="text" class="form-control" placeholder="{{ __('reports.index.filters.search_placeholder') }}">
                     </div>
                     <div class="col-md-3">
-                        <label for="rpt-workspace" class="form-label mb-1">Workspace</label>
+                        <label for="rpt-workspace" class="form-label mb-1">{{ __('reports.index.filters.workspace_label') }}</label>
                         <select id="rpt-workspace" class="form-control">
-                            <option value="all" selected>Todos</option>
+                            <option value="all" selected>{{ __('reports.index.filters.workspace_all') }}</option>
                             @foreach($wsSet as $ws)
                                 <option value="{{ $ws['key'] }}">{{ $ws['text'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="rpt-cover" class="form-label mb-1">Portada</label>
+                        <label for="rpt-cover" class="form-label mb-1">{{ __('reports.index.filters.cover_label') }}</label>
                         <select id="rpt-cover" class="form-control">
-                            <option value="all" selected>Todas</option>
-                            <option value="yes">Con portada</option>
-                            <option value="no">Sin portada</option>
+                            <option value="all" selected>{{ __('reports.index.filters.cover_all') }}</option>
+                            <option value="yes">{{ __('reports.index.filters.cover_yes') }}</option>
+                            <option value="no">{{ __('reports.index.filters.cover_no') }}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="row g-2 align-items-end mt-2">
                     <div class="col-md-3">
-                        <label for="rpt-order" class="form-label mb-1">Ordenar</label>
+                        <label for="rpt-order" class="form-label mb-1">{{ __('reports.index.filters.order_label') }}</label>
                         <select id="rpt-order" class="form-control">
-                            <option value="name_asc" selected>Nombre (A→Z)</option>
-                            <option value="name_desc">Nombre (Z→A)</option>
-                            <option value="ws_asc">Workspace (A→Z)</option>
-                            <option value="ws_desc">Workspace (Z→A)</option>
+                            <option value="name_asc" selected>{{ __('reports.index.filters.order_options.name_asc') }}</option>
+                            <option value="name_desc">{{ __('reports.index.filters.order_options.name_desc') }}</option>
+                            <option value="ws_asc">{{ __('reports.index.filters.order_options.workspace_asc') }}</option>
+                            <option value="ws_desc">{{ __('reports.index.filters.order_options.workspace_desc') }}</option>
                         </select>
                     </div>
                     <div class="col-md-9 text-muted small">
                         <i class="far fa-lightbulb me-1" aria-hidden="true"></i>
-                        Los filtros y el orden se aplican en el navegador, sin recargar la página.
+                        {{ __('reports.index.filters.hint') }}
                     </div>
                 </div>
             </div>
@@ -146,18 +146,18 @@
                     {{-- Link clickeable (no tapa los botones gracias a z-index) --}}
                     <a class="stretched-link text-decoration-none card-link"
                        href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
-                       title="Abrir reporte"></a>
+                       title="{{ __('reports.index.cards.open_title') }}"></a>
 
                     {{-- COVER --}}
-                    <div class="report-cover" aria-label="Portada del reporte">
+                    <div class="report-cover" aria-label="{{ __('reports.index.cards.cover_aria') }}">
                         @if($cover !== '')
                             @php $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default'); @endphp
                             <img src="{{ $cover }}"
-                                 alt="Portada de {{ $r->name }}"
+                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $r->name]) }}"
                                  loading="lazy"
                                  class="{{ $isDefault ? 'cover-default' : 'cover-full' }}">
                         @else
-                            <svg class="bi-svg" viewBox="0 0 128 128" role="img" aria-label="Portada genérica">
+                            <svg class="bi-svg" viewBox="0 0 128 128" role="img" aria-label="{{ __('reports.index.cards.default_cover_aria') }}">
                                 <defs>
                                     <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stop-color="#FFD93D"/>
@@ -200,16 +200,16 @@
                         <div class="actions-grid position-relative" style="z-index:2">
                                     <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
                                     class="btn btn-sm btn-primary w-100"
-                                    title="Abrir dashboard"
+                                    title="{{ __('reports.index.cards.open_title') }}"
                                     onclick="event.stopPropagation();">
-                                        <i class="fas fa-chart-line me-1"></i> Abrir
+                                        <i class="fas fa-chart-line me-1"></i> {{ __('reports.index.actions.open') }}
                                     </a>
                                     @role('admin')
                                         <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
                                         class="btn btn-sm btn-outline-warning w-100"
-                                        title="Editar imagen y descripción"
+                                        title="{{ __('reports.index.cards.edit_title') }}"
                                         onclick="event.stopPropagation();">
-                                            <i class="fas fa-edit me-1"></i> Editar
+                                            <i class="fas fa-edit me-1"></i> {{ __('reports.index.actions.edit') }}
                                         </a>
                                     @endrole
                         </div>
@@ -222,19 +222,19 @@
                                   style="max-width: 260px"
                                   title="{{ $wsName !== '' ? $wsName : $r->workspace_id }}">
                                 <i class="fas fa-layer-group me-1" aria-hidden="true"></i>
-                                {{ $wsName !== '' ? $wsName : 'Workspace' }}
+                                {{ $wsName !== '' ? $wsName : __('reports.index.badges.workspace') }}
                             </span>
 
                             @if(!empty($r->dataset_id))
                                 <button type="button" class="badge bg-secondary border-0 copy-pill"
-                                        data-copy="{{ $r->dataset_id }}" title="Copiar Dataset ID" aria-label="Copiar Dataset ID">
-                                    Dataset
+                                        data-copy="{{ $r->dataset_id }}" title="{{ __('reports.index.copy.dataset_title') }}" aria-label="{{ __('reports.index.copy.dataset_title') }}">
+                                    {{ __('reports.index.copy.dataset_label') }}
                                 </button>
                             @endif
 
                             <button type="button" class="badge bg-primary border-0 copy-pill"
-                                    data-copy="{{ $r->id }}" title="Copiar Report ID" aria-label="Copiar Report ID">
-                                Report
+                                    data-copy="{{ $r->id }}" title="{{ __('reports.index.copy.report_title') }}" aria-label="{{ __('reports.index.copy.report_title') }}">
+                                {{ __('reports.index.copy.report_label') }}
                             </button>
                         </div>
                     </div>
@@ -330,6 +330,8 @@
     const wsSel  = document.getElementById('rpt-workspace');
     const cover  = document.getElementById('rpt-cover');
     const order  = document.getElementById('rpt-order');
+    const copySuccess = @json(__('reports.index.copy.success'));
+    const copyError = @json(__('reports.index.copy.error'));
 
     const norm = (s)=> (s||'').toString().trim().toLowerCase();
 
@@ -392,12 +394,12 @@
         navigator.clipboard.writeText(value).then(() => {
             pill.classList.add('copied');
             const original = pill.textContent;
-            pill.textContent = 'Copiado';
+            pill.textContent = copySuccess;
             setTimeout(() => {
                 pill.classList.remove('copied');
                 pill.textContent = original;
             }, 900);
-        }).catch(() => alert('No se pudo copiar al portapapeles.'));
+        }).catch(() => alert(copyError));
     }, {passive:true});
 
     // Inicial

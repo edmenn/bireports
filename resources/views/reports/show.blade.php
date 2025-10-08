@@ -1,7 +1,7 @@
 {{-- resources/views/reports/show.blade.php --}}
 @extends('adminlte::page')
 
-@section('title', $report->name ?? 'Reporte')
+@section('title', $report->name ?? __('reports.show.title_fallback'))
 
 @section('css')
 <style>
@@ -67,7 +67,7 @@
     @if (! $embedded)
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h1 class="h5 mb-0">
-                {{ $report->name ?? 'Reporte' }}
+                {{ $report->name ?? __('reports.show.title_fallback') }}
                 @if(!empty($workspace?->name))
                     <small class="text-muted">/ {{ $workspace->name }}</small>
                 @endif
@@ -94,7 +94,7 @@
     @if (session('status'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('common.close') }}"></button>
         </div>
     @endif
 
@@ -108,18 +108,34 @@
 
     @if (!$hasCritical)
         <div class="alert alert-danger" role="alert">
-            <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>No se pudo preparar el embed del reporte.</h5>
+            <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>{{ __('reports.show.missing_embed.title') }}</h5>
+            @php
+                $embedChecks = [
+                    'embed_url'    => $embedUrl,
+                    'access_token' => $accessToken,
+                    'report_id'    => $reportId,
+                ];
+            @endphp
             <ul class="mb-2">
-                <li>embedUrl: {!! $embedUrl ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
-                <li>accessToken: {!! $accessToken ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
-                <li>reportId: {!! $reportId ? '<span class="text-success">OK</span>' : '<span class="text-danger">FALTA</span>' !!}</li>
+                @foreach($embedChecks as $fieldKey => $fieldValue)
+                    @php
+                        $statusClass = $fieldValue ? 'text-success' : 'text-danger';
+                        $statusLabel = $fieldValue
+                            ? __('reports.show.missing_embed.status.ok')
+                            : __('reports.show.missing_embed.status.missing');
+                    @endphp
+                    <li>
+                        {{ __('reports.show.missing_embed.items.' . $fieldKey) }}:
+                        <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
+                    </li>
+                @endforeach
             </ul>
             <p class="mb-2">
-                Si faltan credenciales o permisos, revisa la configuración de Power BI en
-                <a href="{{ route('configuraciones.index') }}" class="alert-link">Configuraciones</a>.
+                {{ __('reports.show.missing_embed.hint') }}
+                <a href="{{ route('configuraciones.index') }}" class="alert-link">{{ __('reports.show.missing_embed.link') }}</a>.
             </p>
             <details>
-                <summary>Payload de <code>PowerBiService::generateReportEmbedToken()</code></summary>
+                <summary>{{ __('reports.show.missing_embed.summary') }}</summary>
                 <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ json_encode($embed ?? [], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) }}</pre>
             </details>
         </div>
@@ -257,7 +273,11 @@
     const ON_DEMAND_ENABLE = @json($capacityOnDemandEnable ?? true);
     const START_TIMEOUT_MS = @json(($capacityStartTimeoutSec ?? 120) * 1000);
     const START_POLL_MS    = @json(($capacityStartPollSec ?? 5) * 1000);
-    const STARTING_MSG     = @json($capacityOnDemandMessage ?? 'Encendiendo la capacidad, aguarde unos segundos…');
+    const STARTING_MSG     = @json($capacityOnDemandMessage);
+    const LOADING_LABEL    = @json(__('reports.show.loading'));
+    const CAPACITY_PAUSED_MSG = @json(__('reports.show.errors.capacity_paused'));
+    const CAPACITY_TIMEOUT_MSG = @json(__('reports.show.errors.capacity_timeout'));
+    const LOAD_TIMEOUT_MSG = @json(__('reports.show.errors.load_timeout'));
 
     function showError(msg) {
         if (!errorBox) return;
@@ -268,11 +288,11 @@
     }
 
     if (!EMBED.embedUrl || !EMBED.accessToken || !EMBED.reportId) {
-        return showError('Faltan datos de embedUrl / accessToken / reportId.');
+        return showError(@json(__('reports.show.errors.missing_fields')));
     }
     const models = window['powerbi-client']?.models;
     if (!window.powerbi || !models) {
-        return showError('No se pudo cargar powerbi-client.');
+        return showError(@json(__('reports.show.errors.client_library')));
     }
 
     let currentHeight = 0;
@@ -343,7 +363,7 @@
 
         // Mensaje de encendido
         if (loading) {
-            loading.innerHTML = `<div class="text-center"><div class=\"spinner-border\" role=\"status\" aria-label=\"Encendiendo\"></div><div class=\"mt-2\">${STARTING_MSG}</div></div>`;
+            loading.innerHTML = `<div class="text-center"><div class="spinner-border" role="status" aria-label="${STARTING_MSG}"></div><div class="mt-2">${STARTING_MSG}</div></div>`;
         }
 
         while (Date.now() - start < timeoutMs) {
@@ -362,14 +382,14 @@
                     const isActive = !!json?.capacity?.is_active;
                     if (isActive) return true;
                     if (json?.reason === 'outside_schedule_window') {
-                        showError('La capacidad está pausada por fuera del horario operativo.');
+                        showError(CAPACITY_PAUSED_MSG);
                         return false;
                     }
                 }
             } catch (_) { /* ignorar y reintentar */ }
             await new Promise(r => setTimeout(r, intervalMs));
         }
-        showError('No fue posible activar la capacidad a tiempo (timeout).');
+        showError(CAPACITY_TIMEOUT_MSG);
         return false;
     }
 
@@ -377,7 +397,7 @@
         const ok = await waitForCapacityActive();
         if (!ok) return null; // error ya mostrado
         if (loading) {
-            loading.innerHTML = `<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\" aria-label=\"Cargando\"></div><div class=\"mt-2\">{{ __("reports.show.loading") }}</div></div>`;
+            loading.innerHTML = `<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\" aria-label=\"${LOADING_LABEL}\"></div><div class=\"mt-2\">${LOADING_LABEL}</div></div>`;
         }
         try { powerbi.reset(container); } catch (_) {}
         const rpt = doEmbed();
@@ -387,7 +407,7 @@
         loadTimer = setTimeout(() => {
             if (loaded) return;
             try { powerbi.reset(container); } catch (_) {}
-            showError('El reporte tardó demasiado en cargar (timeout 10s). Verifica la red, el token o la capacidad.');
+            showError(LOAD_TIMEOUT_MSG);
             postAudit('error', { error_message: 'load_timeout_10s' });
         }, LOAD_TIMEOUT_MS);
         return rpt;

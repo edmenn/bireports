@@ -83,7 +83,7 @@ class ReportsController extends Controller
             ->exists();
 
         if (!$hasConfig) {
-            $errShort  = 'Faltan credenciales de Power BI en Configuraciones.';
+            $errShort  = __('reports.show.errors.no_credentials');
             $embedArr  = [];
         } else {
             try {
@@ -111,17 +111,16 @@ class ReportsController extends Controller
                 $embedArr['workspaceId'] = $embedArr['workspaceId'] ?? $workspace->id;
             } catch (Throwable $e) {
                 // 5) Fast-fail: NO lanzamos a la página de error; mostramos banner en la misma vista
-                $errShort  = 'No se pudo preparar el embed del reporte. Verifica credenciales/capacidad/permisos.';
+                $errShort  = __('reports.show.errors.embed_failure');
                 // Detalle seguro para copiar/pegar (sin exponer secrets del env; mostramos clase, mensaje y stack)
-                $errDetail = sprintf(
-                    "%s: %s\nCode: %s\nFile: %s:%d\n\nTrace:\n%s",
-                    get_class($e),
-                    $e->getMessage(),
-                    (string) ($e->getCode() ?? '0'),
-                    $e->getFile(),
-                    $e->getLine(),
-                    $e->getTraceAsString()
-                );
+                $errDetail = __('reports.show.errors.debug_template', [
+                    'exception' => get_class($e),
+                    'message'   => $e->getMessage(),
+                    'code'      => (string) ($e->getCode() ?? '0'),
+                    'file'      => $e->getFile(),
+                    'line'      => $e->getLine(),
+                    'trace'     => $e->getTraceAsString(),
+                ]);
                 // Devolvemos con $embedArr vacío; la vista mostrará el diagnóstico y no romperá
                 $embedArr = [];
             }
@@ -130,7 +129,7 @@ class ReportsController extends Controller
         // 5.5) Parámetros minimalistas para warmup on-demand desde la vista
         $cfg = Configuracion::first();
         $capacityOnDemandEnable = (bool) ($cfg?->capacity_on_demand_enable ?? true);
-        $capacityOnDemandMessage = (string) ($cfg?->capacity_on_demand_message ?? 'Encendiendo la capacidad, aguarde unos segundos…');
+        $capacityOnDemandMessage = (string) ($cfg?->capacity_on_demand_message ?? __('reports.show.on_demand.starting'));
         $capacityStartTimeoutSec = (int) ($cfg?->capacity_start_timeout_sec ?? 120);
         $capacityStartPollSec    = (int) ($cfg?->capacity_start_poll_interval_sec ?? 5);
         $reportLoadTimeoutSec    = (int) ($cfg?->report_load_timeout_sec ?? 10);
@@ -170,9 +169,9 @@ class ReportsController extends Controller
             'cover_file'   => ['nullable','file','max:2048','mimetypes:image/jpeg,image/png,image/webp,image/gif,image/svg+xml'],
             'make_default' => ['nullable','boolean'],
         ], [
-            'cover_url.url'        => 'La imagen debe ser una URL válida.',
-            'cover_file.max'       => 'La imagen no debe superar 2MB.',
-            'cover_file.mimetypes' => 'Formatos permitidos: JPG, PNG, WEBP, GIF o SVG.',
+            'cover_url.url'        => __('reports.validation.cover_url_url'),
+            'cover_file.max'       => __('reports.validation.cover_file_max'),
+            'cover_file.mimetypes' => __('reports.validation.cover_file_mimetypes'),
         ]);
 
         $makeDefault = (bool) ($validated['make_default'] ?? false);
@@ -216,8 +215,8 @@ class ReportsController extends Controller
         return redirect()
             ->route('reports.edit', $report)
             ->with('status', $makeDefault
-                ? 'Reporte actualizado y portada establecida como predeterminada.'
-                : 'Reporte actualizado correctamente.'
+                ? __('reports.flash.updated_default')
+                : __('reports.flash.updated')
             );
     }
 }

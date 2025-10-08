@@ -67,7 +67,7 @@ class ReportViewerController extends Controller
         return view('reports.show', [
             'embed'         => $embed,
             'embedded'      => $request->boolean('embedded', true),
-            'report'        => (object) ['id' => $reportUuid, 'name' => 'Reporte'],
+            'report'        => (object) ['id' => $reportUuid, 'name' => __('reports.show.title_fallback')],
             'workspace'     => (object) ['id' => $workspaceUuid, 'name' => null],
             'error'         => null,
             'error_debug'   => null,
