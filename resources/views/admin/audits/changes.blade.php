@@ -1,54 +1,54 @@
 @extends('adminlte::page')
 
-@section('title', 'Auditoría de Cambios')
+@section('title', __('changes.page.title'))
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap">
-        <h1 class="m-0">Auditoría de Cambios (Sistema + Configuración)</h1>
-        <a href="{{ route('auditoria.changes.index') }}" class="btn btn-outline-secondary">Limpiar filtros</a>
+        <h1 class="m-0">{{ __('changes.page.header') }}</h1>
+        <a href="{{ route('auditoria.changes.index') }}" class="btn btn-outline-secondary">{{ __('changes.buttons.clear_filters') }}</a>
     </div>
 @stop
 
 @section('content')
-    <x-adminlte-card title="Filtros" icon="fas fa-filter text-lightblue" theme="primary" theme-mode="outline">
+    <x-adminlte-card title="{{ __('changes.cards.filters.title') }}" icon="fas fa-filter text-lightblue" theme="primary" theme-mode="outline">
         <form method="GET" class="form-inline" role="search">
             <div class="form-row w-100">
                 <div class="form-group col-md-3 mb-2">
-                    <label class="sr-only" for="f_action">Acción</label>
+                    <label class="sr-only" for="f_action">{{ __('changes.filters.action_label') }}</label>
                     <select name="action" id="f_action" class="form-control w-100">
-                        <option value="">Todas</option>
+                        <option value="">{{ __('changes.filters.all_actions') }}</option>
                         @foreach(['created','updated','deleted','attached','detached','synced'] as $a)
-                            <option value="{{ $a }}" @selected(request('action')===$a)>{{ ucfirst($a) }}</option>
+                            <option value="{{ $a }}" @selected(request('action')===$a)>{{ __('changes.actions.' . $a) }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group col-md-5 mb-2">
-                    <label class="sr-only" for="f_model">Modelo</label>
-                    <input type="text" class="form-control w-100" name="model" id="f_model" value="{{ request('model') }}" placeholder="Clase del modelo (ej: App\\Models\\User)">
+                    <label class="sr-only" for="f_model">{{ __('changes.filters.model_label') }}</label>
+                    <input type="text" class="form-control w-100" name="model" id="f_model" value="{{ request('model') }}" placeholder="{{ __('changes.filters.model_placeholder') }}">
                 </div>
                 <div class="form-group col-md-2 mb-2">
-                    <label class="sr-only" for="f_user">Usuario</label>
-                    <input type="number" class="form-control w-100" name="user" id="f_user" value="{{ request('user') }}" placeholder="ID usuario">
+                    <label class="sr-only" for="f_user">{{ __('changes.filters.user_label') }}</label>
+                    <input type="number" class="form-control w-100" name="user" id="f_user" value="{{ request('user') }}" placeholder="{{ __('changes.filters.user_placeholder') }}">
                 </div>
                 <div class="form-group col-md-2 mb-2 d-flex align-items-stretch">
-                    <button class="btn btn-primary w-100" type="submit"><i class="fas fa-search"></i> Buscar</button>
+                    <button class="btn btn-primary w-100" type="submit"><i class="fas fa-search"></i> {{ __('changes.buttons.search') }}</button>
                 </div>
             </div>
         </form>
     </x-adminlte-card>
 
-    <x-adminlte-card title="Eventos" icon="fas fa-list text-lightblue" theme="primary" theme-mode="outline" body-class="p-0">
+    <x-adminlte-card title="{{ __('changes.cards.events.title') }}" icon="fas fa-list text-lightblue" theme="primary" theme-mode="outline" body-class="p-0">
         <div class="table-responsive">
             <table class="table table-sm table-hover mb-0">
                 <thead class="thead-light">
                     <tr>
-                        <th>Fecha</th>
-                        <th>Usuario</th>
-                        <th>Origen</th>
-                        <th>Acción</th>
-                        <th>Modelo</th>
-                        <th>Entidad</th>
-                        <th>Detalles</th>
+                        <th>{{ __('changes.table.date') }}</th>
+                        <th>{{ __('changes.table.user') }}</th>
+                        <th>{{ __('changes.table.source') }}</th>
+                        <th>{{ __('changes.table.action') }}</th>
+                        <th>{{ __('changes.table.model') }}</th>
+                        <th>{{ __('changes.table.entity') }}</th>
+                        <th>{{ __('changes.table.details') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -56,8 +56,8 @@
                         <tr>
                             <td>{{ $r['created_at'] }}</td>
                             <td>{{ $r['user_name'] }}</td>
-                            <td><span class="badge {{ $r['source']==='sistema' ? 'badge-info' : 'badge-secondary' }}">{{ ucfirst($r['source']) }}</span></td>
-                            <td><span class="badge badge-primary">{{ $r['action'] }}</span></td>
+                            <td><span class="badge {{ $r['source']==='sistema' ? 'badge-info' : 'badge-secondary' }}">{{ __('changes.sources.' . $r['source']) }}</span></td>
+                            <td><span class="badge badge-primary">{{ __('changes.actions.' . $r['action']) }}</span></td>
                             <td><code>{{ $r['model'] }}</code></td>
                             <td>{{ $r['entity'] }}</td>
                             <td>
@@ -83,14 +83,14 @@
                                         sort($keys);
                                     @endphp
                                     <details>
-                                        <summary>Ver cambios</summary>
+                                        <summary>{{ __('changes.table.view_changes') }}</summary>
                                         <div class="table-responsive mt-2">
                                             <table class="table table-sm table-striped mb-0 diff-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Clave</th>
-                                                        <th>Antes</th>
-                                                        <th>Después</th>
+                                                        <th>{{ __('changes.table.key') }}</th>
+                                                        <th>{{ __('changes.table.before') }}</th>
+                                                        <th>{{ __('changes.table.after') }}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -109,12 +109,12 @@
                                 @elseif(!empty($r['meta']))
                                     <pre class="mb-0 small">{{ json_encode($r['meta'], JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE) }}</pre>
                                 @else
-                                    -
+                                    {{ __('changes.table.no_details') }}
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-muted py-4">Sin eventos.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-4">{{ __('changes.table.no_events') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

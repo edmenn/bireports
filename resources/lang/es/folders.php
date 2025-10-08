@@ -9,21 +9,21 @@ return [
 
     'cards' => [
         'details' => [
-            'title' => 'Datos de la carpeta',
+            'title' => 'Detalles de la carpeta',
         ],
         'assignments' => [
-            'title' => 'Asignar contenido y permisos',
+            'title' => 'Asignaciones',
         ],
     ],
 
     'form' => [
-        'name_label' => 'Nombre de la carpeta',
-        'name_placeholder' => 'Ej: Reportes de Ventas',
-        'description_label' => 'Descripción (opcional)',
-        'description_placeholder' => 'Describe el contenido o propósito de esta carpeta.',
-        'users_label' => 'Usuarios con acceso',
-        'groups_label' => 'Grupos con acceso',
-        'reports_label' => 'Reportes en la carpeta',
+        'name_label' => 'Nombre',
+        'name_placeholder' => 'Ingresa el nombre de la carpeta',
+        'description_label' => 'Descripción',
+        'description_placeholder' => 'Descripción opcional',
+        'users_label' => 'Usuarios',
+        'groups_label' => 'Grupos',
+        'reports_label' => 'Reportes',
         'buttons' => [
             'save' => 'Guardar',
             'cancel' => 'Cancelar',
@@ -46,7 +46,7 @@ return [
     ],
 
     'search' => [
-        'placeholder' => 'Buscar por nombre...',
+        'placeholder' => 'Buscar por nombre o descripción',
         'submit' => 'Buscar',
         'clear' => 'Limpiar',
     ],
@@ -59,16 +59,16 @@ return [
         'reports' => 'Reportes',
         'actions' => 'Acciones',
         'edit' => 'Editar',
-        'edit_title' => 'Editar',
+        'edit_title' => 'Editar carpeta',
         'delete' => 'Eliminar',
-        'delete_title' => 'Eliminar',
+        'delete_title' => 'Eliminar carpeta',
         'delete_confirm' => '¿Eliminar esta carpeta? Esta acción no se puede deshacer.',
     ],
 
     'empty' => [
-        'users' => 'No hay usuarios para asignar.',
-        'groups' => 'No hay grupos para asignar.',
-        'reports' => 'No hay reportes para asignar.',
-        'list' => 'Aún no hay carpetas creadas.',
+        'users' => 'Sin usuarios disponibles.',
+        'groups' => 'Sin grupos disponibles.',
+        'reports' => 'Sin reportes disponibles.',
+        'list' => 'Sin carpetas.',
     ],
 ];

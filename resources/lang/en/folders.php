@@ -12,18 +12,18 @@ return [
             'title' => 'Folder details',
         ],
         'assignments' => [
-            'title' => 'Assign content and permissions',
+            'title' => 'Assignments',
         ],
     ],
 
     'form' => [
-        'name_label' => 'Folder name',
-        'name_placeholder' => 'Ex: Sales Reports',
-        'description_label' => 'Description (optional)',
-        'description_placeholder' => 'Describe the contents or purpose of this folder.',
-        'users_label' => 'Users with access',
-        'groups_label' => 'Groups with access',
-        'reports_label' => 'Reports in the folder',
+        'name_label' => 'Name',
+        'name_placeholder' => 'Enter folder name',
+        'description_label' => 'Description',
+        'description_placeholder' => 'Optional description',
+        'users_label' => 'Users',
+        'groups_label' => 'Groups',
+        'reports_label' => 'Reports',
         'buttons' => [
             'save' => 'Save',
             'cancel' => 'Cancel',
@@ -46,7 +46,7 @@ return [
     ],
 
     'search' => [
-        'placeholder' => 'Search by name...',
+        'placeholder' => 'Search by name or description',
         'submit' => 'Search',
         'clear' => 'Clear',
     ],
@@ -59,16 +59,16 @@ return [
         'reports' => 'Reports',
         'actions' => 'Actions',
         'edit' => 'Edit',
-        'edit_title' => 'Edit',
+        'edit_title' => 'Edit folder',
         'delete' => 'Delete',
-        'delete_title' => 'Delete',
+        'delete_title' => 'Delete folder',
         'delete_confirm' => 'Delete this folder? This action cannot be undone.',
     ],
 
     'empty' => [
-        'users' => 'There are no users to assign.',
-        'groups' => 'There are no groups to assign.',
-        'reports' => 'There are no reports to assign.',
-        'list' => 'No folders have been created yet.',
+        'users' => 'No users available.',
+        'groups' => 'No groups available.',
+        'reports' => 'No reports available.',
+        'list' => 'No folders found.',
     ],
 ];

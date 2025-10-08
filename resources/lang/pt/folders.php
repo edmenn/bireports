@@ -9,21 +9,21 @@ return [
 
     'cards' => [
         'details' => [
-            'title' => 'Dados da pasta',
+            'title' => 'Detalhes da pasta',
         ],
         'assignments' => [
-            'title' => 'Atribuir conteúdo e permissões',
+            'title' => 'Atribuições',
         ],
     ],
 
     'form' => [
-        'name_label' => 'Nome da pasta',
-        'name_placeholder' => 'Ex: Relatórios de Vendas',
-        'description_label' => 'Descrição (opcional)',
-        'description_placeholder' => 'Descreva o conteúdo ou o propósito desta pasta.',
-        'users_label' => 'Usuários com acesso',
-        'groups_label' => 'Grupos com acesso',
-        'reports_label' => 'Relatórios na pasta',
+        'name_label' => 'Nome',
+        'name_placeholder' => 'Informe o nome da pasta',
+        'description_label' => 'Descrição',
+        'description_placeholder' => 'Descrição opcional',
+        'users_label' => 'Usuários',
+        'groups_label' => 'Grupos',
+        'reports_label' => 'Relatórios',
         'buttons' => [
             'save' => 'Salvar',
             'cancel' => 'Cancelar',
@@ -46,7 +46,7 @@ return [
     ],
 
     'search' => [
-        'placeholder' => 'Pesquisar por nome...',
+        'placeholder' => 'Pesquisar por nome ou descrição',
         'submit' => 'Pesquisar',
         'clear' => 'Limpar',
     ],
@@ -59,16 +59,16 @@ return [
         'reports' => 'Relatórios',
         'actions' => 'Ações',
         'edit' => 'Editar',
-        'edit_title' => 'Editar',
+        'edit_title' => 'Editar pasta',
         'delete' => 'Excluir',
-        'delete_title' => 'Excluir',
+        'delete_title' => 'Excluir pasta',
         'delete_confirm' => 'Excluir esta pasta? Esta ação não pode ser desfeita.',
     ],
 
     'empty' => [
-        'users' => 'Não há usuários para atribuir.',
-        'groups' => 'Não há grupos para atribuir.',
-        'reports' => 'Não há relatórios para atribuir.',
-        'list' => 'Ainda não existem pastas cadastradas.',
+        'users' => 'Nenhum usuário disponível.',
+        'groups' => 'Nenhum grupo disponível.',
+        'reports' => 'Nenhum relatório disponível.',
+        'list' => 'Nenhuma pasta encontrada.',
     ],
 ];
