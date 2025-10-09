@@ -69,7 +69,7 @@ return [
         'report_name' => 'Reporte',
     ],
     'placeholders' => [
-        'slug' => 'dejar vacío para autogenerar',
+        'slug' => 'Dejar vacío para autogenerar',
         'section_name' => 'Nombre de la sección',
     ],
     'cards' => [
@@ -84,7 +84,7 @@ return [
         'groups' => 'Los grupos heredan el acceso a la aplicación.',
         'reports' => 'Seleccioná los reportes que forman parte de la aplicación.',
         'sections_existing' => 'Renombrá o marcá secciones para eliminarlas. Los reportes que contengan pasarán a "Sin asignar".',
-        'sections_order' => 'Las secciones y reportes se ordenan alfabéticamente.',
+        'sections_order' => 'Las secciones y los reportes se ordenan alfabéticamente.',
         'report_sections' => 'Organizá los reportes por sección. Dejá "Sin asignar" para mantenerlos fuera de secciones.',
     ],
     'tooltips' => [
@@ -109,11 +109,20 @@ return [
         'empty_description' => 'Cuando los administradores publiquen tus aplicaciones asignadas, las vas a ver acá.',
         'reports_count' => 'Reportes',
         'sections_count' => 'Secciones',
+        'favorites' => [
+            'added' => 'Reporte agregado a favoritos.',
+            'removed' => 'Reporte quitado de favoritos.',
+        ],
     ],
     'runtime' => [
         'subtitle' => 'Explorá los reportes vinculados a esta aplicación',
         'no_reports' => 'Esta aplicación todavía no tiene reportes.',
         'sidebar_title' => 'Reportes disponibles',
         'other_reports' => 'Otros reportes',
+        'technical_details' => 'Detalles técnicos',
+        'errors' => [
+            'render_failed' => 'No se pudo renderizar el reporte.',
+            'no_workspace' => 'El reporte seleccionado no tiene un workspace asociado.',
+        ],
     ],
 ];

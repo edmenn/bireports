@@ -67,7 +67,7 @@ class UserPortalController extends Controller
             return response()->json(['favorited' => $favorited]);
         }
 
-        return back()->with('success', $favorited ? 'Agregado a favoritos' : 'Quitado de favoritos');
+        return back()->with('success', $favorited ? __('portal.favorites.flash.added') : __('portal.favorites.flash.removed'));
     }
 
     public function favorites(): View
@@ -170,7 +170,7 @@ class UserPortalController extends Controller
         $capacityModelId         = null;
         $capacityUuid            = null;
         $capacityOnDemandEnable  = true;
-        $capacityOnDemandMessage = 'Encendiendo la capacidad, aguarde unos segundos…';
+        $capacityOnDemandMessage = __('reports.show.on_demand.starting');
         $capacityStartTimeoutSec = 120;
         $capacityStartPollSec    = 5;
         $reportLoadTimeoutSec    = 10;
@@ -180,7 +180,7 @@ class UserPortalController extends Controller
             $workspace = $currentReport->workspace;
 
             if (! $workspace) {
-                $errorShort = 'El reporte seleccionado no tiene un workspace asociado.';
+                $errorShort = __('applications.runtime.errors.no_workspace');
             } else {
                 $capacityUuid = (string) ($workspace->capacity_id ?? '');
                 if ($capacityUuid !== '') {
@@ -191,7 +191,7 @@ class UserPortalController extends Controller
                 $cfg = Configuracion::first();
                 if ($cfg) {
                     $capacityOnDemandEnable  = (bool) ($cfg->capacity_on_demand_enable ?? true);
-                    $capacityOnDemandMessage = (string) ($cfg->capacity_on_demand_message ?? 'Encendiendo la capacidad, aguarde unos segundos…');
+                    $capacityOnDemandMessage = (string) ($cfg->capacity_on_demand_message ?? __('reports.show.on_demand.starting'));
                     $capacityStartTimeoutSec = (int) ($cfg->capacity_start_timeout_sec ?? 120);
                     $capacityStartPollSec    = (int) ($cfg->capacity_start_poll_interval_sec ?? 5);
                     $reportLoadTimeoutSec    = (int) ($cfg->report_load_timeout_sec ?? 10);
@@ -204,7 +204,7 @@ class UserPortalController extends Controller
                     ->exists();
 
                 if (! $hasConfig) {
-                    $errorShort = 'Faltan credenciales de Power BI en Configuraciones.';
+                    $errorShort = __('reports.show.errors.no_credentials');
                 } else {
                     try {
                         $svc = app(PowerBiService::class);
@@ -224,16 +224,15 @@ class UserPortalController extends Controller
                         $embed['datasetId']   = $embed['datasetId']   ?? $currentReport->dataset_id;
                         $embed['workspaceId'] = $embed['workspaceId'] ?? $workspace->id;
                     } catch (Throwable $e) {
-                        $errorShort = 'No se pudo preparar el embed del reporte. Verifica credenciales/capacidad/permisos.';
-                        $errorDetail = sprintf(
-                            "%s: %s\nCode: %s\nFile: %s:%d\n\nTrace:\n%s",
-                            get_class($e),
-                            $e->getMessage(),
-                            (string) ($e->getCode() ?? '0'),
-                            $e->getFile(),
-                            $e->getLine(),
-                            $e->getTraceAsString()
-                        );
+                        $errorShort = __('reports.show.errors.embed_failure');
+                        $errorDetail = __('reports.show.errors.debug_template', [
+                            'exception' => get_class($e),
+                            'message' => $e->getMessage(),
+                            'code' => (string) ($e->getCode() ?? '0'),
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'trace' => $e->getTraceAsString(),
+                        ]);
                         $embed = [];
                     }
                 }

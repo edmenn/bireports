@@ -169,7 +169,7 @@
                     <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>{{ $error }}</h5>
                     @if($error_debug)
                         <details class="mt-2">
-                            <summary>Detalles técnicos</summary>
+                            <summary>{{ __('applications.runtime.technical_details') }}</summary>
                             <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ $error_debug }}</pre>
                         </details>
                     @endif
@@ -266,7 +266,7 @@
             if (Array.isArray(section.reports) && section.reports.length) nav.appendChild(makeSectionNode(section));
         });
         if (hasLoose) {
-            const label = sidebarData.labels?.otherReports || 'Otros';
+            const label = sidebarData.labels?.otherReports || @json(__('applications.runtime.other_reports'));
             nav.appendChild(makeSectionNode({
                 name: label,
                 reports: sidebarData.looseReports,
@@ -401,7 +401,7 @@
     const ON_DEMAND_ENABLE = @json($capacityOnDemandEnable ?? true);
     const START_TIMEOUT_MS = @json(($capacityStartTimeoutSec ?? 120) * 1000);
     const START_POLL_MS    = @json(($capacityStartPollSec ?? 5) * 1000);
-    const STARTING_MSG     = @json($capacityOnDemandMessage ?? 'Encendiendo la capacidad, aguarde unos segundos…');
+    const STARTING_MSG     = @json($capacityOnDemandMessage ?? __('reports.show.on_demand.starting'));
 
     function showError(msg) {
         if (!errorBox) return;
@@ -412,11 +412,11 @@
     }
 
     if (!EMBED.embedUrl || !EMBED.accessToken || !EMBED.reportId) {
-        return showError('Faltan datos de embedUrl / accessToken / reportId.');
+        return showError(@json(__('reports.show.errors.missing_fields')));
     }
     const models = window['powerbi-client']?.models;
     if (!window.powerbi || !models) {
-        return showError('No se pudo cargar powerbi-client.');
+        return showError(@json(__('reports.show.errors.client_library')));
     }
 
     let currentHeight = 0;
@@ -491,7 +491,7 @@
         } catch (_) {}
 
         if (loading) {
-            loading.innerHTML = `<div class="text-center"><div class="spinner-border" role="status" aria-label="Encendiendo"></div><div class="mt-2">${STARTING_MSG}</div></div>`;
+            loading.innerHTML = `<div class="text-center"><div class="spinner-border" role="status" aria-label="${STARTING_MSG}"></div><div class="mt-2">${STARTING_MSG}</div></div>`;
         }
 
         while (Date.now() - start < timeoutMs) {
@@ -510,14 +510,14 @@
                     const isActive = !!json?.capacity?.is_active;
                     if (isActive) return true;
                     if (json?.reason === 'outside_schedule_window') {
-                        showError('La capacidad está pausada por fuera del horario operativo.');
+                        showError(@json(__('reports.show.errors.capacity_paused')));
                         return false;
                     }
                 }
             } catch (_) {}
             await new Promise(r => setTimeout(r, intervalMs));
         }
-        showError('No fue posible activar la capacidad a tiempo (timeout).');
+        showError(@json(__('reports.show.errors.capacity_timeout')));
         return false;
     }
 
@@ -525,7 +525,7 @@
         const ok = await waitForCapacityActive();
         if (!ok) return null;
         if (loading) {
-            loading.innerHTML = `<div class="text-center"><div class="spinner-border" role="status" aria-label="Cargando"></div><div class="mt-2">{{ __('reports.show.loading') }}</div></div>`;
+            loading.innerHTML = `<div class="text-center"><div class="spinner-border" role="status" aria-label="{{ __('reports.show.loading') }}"></div><div class="mt-2">{{ __('reports.show.loading') }}</div></div>`;
         }
         try { powerbi.reset(container); } catch (_) {}
         const rpt = doEmbed();
@@ -534,7 +534,7 @@
         loadTimer = setTimeout(() => {
             if (loaded) return;
             try { powerbi.reset(container); } catch (_) {}
-            showError('El reporte tardó demasiado en cargar (timeout 10s). Verifica la red, el token o la capacidad.');
+            showError(@json(__('reports.show.errors.load_timeout')));
             postAudit('error', { error_message: 'load_timeout_10s' });
         }, LOAD_TIMEOUT_MS);
         return rpt;
@@ -585,7 +585,7 @@
         rpt.on('error', (event) => {
             if (loadTimer) { try { clearTimeout(loadTimer); } catch (_) {} loadTimer = null; }
             const detail = event?.detail;
-            const msg = (typeof detail === 'string') ? detail : (detail?.message || 'Error al renderizar el reporte');
+            const msg = (typeof detail === 'string') ? detail : (detail?.message || @json(__('applications.runtime.errors.render_failed')));
             showError(msg);
             postAudit('error', { error_message: String(msg) });
         });

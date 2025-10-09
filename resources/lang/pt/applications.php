@@ -3,7 +3,7 @@
 return [
     'index' => [
         'title' => 'Aplicações',
-        'subtitle' => 'Organize relatórios do Power BI por aplicação',
+        'subtitle' => 'Organize seus relatórios do Power BI por aplicação',
         'empty' => 'Ainda não há aplicações criadas.',
     ],
     'create' => [
@@ -40,7 +40,7 @@ return [
         'back' => 'Voltar',
         'open' => 'Abrir',
         'exit_application' => 'Sair da aplicação',
-        'go_home' => 'Ir para o início',
+        'go_home' => 'Ir para a página inicial',
         'add_section' => 'Adicionar seção',
         'close_alert' => 'Fechar alerta',
     ],
@@ -69,7 +69,7 @@ return [
         'report_name' => 'Relatório',
     ],
     'placeholders' => [
-        'slug' => 'deixe em branco para gerar automaticamente',
+        'slug' => 'Deixe em branco para gerar automaticamente',
         'section_name' => 'Nome da seção',
     ],
     'cards' => [
@@ -80,27 +80,27 @@ return [
         'report_sections_title' => 'Seções por relatório',
     ],
     'hints' => [
-        'users' => 'Usuários adicionados verão esta aplicação quando estiver ativa.',
+        'users' => 'Usuários adicionados verão esta aplicação quando ela estiver ativa.',
         'groups' => 'Grupos herdam o acesso à aplicação.',
         'reports' => 'Selecione os relatórios que pertencem a esta aplicação.',
-        'sections_existing' => 'Renomeie ou marque seções para removê-las. Os relatórios ficarão "sem seção".',
+        'sections_existing' => 'Renomeie ou marque seções para removê-las. Os relatórios nelas passarão para "Sem seção".',
         'sections_order' => 'Seções e relatórios são ordenados alfabeticamente.',
-        'report_sections' => 'Organize os relatórios nas seções. Deixe "Sem seção" para mantê-los fora de seções.',
+        'report_sections' => 'Organize os relatórios por seção. Deixe "Sem seção" para mantê-los fora das seções.',
     ],
     'tooltips' => [
         'name' => 'Nome exibido para administradores e usuários.',
         'slug' => 'Identificador amigável na URL; deixe em branco para gerar automaticamente.',
         'description' => 'Descrição opcional exibida no cabeçalho do portal.',
-        'display_order' => 'Reservado para uma ordenação manual futura. No momento não afeta a visualização.',
-        'is_active' => 'Somente aplicações ativas aparecem no portal do usuário.',
-        'users' => 'Pessoas com acesso direto à aplicação.',
+        'display_order' => 'Reservado para uma ordenação manual futura. Hoje não afeta a visualização.',
+        'is_active' => 'Apenas aplicações ativas aparecem no portal do usuário.',
+        'users' => 'Pessoas que terão acesso direto à aplicação.',
         'groups' => 'Grupos que herdarão o acesso automaticamente.',
         'reports' => 'Relatórios incluídos nesta aplicação.',
         'sections' => 'Crie seções para organizar os relatórios na barra lateral.',
         'report_sections' => 'Escolha a seção onde cada relatório será exibido.',
         'section_name' => 'Atualize o nome da seção, se necessário.',
-        'section_delete' => 'Remova a seção. Os relatórios irão para "Sem seção".',
-        'add_section' => 'Adicione outro campo para definir uma nova seção.',
+        'section_delete' => 'Remova a seção. Os relatórios serão movidos para "Sem seção".',
+        'add_section' => 'Adicione outro campo para criar uma nova seção.',
     ],
     'portal' => [
         'title' => 'Minhas aplicações',
@@ -109,11 +109,20 @@ return [
         'empty_description' => 'As aplicações atribuídas aparecerão aqui quando os administradores as publicarem.',
         'reports_count' => 'Relatórios',
         'sections_count' => 'Seções',
+        'favorites' => [
+            'added' => 'Relatório adicionado aos favoritos.',
+            'removed' => 'Relatório removido dos favoritos.',
+        ],
     ],
     'runtime' => [
         'subtitle' => 'Explore os relatórios vinculados a esta aplicação',
         'no_reports' => 'Esta aplicação ainda não possui relatórios.',
         'sidebar_title' => 'Relatórios disponíveis',
         'other_reports' => 'Outros relatórios',
+        'technical_details' => 'Detalhes técnicos',
+        'errors' => [
+            'render_failed' => 'Não foi possível renderizar o relatório.',
+            'no_workspace' => 'O relatório selecionado não possui um workspace associado.',
+        ],
     ],
 ];

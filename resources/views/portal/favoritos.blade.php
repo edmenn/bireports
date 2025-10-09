@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Mis favoritos')
+@section('title', __('portal.favorites.title'))
 
 @section('content_header')
-    <h1>Mis favoritos</h1>
+    <h1>{{ __('portal.favorites.title') }}</h1>
 @stop
 
 @section('content')
@@ -12,7 +12,7 @@
     <div class="card">
         <div class="card-body">
             @if($reports->isEmpty())
-                <div class="text-center text-muted py-4">Todavía no marcaste favoritos.</div>
+                <div class="text-center text-muted py-4">{{ __('portal.favorites.empty') }}</div>
             @else
                 <div class="report-grid">
                     @foreach($reports as $report)
