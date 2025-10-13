@@ -1,30 +1,30 @@
 /* ======================================================================
-   PowerBIDash — CSS moderno y "theme-safe" (Bootstrap 5 + AdminLTE 4)
-   Respeta el color del tema (light/dark) y evita !important innecesarios.
+   PowerBIDash - modern "theme-safe" CSS (Bootstrap 5 + AdminLTE 4)
+   Respects the active theme colors (light/dark) and avoids unnecessary !important rules.
    ====================================================================== */
 
 /* =========================
-   BASE (fuente y tamaños)
+   BASE (font and sizing)
    ========================= */
 body {
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   font-size: 0.95rem;
 }
 
-/* Altura de navbar (ajusta si cambias paddings del header) */
+/* Navbar height (adjust if you change header paddings) */
 :root{ --app-navbar-h: 56px; }
 
 /* ===========================================================
-   VARIABLES DE TEMA (usar data-bs-theme="light" | "dark")
-   Si tu AdminLTE usa .dark-mode, verás un bloque fallback abajo.
+   THEME VARIABLES (use data-bs-theme="light" | "dark")
+   If your AdminLTE build still toggles .dark-mode, see the fallback block below.
    =========================================================== */
 
 /* -----------------
-   Tema CLARO (light)
+   LIGHT theme
    ----------------- */
 :root[data-bs-theme="light"] {
-  /* Si quieres que el tema defina primary, deja estas líneas comentadas.
-     Descomenta SOLO si quieres forzar una paleta propia en LIGHT.
+  /* Leave these commented if the theme should define primary colors.
+     Uncomment ONLY if you want to force a custom palette in LIGHT mode.
   */
   /* --bs-primary: #4f46e5;
      --bs-secondary: #64748b;
@@ -33,24 +33,24 @@ body {
      --bs-warning: #f59e0b;
      --bs-info: #0ea5e9; */
 
-  /* Gradientes/colores personalizados SOLO para light */
+  /* Custom gradients/colors used only on light mode */
   --pbd-navbar-grad-start: #1e293b; /* slate-800 */
   --pbd-navbar-grad-end:   #0f172a; /* slate-950 */
-  --pbd-sidebar-bg:        #0b1220; /* azul muy oscuro */
+  --pbd-sidebar-bg:        #0b1220; /* very dark blue */
 
-  /* Navbar (usamos variables oficiales de Bootstrap p/ respetar el tema) */
+  /* Navbar (leverage official Bootstrap variables to respect the theme) */
   --bs-navbar-bg: linear-gradient(135deg, var(--pbd-navbar-grad-start), var(--pbd-navbar-grad-end));
   --bs-navbar-color: #e2e8f0;
   --bs-navbar-hover-color: #ffffff;
 
-  /* Cards y tablas (neutros que funcionan en light) */
+  /* Cards and tables (neutral palette for light mode) */
   --pbd-card-border: rgba(148, 163, 184, .15);
   --pbd-card-shadow: 0 4px 24px rgba(2, 6, 23, .08);
   --pbd-th-color: #475569;      /* slate-600 */
   --pbd-th-border: rgba(148, 163, 184, .3);
   --pbd-td-border: rgba(148, 163, 184, .15);
 
-  /* Badges suaves (light only) */
+  /* Soft badges (light only) */
   --pbd-badge-success-bg: #dcfce7;
   --pbd-badge-success-fg: #166534;
   --pbd-badge-warning-bg: #fef9c3;
@@ -67,13 +67,13 @@ body {
 }
 
 /* ----------------
-   Tema OSCURO (dark)
+   DARK theme
    ----------------
-   No "pintamos" nada fuerte aquí para dejar que el tema maneje colores.
-   Solo definimos valores que mantengan coherencia si necesitas ajustar. */
+   We do not force strong colors here so the theme keeps control.
+   Only define values that preserve consistency when tweaks are required. */
 :root[data-bs-theme="dark"] {
-  /* Mantener control del usuario/tema. Puedes ajustar mínimos si hace falta. */
-  /* Ejemplo (descomentá si algo se ve raro con tu skin oscuro):
+  /* Keep control under the user/theme. Adjust minimums if needed. */
+  /* Example (uncomment if something looks odd with your dark skin):
      --bs-navbar-bg: var(--bs-body-bg);
      --bs-navbar-color: var(--bs-body-color);
      --bs-navbar-hover-color: var(--bs-emphasis-color);
@@ -81,18 +81,18 @@ body {
 }
 
 /* ==============================================================
-   FALLBACK PARA AdminLTE 3/4 con clase .dark-mode (si aplica)
+   FALLBACK for AdminLTE 3/4 using .dark-mode (if applicable)
    ============================================================== */
 .dark-mode {
-  /* Evita forzar colores en oscuro. Deja que el tema haga su trabajo. */
-  /* Si necesitas algo MUY puntual, declara aquí (con moderación). */
+  /* Avoid forcing colors in dark mode; let the theme do the work. */
+  /* If you need something VERY specific, declare it here (sparingly). */
 }
 
 /* ======================
-   NAVBAR (respetar tema)
+   NAVBAR (respect the theme)
    ====================== */
 .main-header {
-  /* Deja que tome el color del tema (en light lo definimos arriba). */
+  /* Let it inherit the theme color (light mode defined above). */
   background: var(--bs-navbar-bg);
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -102,10 +102,17 @@ body {
   margin-right: 5px;
 }
 
-/* Empujar el contenido por debajo del navbar fijo */
-.content-wrapper { padding-top: var(--app-navbar-h); }
+/* Adjust the content offset according to the real navbar height */
+body.layout-navbar-fixed .wrapper .content-wrapper,
+body.layout-navbar-fixed .wrapper .main-header ~ .content-wrapper,
+body.layout-navbar-fixed .wrapper .main-header.text-sm ~ .content-wrapper,
+body.layout-navbar-fixed.text-sm .wrapper .content-wrapper,
+body.layout-navbar-fixed.text-sm .wrapper .main-header ~ .content-wrapper,
+body.layout-navbar-fixed.text-sm .wrapper .main-header.text-sm ~ .content-wrapper {
+  margin-top: calc(var(--app-navbar-h, 3.5rem) + 1px);
+}
 
-/* Colores de links desde variables del tema (sin !important) */
+/* Link colors driven by theme variables (no !important) */
 .main-header .nav-link {
   color: var(--bs-navbar-color);
 }
@@ -114,8 +121,8 @@ body {
   color: var(--bs-navbar-hover-color);
 }
 
-/* Input group del buscador en navbar (ligero efecto en light).
-   En dark, hereda de tema y se ve correctamente. */
+/* Navbar search input group (subtle effect in light mode).
+   In dark mode it inherits from the theme and remains readable. */
 .main-header .input-group {
   background: rgba(255, 255, 255, .08);
   border-radius: 12px;
@@ -124,80 +131,80 @@ body {
   color: inherit;
 }
 
-/* Botón de cambiar tema: solo icono, sin pastilla grande */
+/* Theme toggle button: icon only, no large pill */
 .navbar .nav-link.bg-transparent {
   background: transparent;
   padding: 0 .5rem;
   line-height: 1;
 }
 
-/* Quitar borde/sombra inferior del navbar */
+/* Remove bottom border/shadow from the navbar */
 .main-header.navbar {
   border-bottom: 0 !important;
   box-shadow: none !important;
 }
 
-/* Navbar: ajustes para pantallas chicas (iPhone y similares) */
+/* Navbar: adjustments for small screens (phones and similar) */
 @media (max-width: 576px){
-  /* Compactar paddings de los enlaces para ganar espacio */
+  /* Compact link paddings to gain space */
   .main-header .navbar-nav > .nav-item > .nav-link{ padding: .25rem .45rem; }
-  /* Ocultar utilitarios no esenciales en mobile: búsqueda y fullscreen */
+  /* Hide non-essential utilities on mobile: search and fullscreen */
   .main-header [data-widget="navbar-search"],
   .main-header [data-widget="fullscreen"]{ display: none !important; }
-  /* Evitar que items largos desplazen el menú de usuario */
+  /* Prevent long items from pushing the user menu */
   .main-header .navbar-nav{ flex-wrap: nowrap; }
   .main-header .navbar-nav.ms-auto,
   .main-header .navbar-nav.ml-auto{ margin-left: auto !important; }
 }
 
-/* Ajustes de tablas y timelines en pantallas muy pequeñas */
+/* Table and timeline tweaks for very small screens */
 @media (max-width: 480px){
-  /* Evitar desbordes por columnas rígidas en timelines locales */
+  /* Avoid overflow caused by rigid columns in local timelines */
   .timeline .when{ min-width: 120px; }
 }
 
 /* =======================
-   SIDEBAR (coherente tema)
+   SIDEBAR (theme coherence)
    ======================= */
-/* Para LIGHT, usamos nuestro bg oscuro estilizado */
+/* For LIGHT mode we use our styled dark background */
 :root[data-bs-theme="light"] .main-sidebar {
   background: var(--pbd-sidebar-bg);
 }
 
-/* En DARK, dejamos que el tema administre; si necesitas reforzar tono:
+/* In DARK mode let the theme drive it; if you need to reinforce the tone:
 .dark-mode .main-sidebar { background: var(--bs-body-bg); } */
 
-/* Hacer que el área de marca (logo) herede el fondo del contenedor */
+/* Make the brand area (logo) inherit the container background */
 .main-sidebar .brand-link { background: transparent !important; color: inherit; border-bottom: 0 !important; box-shadow: none !important; }
 .navbar .navbar-brand { background: transparent !important; color: inherit; }
 
-/* Sidebar fijo: no debe desplazarse con páginas largas.
-   Solo el contenido interno del menú debe tener scroll cuando sea necesario. */
+/* Fixed sidebar: it must not scroll with long pages.
+   Only the inner menu content should scroll when needed. */
 .main-sidebar {
   position: fixed;
   top: var(--app-navbar-h);
   height: calc(100vh - var(--app-navbar-h));
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* evita que el scroll de la página afecte al sidebar */
+  overflow: hidden; /* prevents page scrolling from affecting the sidebar */
   
 }
 .main-sidebar .sidebar {
   flex: 1 1 auto;
-  min-height: 0; /* necesario para que overflow funcione en flex */
-  overflow-y: auto; /* el menú solo scrollea si es más largo que la pantalla */
+  min-height: 0; /* required so overflow works with flex */
+  overflow-y: auto; /* menu scrolls only if taller than the viewport */
   overflow-x: hidden;
 }
 
-/* Indentación más clara de submenús para no confundir con el padre */
+/* Clearer indentation for submenus so they are not confused with the parent */
 .nav-sidebar .nav-treeview > .nav-item > .nav-link {
-  padding-left: 2.25rem; /* un poco más a la derecha que el default */
+  padding-left: 2.25rem; /* slightly more to the right than default */
 }
 .nav-sidebar .nav-treeview .nav-treeview > .nav-item > .nav-link {
-  padding-left: 2.75rem; /* niveles anidados aún más indentados */
+  padding-left: 2.75rem; /* deeper levels get extra indentation */
 }
 
-/* Branding centrado y más limpio */
+/* Centered and cleaner branding */
 .brand-link,
 .navbar-brand {
   display: flex;
@@ -222,16 +229,16 @@ body {
   float: none !important;
   display: inline-block;
 }
-/* Logo switch: centrar ambas variantes */
+/* Logo switch: center both variants */
 .logo-switch .logo-xs,
 .logo-switch .logo-xl {
   display: block !important;
   margin: 0 auto !important;
 }
-/* Ocultar texto de marca junto al logo (si tu diseño lo requiere) */
+/* Hide brand text next to the logo (if your design requires it) */
 .brand-text { display: none !important; }
 
-/* Sidebar links (light): paleta sutil, sin romper dark */
+/* Sidebar links (light): subtle palette without breaking dark mode */
 :root[data-bs-theme="light"] .nav-sidebar .nav-link {
   color: #94a3b8; /* slate-400 */
   border-radius: 10px;
@@ -246,7 +253,7 @@ body {
   color: #fff;
 }
 
-/* Buscador del sidebar: botón más pequeño que el input */
+/* Sidebar search: button smaller than the input */
 .sidebar .btn-sidebar {
   padding: .25rem .5rem !important;
   line-height: 1 !important;
@@ -256,7 +263,7 @@ body {
 }
 
 /* =================
-   CARDS modernas
+   Modern cards
    ================= */
 .card {
   border-radius: 12px;
@@ -282,7 +289,7 @@ body {
 }
 
 /* =================
-   TABLAS modernas
+   Modern tables
    ================= */
 .table thead th {
   color: var(--pbd-th-color, var(--bs-secondary-color));
@@ -294,7 +301,7 @@ body {
 }
 
 /* =========================
-   BADGES suaves (LIGHT)
+   Soft BADGES (LIGHT)
    ========================= */
 :root[data-bs-theme="light"] .badge.bg-success {
   background-color: var(--pbd-badge-success-bg);
@@ -329,10 +336,10 @@ body {
   color: var(--pbd-footer-fg, var(--bs-body-color));
   border-top: 0 !important;
   box-shadow: none !important;
-  padding-top: .25rem !important;   /* reduce de py-3 (~1rem) a .5rem */
+  padding-top: .25rem !important;   /* reduces from py-3 (~1rem) to .5rem */
   padding-bottom: .25rem !important;
   border-radius: 0 1rem 0 0;
-  overflow: hidden;                 /* respeta el radio */
+  overflow: hidden;                 /* respects the radius */
   line-height: 1.1;
   margin-right: 5px;
 }
@@ -341,7 +348,7 @@ body {
 }
 
 /* ================================
-   Botón outline secundario suave
+   Soft secondary outline button
    ================================ */
 .btn-outline-secondary {
   border-color: #cbd5e1;
@@ -353,21 +360,21 @@ body {
 }
 
 /* =========================================================
-   BOTONES — UNIFORME + ESPACIADO CORRECTO EN TODAS LAS VISTAS
+   BUTTONS - UNIFORM SPACING ACROSS VIEWS
    ========================================================= */
 .btn {
   min-width: 138px;
   border-radius: 0.5rem;
-  margin: 0 0 .5rem 0; /* aire vertical para wrap */
+  margin: 0 0 .5rem 0; /* vertical breathing room when wrapping */
 }
 
-/* Fallback de separación cuando NO hay contenedor con gap */
+/* Fallback spacing when there is no container gap */
 .btn + .btn { margin-left: .5rem; }
 
-/* Contenedores típicos de acciones con gap real y wrap */
+/* Typical action containers with real gap and wrap */
 .card-header .d-flex,
 .content-header .d-flex,
-.content_header .d-flex, /* por si usas este nombre en Blade */
+.content_header .d-flex, /* in case you use this name in Blade */
 .card-footer,
 .btn-toolbar,
 .btn-row,
@@ -377,18 +384,18 @@ body {
   gap: .5rem;
 }
 
-/* Evitar doble espacio donde ya hay gap */
+/* Avoid double spacing where a gap already exists */
 .card-footer .btn { margin: 0; }
 
-/* Grupos y toolbars: separar sin romper estilo del grupo */
+/* Groups and toolbars: spacing without breaking group styling */
 .btn-group,
 .btn-toolbar { gap: .5rem; }
 .btn-group > .btn { margin: 0; }
 
-/* Botones de igual ancho (usa .btn-eq en tus vistas) */
+/* Equal width buttons (use .btn-eq in your views) */
 .btn-eq { flex: 1; }
 
-/* Móvil: ocupar ancho cuando haga falta */
+/* Mobile: let buttons take width when needed */
 @media (max-width: 480px){
   .card-header .d-flex,
   .content-header .d-flex,
@@ -401,10 +408,10 @@ body {
 }
 
 /* =============================================
-   Botón de favorito (estrella) – compacto y claro
+   Favorite button (star) - compact and clear
    ============================================= */
 .btn.btn-fav{ 
-  min-width: auto !important; /* no heredar min-width global */
+  min-width: auto !important; /* do not inherit the global min-width */
   width: auto; padding: .25rem .5rem; 
   border-color: #cbd5e1; color: #475569; background: transparent;
 }
@@ -417,7 +424,7 @@ body {
 .btn.btn-fav.is-on:hover{ filter: brightness(0.95); }
 
 /* =========================================================
-   COMPAT: MAPEO MR/ML (BS4) → MÁRGENES LÓGICOS EN BS5
+   COMPAT: MR/ML mapping (BS4) -> logical margins in BS5
    ========================================================= */
 .mr-1 { margin-inline-end: .25rem !important; }
 .mr-2 { margin-inline-end: .5rem !important; }
@@ -427,12 +434,12 @@ body {
 .ml-3 { margin-inline-start: 1rem !important; }
 
 /* ==========================
-   TÍTULOS / TEXTOS primarios
+   Headings / primary text
    ========================== */
 .content-header h1 { color: var(--bs-emphasis-color) !important; }
 
 /* ==========================
-   Dropdown de usuario
+   User dropdown
    ========================== */
 .user-menu .dropdown-menu .dropdown-item {
   padding: .35rem .75rem;
@@ -443,13 +450,13 @@ body {
 }
 
 /* ===============================
-   Ajustes de layout (robustez)
+   Layout adjustments (robustness)
    =============================== */
-/* Sidebar: usa bottom:0 para evitar recortes con 100vh en algunos entornos */
+/* Sidebar: use bottom:0 to avoid clipping with 100vh in some environments */
 .main-sidebar {
   bottom: 0;
   height: auto !important;
 }
 
-/* Preloader: evitar efecto ovalado en la imagen y respetar tamaño de config */
+/* Preloader: avoid oval distortion and honor the configured size */
 .preloader img { border-radius: 0 !important; clip-path: none !important; object-fit: contain; }
