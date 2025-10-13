@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // Orden sugerido de secciones y labels
+    // Suggested order of sections and labels
     'order' => [
         'menu',
         'portal',
@@ -16,12 +16,12 @@ return [
         'folders',
         'config',
         'audit',
-        'otros',
+        'other',
     ],
 
     'unknown_section_label' => 'profiles.permissions.unknown_section',
 
-    // Mapa de secciones a labels y permisos con descripciones claras
+    // Section-to-label map and permission descriptions
     'sections' => [
         'menu' => [
             'label' => 'profiles.permissions.sections.menu',
@@ -34,8 +34,8 @@ return [
                 'menu.groups' => 'profiles.permissions.labels.menu.groups',
                 'menu.folders' => 'profiles.permissions.labels.menu.folders',
                 'menu.applications' => 'profiles.permissions.labels.menu.applications',
-                'menu.configuraciones' => 'profiles.permissions.labels.menu.configuraciones',
-                'menu.auditoria' => 'profiles.permissions.labels.menu.auditoria',
+                'menu.configurations' => 'profiles.permissions.labels.menu.configurations',
+                'menu.audit' => 'profiles.permissions.labels.menu.audit',
                 // 'menu.roles' => 'profiles.permissions.labels.menu.roles',
             ],
         ],
@@ -144,8 +144,8 @@ return [
                 'audit.reset' => 'profiles.permissions.labels.audit.reset',
             ],
         ],
-        'otros' => [
-            'label' => 'profiles.permissions.sections.otros',
+        'other' => [
+            'label' => 'profiles.permissions.sections.other',
             'permissions' => [],
         ],
     ],

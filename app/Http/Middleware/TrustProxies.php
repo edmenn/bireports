@@ -10,13 +10,13 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * Lista de proxies confiables. Usa '*' si estás detrás de balanceadores conocidos.
-     * Si no, déjalo en null y configura a nivel de servidor.
+     * Trusted proxy list. Use '*' when sitting behind known load balancers.
+     * Otherwise leave it null and configure trust at the server level.
      */
     protected $proxies = '*';
 
     /**
-     * Encabezados usados para detectar IP/Proto originales.
+     * Headers used to detect the original IP/protocol.
      */
     protected $headers = Request::HEADER_X_FORWARDED_FOR
         | Request::HEADER_X_FORWARDED_HOST

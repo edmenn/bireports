@@ -25,10 +25,10 @@ class RoleController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        // Pre-cargar permisos para contar sin N+1
+        // Pre-load permissions to avoid N+1 counting
         $roles->getCollection()->load('permissions');
 
-        // Conteo de usuarios por rol (consulta por cada rol; dataset acotado)
+        // Count users per role (one query per role; manageable dataset)
         $userCounts = [];
         foreach ($roles as $r) {
             try {
@@ -62,7 +62,7 @@ class RoleController extends Controller
             'guard_name' => 'web',
         ]);
 
-        // Colores opcionales
+        // Optional badge colours
         if (!empty($data['badge_bg']) || !empty($data['badge_text'])) {
             $role->forceFill([
                 'badge_bg' => $data['badge_bg'] ?? null,
@@ -98,7 +98,7 @@ class RoleController extends Controller
             'badge_text' => ['nullable','regex:/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/'],
         ]);
 
-        // Evitar renombrar el rol admin para no perder reglas de negocio implícitas
+        // Prevent renaming the admin role to preserve business rules
         if (mb_strtolower($role->name) === 'admin' && mb_strtolower($data['name']) !== 'admin') {
             return back()->with('error', __('profiles.flash.cannot_rename_admin'));
         }
@@ -108,13 +108,13 @@ class RoleController extends Controller
         $role->badge_text = $data['badge_text'] ?? null;
         $role->save();
 
-        // Admin: siempre todos los permisos (no editable)
+        // Admin role always receives every permission (not editable)
         if (mb_strtolower($role->name) === 'admin') {
             $role->syncPermissions(\Spatie\Permission\Models\Permission::all());
         } else {
             $perms = array_values(array_unique($data['permissions'] ?? []));
 
-            // Auditoría: dif de permisos antes/después
+            // Audit: diff permissions before/after
             try {
                 $before = $role->permissions()->pluck('name')->all();
                 $after  = $perms;
@@ -152,14 +152,14 @@ class RoleController extends Controller
         if (in_array(mb_strtolower($role->name), ['admin'], true)) {
             return back()->with('error', __('profiles.flash.cannot_delete_admin'));
         }
-        // Bloquear eliminación si tiene usuarios asignados
+        // Block deletion when users are assigned to the role
         try {
             $assigned = (int) (\App\Models\User::role($role->name)->count());
             if ($assigned > 0) {
                 return back()->with('warning', __('profiles.flash.cannot_delete_assigned', ['count' => $assigned]));
             }
         } catch (\Throwable $e) {
-            // Si no podemos verificar, por seguridad no eliminar
+            // If verification fails, skip deletion for safety
             return back()->with('error', __('profiles.flash.assignments_unknown'));
         }
         try {
@@ -171,22 +171,22 @@ class RoleController extends Controller
     }
 
     /**
-     * Construye secciones y labels de permisos para la UI.
-     * Retorna [sections, allPermissions]
-     * - sections: [ [ 'key'=>string, 'label'=>string, 'items'=> [ ['name'=>..., 'label'=>...], ... ] ], ... ]
-     * - allPermissions: array<string> con todos los nombres
+     * Build permission sections and labels for the UI.
+     * Returns [sections, allPermissions]
+     * - sections: [ { 'key': string, 'label': string, 'items': [ ['name'=>..., 'label'=>...], ... ] }, ... ]
+     * - allPermissions: array<string> containing every permission name
      */
     private function buildPermissionSections(): array
     {
         $perms = Permission::query()->orderBy('name')->pluck('name')->all();
 
-        // Carga mapa opcional desde config
+        // Load the optional map from configuration
         $map = config('permissions_map.sections', []);
         $order = config('permissions_map.order', []);
         $unknownSectionKey = config('permissions_map.unknown_section_label', 'profiles.permissions.unknown_section');
         $fallbackLabel = __($unknownSectionKey);
 
-        // Construir catálogo base desde permisos existentes
+        // Build the base catalogue from existing permissions
         $bySection = [];
         foreach ($perms as $p) {
             $secKey = strpos($p, '.') !== false ? explode('.', $p, 2)[0] : 'otros';
@@ -194,10 +194,10 @@ class RoleController extends Controller
             $bySection[$secKey][] = $p;
         }
 
-        // Armar estructura con labels amigables
+        // Build the structure with friendly labels
         $sections = [];
 
-        // Primero, secciones definidas en config (respetar orden)
+        // First, sections defined in config (respect ordering)
         foreach ($order as $key) {
             if (!array_key_exists($key, $bySection) && !array_key_exists($key, $map)) {
                 continue;
@@ -206,7 +206,7 @@ class RoleController extends Controller
             unset($bySection[$key]);
         }
 
-        // Luego, el resto de secciones detectadas dinámicamente
+        // Then append any other dynamically detected sections
         foreach ($bySection as $key => $list) {
             $sections[] = $this->sectionFromKey($key, $list, $map, $fallbackLabel);
         }
@@ -221,7 +221,7 @@ class RoleController extends Controller
             'permissions' => [],
         ];
 
-        // Fusionar: primero los del config (para controlar orden y labels), luego los restantes
+        // Merge configured permissions first (to control order/labels), then append the rest
         $items = [];
         $configured = $conf['permissions'] ?? [];
         foreach ($configured as $pName => $label) {
@@ -231,7 +231,7 @@ class RoleController extends Controller
             ];
         }
 
-        // Agregar no mapeados en orden alfabético
+        // Add unmapped permissions sorted alphabetically
         $existing = array_map(fn ($i) => $i['name'], $items);
         sort($permNames);
         foreach ($permNames as $p) {
@@ -274,3 +274,4 @@ class RoleController extends Controller
         return $this->humanize($perm);
     }
 }
+

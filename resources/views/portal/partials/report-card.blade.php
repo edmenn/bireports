@@ -54,7 +54,7 @@
             <h3 class="h6 fw-semibold text-truncate mb-0 pe-2" title="{{ $report->name }}" style="max-width: 70%;">
                 {{ $report->name }}
             </h3>
-            <form action="{{ route('portal.fav.toggle', $report) }}"
+            <form action="{{ route('portal.favorites.toggle', $report) }}"
                   method="POST"
                   class="js-fav-form position-relative flex-shrink-0"
                   style="z-index:2;">

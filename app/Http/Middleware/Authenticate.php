@@ -10,13 +10,13 @@ use Illuminate\Http\Request;
 class Authenticate extends Middleware
 {
     /**
-     * A dónde redirigir si la request no está autenticada (rutas web).
-     * Para API normalmente devolvés 401 y no redirigís.
+     * Decide the redirect target for unauthenticated web requests.
+     * APIs typically return 401 responses instead of redirecting.
      */
     protected function redirectTo(Request $request): ?string
     {
         if (!$request->expectsJson()) {
-            // Cambia 'login' por el nombre de tu ruta de login si corresponde.
+            // Update 'login' if your application uses a custom login route name.
             return route('login');
         }
         return null;

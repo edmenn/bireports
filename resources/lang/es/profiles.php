@@ -56,7 +56,7 @@ return [
             'folders' => 'Carpetas',
             'config' => 'Configuración',
             'audit' => 'Auditoría',
-            'otros' => 'Otros permisos',
+            'other' => 'Otros permisos',
         ],
         'labels' => [
             'menu' => [
@@ -68,9 +68,9 @@ return [
                 'groups' => 'Organización: Grupos',
                 'folders' => 'Organización: Carpetas',
                 'applications' => 'Organización: Aplicaciones',
-                'configuraciones' => 'Configuraciones',
-                'auditoria' => 'Auditoría',
-                'roles' => 'Organización: Perfiles y Accesos',
+                'configurations' => 'Configuraciones',
+                'audit' => 'Auditoría',
+                'roles' => 'Organización: Roles y accesos',
             ],
             'portal' => [
                 'view' => 'Acceder al portal',

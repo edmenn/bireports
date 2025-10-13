@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
@@ -12,14 +12,14 @@ use Throwable;
 class PowerBiService
 {
     private Client $http;
-    private Configuracion $config;
+    private Configuration $config;
     private string $base = 'https://api.powerbi.com/v1.0/myorg';
 
     public function __construct()
     {
         $this->http   = new Client(['timeout' => 30]);
         // No forzar existencia aquí; controlamos en getAccessToken
-        $this->config = Configuracion::query()->first() ?? new Configuracion();
+        $this->config = Configuration::query()->first() ?? new Configuration();
     }
 
     /* =========================================================
@@ -34,7 +34,7 @@ class PowerBiService
         $secret = trim((string) $this->config->powerbi_client_secret);
 
         if ($tenant === '' || $client === '' || $secret === '') {
-            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configuraciones.');
+            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configurations.');
         }
         // Cache rápido del token por tenant+client
         $cacheKey = 'pbi:token:' . sha1($tenant . '|' . $client);

@@ -5,7 +5,7 @@
 @section('content_header')
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
         <h1 class="m-0 text-dark">Resetear Auditoría</h1>
-        <a href="{{ route('auditoria.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ route('audit.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-chart-line mr-1"></i> Métricas de Uso
         </a>
     </div>
@@ -56,7 +56,7 @@
             <div class="d-flex justify-content-center">
                 <div class="d-flex" style="gap: 0.75rem; width: 320px;">
                     <x-adminlte-button type="submit" theme="danger" label="Borrar Todo" icon="fas fa-trash-alt" class="btn-eq"/>
-                    <x-adminlte-button :href="route('auditoria.index')" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
+                    <x-adminlte-button :href="route('audit.index')" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
                 </div>
             </div>
         </x-adminlte-card>

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use App\Models\User;
 use App\Services\MicrosoftGraphService;
 use Illuminate\Auth\Events\Login;
@@ -21,13 +21,13 @@ final class StampEntraOnFirstLogin
             return;
         }
 
-        // Si ya fue marcado como externo o explícitamente local, no tocamos.
+        // Skip users that already declare an explicit provider.
         if (!empty($user->auth_provider)) {
             return;
         }
 
-        // Solo si el login Microsoft está habilitado en Configuraciones.
-        $cfg = Configuracion::query()->first();
+        // Only proceed when Microsoft login is enabled in configuration.
+        $cfg = Configuration::query()->first();
         if (!$cfg || !($cfg->microsoft_login_enabled ?? false)) {
             return;
         }
@@ -36,27 +36,26 @@ final class StampEntraOnFirstLogin
             /** @var MicrosoftGraphService $graph */
             $graph = app(MicrosoftGraphService::class);
 
-            // Buscar en Entra por cualquiera de sus direcciones (UPN/mail/proxyAddresses)
+            // Look up the user in Entra using any known address (UPN/mail/proxyAddresses).
             $entry = $graph->findUserByAnyAddress($user->email);
 
             if (!$entry) {
-                // No existe en el tenant → no marcamos (opcional: log de aviso)
-                Log::info('StampEntraOnFirstLogin: email no encontrado en Entra', [
+                Log::info('StampEntraOnFirstLogin: email not found in Entra', [
                     'email' => $user->email,
                 ]);
                 return;
             }
 
             $objectId   = (string)($entry['id'] ?? '');
-            // Preferir givenName + surname; fallback a displayName
+            // Prefer givenName + surname; fallback to displayName.
             $given      = trim((string)($entry['givenName'] ?? ''));
             $surname    = trim((string)($entry['surname'] ?? ''));
             $display    = trim($given . ' ' . $surname);
             if ($display === '') {
                 $display = (string)($entry['displayName'] ?? '');
             }
-            // Importante: NO cambiamos el email aquí para no romper el login.
-            // Solo marcamos proveedor y guardamos external_id si no lo tenía.
+            // Important: do not change the email to avoid breaking login flows.
+            // Only stamp provider and external_id if they were missing.
 
             DB::transaction(function () use ($user, $objectId, $display) {
                 $changed = false;
@@ -81,7 +80,7 @@ final class StampEntraOnFirstLogin
                 }
             });
         } catch (Throwable $e) {
-            Log::warning('StampEntraOnFirstLogin: error consultando Graph', [
+            Log::warning('StampEntraOnFirstLogin: failed querying Graph', [
                 'email' => $user->email,
                 'error' => $e->getMessage(),
             ]);

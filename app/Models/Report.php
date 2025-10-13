@@ -14,14 +14,14 @@ class Report extends Model
     use HasFactory;
 
     /**
-     * Clave primaria UUID (no incremental, tipo string).
+     * UUID primary key (string, non-incrementing).
      */
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
     /**
-     * Campos asignables.
+     * Mass assignable attributes.
      */
     protected $fillable = [
         'id',
@@ -38,7 +38,7 @@ class Report extends Model
     ];
 
     /**
-     * Relación (ajusta si tu clase Workspace se llama distinto).
+     * Workspace relationship (adjust if your Workspace model uses a different class).
      */
     public function workspace()
     {
@@ -46,7 +46,7 @@ class Report extends Model
     }
 
     /**
-     * Asociaciones con aplicaciones publicadas en el portal.
+     * Associations with portal applications.
      */
     public function applications(): BelongsToMany
     {
@@ -56,7 +56,7 @@ class Report extends Model
     }
 
     /**
-     * Normaliza cover_url a string o null sin espacios.
+     * Normalize cover_url to a trimmed string or null.
      */
     public function getCoverUrlAttribute($value): ?string
     {
@@ -66,10 +66,10 @@ class Report extends Model
     }
 
     /**
-     * URL efectiva de portada:
-     * - cover_url propia, o
-     * - predeterminada en storage/app/public/report-covers/default.png, o
-     * - null.
+     * Resolve the effective cover URL:
+     * - explicit cover_url
+     * - default stored at storage/app/public/report-covers/default.png
+     * - null otherwise
      */
     public function getEffectiveCoverUrlAttribute(): ?string
     {

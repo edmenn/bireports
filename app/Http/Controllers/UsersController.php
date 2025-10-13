@@ -45,7 +45,7 @@ class UsersController extends Controller
 
     public function create(): View
     {
-        $roles = ['admin','editor','usuario'];
+        $roles = ['admin','editor','viewer'];
         return view('users.create', compact('roles'));
     }
 
@@ -55,7 +55,7 @@ class UsersController extends Controller
             'name'     => ['required','string','max:255'],
             'email'    => ['required','email','max:255','unique:users,email'],
             'password' => ['required','string','min:8','max:255'],
-            'role'     => ['required','in:admin,editor,usuario'],
+            'role'     => ['required','in:admin,editor,viewer'],
         ]);
 
         $user = User::create([
@@ -68,34 +68,32 @@ class UsersController extends Controller
         return redirect()->route('users.index')->with('success', __('users.flash.created'));
     }
 
-    public function edit(User $usuario): View
+    public function edit(User $user): View
     {
-        $roles = ['admin','editor','usuario'];
-        $user = $usuario; // alias para claridad en vistas
+        $roles = ['admin','editor','viewer'];
         return view('users.edit', compact('user','roles'));
     }
 
-    public function update(Request $request, User $usuario): RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $user = $usuario;
         $data = $request->validate([
             'name'     => ['required','string','max:255'],
             'email'    => ['required','email','max:255','unique:users,email,'.$user->id],
             'password' => ['nullable','string','min:8','max:255'],
-            'role'     => ['required','in:admin,editor,usuario'],
+            'role'     => ['required','in:admin,editor,viewer'],
             'is_blocked' => ['nullable','boolean'],
         ]);
 
-        // Permitir bloquear/desbloquear siempre (incluye Entra)
+        // Always allow toggling blocked state (including Entra accounts)
         $requestedBlock = $request->boolean('is_blocked');
-        // No permitir bloquearse a sí mismo
+        // Prevent users from blocking themselves
         if ($requestedBlock && (int)($user->id) === (int)(Auth::id() ?? 0)) {
-            return redirect()->route('users.edit', ['usuario' => $user->id])
+            return redirect()->route('users.edit', ['user' => $user->id])
                 ->with('warning', __('users.flash.self_block'));
         }
         $user->is_blocked = $requestedBlock;
 
-        // Si es Entra, solo permitimos editar el rol/estado desde esta pantalla
+        // For Entra accounts only the role/state can be changed from this screen
         if (($user->auth_provider ?? null) !== 'entra') {
             $user->name  = $data['name'];
             $user->email = $data['email'];
@@ -109,18 +107,18 @@ class UsersController extends Controller
         return redirect()->route('users.index')->with('success', __('users.flash.updated'));
     }
 
-    public function destroy(User $usuario): RedirectResponse
+    public function destroy(User $user): RedirectResponse
     {
-        // No permitir eliminar la propia cuenta
+        // Prevent deleting the current user
         $selfId = (int) (Auth::id() ?? 0);
-        if ($usuario->id === $selfId) {
+        if ($user->id === $selfId) {
             return redirect()->route('users.index')
                 ->with('warning', __('users.flash.self_delete'));
         }
 
-        // Evitar eliminar al último administrador del sistema
+        // Avoid deleting the last admin in the system
         try {
-            $isAdmin = method_exists($usuario, 'hasRole') && $usuario->hasRole('admin');
+            $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
             if ($isAdmin) {
                 $admins = User::role('admin')->count();
                 if ($admins <= 1) {
@@ -134,8 +132,8 @@ class UsersController extends Controller
                 ->with('error', __('users.flash.roles_validation_error'));
         }
 
-        $usuario->delete();
-        return redirect()->route('users.index')->with('success', __('users.flash.deleted'));
+            $user->delete();
+            return redirect()->route('users.index')->with('success', __('users.flash.deleted'));
     }
 
     public function importForm(Request $request): View
@@ -154,7 +152,7 @@ class UsersController extends Controller
             $error = $e->getMessage();
             Log::warning('Import users (Graph) error: ' . $error);
         }
-        $roles = ['usuario','editor','admin'];
+        $roles = ['admin','editor','viewer'];
         return view('users.import', compact('items','q','nextLink','error','roles'));
     }
 
@@ -163,7 +161,7 @@ class UsersController extends Controller
         $data = $request->validate([
             'selected' => ['required','array','min:1'],
             'selected.*' => ['required','string'], // formato: email|name
-            'role' => ['required','in:usuario,editor,admin'],
+            'role' => ['required','in:viewer,editor,admin'],
         ]);
 
         $created = 0;
@@ -260,7 +258,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Bloqueo masivo de usuarios (excepto el propio y evitando bloquear al último admin).
+     * Bulk block users (skip current user and preserve the last admin).
      */
     public function bulkBlock(Request $request): RedirectResponse
     {
@@ -296,7 +294,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Desbloqueo masivo de usuarios (excepto el propio).
+     * Bulk unblock users (skip current user).
      */
     public function bulkUnblock(Request $request): RedirectResponse
     {
@@ -326,18 +324,17 @@ class UsersController extends Controller
     }
 
     /**
-     * Bloquea/desbloquea un usuario individual (toggle).
+     * Toggle the blocked state for an individual user.
      */
-    public function toggleBlock(Request $request, User $usuario): RedirectResponse
+    public function toggleBlock(Request $request, User $user): RedirectResponse
     {
-        $user = $usuario;
         $selfId = (int) (Auth::id() ?? 0);
         if ($user->id === $selfId) {
             return back()->with('warning', __('users.flash.self_block'));
         }
 
         $willBlock = ! (bool) ($user->is_blocked ?? false);
-        // Si se va a bloquear y es el último admin, impedir
+        // Prevent blocking when this is the last admin
         if ($willBlock && method_exists($user, 'hasRole') && $user->hasRole('admin')) {
             try { $admins = User::role('admin')->count(); } catch (\Throwable) { $admins = null; }
             if ($admins !== null && $admins <= 1) {
@@ -356,7 +353,7 @@ class UsersController extends Controller
             try {
                 DB::table('sessions')->where('user_id', $user->id)->delete();
             } catch (\Throwable $e) {
-                Log::warning('No se pudieron purgar las sesiones del usuario bloqueado', [
+                Log::warning('Unable to purge sessions for the blocked user', [
                     'user_id' => $user->id,
                     'error'   => $e->getMessage(),
                 ]);

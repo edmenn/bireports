@@ -18,7 +18,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        $cfg = \App\Models\Configuracion::query()->first();
+        $cfg = \App\Models\Configuration::query()->first();
 
         $allowMicrosoft = (bool) ($cfg
             && $cfg->microsoft_login_enabled

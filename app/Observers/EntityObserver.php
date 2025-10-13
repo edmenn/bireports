@@ -22,7 +22,7 @@ final class EntityObserver
         $before = [];
         $after  = [];
         foreach ($model->getChanges() as $key => $val) {
-            // saltar timestamps típicos si no interesan
+            // Skip typical timestamp columns when they are not relevant.
             if (in_array($key, ['updated_at', 'created_at', 'email_verified_at', 'remember_token'], true)) continue;
             $after[$key] = $val;
             $before[$key] = $model->getOriginal($key);
@@ -57,8 +57,7 @@ final class EntityObserver
                 'meta'    => $meta,
             ]);
         } catch (\Throwable) {
-            // silencio para no romper flujo de negocio
+            // Swallow errors to avoid interrupting business flows.
         }
     }
 }
-

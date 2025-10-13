@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use Illuminate\Support\Facades\Schema;
 use GuzzleHttp\Client;
 use RuntimeException;
@@ -20,21 +20,21 @@ use function strtolower;
 class MicrosoftGraphService
 {
     private Client $http;
-    private Configuracion $config;
+    private Configuration $config;
 
     public function __construct()
     {
         $this->http = new Client(['timeout' => 30]);
         // Evitar fallar durante migraciones/seed cuando aún no existe la tabla
         try {
-            if (Schema::hasTable('configuraciones')) {
-                $this->config = Configuracion::query()->first() ?? new Configuracion();
+            if (Schema::hasTable('configurations')) {
+                $this->config = Configuration::query()->first() ?? new Configuration();
             } else {
-                $this->config = new Configuracion();
+                $this->config = new Configuration();
             }
         } catch (\Throwable $e) {
             // En cualquier error (por ejemplo, conexión inicial), continuar vacío
-            $this->config = new Configuracion();
+            $this->config = new Configuration();
         }
     }
 
@@ -45,7 +45,7 @@ class MicrosoftGraphService
         $secret = trim((string) $this->config->powerbi_client_secret);
 
         if ($tenant === '' || $client === '' || $secret === '') {
-            throw new RuntimeException('Faltan credenciales de Microsoft (tenant/client/secret) en Configuraciones.');
+            throw new RuntimeException('Faltan credenciales de Microsoft (tenant/client/secret) en Configurationes.');
         }
 
         $url = "https://login.microsoftonline.com/{$tenant}/oauth2/v2.0/token";

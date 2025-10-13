@@ -204,6 +204,16 @@ return [
         'usage_drop'    => 'Usage drop ≥30%: Last 7 days (:current) vs previous (:previous) -> :delta%.',
         'high_error_rate' => 'High error rate in 7 days: :rate% (:errors errors / :views accesses).',
     ],
+    'admin' => [
+        'confirm_exact' => 'You must type RESET exactly to confirm.',
+        'reset_success' => 'All audit records were deleted and the ID counter was reset.',
+        'reset_error'   => 'Audit reset failed: :message',
+    ],
+
+    'api' => [
+        'store_failed' => 'Unable to record the audit event.',
+    ],
 ];
+
 
 

@@ -26,7 +26,7 @@ class ConfigAuditController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('configuraciones.audit', compact('audits','q','user'));
+        return view('configurations.audit', compact('audits','q','user'));
     }
 }
 

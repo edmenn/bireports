@@ -19,6 +19,11 @@ return [
         'validation' => 'Errores de validación',
     ],
 
+    'menu' => [
+        'parameters' => 'Parámetros',
+        'theme' => 'Tema',
+    ],
+
     'service_principal' => [
         'card_title' => 'Credenciales de Conexión (Service Principal)',
         'intro' => 'Configura una aplicación de Entra ID (Service Principal) con permisos de Power BI para la autenticación desatendida.',

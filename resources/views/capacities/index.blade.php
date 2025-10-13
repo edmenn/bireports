@@ -17,7 +17,7 @@
                 </button>
             </form>
         @else
-            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="{{ __('capacities.page.configure_hint') }}">
+            <a href="{{ route('configurations.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="{{ __('capacities.page.configure_hint') }}">
                 <i class="fas fa-cogs me-1"></i> {{ __('capacities.buttons.configure') }}
             </a>
         @endif
@@ -41,7 +41,7 @@
 
     @if(empty($hasConfig) || !$hasConfig)
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.alerts.no_config_html', ['url' => route('configuraciones.index')]) !!}
+            <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.alerts.no_config_html', ['url' => route('configurations.index')]) !!}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('common.close') }}"></button>
         </div>
     @endif
@@ -69,7 +69,7 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                    <a href="{{ route('configurations.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
                         <i class="fas fa-cogs me-1"></i> {{ __('capacities.buttons.configure') }}
                     </a>
                 @endif

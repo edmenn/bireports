@@ -17,7 +17,7 @@
                             .badge-role{ background:#eef2ff;color:#4338ca;border:1px solid rgba(67,56,202,.15);font-weight:600; }
                             .badge-admin  { background:#fee2e2; color:#b91c1c; border:1px solid rgba(185,28,28,.25); font-weight:700; }
                             .badge-editor { background:#fef9c3; color:#a16207; border:1px solid rgba(161,98,7,.25);  font-weight:700; }
-                            .badge-usuario{ background:#dcfce7; color:#166534; border:1px solid rgba(22,101,52,.25);  font-weight:700; }
+                            .badge-viewer{ background:#dcfce7; color:#166534; border:1px solid rgba(22,101,52,.25);  font-weight:700; }
                             .u-badge-fixed{ display:inline-block; min-width:90px; text-align:center; white-space:nowrap; }
                         </style>
                         {{-- Roles asignados (solo lectura) --}}
@@ -36,7 +36,7 @@
                                         $badgeClass = 'badge-role';
                                         if ($key === 'admin')      $badgeClass = 'badge-admin';
                                         elseif ($key === 'editor') $badgeClass = 'badge-editor';
-                                        elseif ($key === 'usuario')$badgeClass = 'badge-usuario';
+                                        elseif ($key === 'viewer')  $badgeClass = 'badge-viewer';
                                     }
                                 @endphp
                                 <span class="badge u-badge-fixed {{ $style === '' ? $badgeClass : '' }}" @if($style) style="{{ $style }}" @endif>

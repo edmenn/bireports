@@ -11,14 +11,14 @@ class Workspace extends Model
     use HasFactory;
 
     /**
-     * La PK es UUID (string) provista por Power BI.
+     * Primary key is a Power BI provided UUID (string).
      */
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
     /**
-     * Columnas asignables (coinciden con tu migración de workspaces).
+     * Mass assignable attributes.
      */
     protected $fillable = [
         'id',
@@ -29,14 +29,14 @@ class Workspace extends Model
     ];
 
     /**
-     * Casts de atributos.
+     * Attribute casts.
      */
     protected $casts = [
         'is_read_only' => 'boolean',
     ];
 
     /**
-     * Relaciones
+     * Relationships.
      */
     public function reports(): HasMany
     {

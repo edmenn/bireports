@@ -45,18 +45,18 @@ class CheckCapacityInactivityJob implements ShouldQueue
         $lastSeen = optional($cap->activity)->last_seen_at;
         $now = Carbon::now();
 
-        // Si está fuera de ventana y se fuerza el apagado por horario, no decidimos aquí.
+        // Skip when scheduling already enforces shutdown outside the active window.
         if ($cap->force_shutdown_on_schedule && ! $this->isInWindowNow($cap)) {
             return;
         }
 
-        // Si estuvo inactiva más de N minutos y está activa => pausar
+        // Pause the capacity when it has been inactive for longer than the timeout.
         if ($cap->is_active && ($lastSeen === null || $lastSeen->diffInMinutes($now) >= $timeout)) {
             try {
                 $svc->pause($cap->capacity_uuid);
                 $cap->is_active = false;
                 $cap->last_state_change_at = Carbon::now();
-                $cap->outside_window_grace_until = null; // limpiar gracia al pausar por inactividad
+                $cap->outside_window_grace_until = null; // Clear grace when pausing because of inactivity.
                 $cap->save();
                 \App\Models\CapacityAudit::create([
                     'capacity_id' => $cap->id,

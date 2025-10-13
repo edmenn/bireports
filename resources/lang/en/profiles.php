@@ -56,7 +56,7 @@ return [
             'folders' => 'Folders',
             'config' => 'Configuration',
             'audit' => 'Audit',
-            'otros' => 'Other permissions',
+            'other' => 'Other permissions',
         ],
         'labels' => [
             'menu' => [
@@ -68,9 +68,9 @@ return [
                 'groups' => 'Organization: Groups',
                 'folders' => 'Organization: Folders',
                 'applications' => 'Organization: Applications',
-                'configuraciones' => 'Settings',
-                'auditoria' => 'Audit',
-                'roles' => 'Organization: Profiles & Access',
+                'configurations' => 'Settings',
+                'audit' => 'Audit',
+                'roles' => 'Organization: Roles & Access',
             ],
             'portal' => [
                 'view' => 'Access the portal',

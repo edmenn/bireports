@@ -14,6 +14,10 @@ return [
         'entra_managed_html' => 'Este usuario está administrado por <strong>Microsoft Entra</strong>. La contraseña se gestiona en tu directorio corporativo y no puede cambiarse desde la aplicación.',
     ],
 
+    'password' => [
+        'managed_by_entra' => 'Esta contraseña se gestiona en Microsoft Entra y no puede cambiarse aquí.',
+    ],
+
     'header' => [
         'new' => 'Nuevo usuario',
         'import' => 'Importar Entra',
@@ -100,6 +104,23 @@ return [
             'only_active' => 'Solo activos',
             'assign_role' => 'Asignar rol',
             'select_all' => 'Seleccionar todos',
+        ],
+    ],
+
+    'sync' => [
+        'summary' => [
+            'dry_run'  => 'Simulacion completada - creados: :created, actualizados: :updated, omitidos: :skipped, errores: :errors.',
+            'import'   => 'Importacion completada - creados: :created, actualizados: :updated, omitidos: :skipped, errores: :errors.',
+            'selected' => 'Importacion de seleccionados - creados: :created, actualizados: :updated, omitidos: :skipped, errores: :errors.',
+            'refresh'  => 'Actualizacion completada - actualizados: :updated, sin cambios: :skipped, errores: :errors, total evaluados: :total.',
+        ],
+        'no_selection' => 'No seleccionaste usuarios para importar.',
+        'no_entries'   => 'No hay entradas validas para importar.',
+        'errors' => [
+            'sync'            => 'Error al sincronizar: :message',
+            'import_selected' => 'Error al importar seleccionados: :message',
+            'refresh'         => 'Error al actualizar usuarios: :message',
+            'graph'           => 'Error al consultar Microsoft Graph.',
         ],
     ],
 

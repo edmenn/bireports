@@ -8,7 +8,7 @@ use App\Models\Application;
 use App\Models\Folder;
 use App\Models\Report;
 use App\Models\Capacity;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use App\Services\PowerBiService;
 use Throwable;
 use Illuminate\Contracts\View\View;
@@ -76,7 +76,7 @@ class UserPortalController extends Controller
         $reports = $user->favoriteReports()->orderBy('name')->paginate(24)->withQueryString();
         $favIds = $reports->pluck('id')->all();
 
-        return view('portal.favoritos', [
+        return view('portal.favorites', [
             'reports' => $reports,
             'favIds'  => $favIds,
         ]);
@@ -107,7 +107,7 @@ class UserPortalController extends Controller
             ];
         });
 
-        return view('portal.mas_accedidos', ['items' => $list]);
+        return view('portal.most_accessed', ['items' => $list]);
     }
 
     public function apps(Request $request): View
@@ -119,7 +119,7 @@ class UserPortalController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('portal.aplicaciones', [
+        return view('portal.apps', [
             'applications' => $applications,
         ]);
     }
@@ -188,7 +188,7 @@ class UserPortalController extends Controller
                     $capacityModelId = $capModel?->id;
                 }
 
-                $cfg = Configuracion::first();
+                $cfg = Configuration::first();
                 if ($cfg) {
                     $capacityOnDemandEnable  = (bool) ($cfg->capacity_on_demand_enable ?? true);
                     $capacityOnDemandMessage = (string) ($cfg->capacity_on_demand_message ?? __('reports.show.on_demand.starting'));
@@ -197,7 +197,7 @@ class UserPortalController extends Controller
                     $reportLoadTimeoutSec    = (int) ($cfg->report_load_timeout_sec ?? 10);
                 }
 
-                $hasConfig = Configuracion::query()
+                $hasConfig = Configuration::query()
                     ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
                     ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
                     ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')

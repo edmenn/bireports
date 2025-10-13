@@ -13,8 +13,8 @@ use Throwable;
 final class AuditAdminController extends Controller
 {
     /**
-     * Pantalla de confirmación para resetear auditoría.
-     * Ruta protegida por middleware ['auth', 'role:admin'] en web.php.
+     * Confirmation screen for wiping audit data.
+     * Route protected by ['auth', 'role:admin'] middleware.
      */
     public function showReset(): View
     {
@@ -30,37 +30,36 @@ final class AuditAdminController extends Controller
     }
 
     /**
-     * Ejecuta el TRUNCATE de la tabla audits.
-     * Usa TRUNCATE ... RESTART IDENTITY para reiniciar el autoincremental.
+     * Truncates the audits table and restarts the identity sequence.
      */
     public function reset(Request $request): RedirectResponse
     {
         $request->validate([
             'confirm' => ['required', 'in:RESET'],
         ], [
-            'confirm.in' => 'Debes escribir exactamente RESET para confirmar.',
+            'confirm.in' => __('audit.admin.confirm_exact'),
         ]);
 
         try {
-            // Transacción por prolijidad (aunque TRUNCATE es DDL)
+            // Transaction for neatness (even though TRUNCATE is DDL)
             DB::beginTransaction();
 
-            // Importante: PostgreSQL
-            // - RESTART IDENTITY reinicia la secuencia del bigserial
-            // - CASCADE no es necesario si no hay FKs hacia audits.
+            // PostgreSQL specifics:
+            // - RESTART IDENTITY resets the bigserial sequence
+            // - CASCADE is unnecessary when no FKs target audits.
             DB::statement('TRUNCATE TABLE audits RESTART IDENTITY');
 
             DB::commit();
 
             return redirect()
                 ->route('admin.audit.reset.show')
-                ->with('status', 'Se borraron todos los registros de auditoría y se reinició el contador de IDs.');
+                ->with('status', __('audit.admin.reset_success'));
         } catch (Throwable $e) {
             DB::rollBack();
 
             return redirect()
                 ->route('admin.audit.reset.show')
-                ->with('error', 'No se pudo resetear la auditoría: ' . $e->getMessage());
+                ->with('error', __('audit.admin.reset_error', ['message' => $e->getMessage()]));
         }
     }
 }

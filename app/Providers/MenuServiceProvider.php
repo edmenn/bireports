@@ -25,69 +25,69 @@ class MenuServiceProvider extends ServiceProvider
 
                 // Portal
                 [
-                    'text' => 'my_space',
+                    'text' => 'common.menu.portal',
                     'icon' => 'fas fa-user-circle',
                     'can'  => 'menu.portal',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'home',          'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
-                        [ 'text'=>'favorites',     'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
-                        [ 'text'=>'most_accessed', 'icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                        [ 'text'=>'applications',  'icon'=>'fas fa-th-large',   'route'=>'portal.apps',      'can'=>'menu.portal' ],
+                        [ 'text' => 'common.menu.portal_home',          'icon'=>'fas fa-home',       'route'=>'portal.index',         'can'=>'menu.portal' ],
+                        [ 'text' => 'common.menu.portal_favorites',     'icon'=>'fas fa-star',       'route'=>'portal.favorites',     'can'=>'menu.portal' ],
+                        [ 'text' => 'common.menu.portal_most_accessed', 'icon'=>'fas fa-fire',       'route'=>'portal.most-accessed', 'can'=>'menu.portal' ],
+                        [ 'text' => 'common.menu.portal_applications',  'icon'=>'fas fa-th-large',   'route'=>'portal.apps',          'can'=>'menu.portal' ],
                     ],
                 ],
 
                 // Power BI
                 [
-                    'text' => 'power_bi',
+                    'text' => 'common.menu.power_bi',
                     'icon' => 'fas fa-bolt',
                     'can'  => 'menu.reports_index',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'reports',       'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',         'can'=>'menu.reports_index' ],
-                        [ 'text'=>'datasets',      'icon'=>'fas fa-database',        'route'=>'datasets.index',        'can'=>'menu.reports_index' ],
-                        [ 'text'=>'applications',  'icon'=>'fas fa-th',              'route'=>'applications.index',    'can'=>'menu.applications' ],
-                        [ 'text'=>'workspaces',    'icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',      'can'=>'menu.workspaces' ],
-                        [ 'text'=>'capacities',    'icon'=>'fas fa-cogs',            'route'=>'capacities.index',      'can'=>'menu.capacities' ],
+                        [ 'text' => 'common.menu.reports',      'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',         'can'=>'menu.reports_index' ],
+                        [ 'text' => 'common.menu.datasets',     'icon'=>'fas fa-database',        'route'=>'datasets.index',        'can'=>'menu.reports_index' ],
+                        [ 'text' => 'common.menu.applications', 'icon'=>'fas fa-th',              'route'=>'applications.index',    'can'=>'menu.applications' ],
+                        [ 'text' => 'common.menu.workspaces',   'icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',      'can'=>'menu.workspaces' ],
+                        [ 'text' => 'common.menu.capacities',   'icon'=>'fas fa-cogs',            'route'=>'capacities.index',      'can'=>'menu.capacities' ],
                     ],
                 ],
 
                 // Organization
                 [
-                    'text' => 'organization',
+                    'text' => 'common.menu.organization',
                     'icon' => 'fas fa-sitemap',
                     'can'  => 'menu.users',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'users',    'icon'=>'fas fa-users',        'route'=>'users.index',   'can'=>'menu.users' ],
-                        [ 'text'=>'groups',   'icon'=>'fas fa-user-friends', 'route'=>'grupos.index',  'can'=>'menu.groups' ],
-                        [ 'text'=>'folders',  'icon'=>'fas fa-folder',       'route'=>'folders.index', 'can'=>'menu.folders' ],
-                        [ 'text'=>'roles',    'icon'=>'fas fa-user-shield',  'route'=>'roles.index',   'can'=>'menu.users' ],
+                        [ 'text' => 'common.menu.users',   'icon'=>'fas fa-users',        'route'=>'users.index',   'can'=>'menu.users' ],
+                        [ 'text' => 'common.menu.groups',  'icon'=>'fas fa-user-friends', 'route'=>'groups.index',  'can'=>'menu.groups' ],
+                        [ 'text' => 'common.menu.folders', 'icon'=>'fas fa-folder',       'route'=>'folders.index', 'can'=>'menu.folders' ],
+                        [ 'text' => 'common.menu.roles',   'icon'=>'fas fa-user-shield',  'route'=>'roles.index',   'can'=>'menu.roles' ],
                     ],
                 ],
 
                 // Audit
                 [
-                    'text' => 'audit',
+                    'text' => 'common.menu.audit',
                     'icon' => 'fas fa-chart-line',
-                    'can'  => 'menu.auditoria',
+                    'can'  => 'menu.audit',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'usage_metrics', 'icon'=>'fas fa-chart-bar',    'route'=>'auditoria.index',        'can'=>'menu.auditoria' ],
-                        [ 'text'=>'audit_reset',   'icon'=>'fas fa-broom',        'route'=>'admin.audit.reset.show', 'can'=>'menu.auditoria' ],
-                        [ 'text'=>'changes',       'icon'=>'fas fa-exchange-alt', 'route'=>'auditoria.changes.index','can'=>'menu.auditoria' ],
+                        [ 'text' => 'common.menu.audit_usage_metrics', 'icon'=>'fas fa-chart-bar',    'route'=>'audit.index',        'can'=>'menu.audit' ],
+                        [ 'text' => 'common.menu.audit_reset',         'icon'=>'fas fa-broom',        'route'=>'admin.audit.reset.show', 'can'=>'menu.audit' ],
+                        [ 'text' => 'common.menu.audit_changes',       'icon'=>'fas fa-exchange-alt', 'route'=>'audit.changes.index','can'=>'menu.audit' ],
                     ],
                 ],
 
                 // Settings
                 [
-                    'text' => 'settings',
+                    'text' => 'common.menu.settings',
                     'icon' => 'fas fa-cogs',
-                    'can'  => 'menu.configuraciones',
+                    'can'  => 'menu.configurations',
                     'classes' => 'menu-open',
                     'submenu' => [
-                        [ 'text'=>'parameters', 'icon'=>'fas fa-sliders-h',   'route'=>'configuraciones.index', 'can'=>'menu.configuraciones' ],
-                        [ 'text'=>'theme',      'icon'=>'fas fa-paint-brush', 'route'=>'configuraciones.tema',  'can'=>'menu.configuraciones' ],
+                        [ 'text' => 'common.menu.settings_parameters', 'icon'=>'fas fa-sliders-h',   'route'=>'configurations.index', 'can'=>'menu.configurations' ],
+                        [ 'text' => 'common.menu.settings_theme',      'icon'=>'fas fa-paint-brush', 'route'=>'configurations.theme', 'can'=>'menu.configurations' ],
                     ],
                 ],
             ],

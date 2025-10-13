@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Capacity;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 
@@ -33,10 +33,10 @@ class DiscoverArmCapacities extends Command
         $dryRun   = (bool) (int) $this->option('dry-run');
         $debugArm = (bool) (int) $this->option('debug-arm');
 
-        /** @var Configuracion|null $cfg */
-        $cfg = Configuracion::query()->first();
+        /** @var Configuration|null $cfg */
+        $cfg = Configuration::query()->first();
         if (!$cfg) {
-            $cfg = Configuracion::query()->create([
+            $cfg = Configuration::query()->create([
                 'nombre' => config('app.name', 'App'),
             ]);
         }
@@ -46,7 +46,7 @@ class DiscoverArmCapacities extends Command
         $secret = (string) ($cfg->powerbi_client_secret ?? '');
 
         if ($tenant === '' || $client === '' || $secret === '') {
-            $this->error('Faltan credenciales Power BI/Fabric (tenant/client/secret) en configuraciones.');
+            $this->error('Faltan credenciales Power BI/Fabric (tenant/client/secret) en configurations.');
             return self::FAILURE;
         }
 
@@ -165,12 +165,12 @@ class DiscoverArmCapacities extends Command
         // Guardar subscription+RG si faltaban
         if ($firstGoodSubscription && $firstGoodRG) {
             if ($dryRun) {
-                $this->warn("DRY-RUN: completaría configuraciones con subscription={$firstGoodSubscription}, rg={$firstGoodRG}");
+                $this->warn("DRY-RUN: completaría configurations con subscription={$firstGoodSubscription}, rg={$firstGoodRG}");
             } else {
                 $cfg->azure_subscription_id = $firstGoodSubscription;
                 $cfg->azure_resource_group  = $firstGoodRG;
                 $cfg->save();
-                $this->info("✔ Configuraciones actualizadas: subscription={$firstGoodSubscription}, rg={$firstGoodRG}");
+                $this->info("✔ Configurationes actualizadas: subscription={$firstGoodSubscription}, rg={$firstGoodRG}");
             }
         }
 

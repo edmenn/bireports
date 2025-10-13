@@ -1,6 +1,6 @@
 <?php
 
-return [
+$legacy = [
     'search' => 'Buscar',
     'my_space' => 'Mi espacio',
     'home' => 'Inicio',
@@ -28,3 +28,13 @@ return [
     'theme' => 'Tema',
 ];
 
+$vendor = require base_path('vendor/jeroennoten/laravel-adminlte/resources/lang/es/menu.php');
+$common = require __DIR__ . '/common.php';
+
+return array_merge($legacy, $vendor, [
+    'common' => [
+        'menu' => $common['menu'] ?? [],
+        'footer' => $common['footer'] ?? [],
+        'theme' => $common['theme'] ?? [],
+    ],
+]);

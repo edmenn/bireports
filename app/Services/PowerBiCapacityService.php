@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Capacity;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Carbon;
@@ -23,11 +23,11 @@ class PowerBiCapacityService
 
     public function __construct()
     {
-        // Leemos SIEMPRE desde configuraciones (no del .env),
+        // Leemos SIEMPRE desde configurations (no del .env),
         // para gestionar las credenciales centralizadas por instancia.
-        $cfg = Configuracion::query()->first();
+        $cfg = Configuration::query()->first();
         if (!$cfg) {
-            throw new RuntimeException('No existe fila en "configuraciones". Abre /configuraciones para crearla.');
+            throw new RuntimeException('No existe fila en "configurations". Abre /configurations para crearla.');
         }
 
         $this->tenantId     = (string) ($cfg->powerbi_tenant_id ?? '');
@@ -35,7 +35,7 @@ class PowerBiCapacityService
         $this->clientSecret = (string) ($cfg->powerbi_client_secret ?? '');
 
         if ($this->tenantId === '' || $this->clientId === '' || $this->clientSecret === '') {
-            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configuraciones.');
+            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configurations.');
         }
 
         $this->http = new Client([
@@ -285,17 +285,17 @@ class PowerBiCapacityService
      */
     private function buildArmActionUrl(Capacity $cap, string $action): string
     {
-        /** @var Configuracion|null $cfg */
-        $cfg = Configuracion::query()->first();
+        /** @var Configuration|null $cfg */
+        $cfg = Configuration::query()->first();
         if (!$cfg) {
-            throw new RuntimeException('No existe fila de configuraciones.');
+            throw new RuntimeException('No existe fila de configurations.');
         }
 
         $subId = (string) ($cfg->azure_subscription_id ?? '');
         $rg    = (string) ($cfg->azure_resource_group ?? '');
 
         if ($subId === '' || $rg === '') {
-            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configuraciones.');
+            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configurations.');
         }
 
         $provider = $this->detectProviderBySku((string) $cap->sku);
@@ -326,17 +326,17 @@ class PowerBiCapacityService
      */
     private function buildArmGetUrl(Capacity $cap): string
     {
-        /** @var Configuracion|null $cfg */
-        $cfg = Configuracion::query()->first();
+        /** @var Configuration|null $cfg */
+        $cfg = Configuration::query()->first();
         if (!$cfg) {
-            throw new RuntimeException('No existe fila de configuraciones.');
+            throw new RuntimeException('No existe fila de configurations.');
         }
 
         $subId = (string) ($cfg->azure_subscription_id ?? '');
         $rg    = (string) ($cfg->azure_resource_group ?? '');
 
         if ($subId === '' || $rg === '') {
-            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configuraciones.');
+            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configurations.');
         }
 
         $provider = $this->detectProviderBySku((string) $cap->sku);
@@ -445,16 +445,16 @@ class PowerBiCapacityService
      */
     public function getCapacityActivityLogs(Capacity $cap, ?Carbon $from = null, ?Carbon $to = null, int $limit = 200): array
     {
-        /** @var Configuracion|null $cfg */
-        $cfg = Configuracion::query()->first();
+        /** @var Configuration|null $cfg */
+        $cfg = Configuration::query()->first();
         if (!$cfg) {
-            throw new RuntimeException('No existe fila de configuraciones.');
+            throw new RuntimeException('No existe fila de configurations.');
         }
 
         $subId = (string) ($cfg->azure_subscription_id ?? '');
         $rg    = (string) ($cfg->azure_resource_group ?? '');
         if ($subId === '' || $rg === '') {
-            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configuraciones.');
+            throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configurations.');
         }
 
         $provider = $this->detectProviderBySku((string) $cap->sku); // Microsoft.Fabric | Microsoft.PowerBIDedicated

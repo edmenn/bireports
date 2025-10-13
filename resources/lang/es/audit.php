@@ -204,6 +204,16 @@ return [
         'usage_drop'    => 'Caída de uso ≥30%: Últimos 7 días (:current) vs previos (:previous) → :delta%.',
         'high_error_rate' => 'Tasa de errores alta en 7 días: :rate% (:errors errores / :views accesos).',
     ],
+    'admin' => [
+        'confirm_exact' => 'Debes escribir exactamente RESET para confirmar.',
+        'reset_success' => 'Se borraron todos los registros de auditoria y se reinicio el contador de IDs.',
+        'reset_error'   => 'No se pudo resetear la auditoria: :message',
+    ],
+
+    'api' => [
+        'store_failed' => 'No se pudo registrar el evento de auditoria.',
+    ],
 ];
+
 
 

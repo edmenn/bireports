@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('configuracion_theme_presets', function (Blueprint $table) {
+        Schema::create('configuration_theme_presets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('configuracion_id')->constrained('configuraciones')->cascadeOnDelete();
+            $table->foreignId('configuration_id')->constrained('configurations')->cascadeOnDelete();
             $table->string('name', 50);
             $table->json('config');
             $table->timestamps();
 
-            $table->unique(['configuracion_id', 'name']);
+            $table->unique(['configuration_id', 'name']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('configuracion_theme_presets');
+        Schema::dropIfExists('configuration_theme_presets');
     }
 };

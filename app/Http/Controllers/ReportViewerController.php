@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Services\PowerBiService; // Usa tu servicio existente para obtener token AAD
-use App\Models\Configuracion;
+use App\Services\PowerBiService; // Existing service that handles AAD token retrieval
+use App\Models\Configuration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -14,12 +14,12 @@ class ReportViewerController extends Controller
 {
     public function __construct(private readonly PowerBiService $pbi)
     {
-        // Requiere auth por rutas (ver web.php)
+        // Authentication is enforced at the route level (see web.php)
     }
 
     /**
-     * Renderiza la vista con el embed y variables necesarias para el JS.
-     * Espera: report_uuid en la ruta, workspace_uuid (query), dataset_uuid (query opcional).
+     * Render the embedded report view with the variables required by the JS layer.
+     * Expects: report_uuid (route), workspace_uuid (query), dataset_uuid (optional query).
      */
     public function show(Request $request, string $report_uuid): View
     {
@@ -38,8 +38,8 @@ class ReportViewerController extends Controller
         $datasetUuid   = $v['dataset_uuid'] ?? null;
         $rlsRole       = $v['rls_role'] ?? null;
 
-        // Si no hay configuración completa, devolvemos vista con datos vacíos y sin error 500
-        $hasConfig = Configuracion::query()
+        // When configuration is incomplete, render the view with empty data (avoid 500s)
+        $hasConfig = Configuration::query()
             ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
             ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -48,11 +48,11 @@ class ReportViewerController extends Controller
         if (! $hasConfig) {
             $accessToken = null;
         } else {
-            // Token AAD (Service Principal) con getAccessToken() de tu PowerBiService
+            // Acquire an AAD token (Service Principal) via PowerBiService::getAccessToken()
             $accessToken = $this->pbi->getAccessToken();
         }
 
-        // Embed URL estándar para reportes
+        // Standard embed URL for reports
         $embedUrl = "https://app.powerbi.com/reportEmbed?reportId={$reportUuid}&groupId={$workspaceUuid}";
 
         $embed = [

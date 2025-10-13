@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use App\Models\User;
 use App\Services\MicrosoftGraphService;
 use Illuminate\Http\RedirectResponse;
@@ -19,16 +19,16 @@ class MicrosoftController extends Controller
 {
     public function redirect(Request $request): RedirectResponse
     {
-        $cfg = Configuracion::query()->first();
+        $cfg = Configuration::query()->first();
         if (! $cfg || empty($cfg->powerbi_client_id) || empty($cfg->powerbi_client_secret) || empty($cfg->powerbi_tenant_id)) {
-            return redirect()->route('login')->with('status', 'Inicio de sesión con Microsoft no está configurado.');
+            return redirect()->route('login')->with('status', __('auth.microsoft.not_configured'));
         }
 
         $tenant = trim((string) $cfg->powerbi_tenant_id);
         $clientId = (string) $cfg->powerbi_client_id;
         $redirectUri = route('auth.microsoft.callback');
 
-        // Guardar state y nonce en sesión para validar el callback
+        // Store state and nonce in the session to validate the callback
         $state = Str::random(40);
         $nonce = Str::random(40);
         $request->session()->put('ms_oauth_state', $state);
@@ -50,24 +50,29 @@ class MicrosoftController extends Controller
 
     public function callback(Request $request): RedirectResponse
     {
-        $cfg = Configuracion::query()->first();
+        $cfg = Configuration::query()->first();
         if (! $cfg) {
-            return redirect()->route('login')->with('status', 'Configuración ausente.');
+            return redirect()->route('login')->with('status', __('auth.microsoft.config_missing'));
         }
 
-        // Validaciones básicas
+        // Basic validation for the OAuth response
         $state = $request->string('state')->toString();
         if (! $state || $state !== $request->session()->pull('ms_oauth_state')) {
-            return redirect()->route('login')->with('status', 'Estado inválido en respuesta de Microsoft.');
+            return redirect()->route('login')->with('status', __('auth.microsoft.invalid_state'));
         }
         if ($request->has('error')) {
             $msg = $request->string('error_description')->toString() ?: $request->string('error')->toString();
-            return redirect()->route('login')->with('status', 'Inicio de sesión cancelado: ' . $msg);
+            return redirect()->route('login')->with(
+                'status',
+                $msg !== ''
+                    ? __('auth.microsoft.login_cancelled_with_reason', ['reason' => $msg])
+                    : __('auth.microsoft.login_cancelled')
+            );
         }
 
         $code = $request->string('code')->toString();
         if (! $code) {
-            return redirect()->route('login')->with('status', 'Código de autorización faltante.');
+            return redirect()->route('login')->with('status', __('auth.microsoft.missing_code'));
         }
 
         $tenant = trim((string) $cfg->powerbi_tenant_id);
@@ -97,19 +102,19 @@ class MicrosoftController extends Controller
             $accessToken = (string) ($data['access_token'] ?? '');
 
             if (! $idToken) {
-                return redirect()->route('login')->with('status', 'No se recibió id_token de Microsoft.');
+                return redirect()->route('login')->with('status', __('auth.microsoft.missing_id_token'));
             }
 
-            // Decodificar JWT (sin verificar firma) para extraer claims básicas
+            // Decode the JWT (without verifying the signature) to read basic claims
             $claims = $this->decodeJwt($idToken);
             if (! $claims) {
-                return redirect()->route('login')->with('status', 'Token inválido.');
+                return redirect()->route('login')->with('status', __('auth.microsoft.invalid_token'));
             }
 
-            // Validar nonce si lo tenemos
+            // Validate nonce when we have it stored
             $nonceExpected = (string) $request->session()->pull('ms_oauth_nonce');
             if (! empty($claims['nonce']) && $nonceExpected && $claims['nonce'] !== $nonceExpected) {
-                return redirect()->route('login')->with('status', 'Nonce inválido.');
+                return redirect()->route('login')->with('status', __('auth.microsoft.invalid_nonce'));
             }
 
             $oid = (string) ($claims['oid'] ?? '');
@@ -118,7 +123,7 @@ class MicrosoftController extends Controller
             $givenFromToken = (string) ($claims['given_name'] ?? '');
             $surnameFromToken = (string) ($claims['family_name'] ?? '');
 
-            // Si el email no viene en el id_token, intentamos userinfo (requiere access_token)
+            // If the email is missing in the id_token, try the userinfo endpoint (requires access_token)
             if (! $email && $accessToken) {
                 try {
                     $uiResp = $http->get('https://graph.microsoft.com/oidc/userinfo', [
@@ -133,16 +138,16 @@ class MicrosoftController extends Controller
                         $name = (string) ($ui['name'] ?? '');
                     }
                 } catch (Throwable $e) {
-                    // Continuar con lo que tengamos
-                    Log::warning('Microsoft userinfo falló: ' . $e->getMessage());
+                    // Continue with whatever data is available
+                    Log::warning('Microsoft userinfo request failed: ' . $e->getMessage());
                 }
             }
 
             if (! $email) {
-                return redirect()->route('login')->with('status', 'No se pudo determinar el email del usuario de Microsoft.');
+                return redirect()->route('login')->with('status', __('auth.microsoft.missing_email'));
             }
 
-            // Buscar usuario existente por CUALQUIER alias de Entra (UPN, mail, proxyAddresses)
+            // Look up an existing user by any Entra alias (UPN, mail, proxyAddresses)
             $user = User::query()->where('email', $email)->first();
             if (! $user) {
                 $candidates = [$email];
@@ -154,7 +159,7 @@ class MicrosoftController extends Controller
                     $found = $graph->findUserByAnyAddress($email);
                     if (is_array($found)) {
                         $externalId = (string)($found['id'] ?? '') ?: null;
-                        // Preferir givenName + surname; fallback a displayName
+                        // Prefer givenName + surname; fall back to displayName
                         $gn = trim((string)($found['givenName'] ?? ''));
                         $sn = trim((string)($found['surname'] ?? ''));
                         $namePreferred = trim($gn . ' ' . $sn);
@@ -176,7 +181,7 @@ class MicrosoftController extends Controller
                         }
                     }
                 } catch (Throwable $gx) {
-                    Log::warning('Microsoft callback: no se pudo consultar Graph para alias: ' . $gx->getMessage());
+                    Log::warning('Microsoft callback: failed to query Graph for aliases: ' . $gx->getMessage());
                 }
 
                 $candidates = array_values(array_unique(array_map(static fn($v) => strtolower(trim((string)$v)), $candidates)));
@@ -185,15 +190,15 @@ class MicrosoftController extends Controller
                 }
 
                 if (! $user) {
-                    // Crear nuevo si no existía ninguno por alias
+                    // Create a new user when no aliases matched existing accounts
                     $user = User::create([
                         'name' => $name ?: $email,
                         'email' => $email,
-                        // Password aleatorio; no se usará al loguear por Microsoft
+                        // Random password; not used for Microsoft sign-in
                         'password' => Str::password(32),
                     ]);
                     $user->forceFill(['email_verified_at' => now()])->save();
-                    // Ajustar nombre al formato solicitado (givenName + surname) si está disponible
+                    // Normalize the name to givenName + surname when available
                     if (empty($namePreferred)) {
                         $namePreferred = trim(trim($givenFromToken ?? '') . ' ' . trim($surnameFromToken ?? ''));
                     }
@@ -204,24 +209,24 @@ class MicrosoftController extends Controller
                         $user->name = $namePreferred;
                         $user->save();
                     }
-                    try { if (method_exists($user, 'assignRole')) { $user->assignRole('usuario'); } } catch (Throwable $e) {
-                        Log::warning('No se pudo asignar rol por defecto al usuario: ' . $e->getMessage());
+                    try { if (method_exists($user, 'assignRole')) { $user->assignRole('viewer'); } } catch (Throwable $e) {
+                        Log::warning('Failed to assign default role to user: ' . $e->getMessage());
                     }
                 }
 
-                // Asegurar provider/id externo marcados en cuenta existente o nueva
+                // Ensure provider/external id are stored on the current account
                 $changed = false;
                 if (empty($user->auth_provider)) { $user->auth_provider = 'entra'; $changed = true; }
                 if (!empty($externalId) && empty($user->external_id)) { $user->external_id = $externalId; $changed = true; }
                 if ($changed) { $user->save(); }
             }
 
-            // Si el usuario está bloqueado localmente, impedir login
+            // Abort when the local account is blocked
             if ((bool)($user->is_blocked ?? false)) {
-                return redirect()->route('login')->with('status', 'Tu cuenta está bloqueada. Contacta al administrador.');
+                return redirect()->route('login')->with('status', __('auth.microsoft.account_blocked'));
             }
 
-            // Intentar sincronizar nombre y estado desde Entra antes de loguear
+            // Attempt to sync name and status from Entra before logging in
             try {
                 /** @var MicrosoftGraphService $graph */
                 $graph = app(MicrosoftGraphService::class);
@@ -235,11 +240,11 @@ class MicrosoftController extends Controller
                 if (is_array($entry)) {
                     $accEnabled = (bool)($entry['accountEnabled'] ?? false);
                     if (!$accEnabled) {
-                        // Bloquear e impedir login
+                        // Block and stop the login flow
                         $user->forceFill(['is_blocked' => true])->save();
-                        return redirect()->route('login')->with('status', 'Tu cuenta de Microsoft Entra está deshabilitada.');
+                        return redirect()->route('login')->with('status', __('auth.microsoft.account_disabled'));
                     }
-                    // Sincronizar nombre si difiere (givenName + surname -> displayName)
+                    // Sync the name if it differs (givenName + surname -> displayName)
                     $gn = trim((string)($entry['givenName'] ?? ''));
                     $sn = trim((string)($entry['surname'] ?? ''));
                     $preferred = trim($gn . ' ' . $sn);
@@ -249,7 +254,7 @@ class MicrosoftController extends Controller
                     }
                 }
             } catch (\Throwable $e) {
-                \Log::warning('Microsoft login: no se pudo sincronizar nombre/estado', ['error' => $e->getMessage()]);
+                \Log::warning('Microsoft login: failed to sync name/state', ['error' => $e->getMessage()]);
             }
 
             Auth::login($user, true);
@@ -257,8 +262,8 @@ class MicrosoftController extends Controller
             $this->applyLocalePreference($request, $user);
             return redirect()->intended(route('dashboards.index'));
         } catch (Throwable $e) {
-            Log::error('Error en callback Microsoft: ' . $e->getMessage());
-            return redirect()->route('login')->with('status', 'Error al procesar respuesta de Microsoft.');
+            Log::error('Microsoft callback failed: ' . $e->getMessage());
+            return redirect()->route('login')->with('status', __('auth.microsoft.process_error'));
         }
     }
 

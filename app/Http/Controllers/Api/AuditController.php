@@ -14,34 +14,34 @@ use Throwable;
 final class AuditController extends Controller
 {
     /**
-     * Usamos inyección de dependencias para el servicio de auditoría.
-     * La ruta está definida en web.php con middleware ['auth'].
+     * Dependency-inject the audit service.
+     * The route is defined in web.php with ['auth'] middleware.
      */
     public function __construct(private readonly AuditService $service)
     {
-        // Si algún día quisieras forzar aquí: $this->middleware(['auth']);
+        // Middleware could be enforced here if required: $this->middleware(['auth']);
     }
 
     /**
-     * Registra un evento de auditoría proveniente del visor de reportes.
+     * Register an audit event originating from the report viewer.
      *
-     * Acepta JSON o form-data. Campos soportados:
-     * - report_uuid (uuid, requerido)
-     * - action (string, requerido; ej: open|view|filter|click|close|error)
-     * - workspace_uuid (uuid, opcional)
-     * - dataset_uuid (uuid, opcional)
-     * - rls_role (string, opcional)
-     * - filters (array, opcional) → se castea a JSON por el servicio/model
-     * - page_name (string, opcional)
-     * - bookmark (string, opcional)
-     * - duration_ms (int >=0, opcional)
-     * - success (bool, opcional)
-     * - error_message (string, opcional)
-     * - occurred_at (date/ISO-8601, opcional)
+     * Accepts JSON or form-data. Supported fields:
+     * - report_uuid (uuid, required)
+     * - action (string, required; e.g. open|view|filter|click|close|error)
+     * - workspace_uuid (uuid, optional)
+     * - dataset_uuid (uuid, optional)
+     * - rls_role (string, optional)
+     * - filters (array, optional) — serialised to JSON by the service/model
+     * - page_name (string, optional)
+     * - bookmark (string, optional)
+     * - duration_ms (int >=0, optional)
+     * - success (bool, optional)
+     * - error_message (string, optional)
+     * - occurred_at (date/ISO-8601, optional)
      */
     public function store(Request $request): JsonResponse
     {
-        // Validación con mensajes por defecto (podrías personalizarlos si quieres)
+        // Validate with default messages (customise as needed)
         $validator = Validator::make($request->all(), [
             'report_uuid'    => ['required','uuid'],
             'action'         => ['required','string','max:32'],
@@ -66,19 +66,19 @@ final class AuditController extends Controller
 
         $data = $validator->validated();
 
-        // Normalizaciones ligeras:
-        // - 'action' en minúsculas
-        // - 'success' a bool estricto si viene como "1"/"0"/"true"/"false"
+        // Light normalisation:
+        // - Force 'action' to lowercase
+        // - Cast 'success' to a strict boolean when provided as "1"/"0"/"true"/"false"
         if (isset($data['action'])) {
             $data['action'] = mb_strtolower((string) $data['action']);
         }
         if (array_key_exists('success', $data)) {
-            // Validator boolean ya convierte, pero hacemos cast explícito por seguridad
+            // Validator already casts booleans; enforce conversion explicitly for safety
             $data['success'] = filter_var($data['success'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         }
 
         try {
-            // El servicio puede usar $request para obtener user(), ip(), user-agent, etc.
+            // The service can use $request to read user(), ip(), user-agent, etc.
             $audit = $this->service->log($request, $data);
 
             return response()->json([
@@ -86,7 +86,7 @@ final class AuditController extends Controller
                 'id' => $audit->id,
             ], 201);
         } catch (Throwable $e) {
-            // Log interno para diagnóstico
+            // Internal log for diagnostics
             Log::error('Audit.store failed', [
                 'error'   => $e->getMessage(),
                 'trace'   => $e->getTraceAsString(),
@@ -96,10 +96,10 @@ final class AuditController extends Controller
                 'agent'   => $request->header('User-Agent'),
             ]);
 
-            // Respuesta genérica para no filtrar detalles internos
+            // Generic response to avoid leaking internal details
             return response()->json([
                 'ok'      => false,
-                'message' => 'No se pudo registrar la auditoría.',
+                'message' => __('audit.api.store_failed'),
             ], 500);
         }
     }

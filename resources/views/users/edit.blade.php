@@ -28,7 +28,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('users.update', ['usuario' => $user->id]) }}" method="POST" novalidate>
+            <form action="{{ route('users.update', ['user' => $user->id]) }}" method="POST" novalidate>
                 @csrf
                 @method('PUT')
 

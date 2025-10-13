@@ -17,22 +17,21 @@ class CapacityActivityController extends Controller
     }
 
     /**
-     * Marca actividad para la capacidad y, si está pausada, intenta reanudar
-     * cuando corresponde (horario/hard rules).
+     * Mark activity for the capacity and resume it when rules allow (schedule/hard rules).
      *
      * POST /api/capacities/{capacity}/ping
-     * Body opcional: { "resume": true } para intentar reanudar si estuviera pausada.
+     * Optional body: { "resume": true } to request a resume when paused.
      */
     public function ping(Request $request, Capacity $capacity): JsonResponse
     {
         $resume = (bool) $request->boolean('resume', true);
 
-        // 1) Registrar actividad inmediata
+        // 1) Record activity immediately
         $this->svc->markActivity($capacity);
 
         $now = Carbon::now();
 
-        // 1.5) Sincronizar estado real (MyOrg/ARM) para evitar falsos "pausada"
+        // 1.5) Sync the real state (MyOrg/ARM) to avoid false "paused" readings
         try {
             $active = $this->svc->isCapacityActive($capacity);
             if (is_bool($active) && $capacity->is_active !== $active) {
@@ -40,10 +39,10 @@ class CapacityActivityController extends Controller
                 $capacity->save();
             }
         } catch (\Throwable $e) {
-            // si falla la consulta, continuamos con estado local
+            // If the query fails, keep relying on the local state
         }
 
-        // 2) Si está pausada y se solicita resume => decidir según reglas
+        // 2) If paused and resume is requested => follow the rules
         $resumed = false;
         $reason  = null;
 
@@ -51,7 +50,7 @@ class CapacityActivityController extends Controller
             $inWindow = $this->isInWindowNow($capacity, $now);
             $hasEnabledSchedules = $capacity->schedules()->where('enabled', true)->exists();
 
-            // ¿Permite encender fuera de ventana según el reporte?
+            // Does the report allow resuming outside the schedule window?
             $allowOutside = false;
             $reportUuid = (string) $request->input('report_uuid', '');
             if ($reportUuid !== '') {
@@ -61,18 +60,18 @@ class CapacityActivityController extends Controller
                 } catch (\Throwable) {}
             }
 
-            // Para permitir encender fuera de ventana se requiere que la programación esté activa
+            // Allowing an outside-window resume requires schedules to be active
             $schedulingActive = $capacity->force_shutdown_on_schedule && $hasEnabledSchedules;
             if ($capacity->force_shutdown_on_schedule && ! $inWindow && ! ($allowOutside && $schedulingActive)) {
-                // Bloqueado fuera de ventana sin permiso del reporte
+                // Blocked outside the window without report override
                 $reason = $hasEnabledSchedules ? 'outside_schedule_window' : 'no_schedule_defined';
             } else {
-                // Reanudar (dentro de ventana o con override del reporte)
+                // Resume inside the window or using the report override
                 $this->svc->resume($capacity);
                 $capacity->is_active = true;
                 $capacity->last_state_change_at = $now;
 
-                // Si se encendió fuera de ventana, establecer un período de gracia
+                // When resumed outside the window, set a grace period
                 if (! $inWindow) {
                     $timeout = (int) ($capacity->inactivity_timeout_minutes ?? 0);
                     $graceMin = $timeout > 0 ? $timeout : 30; // default 30 min
@@ -105,16 +104,16 @@ class CapacityActivityController extends Controller
     }
 
     /**
-     * Determina si ahora mismo estamos dentro de algún intervalo activo para esta capacidad.
+     * Determine whether the current time falls within an active window for the capacity.
      */
     private function isInWindowNow(Capacity $cap, Carbon $now): bool
     {
-        $weekday = (int) $now->dayOfWeek; // 0=Dom .. 6=Sab
+        $weekday = (int) $now->dayOfWeek; // 0=Sun .. 6=Sat
 
         foreach ($cap->schedules()->where('weekday', $weekday)->where('enabled', true)->get() as $slot) {
-            // start_time / end_time llegan como TIME; en el modelo los accessors devuelven Carbon "de hoy"
-            $start = $slot->start_time; // Carbon creado por accessor
-            $end   = $slot->end_time;   // Carbon creado por accessor
+            // start_time / end_time arrive as TIME; accessors return Carbon instances for "today"
+            $start = $slot->start_time;
+            $end   = $slot->end_time;
 
             if ($start->lessThanOrEqualTo($now) && $now->lessThan($end)) {
                 return true;

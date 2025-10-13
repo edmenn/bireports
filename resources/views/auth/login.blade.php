@@ -4,7 +4,7 @@
 
 @section('auth_header','')
 
-@php($appCfg = \App\Models\Configuracion::find(1))
+@php($appCfg = \App\Models\Configuration::find(1))
 
 @push('css')
     <style>
@@ -73,7 +73,7 @@
 @endpush
 
 @section('auth_body')
-    @php($appCfg = \App\Models\Configuracion::find(1))
+    @php($appCfg = \App\Models\Configuration::find(1))
 
     <div class="login-card p-3 p-md-4">
         <div class="text-center mb-2">

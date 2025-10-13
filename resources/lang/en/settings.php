@@ -19,6 +19,11 @@ return [
         'validation' => 'Validation errors',
     ],
 
+    'menu' => [
+        'parameters' => 'Parameters',
+        'theme' => 'Theme',
+    ],
+
     'service_principal' => [
         'card_title' => 'Connection credentials (Service Principal)',
         'intro' => 'Configure an Entra ID application (Service Principal) with Power BI permissions for unattended authentication.',

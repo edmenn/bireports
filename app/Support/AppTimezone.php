@@ -9,7 +9,7 @@ final class AppTimezone
     public static function current(): string
     {
         try {
-            $tz = optional(\App\Models\Configuracion::query()->first())->app_timezone_db;
+            $tz = optional(\App\Models\Configuration::query()->first())->app_timezone_db;
             return $tz ?: (string) config('app.timezone');
         } catch (\Throwable $e) {
             return (string) config('app.timezone');

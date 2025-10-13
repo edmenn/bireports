@@ -13,14 +13,14 @@ use Throwable;
 class Handler extends ExceptionHandler
 {
     /**
-     * Excepciones que no se reportan.
+     * Exceptions that are not reported.
      *
      * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [];
 
     /**
-     * Inputs que nunca se devuelven en flashes de validación.
+     * Inputs that are never flashed for validation.
      *
      * @var array<int, string>
      */
@@ -31,38 +31,38 @@ class Handler extends ExceptionHandler
     ];
 
     /**
-     * Registra callbacks de manejo.
+     * Register exception callbacks.
      */
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            // Puedes integrar logging/telemetría aquí si lo necesitas.
+            // Integrate logging or telemetry here if needed.
         });
     }
 
     /**
-     * Personaliza la respuesta para ciertos errores.
+     * Customize responses for specific errors.
      */
     public function render($request, Throwable $e)
     {
-        // Redirigir al login cuando la sesión expira (CSRF TokenMismatch)
+        // Redirect to login when the session expires (CSRF token mismatch).
         if ($e instanceof TokenMismatchException) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Sesión expirada.'], 419);
+                return response()->json(['message' => __('common.session_expired')], 419);
             }
             $loginUrl = Route::has('login') ? route('login') : url('/login');
             return redirect()->to($loginUrl)
-                ->with('status', 'Tu sesión expiró. Vuelve a iniciar sesión.');
+                ->with('status', __('common.session_expired_prompt'));
         }
 
-        // Manejar explícitamente respuestas HTTP 419
+        // Handle HTTP 419 responses explicitly.
         if ($e instanceof HttpException && $e->getStatusCode() === 419) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Sesión expirada.'], 419);
+                return response()->json(['message' => __('common.session_expired')], 419);
             }
             $loginUrl = Route::has('login') ? route('login') : url('/login');
             return redirect()->to($loginUrl)
-                ->with('status', 'Tu sesión expiró. Vuelve a iniciar sesión.');
+                ->with('status', __('common.session_expired_prompt'));
         }
 
         return parent::render($request, $e);

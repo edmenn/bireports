@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Capacity;
 use App\Services\PowerBiCapacityService;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,17 +16,17 @@ use Illuminate\View\View;
 class CapacityController extends Controller
 {
     /**
-     * Listado de capacidades con auto-sync throttled.
-     * - Sincroniza como máximo una vez cada $throttleSeconds.
-     * - Aplica filtros básicos: q | state(active|paused|all) | sku
+     * Lists capacities with throttled auto-sync behaviour.
+     * - Sync occurs at most once every $throttleSeconds.
+     * - Supports basic filters: q | state(active|paused|all) | sku
      */
     public function index(Request $request): View
     {
-        // ⏱️ Cambiá este valor para ampliar o reducir la ventana de sincronización
+        // ⏱️ Adjust this value to widen or shrink the sync window
         $throttleSeconds = 120;
 
-        // 1) Intento de sincronización con limitación (solo si hay configuración)
-        $hasConfig = Configuracion::query()
+        // 1) Attempt a throttled sync when configuration is available
+        $hasConfig = Configuration::query()
             ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
             ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -36,12 +36,12 @@ class CapacityController extends Controller
             $this->syncWithThrottle($svc, $throttleSeconds);
         }
 
-        // 2) Filtros
+        // 2) Filters
         $q     = trim((string) $request->input('q', ''));
         $state = (string) $request->input('state', 'all'); // all|active|paused
         $sku   = trim((string) $request->input('sku', ''));
 
-        // 3) Query con filtros
+        // 3) Build the filtered query
         $caps = Capacity::query()
             ->when($q !== '', function ($qr) use ($q) {
                 $needle = mb_strtolower($q);
@@ -73,12 +73,12 @@ class CapacityController extends Controller
     }
 
     /**
-     * Re-sincroniza manualmente con Power BI.
-     * Útil si mantenés el botón "Refrescar".
+     * Manually synchronises capacities with Power BI.
+     * Useful when exposing a "Refresh" action in the UI.
      */
     public function refresh(): RedirectResponse
     {
-        $hasConfig = Configuracion::query()
+        $hasConfig = Configuration::query()
             ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
             ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -89,7 +89,7 @@ class CapacityController extends Controller
         try {
             $svc = app(PowerBiCapacityService::class);
             $res = $svc->importCapacities();
-            // Reseteamos el timestamp de última sync para que no frene futuros autosync
+            // Reset the last sync timestamp so future auto-syncs are not blocked
             Cache::forget('capacities:last_sync_at');
 
             return back()->with(
@@ -106,12 +106,12 @@ class CapacityController extends Controller
     }
 
     /**
-     * Pausar capacidad via ARM.
+     * Pause a capacity through ARM.
      */
     public function pause(Capacity $capacity): RedirectResponse
     {
         try {
-            $hasConfig = Configuracion::query()
+            $hasConfig = Configuration::query()
                 ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
                 ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
                 ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -131,7 +131,7 @@ class CapacityController extends Controller
                 'message'     => __('capacities.audit.log.paused_by_user'),
             ]);
 
-            // Al cambiar estado, borramos la marca para permitir una próxima sync fresca
+            // Clear the marker when the state changes to allow a fresh sync
             Cache::forget('capacities:last_sync_at');
 
             return back()->with('success', __('capacities.messages.pause_success', ['name' => $capacity->display_name]));
@@ -151,12 +151,12 @@ class CapacityController extends Controller
     }
 
     /**
-     * Reanudar capacidad via ARM.
+     * Resume a capacity through ARM.
      */
     public function resume(Capacity $capacity): RedirectResponse
     {
         try {
-            $hasConfig = Configuracion::query()
+            $hasConfig = Configuration::query()
                 ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
                 ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
                 ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -194,7 +194,7 @@ class CapacityController extends Controller
         }
     }
 
-    // ===== Programación (encendido/pausado) e inactividad =====
+    // ===== Scheduling (start/pause) and inactivity rules =====
     public function schedule(Capacity $capacity): View
     {
         $capacity->load('schedules');
@@ -257,13 +257,13 @@ class CapacityController extends Controller
             'inactivity_timeout_minutes'  => ['nullable','integer','min:5','max:120'],
         ]);
 
-        // Switch unificado: fuerza ambos flags en tándem
+        // Unified switch: force both flags simultaneously
         $auto = $request->boolean('automation_enabled');
         $capacity->force_shutdown_on_schedule = $auto;
         $capacity->cost_optimization_enabled  = $auto;
         $capacity->inactivity_timeout_minutes = $validated['inactivity_timeout_minutes'] ?? null;
 
-        // Si se activa la automatización y no hay timeout, usar 30m por defecto
+        // When automation is enabled without a timeout, default to 30 minutes
         if ($auto && empty($capacity->inactivity_timeout_minutes)) {
             $capacity->inactivity_timeout_minutes = 30;
         }
@@ -274,11 +274,11 @@ class CapacityController extends Controller
 
     public function audit(Capacity $capacity): View
     {
-        // 1) Logs locales (BD)
+        // 1) Local logs (database)
         $localRaw = \App\Models\CapacityAudit::query()->where('capacity_id',$capacity->id)
             ->orderByDesc('id')->limit(200)->get();
 
-        // Normalizamos locales a objetos simples con campo source
+        // Normalize local entries to simple objects with a source field
         $local = collect();
         foreach ($localRaw as $l) {
             $row = new class($l) {
@@ -290,7 +290,7 @@ class CapacityController extends Controller
             $local->push($row);
         }
 
-        // 2) Logs de API (Azure Activity Logs / ARM)
+        // 2) API logs (Azure Activity Logs / ARM)
         $apiItems = collect();
         try {
             /** @var PowerBiCapacityService $svc */
@@ -312,7 +312,7 @@ class CapacityController extends Controller
                 if ($corrId !== '') { $msgParts[] = "corrId=$corrId"; }
                 $message = implode(' ', $msgParts);
 
-                // Creamos objetos compatibles con la vista (propiedades como en el modelo)
+                // Create objects compatible with the view (properties aligned with the model)
                 $row = new class($ts, $action, $result, $message) {
                     public $created_at; public $action; public $result; public $message; public $source;
                     public function __construct($created_at, $action, $result, $message){
@@ -322,10 +322,10 @@ class CapacityController extends Controller
                 $apiItems->push($row);
             }
         } catch (\Throwable $e) {
-            // Si falla (sin credenciales ARM, etc.), seguimos solo con locales
+            // If it fails (missing ARM credentials, etc.), continue with local data only
         }
 
-        // 3) Merge + ordenar desc por fecha
+        // 3) Merge and sort descending by date
         $logs = $apiItems
             ->merge($local)
             ->sortByDesc(function ($x) { return optional($x->created_at)->getTimestamp() ?? 0; })
@@ -335,11 +335,11 @@ class CapacityController extends Controller
     }
 
     /**
-     * Refresca metadatos de la capacidad desde Power BI y vuelve a la auditoría.
+     * Refresh capacity metadata from Power BI and redirect back to the audit page.
      */
     public function auditRefresh(Capacity $capacity): \Illuminate\Http\RedirectResponse
     {
-        $hasConfig = \App\Models\Configuracion::query()
+        $hasConfig = \App\Models\Configuration::query()
             ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
             ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -381,41 +381,41 @@ class CapacityController extends Controller
     }
 
     /**
-     * Sincroniza contra Fabric/Power BI si:
-     *   - No se sincroniza hace < $windowSeconds
-     *   - Y logra tomar un lock para evitar concurrencia
+     * Syncs against Fabric/Power BI when:
+     *   - The last sync is older than $windowSeconds
+     *   - And a lock is acquired to prevent concurrency
      *
-     * Garantiza:
-     *   - No cachea fallas: solo setea el timestamp si la sync fue OK.
-     *   - No rompe la navegación si import falla.
+     * Guarantees:
+     *   - Failures are not cached: the timestamp is set only on success.
+     *   - The UI keeps working even if imports fail.
      */
     private function syncWithThrottle(PowerBiCapacityService $svc, int $windowSeconds = 120): void
     {
         try {
             $last = Cache::get('capacities:last_sync_at');
             if ($last && now()->diffInSeconds($last) < $windowSeconds) {
-                // Dentro de ventana: no sincronizamos
+                // Inside the time window: skip sync
                 return;
             }
 
-            // Evita sincronizaciones concurrentes (lock expira en windowSeconds)
+            // Prevent concurrent sync attempts (lock expires in windowSeconds)
             $lock = Cache::lock('capacities:syncing', $windowSeconds);
 
             if ($lock->get()) {
                 try {
-                    $svc->importCapacities(); // ← tu sync real con Fabric/Power BI
-                    // Marcamos última sync SOLO si el import fue OK
+                    $svc->importCapacities(); // Actual sync against Fabric/Power BI
+                    // Record the last sync only when the import succeeded
                     Cache::put('capacities:last_sync_at', now(), $windowSeconds);
                 } finally {
                     optional($lock)->release();
                 }
             } else {
-                // Otro proceso ya está sincronizando; no hacemos nada.
+                // Another process is already syncing; do nothing.
                 return;
             }
         } catch (\Throwable $e) {
             Log::warning('Capacities auto-sync failed: '.$e->getMessage(), ['exception' => $e]);
-            // No interrumpimos la vista si falla la sync.
+            // Do not interrupt the view when the sync fails.
         }
     }
 }

@@ -132,7 +132,7 @@
             </ul>
             <p class="mb-2">
                 {{ __('reports.show.missing_embed.hint') }}
-                <a href="{{ route('configuraciones.index') }}" class="alert-link">{{ __('reports.show.missing_embed.link') }}</a>.
+                <a href="{{ route('configurations.index') }}" class="alert-link">{{ __('reports.show.missing_embed.link') }}</a>.
             </p>
             <details>
                 <summary>{{ __('reports.show.missing_embed.summary') }}</summary>
@@ -269,7 +269,7 @@
     // [Minimalista] IDs de capacidad para warmup on-demand desde la vista
     const CAPACITY_DB_ID = @json($capacityModelId ?? null); // PK local para /api/capacities/{id}/ping
     const CAPACITY_UUID  = @json($capacityUuid ?? null);     // UUID informativo (no se usa en el ping)
-    // [Minimalista] Parámetros on-demand desde Configuraciones
+    // [Minimalista] Parámetros on-demand desde Configurationes
     const ON_DEMAND_ENABLE = @json($capacityOnDemandEnable ?? true);
     const START_TIMEOUT_MS = @json(($capacityStartTimeoutSec ?? 120) * 1000);
     const START_POLL_MS    = @json(($capacityStartPollSec ?? 5) * 1000);
@@ -336,7 +336,7 @@
 
     // [Minimalista] Warmup de capacidad on-demand antes de embeder
     async function waitForCapacityActive(timeoutMs = START_TIMEOUT_MS, intervalMs = START_POLL_MS) {
-        if (!ON_DEMAND_ENABLE) return true; // Desactivado en Configuraciones
+        if (!ON_DEMAND_ENABLE) return true; // Desactivado en Configurationes
         if (!CAPACITY_DB_ID) return true; // Nada que hacer si no hay capacidad asociada
         const start = Date.now();
         const url = `/api/capacities/${CAPACITY_DB_ID}/ping`;

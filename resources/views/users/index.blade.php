@@ -158,7 +158,7 @@
                                                 $badgeClass = 'badge-role';
                                                 if ($key === 'admin')      $badgeClass = 'badge-admin';
                                                 elseif ($key === 'editor') $badgeClass = 'badge-editor';
-                                                elseif ($key === 'usuario')$badgeClass = 'badge-usuario';
+                                                elseif ($key === 'viewer') $badgeClass = 'badge-viewer';
                                             }
                                         @endphp
                                         <span class="badge u-badge-fixed {{ $style === '' ? $badgeClass : '' }}" @if($style) style="{{ $style }}" @endif>
@@ -169,12 +169,12 @@
                             </td>
                             <td class="py-2 text-center actions-col">
                                 <div class="d-inline-flex align-items-center">
-                                    <a href="{{ route('users.edit', ['usuario' => $u->id]) }}" class="btn btn-sm btn-info mr-1">
+                                    <a href="{{ route('users.edit', ['user' => $u->id]) }}" class="btn btn-sm btn-info mr-1">
                                         <i class="fas fa-edit"></i> {{ __('users.index.buttons.edit') }}
                                     </a>
                                     @php($isSelf = (int)($u->id) === (int)auth()->id())
                                     @if(!$isSelf)
-                                        <form action="{{ route('users.toggle-block', ['usuario' => $u->id]) }}" method="POST" class="m-0 mr-1 js-confirm-delete-form"
+                                        <form action="{{ route('users.toggle-block', ['user' => $u->id]) }}" method="POST" class="m-0 mr-1 js-confirm-delete-form"
                                               data-confirm-message="{{ (bool)($u->is_blocked ?? false) ? __('users.index.confirm.unblock_user', ['name' => $u->name]) : __('users.index.confirm.block_user', ['name' => $u->name]) }}">
                                             @csrf
                                             <button class="btn btn-sm {{ (bool)($u->is_blocked ?? false) ? 'btn-success' : 'btn-warning' }}">
@@ -184,7 +184,7 @@
                                         </form>
                                     @endif
                                     @if(!$isSelf)
-                                        <form action="{{ route('users.destroy', ['usuario' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form"
+                                        <form action="{{ route('users.destroy', ['user' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form"
                                               data-confirm-message="{{ __('users.index.confirm.delete_user', ['name' => $u->name]) }}">
                                             @csrf @method('DELETE')
                                             <button class="btn btn-sm btn-danger">
@@ -256,7 +256,7 @@
                             <label for="entraAssignRole" class="mb-1 small">{{ __('users.index.entra.assign_role') }}</label>
                             <select id="entraAssignRole" class="form-control">
                                 @foreach($roles as $roleName => $label)
-                                    <option value="{{ $roleName }}" @selected($roleName === 'usuario')>{{ $label }}</option>
+                                    <option value="{{ $roleName }}" @selected($roleName === 'viewer')>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -337,7 +337,7 @@
 /* Colores solicitados */
 .badge-admin  { background:#fee2e2; color:#b91c1c; border:1px solid rgba(185,28,28,.25); font-weight:700; }
 .badge-editor { background:#fef9c3; color:#a16207; border:1px solid rgba(161,98,7,.25);  font-weight:700; }
-.badge-usuario{ background:#dcfce7; color:#166534; border:1px solid rgba(22,101,52,.25);  font-weight:700; }
+.badge-viewer{ background:#dcfce7; color:#166534; border:1px solid rgba(22,101,52,.25);  font-weight:700; }
 /* Ancho uniforme de cada badge */
 .u-badge-fixed{ display:inline-block;width:90px;text-align:center;white-space:nowrap; }
 /* Acciones: centrado + ancho fijo */

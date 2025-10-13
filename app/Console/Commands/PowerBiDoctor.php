@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Capacity;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use App\Services\PowerBiCapacityService;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -32,11 +32,11 @@ class PowerBiDoctor extends Command
         $this->info('== PowerBI Doctor ==');
         $this->line('');
 
-        // 1) Cargar configuraciones
-        /** @var Configuracion|null $cfg */
-        $cfg = Configuracion::query()->first();
+        // 1) Cargar configurations
+        /** @var Configuration|null $cfg */
+        $cfg = Configuration::query()->first();
         if (!$cfg) {
-            $this->error('No hay fila en "configuraciones". Crea una y completa credenciales y datos de ARM.');
+            $this->error('No hay fila en "configurations". Crea una y completa credenciales y datos de ARM.');
             return self::FAILURE;
         }
 
@@ -46,7 +46,7 @@ class PowerBiDoctor extends Command
         $subId        = (string) ($cfg->azure_subscription_id ?? '');
         $rgName       = (string) ($cfg->azure_resource_group ?? '');
 
-        $this->section('A) Configuraciones base');
+        $this->section('A) Configurationes base');
         $showSecrets = (bool) (int) $this->option('show-secrets');
 
         $this->table(
@@ -83,7 +83,7 @@ class PowerBiDoctor extends Command
                 $this->warn('✖ No se pudo obtener token ARM (management.azure.com). Revisa permisos de la app en Entra ID.');
             }
         } else {
-            $this->warn('ℹ No hay subscription/resourceGroup en configuraciones. Saltando pruebas ARM.');
+            $this->warn('ℹ No hay subscription/resourceGroup en configurations. Saltando pruebas ARM.');
         }
 
         // 3) Listar capacidades myorg

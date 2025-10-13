@@ -14,10 +14,15 @@ class SetAdminlteTheme
         $user = $request->user();
         $theme = $user->theme ?? session('theme', 'light');
 
+        $navbarClass = config('adminlte.theme.navbar_class', config('adminlte.classes_topnav', 'navbar-white navbar-light'));
+        $sidebarClass = config('adminlte.theme.sidebar_class', config('adminlte.classes_sidebar', 'sidebar-dark-primary elevation-4'));
+        $footerClass = config('adminlte.theme.footer_class', config('adminlte.classes_footer', 'text-sm border-0'));
+
         if ($theme === 'dark') {
             config([
                 'adminlte.classes_sidebar' => 'sidebar-dark-primary elevation-4',
                 'adminlte.classes_topnav' => 'navbar-dark navbar-primary',
+                'adminlte.classes_footer' => 'bg-dark text-light border-0 text-sm',
                 'adminlte.classes_body' => 'dark-mode',
                 'adminlte.layout_dark_mode' => true,
             ]);
@@ -27,8 +32,9 @@ class SetAdminlteTheme
             config(['adminlte.plugins.ThemeLight.active' => false]);
         } else {
             config([
-                'adminlte.classes_sidebar' => 'sidebar-light-primary elevation-4',
-                'adminlte.classes_topnav' => 'navbar-white navbar-light',
+                'adminlte.classes_sidebar' => $sidebarClass,
+                'adminlte.classes_topnav' => $navbarClass,
+                'adminlte.classes_footer' => $footerClass,
                 'adminlte.classes_body' => '',
                 'adminlte.layout_dark_mode' => false,
             ]);

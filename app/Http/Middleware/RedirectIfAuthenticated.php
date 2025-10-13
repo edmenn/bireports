@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Auth;
 class RedirectIfAuthenticated
 {
     /**
-     * Si el usuario ya está autenticado y visita rutas para invitados (login, registro),
-     * lo redirigimos a home (ajusta según tu portal).
+     * Redirect authenticated users away from guest-only routes (login, register).
+     * Update the destination according to your application's landing page.
      */
     public function handle(Request $request, Closure $next, string ...$guards)
     {
@@ -20,7 +20,7 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect()->route('home'); // ajusta a tu ruta inicial
+                return redirect()->route('home'); // adjust if your landing route differs
             }
         }
 

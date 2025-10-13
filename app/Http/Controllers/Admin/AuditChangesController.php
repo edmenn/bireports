@@ -48,7 +48,7 @@ final class AuditChangesController extends Controller
                 'id' => 'E'.$e->id,
                 'created_at' => $e->created_at,
                 'user_id' => $e->user_id,
-                'source' => 'sistema',
+                'source' => 'system',
                 'action' => $e->action,
                 'model'  => $e->auditable_type,
                 'entity' => $e->auditable_id,
@@ -59,15 +59,15 @@ final class AuditChangesController extends Controller
         }
 
         foreach ($configs as $c) {
-            // Construir mapas antes/después SOLO con campos cambiados
+            // Build before/after maps including only the fields that changed
             [$beforeMap, $afterMap] = $this->buildBeforeAfterFromChanges($c->changes);
             $rows->push([
                 'id' => 'C'.$c->id,
                 'created_at' => $c->created_at,
                 'user_id' => $c->user_id,
-                'source' => 'configuracion',
+                'source' => 'configuration',
                 'action' => 'updated',
-                'model'  => 'App\\Models\\Configuracion',
+                'model'  => 'App\\Models\\Configuration',
                 'entity' => 'config:1',
                 'before' => $beforeMap,
                 'after'  => $afterMap,
@@ -131,8 +131,8 @@ final class AuditChangesController extends Controller
     }
 
     /**
-     * Convierte el arreglo de cambios plano [{field,old,new}] en dos mapas before/after,
-     * realizando diff profundo para JSON (por ej. theme_config) y dejando solo claves cambiadas.
+     * Convert a flat changes array [{field,old,new}] into before/after maps,
+     * performing deep diffs for JSON (e.g. theme_config) and keeping only changed keys.
      */
     private function buildBeforeAfterFromChanges($changes): array
     {
@@ -145,13 +145,13 @@ final class AuditChangesController extends Controller
             $old = $ch['old'] ?? null;
             $new = $ch['new'] ?? null;
 
-            // Intentar JSON para dif profundo
+            // Attempt JSON decoding for deep diffs
             $oldJ = $this->jsonOrNull($old);
             $newJ = $this->jsonOrNull($new);
             if (is_array($oldJ) || is_array($newJ)) {
                 $oldA = is_array($oldJ) ? $oldJ : [];
                 $newA = is_array($newJ) ? $newJ : [];
-                // claves cambiadas
+                // Track which keys actually changed
                 $keys = array_unique(array_merge(array_keys($oldA), array_keys($newA)));
                 $changed = [];
                 foreach ($keys as $k) {
@@ -166,7 +166,7 @@ final class AuditChangesController extends Controller
                 continue;
             }
 
-            // Escalar: incluir tal cual
+            // Scalar values: include them as-is
             $before[$field] = $old;
             $after[$field]  = $new;
         }

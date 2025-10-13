@@ -1,6 +1,13 @@
-﻿<?php
+<?php
 
 return [
+    'menu' => [
+        'title' => 'Mi espacio',
+        'home' => 'Inicio',
+        'favorites' => 'Favoritos',
+        'most_accessed' => 'Mas accedidos',
+        'applications' => 'Aplicaciones',
+    ],
     'home' => [
         'title' => 'Mi inicio',
         'folders' => [
@@ -22,7 +29,7 @@ return [
         ],
     ],
     'most_accessed' => [
-        'title' => 'Más accedidos',
+        'title' => 'Mas accedidos',
         'empty' => 'Sin accesos registrados aún.',
         'columns' => [
             'report' => 'Reporte',

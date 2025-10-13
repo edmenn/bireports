@@ -4,7 +4,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Título
+    | Title
     |--------------------------------------------------------------------------
     */
     'title' => 'PowerBIDash',
@@ -30,7 +30,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Logo del panel
+    | Panel logo
     |--------------------------------------------------------------------------
     */
     'logo' => '<b>PowerBI</b>Dash',
@@ -42,7 +42,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Logo en pantallas de autenticación
+    | Authentication logo
     |--------------------------------------------------------------------------
     */
     'auth_logo' => [
@@ -58,7 +58,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Precargador (preloader)
+    | Preloader
     |--------------------------------------------------------------------------
     */
     'preloader' => [
@@ -66,7 +66,7 @@ return [
         'mode' => 'fullscreen',
         'img' => [
             'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'Cargando...',
+            'alt' => 'Loading...',
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,
@@ -75,7 +75,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Menú de usuario
+    | User menu
     |--------------------------------------------------------------------------
     */
     'usermenu_enabled' => true,
@@ -92,16 +92,16 @@ return [
     */
     'layout_topnav' => null,
     'layout_boxed' => null,
-    // Mantener la barra lateral fija para que no se desplace con el contenido.
+    // Keep the sidebar fixed so it does not scroll with the content.
     'layout_fixed_sidebar' => true,
-    // Navbar fijo para que AdminLTE calcule correctamente offsets y alturas.
+    // Keep the navbar fixed so AdminLTE calculates offsets and heights correctly.
     'layout_fixed_navbar' => true,
     'layout_fixed_footer' => false,
     'layout_dark_mode' => null,
 
     /*
     |--------------------------------------------------------------------------
-    | Clases de vistas de autenticación
+    | Authentication view classes
     |--------------------------------------------------------------------------
     */
     'classes_auth_card'   => 'card-outline card-primary',
@@ -113,7 +113,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Clases del panel
+    | Panel classes
     |--------------------------------------------------------------------------
     */
     'classes_body' => '',
@@ -127,10 +127,11 @@ return [
     'classes_topnav' => 'navbar-white navbar-light',
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
+    'classes_footer' => 'bg-white text-muted border-0 text-sm',
 
     /*
     |--------------------------------------------------------------------------
-    | Barra lateral (sidebar)
+    | Sidebar (sidebar)
     |--------------------------------------------------------------------------
     */
     'sidebar_mini' => 'lg',
@@ -182,108 +183,110 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Ítems de menú
+    | Menu items
     |--------------------------------------------------------------------------
     */
+    'i18n' => true,
+
     'menu' => [
         [
             'type' => 'navbar-search',
-            'text' => 'Buscar',
+            'text' => 'search',
             'topnav_right' => true,
         ],
-        // Idioma (desktop: texto + icono)
+        // Language (desktop: text + icon)
         [
-            'text'         => 'Idioma',
+            'text'         => 'Language',
             'icon'         => 'fas fa-language',
             'topnav_right' => true,
             'classes'      => 'd-none d-sm-inline',
             'submenu'      => [
-                [ 'text' => 'Español',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
-                [ 'text' => 'Portugués', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],
+                [ 'text' => 'Spanish',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
+                [ 'text' => 'Portuguese', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],
             ],
         ],
-        // Idioma (mobile: solo icono para ahorrar espacio)
+        // Language (mobile: icon only to save space)
         [
             'text'         => '',
             'icon'         => 'fas fa-language',
             'topnav_right' => true,
             'classes'      => 'd-inline d-sm-none',
             'submenu'      => [
-                [ 'text' => 'Español',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
-                [ 'text' => 'Portugués', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],
+                [ 'text' => 'Spanish',   'url'  => 'lang/es', 'icon' => 'far fa-flag' ],
+                [ 'text' => 'Portuguese', 'url'  => 'lang/pt', 'icon' => 'far fa-flag' ],
             ],
         ],
         [ 'type' => 'fullscreen-widget', 'topnav_right' => true ],
 
-        // Buscador en sidebar eliminado a pedido
+        // Sidebar search removed as requested
 
         [
-            'text' => 'Mi espacio',
+            'text' => 'common.menu.portal',
             'icon' => 'fas fa-user-circle',
             'can'  => 'menu.portal',
             'classes' => 'menu-open',
             'submenu' => [
-                [ 'text'=>'Inicio',       'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
-                [ 'text'=>'Favoritos',    'icon'=>'fas fa-star',       'route'=>'portal.favoritos', 'can'=>'menu.portal' ],
-                [ 'text'=>'Más accedidos','icon'=>'fas fa-fire',       'route'=>'portal.mas',       'can'=>'menu.portal' ],
-                [ 'text'=>'Aplicaciones', 'icon'=>'fas fa-th-large',   'route'=>'portal.apps',     'can'=>'menu.portal' ],
+                [ 'text' => 'common.menu.portal_home',       'icon'=>'fas fa-home',       'route'=>'portal.index',     'can'=>'menu.portal' ],
+                [ 'text' => 'common.menu.portal_favorites',    'icon'=>'fas fa-star',       'route'=>'portal.favorites', 'can'=>'menu.portal' ],
+                [ 'text' => 'common.menu.portal_most_accessed','icon'=>'fas fa-fire',       'route'=>'portal.most-accessed',       'can'=>'menu.portal' ],
+                [ 'text' => 'common.menu.portal_applications', 'icon'=>'fas fa-th-large',   'route'=>'portal.apps',     'can'=>'menu.portal' ],
             ],
         ],
 
         [
-            'text' => 'Power BI',
+            'text' => 'common.menu.power_bi',
             'icon' => 'fas fa-bolt',
             'can'  => 'menu.reports_index',
             'classes' => 'menu-open',
             'submenu' => [
-                [ 'text'=>'Informes',           'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
-                [ 'text'=>'Conjuntos de datos', 'icon'=>'fas fa-database',        'route'=>'datasets.index',    'can'=>'menu.reports_index' ],
-                [ 'text'=>'Espacios de trabajo','icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
-                [ 'text'=>'Capacidades',        'icon'=>'fas fa-cogs',            'route'=>'capacities.index',  'can'=>'menu.capacities'],
+                [ 'text' => 'common.menu.reports',           'icon'=>'fas fa-chart-bar',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
+                [ 'text' => 'common.menu.datasets', 'icon'=>'fas fa-database',        'route'=>'datasets.index',    'can'=>'menu.reports_index' ],
+                [ 'text' => 'common.menu.workspaces','icon'=>'fas fa-project-diagram', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
+                [ 'text' => 'common.menu.capacities',        'icon'=>'fas fa-cogs',            'route'=>'capacities.index',  'can'=>'menu.capacities'],
             ],
         ],
 
         [
-            'text' => 'Organización',
+            'text' => 'common.menu.organization',
             'icon' => 'fas fa-sitemap',
             'can'  => 'menu.users',
             'classes' => 'menu-open',
             'submenu' => [
-                [ 'text'=>'Usuarios', 'icon'=>'fas fa-users',         'route'=>'users.index',   'can'=>'menu.users' ],
-                [ 'text'=>'Grupos',   'icon'=>'fas fa-user-friends',  'route'=>'grupos.index',  'can'=>'menu.groups' ],
-                [ 'text'=>'Carpetas', 'icon'=>'fas fa-folder',        'route'=>'folders.index', 'can'=>'menu.folders' ],
-                [ 'text'=>'Aplicaciones', 'icon'=>'fas fa-th',            'route'=>'applications.index', 'can'=>'menu.applications' ],
-                [ 'text'=>'Perfiles y Accesos', 'icon'=>'fas fa-user-shield', 'route'=>'roles.index', 'can'=>'menu.users' ],
+                [ 'text' => 'common.menu.users', 'icon'=>'fas fa-users',         'route'=>'users.index',   'can'=>'menu.users' ],
+                [ 'text' => 'common.menu.groups',   'icon'=>'fas fa-user-friends',  'route'=>'groups.index',  'can'=>'menu.groups' ],
+                [ 'text' => 'common.menu.folders', 'icon'=>'fas fa-folder',        'route'=>'folders.index', 'can'=>'menu.folders' ],
+                [ 'text' => 'common.menu.applications', 'icon'=>'fas fa-th',            'route'=>'applications.index', 'can'=>'menu.applications' ],
+                [ 'text' => 'common.menu.roles', 'icon'=>'fas fa-user-shield', 'route'=>'roles.index', 'can'=>'menu.roles' ],
             ],
         ],
 
         [
-            'text' => 'Auditoría',
+            'text' => 'common.menu.audit',
             'icon' => 'fas fa-chart-line',
-            'can'  => 'menu.auditoria',
+            'can'  => 'menu.audit',
             'classes' => 'menu-open',
             'submenu' => [
-                [ 'text'=>'Métricas de uso',     'icon'=>'fas fa-chart-bar', 'route'=>'auditoria.index',        'can'=>'menu.auditoria' ],
-                [ 'text'=>'Reiniciar auditoría', 'icon'=>'fas fa-broom',     'route'=>'admin.audit.reset.show', 'can'=>'menu.auditoria' ],
-                [ 'text'=>'Cambios (Sistema + Config)', 'icon'=>'fas fa-exchange-alt', 'route'=>'auditoria.changes.index', 'can'=>'menu.auditoria' ],
+                [ 'text' => 'common.menu.audit_usage_metrics',     'icon'=>'fas fa-chart-bar', 'route'=>'audit.index',        'can'=>'menu.audit' ],
+                [ 'text' => 'common.menu.audit_reset', 'icon'=>'fas fa-broom',     'route'=>'admin.audit.reset.show', 'can'=>'menu.audit' ],
+                [ 'text' => 'common.menu.audit_changes', 'icon'=>'fas fa-exchange-alt', 'route'=>'audit.changes.index', 'can'=>'menu.audit' ],
             ],
         ],
 
         [
-            'text' => 'Configuraciones',
+            'text' => 'common.menu.settings',
             'icon' => 'fas fa-cogs',
-            'can'  => 'menu.configuraciones',
+            'can'  => 'menu.configurations',
             'classes' => 'menu-open',
             'submenu' => [
-                [ 'text'=>'Parámetros', 'icon'=>'fas fa-sliders-h',   'route'=>'configuraciones.index', 'can'=>'menu.configuraciones' ],
-                [ 'text'=>'Tema',       'icon'=>'fas fa-paint-brush', 'route'=>'configuraciones.tema',  'can'=>'menu.configuraciones' ],
+                [ 'text' => 'common.menu.settings_parameters', 'icon'=>'fas fa-sliders-h',   'route'=>'configurations.index', 'can'=>'menu.configurations' ],
+                [ 'text' => 'common.menu.settings_theme',       'icon'=>'fas fa-paint-brush', 'route'=>'configurations.theme',  'can'=>'menu.configurations' ],
             ],
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Filtros del menú
+    | Menu filters
     |--------------------------------------------------------------------------
     */
     'filters' => [
@@ -300,7 +303,7 @@ return [
     |--------------------------------------------------------------------------
     | Plugins
     |--------------------------------------------------------------------------
-    | (activamos nuestro CSS global)
+    | (activate our global CSS)
     */
     'plugins' => [
         'Datatables' => [
@@ -338,7 +341,7 @@ return [
             ],
         ],
 
-        // Theme overrides (opcional)
+        // Theme overrides (optional)
         'ThemeLight' => [
             'active' => false,
             'files' => [
