@@ -92,6 +92,6 @@ return [
         'switch_to' => 'Switch to :theme',
     ],
     'footer' => [
-        'signature' => 'Powered by :app - :year',
+        'signature' => 'Developed by Edgar Menna - 2025',
     ],
 ];

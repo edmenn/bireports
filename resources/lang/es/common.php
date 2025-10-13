@@ -86,6 +86,6 @@ return [
         'switch_to' => 'Cambiar a :theme',
     ],
     'footer' => [
-        'signature' => 'Impulsado por :app - :year',
+        'signature' => 'Desarrollado por Edgar Menna - 2025',
     ],
 ];
