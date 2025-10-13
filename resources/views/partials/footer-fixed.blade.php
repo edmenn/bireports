@@ -16,5 +16,5 @@
 @if($mappedText !== null)
     {{ $mappedText }}
 @else
-    {{ __($text_key ?? 'common.footer.signature', $tokens) }}
+    {{ __($text_key ?? 'footer.signature', $tokens) }}
 @endif

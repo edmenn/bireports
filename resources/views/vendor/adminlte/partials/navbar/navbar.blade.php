@@ -2,7 +2,7 @@
 
 @php($isDark = (bool) config('adminlte.layout_dark_mode', false))
 @php($nextTheme = $isDark ? 'light' : 'dark')
-@php($nextThemeLabel = __('common.theme.' . $nextTheme))
+@php($nextThemeLabel = __('theme.' . $nextTheme))
 <nav class="main-header navbar {{ config('adminlte.classes_topnav_nav', 'navbar-expand') }} {{ config('adminlte.classes_topnav', 'navbar-white navbar-light') }}">
 
     {{-- Navbar left links --}}
@@ -44,7 +44,7 @@
             <form method="POST" action="{{ route('theme.switch') }}" class="d-inline">
                 @csrf
                 <input type="hidden" name="theme" value="{{ $nextTheme }}">
-                @php($switchLabel = __('common.theme.switch_to', ['theme' => $nextThemeLabel]))
+                @php($switchLabel = __('theme.switch_to', ['theme' => $nextThemeLabel]))
                 <button type="submit" class="nav-link p-0 px-2 bg-transparent border-0" style="line-height:1" title="{{ $switchLabel }}" aria-label="{{ $switchLabel }}">
                     @if($isDark)
                         <i class="fas fa-sun"></i>

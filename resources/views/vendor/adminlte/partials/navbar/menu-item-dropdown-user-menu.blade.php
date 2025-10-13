@@ -65,12 +65,12 @@
             @if($profile_url)
                 <a href="{{ $profile_url }}" class="dropdown-item text-sm d-flex align-items-center">
                     <i class="fa fa-fw fa-user text-primary mr-2"></i>
-                    <span>{{ __('common.menu.profile') }}</span>
+                    <span>{{ __('menu.user.profile') }}</span>
                 </a>
             @endif
             <a class="dropdown-item text-sm d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="fa fa-fw fa-power-off text-danger mr-2"></i>
-                <span>{{ __('common.menu.logout') }}</span>
+                <span>{{ __('menu.user.logout') }}</span>
             </a>
             <form id="logout-form" action="{{ $logout_url }}" method="POST" style="display: none;">
                 @if(config('adminlte.logout_method'))

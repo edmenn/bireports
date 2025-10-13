@@ -211,7 +211,7 @@ class AppServiceProvider extends ServiceProvider
 
                     $view->getFactory()->startSection('footer', view('partials.footer-fixed', [
                         'text' => $footerText !== '' ? $footerText : null,
-                        'text_key' => 'common.footer.signature',
+                        'text_key' => 'footer.signature',
                         'replacements' => $replacements,
                     ])->render());
                     $view->getFactory()->startPush('js', view('partials.footer-sync-js')->render());
