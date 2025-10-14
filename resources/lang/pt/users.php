@@ -29,8 +29,11 @@ return [
     'index' => [
         'card_title' => 'Lista de usuarios',
         'filters' => [
+            'search_label' => 'Pesquisa',
             'search_placeholder' => 'Buscar por nome ou email',
+            'role_label' => 'Perfil',
             'role_all' => 'Todos os perfis',
+            'status_label' => 'Status',
             'status_all' => 'Todos os status',
             'status_active' => 'Ativos',
             'status_blocked' => 'Bloqueados',

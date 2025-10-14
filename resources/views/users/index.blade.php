@@ -3,27 +3,29 @@
 @section('title', __('users.page.title'))
 
 @section('content_header')
-    <div class="users-header">
-        <h1 class="m-0">{{ __('users.page.title') }}</h1>
-        <div class="actions">
-            <a href="{{ route('users.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> {{ __('users.header.new') }}
-            </a>
-            <button type="button" class="btn btn-outline-primary"
-                    data-toggle="modal" data-target="#modalSyncEntra"
-                    data-bs-toggle="modal" data-bs-target="#modalSyncEntra">
-                <i class="fab fa-microsoft"></i> {{ __('users.header.import') }}
+    <x-page-header :title="__('users.page.title')" icon="fas fa-users">
+        <a href="{{ route('users.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            <span>{{ __('users.header.new') }}</span>
+        </a>
+        <button type="button"
+                class="btn btn-outline-primary"
+                data-toggle="modal" data-target="#modalSyncEntra"
+                data-bs-toggle="modal" data-bs-target="#modalSyncEntra">
+            <i class="fab fa-microsoft"></i>
+            <span>{{ __('users.header.import') }}</span>
+        </button>
+        <form action="{{ route('users.sync-entra.refresh-existing') }}" method="POST" class="d-inline">
+            @csrf
+            <button type="submit"
+                    class="btn btn-outline-success"
+                    title="{{ __('users.header.refresh_title') }}"
+                    onclick="return confirm('{{ __('users.header.refresh_confirm') }}');">
+                <i class="fas fa-sync-alt"></i>
+                <span>{{ __('users.header.refresh') }}</span>
             </button>
-            <form action="{{ route('users.sync-entra.refresh-existing') }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-outline-success"
-                        title="{{ __('users.header.refresh_title') }}"
-                        onclick="return confirm('{{ __('users.header.refresh_confirm') }}');">
-                    <i class="fas fa-sync-alt"></i> {{ __('users.header.refresh') }}
-                </button>
-            </form>
-        </div>
-    </div>
+        </form>
+    </x-page-header>
 @stop
 
 @section('content')
@@ -36,40 +38,74 @@
         $selectedRole = request('role');
         $q = $q ?? request('q');
         $selectedStatus = request('status');
+        $customRoleStyles = [];
+        foreach($users as $styledUser) {
+            foreach($styledUser->roles as $styledRole) {
+                if (!empty($styledRole->badge_bg) || !empty($styledRole->badge_text)) {
+                    $customRoleStyles[$styledRole->getKey()] = [
+                        'bg' => $styledRole->badge_bg ?: '#eef2ff',
+                        'text' => $styledRole->badge_text ?: '#4338ca',
+                    ];
+                }
+            }
+        }
     @endphp
+
+    @push('css')
+        @if(!empty($customRoleStyles))
+            <style>
+                @foreach($customRoleStyles as $roleId => $palette)
+                    .role-badge-{{ $roleId }}{
+                        background-color: {{ $palette['bg'] }};
+                        color: {{ $palette['text'] }};
+                        border: 1px solid {{ $palette['text'] }};
+                        font-weight: 700;
+                    }
+                @endforeach
+            </style>
+        @endif
+    @endpush
 
     <x-adminlte-card title="{{ __('users.index.card_title') }}" icon="fas fa-users text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
         {{-- Filtros + barra de selección --}}
         <div class="p-3">
-            <form id="usersFilterForm" method="GET" class="mb-3" role="search">
-                <div class="form-row">
-                    <div class="form-group col-md-6 mb-2">
-                        <input type="text" name="q" value="{{ $q }}" class="form-control"
-                               placeholder="{{ __('users.index.filters.search_placeholder') }}" autocomplete="off">
-                    </div>
-                    <div class="form-group col-md-3 mb-2">
-                        <select name="role" id="filter_role" class="form-control">
-                            <option value="">{{ __('users.index.filters.role_all') }}</option>
-                            @foreach($roles as $roleName => $label)
-                                <option value="{{ $roleName }}" @selected($selectedRole === $roleName)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group col-md-3 mb-2">
-                        <select name="status" id="filter_status" class="form-control">
-                            <option value="">{{ __('users.index.filters.status_all') }}</option>
-                            <option value="activo" @selected(in_array($selectedStatus, ['activo','active','0','false'], true))>{{ __('users.index.filters.status_active') }}</option>
-                            <option value="bloqueado" @selected(in_array($selectedStatus, ['bloqueado','blocked','1','true'], true))>{{ __('users.index.filters.status_blocked') }}</option>
-                        </select>
-                    </div>
-                    <div class="form-group col-md-3 mb-2 d-flex align-items-stretch" id="usersFilterBtns">
-                        <button class="btn btn-primary mr-2 flex-fill" type="submit">
+            <form id="usersFilterForm" method="GET" class="row g-3 align-items-end mb-3" role="search" aria-label="{{ __('users.index.filters.search') }}">
+                <div class="col-12 col-lg-5">
+                    <label for="filter_q" class="form-label">{{ __('users.index.filters.search_label') }}</label>
+                    <input type="text"
+                           name="q"
+                           id="filter_q"
+                           value="{{ $q }}"
+                           class="form-control"
+                           placeholder="{{ __('users.index.filters.search_placeholder') }}"
+                           autocomplete="off">
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="filter_role" class="form-label">{{ __('users.index.filters.role_label') }}</label>
+                    <select name="role" id="filter_role" class="form-select">
+                        <option value="">{{ __('users.index.filters.role_all') }}</option>
+                        @foreach($roles as $roleName => $label)
+                            <option value="{{ $roleName }}" @selected($selectedRole === $roleName)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <label for="filter_status" class="form-label">{{ __('users.index.filters.status_label') }}</label>
+                    <select name="status" id="filter_status" class="form-select">
+                        <option value="">{{ __('users.index.filters.status_all') }}</option>
+                        <option value="activo" @selected(in_array($selectedStatus, ['activo','active','0','false'], true))>{{ __('users.index.filters.status_active') }}</option>
+                        <option value="bloqueado" @selected(in_array($selectedStatus, ['bloqueado','blocked','1','true'], true))>{{ __('users.index.filters.status_blocked') }}</option>
+                    </select>
+                </div>
+                <div class="col-12 col-lg-3" id="usersFilterBtns">
+                    <div class="d-grid d-lg-flex gap-2">
+                        <button class="btn btn-primary w-100" type="submit">
                             <i class="fas fa-search"></i> {{ __('users.index.filters.search') }}
                         </button>
-                        <a href="{{ route('users.index') }}" class="btn btn-secondary flex-fill">
-                            Limpiar
+                        <a href="{{ route('users.index') }}" class="btn btn-outline-secondary w-100">
+                            {{ __('users.index.filters.clear') }}
                         </a>
                     </div>
                 </div>
@@ -92,19 +128,18 @@
         </div>
 
         {{-- Tabla --}}
-        <div class="table-responsive">
-            <table class="table table-hover table-sm align-middle mb-0" id="usersTable">
-                <thead class="thead-light">
+        <div class="table-responsive shadow-sm rounded-4">
+            <table class="table table-striped table-hover align-middle mb-0" id="usersTable">
+                <thead>
                     <tr>
-                        <th style="width:36px;" class="text-center">
+                        <th class="table-col-icon text-center">
                             <input type="checkbox" id="chkAllUsers" aria-label="{{ __('users.index.table.select_all') }}">
                         </th>
-                        <th style="min-width:220px;">{{ __('users.index.table.name') }}</th>
-                        <th style="min-width:220px;">Email</th>
-                        <th class="text-center status-col">{{ __('users.index.table.status') }}</th>
-                        
-                        <th class="text-center role-col">{{ __('users.index.table.role') }}</th>
-                        <th class="text-center actions-col">{{ __('users.index.table.actions') }}</th>
+                        <th class="table-col-md">{{ __('users.index.table.name') }}</th>
+                        <th class="table-col-md">{{ __('users.index.table.email') }}</th>
+                        <th class="text-center table-col-sm">{{ __('users.index.table.status') }}</th>
+                        <th class="text-center table-col-sm">{{ __('users.index.table.role') }}</th>
+                        <th class="text-center table-col-lg">{{ __('users.index.table.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,26 +149,26 @@
                             $rolesAttr = strtolower($rolesList->implode('|'));
                         @endphp
                         <tr class="js-user-row" data-roles="{{ $rolesAttr }}">
-                            <td class="text-center">
+                            <td class="text-center table-col-icon">
                                 <input type="checkbox" class="chk-user-select" value="{{ $u->id }}" aria-label="{{ __('users.index.table.select_user', ['name' => $u->name]) }}">
                             </td>
-                            <td class="py-2">
+                            <td class="py-3 table-col-md">
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar-initial mr-2" aria-hidden="true">
+                                    <div class="avatar-initial me-2" aria-hidden="true">
                                         {{ mb_strtoupper(mb_substr($u->name ?? 'U', 0, 1)) }}
                                     </div>
                                     <div class="min-w-0">
-                                        <div class="font-weight-600 text-truncate" title="{{ $u->name }}">{{ $u->name }}</div>
+                                        <div class="fw-semibold text-truncate" title="{{ $u->name }}">{{ $u->name }}</div>
                                         @if(method_exists($u, 'getAttribute') && $u->getAttribute('username'))
                                             <small class="text-muted">@{{ $u->username }}</small>
                                         @endif
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-2">
+                            <td class="py-3 table-col-md">
                                 <span class="cell-ellipsis" title="{{ $u->email }}">{{ $u->email }}</span>
                             </td>
-                            <td class="py-2 text-center status-col">
+                            <td class="py-3 text-center table-col-sm">
                                 @if((bool)($u->is_blocked ?? false))
                                     <span class="badge u-badge-fixed badge-danger">{{ __('users.index.badges.blocked') }}</span>
                                 @else
@@ -141,40 +176,38 @@
                                 @endif
                             </td>
                             
-                            <td class="py-2 text-center role-col">
+                            <td class="py-3 text-center table-col-sm">
                                 @if($rolesList->isEmpty())
                                     <span class="text-muted">-</span>
                                 @else
                                     @foreach($u->roles as $role)
                                         @php
                                             $key = strtolower($role->name);
-                                            $style = '';
+                                            $badgeClass = 'badge-role';
                                             if (!empty($role->badge_bg) || !empty($role->badge_text)) {
-                                                $bg = $role->badge_bg ?: '#eef2ff';
-                                                $tx = $role->badge_text ?: '#4338ca';
-                                                $style = "background: {$bg}; color: {$tx}; border:1px solid {$tx}; font-weight:700;";
-                                            }
-                                            if ($style === '') {
-                                                $badgeClass = 'badge-role';
-                                                if ($key === 'admin')      $badgeClass = 'badge-admin';
-                                                elseif ($key === 'editor') $badgeClass = 'badge-editor';
-                                                elseif ($key === 'viewer') $badgeClass = 'badge-viewer';
+                                                $badgeClass = 'badge-role role-badge-' . $role->getKey();
+                                            } elseif ($key === 'admin') {
+                                                $badgeClass = 'badge-admin';
+                                            } elseif ($key === 'editor') {
+                                                $badgeClass = 'badge-editor';
+                                            } elseif ($key === 'viewer') {
+                                                $badgeClass = 'badge-viewer';
                                             }
                                         @endphp
-                                        <span class="badge u-badge-fixed {{ $style === '' ? $badgeClass : '' }}" @if($style) style="{{ $style }}" @endif>
+                                        <span class="badge u-badge-fixed {{ $badgeClass }}">
                                             {{ $role->name }}
                                         </span>
                                     @endforeach
                                 @endif
                             </td>
-                            <td class="py-2 text-center actions-col">
-                                <div class="d-inline-flex align-items-center">
-                                    <a href="{{ route('users.edit', ['user' => $u->id]) }}" class="btn btn-sm btn-info mr-1">
+                            <td class="py-3 text-center table-col-lg">
+                                <div class="d-flex flex-wrap justify-content-center gap-2">
+                                    <a href="{{ route('users.edit', ['user' => $u->id]) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-edit"></i> {{ __('users.index.buttons.edit') }}
                                     </a>
                                     @php($isSelf = (int)($u->id) === (int)auth()->id())
                                     @if(!$isSelf)
-                                        <form action="{{ route('users.toggle-block', ['user' => $u->id]) }}" method="POST" class="m-0 mr-1 js-confirm-delete-form"
+                                        <form action="{{ route('users.toggle-block', ['user' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form"
                                               data-confirm-message="{{ (bool)($u->is_blocked ?? false) ? __('users.index.confirm.unblock_user', ['name' => $u->name]) : __('users.index.confirm.block_user', ['name' => $u->name]) }}">
                                             @csrf
                                             <button class="btn btn-sm {{ (bool)($u->is_blocked ?? false) ? 'btn-success' : 'btn-warning' }}">
@@ -201,8 +234,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center p-4 text-muted">
-                                <i class="far fa-user mr-1"></i> {{ __('users.index.messages.empty') }}
+                            <td colspan="6" class="text-center p-4 text-muted">
+                                <i class="far fa-user me-2"></i> {{ __('users.index.messages.empty') }}
                             </td>
                         </tr>
                     @endforelse
@@ -228,7 +261,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalSyncEntraLabel"><i class="fab fa-microsoft mr-1"></i> {{ __('users.index.entra.title') }}</h5>
+                    <h5 class="modal-title" id="modalSyncEntraLabel"><i class="fab fa-microsoft me-2"></i> {{ __('users.index.entra.title') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="{{ __('users.index.buttons.close') }}">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -262,15 +295,15 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive border rounded">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="thead-light">
+                    <div class="table-responsive shadow-sm rounded-4">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead>
                                 <tr>
-                                    <th style="width:36px;" class="text-center">
+                                    <th class="table-col-icon text-center">
                                         <input type="checkbox" id="entraChkAll" aria-label="{{ __('users.index.entra.select_all') }}">
                                     </th>
-                                    <th style="min-width:260px;">{{ __('users.index.table.name') }}</th>
-                                    <th style="min-width:260px;">{{ __('users.index.table.email') }}</th>
+                                    <th class="table-col-lg">{{ __('users.index.table.name') }}</th>
+                                    <th class="table-col-lg">{{ __('users.index.table.email') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="entraTbody">
@@ -289,7 +322,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">{{ __('users.index.buttons.close') }}</button>
                     <button type="button" id="entraBtnImport" class="btn btn-primary" disabled>
-                        <i class="fas fa-file-import mr-1"></i> {{ __('users.index.buttons.import_selected') }}
+                        <i class="fas fa-file-import me-2"></i> {{ __('users.index.buttons.import_selected') }}
                     </button>
                 </div>
             </div>
@@ -317,69 +350,6 @@
         </div>
     </div>
 @stop
-
-@push('css')
-<style>
-/* Avatar con inicial */
-.avatar-initial{
-    width:32px;height:32px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    background:#e2e8f0;color:#334155;font-weight:700;font-size:.9rem;flex:0 0 32px;
-}
-/* Ellipsis en email */
-.cell-ellipsis{display:inline-block;max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-/* Rol: columna fija + badge tamaño uniforme */
-.role-col{ width:140px; text-align:center; }
-.status-col{ width:140px; text-align:center !important; }
- 
-/* Base (otros roles) */
-.badge-role{ background:#eef2ff;color:#4338ca;border:1px solid rgba(67,56,202,.15);font-weight:600; }
-/* Colores solicitados */
-.badge-admin  { background:#fee2e2; color:#b91c1c; border:1px solid rgba(185,28,28,.25); font-weight:700; }
-.badge-editor { background:#fef9c3; color:#a16207; border:1px solid rgba(161,98,7,.25);  font-weight:700; }
-.badge-viewer{ background:#dcfce7; color:#166534; border:1px solid rgba(22,101,52,.25);  font-weight:700; }
-/* Ancho uniforme de cada badge */
-.u-badge-fixed{ display:inline-block;width:90px;text-align:center;white-space:nowrap; }
-/* Acciones: centrado + ancho fijo */
-.actions-col{ width:180px; text-align:center !important; }
-
-/* Encabezado SOLO de Usuarios */
-.users-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:.75rem;
-    flex-wrap:wrap; /* si no entra, baja solo el bloque de acciones */
-}
-.users-header .actions{
-    display:flex;flex-wrap:wrap;gap:.5rem;
-}
-.users-header .actions .btn{
-    min-width:auto;  /* anula min-width global */
-    margin:0;        /* usamos gap, no margin */
-    white-space:nowrap;
-}
-.users-header h1{ color:#212529 !important; } /* mismo tono que “Grupos” */
-
-/* Controles de filtros: que no se desborden y mantengan altura */
-#usersFilterForm #usersFilterBtns .btn{
-    min-width:0;     /* anula el min-width global de .btn */
-    flex:1 1 0;      /* se reparten el ancho */
-}
-#usersFilterForm .form-control,
-#usersFilterForm select,
-#usersFilterForm #usersFilterBtns .btn{
-    height:44px;
-}
-#usersFilterForm #usersFilterBtns{ gap:.5rem; }
-
-/* Responsive: botones del header en ancho completo si hace falta */
-@media (max-width:768px){
-    .users-header .actions{ width:100%; }
-    .users-header .actions .btn{ flex:1 1 220px; }
-}
-</style>
-@endpush
 
 @section('js')
 <script>

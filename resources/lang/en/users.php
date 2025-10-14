@@ -29,8 +29,11 @@ return [
     'index' => [
         'card_title' => 'User list',
         'filters' => [
+            'search_label' => 'Search',
             'search_placeholder' => 'Search by name or email',
+            'role_label' => 'Role',
             'role_all' => 'All roles',
+            'status_label' => 'Status',
             'status_all' => 'All statuses',
             'status_active' => 'Active',
             'status_blocked' => 'Blocked',

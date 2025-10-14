@@ -57,6 +57,9 @@
         @endswitch
     @endif
 
+    {{-- Custom design system --}}
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+
     {{-- Extra Configured Plugins Stylesheets --}}
     @include('adminlte::plugins', ['type' => 'css'])
 

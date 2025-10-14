@@ -117,17 +117,17 @@ return [
     |--------------------------------------------------------------------------
     */
     'classes_body' => '',
-    'classes_brand' => 'd-flex justify-content-center align-items-center',
-    'classes_brand_text' => '',
-    'classes_content_wrapper' => '',
-    'classes_content_header' => '',
-    'classes_content' => '',
+    'classes_brand' => 'd-flex justify-content-center align-items-center bg-body-tertiary border-0 py-3',
+    'classes_brand_text' => 'fw-semibold text-primary',
+    'classes_content_wrapper' => 'content-wrapper bg-body-tertiary',
+    'classes_content_header' => 'container-fluid px-3 px-lg-4 pt-3 pb-2',
+    'classes_content' => 'container-fluid px-3 px-lg-4 pb-4',
     'classes_sidebar' => 'sidebar-dark-primary elevation-4',
     'classes_sidebar_nav' => '',
     'classes_topnav' => 'navbar-white navbar-light',
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
-    'classes_footer' => 'bg-white text-muted border-0 text-sm',
+    'classes_footer' => 'bg-body-tertiary text-muted border-0 text-sm py-3',
 
     /*
     |--------------------------------------------------------------------------

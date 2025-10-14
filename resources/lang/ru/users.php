@@ -29,7 +29,9 @@ return [
     'index' => [
         'card_title' => 'Список пользователей',
         'filters' => [
+            'role_label' => 'Роль',
             'search_placeholder' => 'Поиск по имени или email',
+            'status_label' => 'Статус',
             'role_all' => 'Все роли',
             'status_all' => 'Все статусы',
             'status_active' => 'Активные',
@@ -98,6 +100,7 @@ return [
         'entra' => [
             'title' => 'Импорт из Microsoft Entra',
             'search_label' => 'Поиск (имя или UPN)',
+            'role_label' => 'Роль',
             'search_placeholder' => 'Напр.: John или john@company.com',
             'domain_label' => 'Только домен',
             'domain_placeholder' => 'company.com',
@@ -164,3 +167,4 @@ return [
         'self_block' => 'Нельзя заблокировать собственную учетную запись.',
     ],
 ];
+

@@ -170,7 +170,7 @@
             <div class="col-lg-6 d-flex">
                 <x-adminlte-card title="{{ __('settings.guide.title') }}" icon="fas fa-info-circle text-lightblue"
                                  theme="primary" theme-mode="outline" class="flex-grow-1">
-                    <div class="d-flex flex-column h-100" style="gap: 1rem;">
+                    <div class="d-flex flex-column h-100 gap-3">
                         <div class="callout callout-info flex-grow-1 mb-0">
                             <h5 class="mb-2"><i class="fas fa-shield-alt mr-1"></i> {{ __('settings.guide.permissions.title') }}</h5>
                             <ul class="mb-0 ps-3">
@@ -288,7 +288,7 @@
         {{-- ========================================================== --}}
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex" style="gap: 0.75rem; width: 320px;">
+                <div class="d-flex flex-column flex-sm-row gap-3">
                     <x-adminlte-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <x-adminlte-button type="button" theme="secondary" label="{{ __('settings.actions.cancel') }}" icon="fas fa-times" class="btn-eq" onclick="window.history.back()"/>
                 </div>
