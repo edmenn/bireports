@@ -115,6 +115,11 @@ return [
             'upload' => [
                 'label' => 'Upload image (optional)',
                 'hint' => 'Accepted formats: JPG, PNG, WEBP, GIF or SVG. Maximum 2 MB.',
+                'button' => 'Choose file',
+                'status' => [
+                    'empty' => 'No file selected',
+                    'selected' => 'Selected: :name',
+                ],
             ],
             'make_default' => [
                 'label' => 'Use this image as the default cover for reports without one',

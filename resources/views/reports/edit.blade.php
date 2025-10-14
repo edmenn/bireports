@@ -3,16 +3,17 @@
 @section('title', __('reports.edit.title'))
 
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h1 class="m-0">{{ __('reports.edit.title') }}</h1>
-
-        {{-- Acciones de header: ancho fijo + buen espaciado --}}
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
-                <i class="fas fa-arrow-left me-1"></i> {{ __("common.back") }}
+    {{-- Header: título a la izquierda, acciones a la derecha --}}
+    <div class="d-flex align-items-center justify-content-between w-100 mb-3" style="flex-wrap: nowrap;">
+        <div class="flex-grow-1 text-left">
+            <h1 class="m-0 font-weight-bold text-primary">{{ __('reports.edit.title') }}</h1>
+        </div>
+        <div class="text-right ml-auto d-flex flex-nowrap">
+            <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary mx-1">
+                <i class="fas fa-arrow-left mr-1"></i> {{ __("common.back") }}
             </a>
-            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-eq">
-                <i class="fas fa-chart-line me-1"></i> {{ __('reports.edit.view_report') }}
+            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-sm btn-primary mx-1">
+                <i class="fas fa-chart-line mr-1"></i> {{ __('reports.edit.view_report') }}
             </a>
         </div>
     </div>
@@ -21,8 +22,10 @@
 @section('content')
     @if(session('status'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}"></button>
+            <i class="fas fa-check-circle mr-2"></i>{{ session('status') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     @endif
 
@@ -34,7 +37,9 @@
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}"></button>
+            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}">
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
     @endif
 
@@ -47,93 +52,101 @@
 
         <div class="card-body">
             {{-- Datos base (solo lectura) --}}
-            <div class="row g-3">
+            <div class="row">
                 <div class="col-md-6">
-                    <label class="form-label">{{ __('reports.edit.form.read_only.title') }}</label>
+                    <label class="font-weight-bold">{{ __('reports.edit.form.read_only.title') }}</label>
                     <input type="text" class="form-control" value="{{ $report->name }}" readonly>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('reports.edit.form.read_only.workspace_id') }}</label>
+                    <label class="font-weight-bold">{{ __('reports.edit.form.read_only.workspace_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->workspace_id }}" readonly>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('reports.edit.form.read_only.report_id') }}</label>
+                    <label class="font-weight-bold">{{ __('reports.edit.form.read_only.report_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->id }}" readonly>
                 </div>
             </div>
 
             <hr class="my-4">
 
-            {{-- Preview actual (usa effective_cover_url) --}}
-            <div class="mb-3">
-                <label class="form-label">{{ __('reports.edit.form.preview.label') }}</label>
+            {{-- Preview solo visual --}}
+            <div class="mb-4">
+                <label class="font-weight-bold">{{ __('reports.edit.form.preview.label') }}</label>
                 <div id="previewBox"
-                     class="border rounded p-3 d-flex align-items-center gap-3"
-                     style="background:#fff8e1; min-height:140px;">
-                    <div class="flex-shrink-0"
-                         style="width: 220px; height: 130px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                        @php $cover = trim((string)($report->effective_cover_url ?? '')); @endphp
-                        @if($cover !== '')
-                            <img id="previewImg"
-                                 src="{{ $cover }}"
-                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
-                                 style="max-width:100%; max-height:100%; object-fit:cover;">
-                        @else
-                            {{-- Fallback: ícono BI amarillo/blanco --}}
-                            <svg id="previewSvg" style="width:70%; height:auto;" viewBox="0 0 128 128" aria-hidden="true">
-                                <defs>
-                                    <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#FFD93D"/>
-                                        <stop offset="100%" stop-color="#FFC107"/>
-                                    </linearGradient>
-                                </defs>
-                                <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
-                                <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
-                                <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
-                                <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
-                                <g transform="translate(28,50)" fill="#fff">
-                                    <rect x="0"   y="30" width="12" height="28" rx="2"/>
-                                    <rect x="20"  y="18" width="12" height="40" rx="2"/>
-                                    <rect x="40"  y="10" width="12" height="48" rx="2"/>
-                                    <rect x="60"  y="4"  width="12" height="54" rx="2"/>
-                                </g>
-                            </svg>
-                        @endif
-                    </div>
-                    <div class="text-muted small">
-                        {{ __('reports.edit.form.preview.hint') }}
-                    </div>
+                     class="border rounded p-3 d-flex align-items-center justify-content-center bg-light"
+                     style="min-height:160px;">
+                    @php $cover = trim((string)($report->effective_cover_url ?? '')); @endphp
+                    @if($cover !== '')
+                        <img id="previewImg"
+                             src="{{ $cover }}"
+                             alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
+                             style="max-width:100%; max-height:150px; object-fit:cover;">
+                    @else
+                        <svg id="previewSvg" style="width:70px; height:auto;" viewBox="0 0 128 128" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#FFD93D"/>
+                                    <stop offset="100%" stop-color="#FFC107"/>
+                                </linearGradient>
+                            </defs>
+                            <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
+                            <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
+                            <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
+                            <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
+                            <g transform="translate(28,50)" fill="#fff">
+                                <rect x="0"   y="30" width="12" height="28" rx="2"/>
+                                <rect x="20"  y="18" width="12" height="40" rx="2"/>
+                                <rect x="40"  y="10" width="12" height="48" rx="2"/>
+                                <rect x="60"  y="4"  width="12" height="54" rx="2"/>
+                            </g>
+                        </svg>
+                    @endif
                 </div>
+                <small class="text-muted d-block mt-2">{{ __('reports.edit.form.preview.hint') }}</small>
             </div>
 
-            {{-- Subir archivo (prioridad sobre URL) --}}
-            <div class="mb-2">
-                <label for="cover_file" class="form-label">{{ __('reports.edit.form.upload.label') }}</label>
-                <input type="file"
-                       name="cover_file"
-                       id="cover_file"
-                       class="form-control @error('cover_file') is-invalid @enderror"
-                       accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
+            {{-- Input de archivo debajo del cuadro --}}
+            <div class="mb-3">
+                <label for="cover_file" class="font-weight-bold">{{ __('reports.edit.form.upload.label') }}</label>
+                <div class="d-flex align-items-center flex-wrap custom-upload">
+                    <input type="file"
+                           name="cover_file"
+                           id="cover_file"
+                           class="@error('cover_file') is-invalid @enderror sr-only"
+                           accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
+                    <button type="button"
+                            id="cover_file_trigger"
+                            class="btn btn-outline-secondary mr-2 mb-2 mb-md-0">
+                        <i class="fas fa-folder-open mr-1"></i>{{ __('reports.edit.form.upload.button') }}
+                    </button>
+                    <span id="cover_file_status"
+                          class="text-muted small"
+                          aria-live="polite"
+                          data-status-empty="{{ __('reports.edit.form.upload.status.empty') }}"
+                          data-status-selected="{{ __('reports.edit.form.upload.status.selected') }}">
+                        {{ __('reports.edit.form.upload.status.empty') }}
+                    </span>
+                </div>
                 @error('cover_file')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
                 @else
-                    <div class="form-text">{{ __('reports.edit.form.upload.hint') }}</div>
+                    <small class="form-text text-muted">{{ __('reports.edit.form.upload.hint') }}</small>
                 @enderror
             </div>
 
-            {{-- Marcar como predeterminada (solo aplica a archivo subido) --}}
+            {{-- Checkbox predeterminado --}}
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" value="1" id="make_default" name="make_default"
                        {{ old('make_default') ? 'checked' : '' }}>
                 <label class="form-check-label" for="make_default">
                     {{ __('reports.edit.form.make_default.label') }}
                 </label>
-                <div class="form-text">{{ __('reports.edit.form.make_default.hint') }}</div>
+                <small class="form-text text-muted">{{ __('reports.edit.form.make_default.hint') }}</small>
             </div>
 
-            {{-- URL de imagen (opcional) --}}
+            {{-- URL alternativa --}}
             <div class="mb-3">
-                <label for="cover_url" class="form-label">{{ __('reports.edit.form.url.label') }}</label>
+                <label for="cover_url" class="font-weight-bold">{{ __('reports.edit.form.url.label') }}</label>
                 <input type="url"
                        name="cover_url"
                        id="cover_url"
@@ -143,13 +156,13 @@
                 @error('cover_url')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @else
-                    <div class="form-text">{{ __('reports.edit.form.url.hint') }}</div>
+                    <small class="form-text text-muted">{{ __('reports.edit.form.url.hint') }}</small>
                 @enderror
             </div>
 
             {{-- Descripción --}}
             <div class="mb-1 d-flex justify-content-between align-items-center">
-                <label for="description" class="form-label mb-0">{{ __('reports.edit.form.description.label') }}</label>
+                <label for="description" class="font-weight-bold mb-0">{{ __('reports.edit.form.description.label') }}</label>
                 <small class="text-muted"><span id="descCount">0</span>/2000</small>
             </div>
             <div class="mb-3">
@@ -164,7 +177,7 @@
                 @enderror
             </div>
 
-            {{-- Encendido fuera de ventana (on-demand) --}}
+            {{-- Checkbox extra --}}
             <div class="form-check form-switch mt-3">
                 <input class="form-check-input" type="checkbox" role="switch"
                        id="allow_resume_outside_window"
@@ -173,27 +186,30 @@
                 <label class="form-check-label" for="allow_resume_outside_window">
                     {{ __('reports.edit.form.allow_resume.label') }}
                 </label>
-                <div class="form-text">{{ __('reports.edit.form.allow_resume.hint') }}</div>
+                <small class="form-text text-muted">{{ __('reports.edit.form.allow_resume.hint') }}</small>
             </div>
 
         </div>
 
-        {{-- Footer: botones iguales y con buen aire --}}
-        <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">{{ __('reports.edit.buttons.cancel') }}</a>
-            <button type="submit" class="btn btn-primary btn-eq">{{ __('reports.edit.buttons.save') }}</button>
+        {{-- Footer: Save izquierda / Cancel derecha --}}
+        <div class="card-footer d-flex justify-content-between flex-wrap">
+            <button type="submit" class="btn btn-primary btn-eq">
+                <i class="fas fa-save mr-1"></i> {{ __('reports.edit.buttons.save') }}
+            </button>
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
+                <i class="fas fa-times mr-1"></i> {{ __('reports.edit.buttons.cancel') }}
+            </a>
         </div>
     </form>
 @stop
 
 @push('css')
 <style>
-/* Ancho mínimo uniforme para todos los botones de acción */
-.btn-eq{ min-width: 138px; }
-
-/* En móviles, que los botones puedan ocupar todo el ancho y no queden pegados */
-@media (max-width: 480px){
-    .btn-eq{ flex: 1 1 auto; }
+.btn-eq { min-width: 140px; }
+#previewBox img, #previewBox svg { transition: all .2s ease-in-out; }
+#previewBox:hover { background-color: #fff3cd; }
+@media (max-width: 480px) {
+    .btn-eq { flex: 1 1 auto; margin-top: .5rem; }
 }
 </style>
 @endpush
@@ -201,17 +217,18 @@
 @push('js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const fileInput  = document.getElementById('cover_file');
-    const urlInput   = document.getElementById('cover_url');
-    const descInput  = document.getElementById('description');
-    const descCount  = document.getElementById('descCount');
+    const fileInput   = document.getElementById('cover_file');
+    const fileTrigger = document.getElementById('cover_file_trigger');
+    const fileStatus  = document.getElementById('cover_file_status');
+    const urlInput    = document.getElementById('cover_url');
+    const descInput   = document.getElementById('description');
+    const descCount   = document.getElementById('descCount');
+    const previewBox  = document.getElementById('previewBox');
+    let previewImg    = document.getElementById('previewImg');
+    let previewSvg    = document.getElementById('previewSvg');
+    const statusEmpty    = fileStatus?.dataset.statusEmpty || '';
+    const statusSelected = fileStatus?.dataset.statusSelected || '';
 
-    // Preview elements
-    const previewBox = document.getElementById('previewBox');
-    let previewImg   = document.getElementById('previewImg'); // puede no existir
-    let previewSvg   = document.getElementById('previewSvg'); // puede no existir
-
-    // --- Contador descripción ---
     function updateDescCount() {
         const len = (descInput?.value || '').length;
         if (descCount) descCount.textContent = String(len);
@@ -221,96 +238,67 @@ document.addEventListener('DOMContentLoaded', function () {
         descInput.addEventListener('input', updateDescCount, {passive:true});
     }
 
-    // --- Helpers de preview ---
     function showImagePreview(src) {
         if (!previewImg) {
-            // crear el <img> si no existe
             previewImg = document.createElement('img');
             previewImg.id = 'previewImg';
             previewImg.style.maxWidth  = '100%';
-            previewImg.style.maxHeight = '100%';
+            previewImg.style.maxHeight = '150px';
             previewImg.style.objectFit = 'cover';
-            // reemplazar SVG si existe
-            const box = previewBox.querySelector('div.flex-shrink-0');
-            if (previewSvg && previewSvg.parentNode) previewSvg.parentNode.removeChild(previewSvg);
-            box.appendChild(previewImg);
+            previewBox.innerHTML = '';
+            previewBox.appendChild(previewImg);
         }
         previewImg.src = src;
     }
 
     function showFallbackSvg() {
-        // Si hay un <img>, lo quitamos y reponemos SVG
-        const holder = previewBox.querySelector('div.flex-shrink-0');
-        if (previewImg && previewImg.parentNode) {
-            previewImg.parentNode.removeChild(previewImg);
-            previewImg = null;
-        }
-        if (!previewSvg) {
-            const ns = 'http://www.w3.org/2000/svg';
-            previewSvg = document.createElementNS(ns, 'svg');
-            previewSvg.setAttribute('id', 'previewSvg');
-            previewSvg.setAttribute('viewBox', '0 0 128 128');
-            previewSvg.setAttribute('aria-hidden', 'true');
-            previewSvg.setAttribute('style', 'width:70%; height:auto;');
-
-            const defs = document.createElementNS(ns, 'defs');
-            const grad = document.createElementNS(ns, 'linearGradient');
-            grad.setAttribute('id', 'biYellow');
-            grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
-            grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
-            const s1 = document.createElementNS(ns, 'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#FFD93D');
-            const s2 = document.createElementNS(ns, 'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#FFC107');
-            grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad);
-
-            const rect1 = document.createElementNS(ns, 'rect'); rect1.setAttribute('x','8'); rect1.setAttribute('y','28'); rect1.setAttribute('width','112'); rect1.setAttribute('height','80'); rect1.setAttribute('rx','12'); rect1.setAttribute('fill','url(#biYellow)');
-            const rect1s = document.createElementNS(ns, 'rect'); rect1s.setAttribute('x','8'); rect1s.setAttribute('y','28'); rect1s.setAttribute('width','112'); rect1s.setAttribute('height','80'); rect1s.setAttribute('rx','12'); rect1s.setAttribute('fill','#000'); rect1s.setAttribute('opacity','.05');
-
-            const rect2 = document.createElementNS(ns, 'rect'); rect2.setAttribute('x','8'); rect2.setAttribute('y','18'); rect2.setAttribute('width','56'); rect2.setAttribute('height','20'); rect2.setAttribute('rx','6'); rect2.setAttribute('fill','url(#biYellow)');
-            const rect2s = document.createElementNS(ns, 'rect'); rect2s.setAttribute('x','8'); rect2s.setAttribute('y','18'); rect2s.setAttribute('width','56'); rect2s.setAttribute('height','20'); rect2s.setAttribute('rx','6'); rect2s.setAttribute('fill','#000'); rect2s.setAttribute('opacity','.05');
-
-            const g = document.createElementNS(ns, 'g'); g.setAttribute('transform','translate(28,50)'); g.setAttribute('fill','#fff');
-            const bars = [
-                {x:0,  y:30, w:12, h:28},
-                {x:20, y:18, w:12, h:40},
-                {x:40, y:10, w:12, h:48},
-                {x:60, y:4,  w:12, h:54},
-            ];
-            bars.forEach(b => {
-                const r = document.createElementNS(ns, 'rect');
-                r.setAttribute('x', String(b.x));
-                r.setAttribute('y', String(b.y));
-                r.setAttribute('width',  String(b.w));
-                r.setAttribute('height', String(b.h));
-                r.setAttribute('rx','2');
-                g.appendChild(r);
-            });
-
-            previewSvg.appendChild(defs);
-            previewSvg.appendChild(rect1); previewSvg.appendChild(rect1s);
-            previewSvg.appendChild(rect2); previewSvg.appendChild(rect2s);
-            previewSvg.appendChild(g);
-            holder.appendChild(previewSvg);
-        }
+        previewBox.innerHTML = `
+            <svg id="previewSvg" style="width:70px; height:auto;" viewBox="0 0 128 128" aria-hidden="true">
+                <defs>
+                    <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#FFD93D"/>
+                        <stop offset="100%" stop-color="#FFC107"/>
+                    </linearGradient>
+                </defs>
+                <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
+                <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
+                <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
+                <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
+                <g transform="translate(28,50)" fill="#fff">
+                    <rect x="0" y="30" width="12" height="28" rx="2"/>
+                    <rect x="20" y="18" width="12" height="40" rx="2"/>
+                    <rect x="40" y="10" width="12" height="48" rx="2"/>
+                    <rect x="60" y="4"  width="12" height="54" rx="2"/>
+                </g>
+            </svg>`;
+        previewImg = null;
     }
 
-    // --- Eventos de preview ---
+    if (fileTrigger && fileInput) {
+        fileTrigger.addEventListener('click', () => fileInput.click());
+    }
+
     if (fileInput) {
+        if (fileStatus && statusEmpty) {
+            fileStatus.textContent = statusEmpty;
+        }
+
         fileInput.addEventListener('change', function () {
             const file = this.files && this.files[0];
+            if (fileStatus) {
+                fileStatus.textContent = file
+                    ? statusSelected.replace(':name', file.name)
+                    : statusEmpty;
+            }
             if (file) {
-                // Prioridad archivo > URL: si hay archivo, limpiamos URL
                 if (urlInput) urlInput.value = '';
                 const reader = new FileReader();
                 reader.onload = e => showImagePreview(e.target.result);
                 reader.readAsDataURL(file);
             } else {
-                // si quitó el archivo, ver si hay URL válida
                 const url = (urlInput?.value || '').trim();
-                if (url) {
-                    showImagePreview(url);
-                } else {
-                    showFallbackSvg();
-                }
+                if (url) showImagePreview(url);
+                else showFallbackSvg();
             }
         });
     }
@@ -318,15 +306,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if (urlInput) {
         urlInput.addEventListener('input', function () {
             const val = (this.value || '').trim();
-            // Solo previsualizar URL si NO hay archivo seleccionado
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
                 if (val) {
                     try {
-                        // Validación básica de URL
                         const u = new URL(val);
                         showImagePreview(u.href);
                     } catch (_) {
-                        // URL inválida → mostramos fallback
                         showFallbackSvg();
                     }
                 } else {

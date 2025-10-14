@@ -115,6 +115,11 @@ return [
             'upload' => [
                 'label' => 'Subir imagen (opcional)',
                 'hint' => 'Formatos permitidos: JPG, PNG, WEBP, GIF o SVG. Máximo 2 MB.',
+                'button' => 'Seleccionar archivo',
+                'status' => [
+                    'empty' => 'Ningún archivo seleccionado',
+                    'selected' => 'Archivo seleccionado: :name',
+                ],
             ],
             'make_default' => [
                 'label' => 'Usar esta imagen como predeterminada para reportes sin portada',
