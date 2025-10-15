@@ -38,6 +38,7 @@ return [
         'badge_bg_label' => 'Цвет фона',
         'badge_text_label' => 'Цвет текста/границы',
         'buttons' => [
+            'back' => 'Назад',
             'save' => 'Сохранить',
             'cancel' => 'Отмена',
             'delete' => 'Удалить',

@@ -38,6 +38,7 @@ return [
         'badge_bg_label' => 'Cor de fundo',
         'badge_text_label' => 'Cor do texto/borda',
         'buttons' => [
+            'back' => 'Voltar',
             'save' => 'Salvar',
             'cancel' => 'Cancelar',
             'delete' => 'Excluir',
