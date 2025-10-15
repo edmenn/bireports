@@ -78,18 +78,16 @@ class RoleController extends Controller
         return redirect()->route('roles.index')->with('success', __('profiles.flash.created'));
     }
 
-    public function edit(Role $rol): View
+    public function edit(Role $role): View
     {
-        $role = $rol;
         [$sections, $allPermissions] = $this->buildPermissionSections();
         $isAdmin = (mb_strtolower($role->name) === 'admin');
         $current = $isAdmin ? $allPermissions : $role->permissions()->pluck('name')->all();
         return view('roles.edit', compact('role','sections','allPermissions','current','isAdmin'));
     }
 
-    public function update(Request $request, Role $rol): RedirectResponse
+    public function update(Request $request, Role $role): RedirectResponse
     {
-        $role = $rol;
         $data = $request->validate([
             'name' => ['required','string','max:150','unique:roles,name,'.$role->id],
             'permissions' => ['nullable','array'],
@@ -146,9 +144,8 @@ class RoleController extends Controller
         return redirect()->route('roles.index')->with('success', __('profiles.flash.updated'));
     }
 
-    public function destroy(Role $rol): RedirectResponse
+    public function destroy(Role $role): RedirectResponse
     {
-        $role = $rol;
         if (in_array(mb_strtolower($role->name), ['admin'], true)) {
             return back()->with('error', __('profiles.flash.cannot_delete_admin'));
         }
