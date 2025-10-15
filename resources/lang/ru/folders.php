@@ -25,6 +25,7 @@ return [
         'groups_label' => 'Группы',
         'reports_label' => 'Отчеты',
         'buttons' => [
+            'back' => 'Назад',
             'save' => 'Сохранить',
             'cancel' => 'Отмена',
         ],

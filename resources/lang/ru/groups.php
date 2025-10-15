@@ -23,6 +23,7 @@ return [
         'description_placeholder' => 'Опишите назначение группы.',
         'users_label' => 'Участники группы',
         'buttons' => [
+            'back' => 'Назад',
             'save' => 'Сохранить',
             'cancel' => 'Отмена',
         ],

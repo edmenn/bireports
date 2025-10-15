@@ -137,6 +137,7 @@ return [
         'object_id' => 'Object ID (Entra)',
         'entra_label' => 'Entra',
         'buttons' => [
+            'back' => 'Back',
             'save' => 'Save',
             'cancel' => 'Cancel',
         ],

@@ -23,11 +23,12 @@
         <x-adminlte-alert theme="danger" title="{{ __('users.alerts.error') }}" dismissable class="mb-2">{{ session('error') }}</x-adminlte-alert>
     @endif
 
-    <x-adminlte-card title="{{ __('users.page.create') }}" icon="fas fa-user-plus text-lightblue"
-                     theme="primary" theme-mode="outline" class="mt-3">
+    <form action="{{ route('users.store') }}" method="POST" novalidate>
+        @csrf
 
-        <form action="{{ route('users.store') }}" method="POST" novalidate>
-            @csrf
+        {{-- Card 1: User Details --}}
+        <x-adminlte-card title="{{ __('users.page.create') }}" icon="fas fa-user-plus text-lightblue"
+                         theme="primary" theme-mode="outline" class="mt-3" body-class="pb-2">
 
             {{-- Name --}}
             <div class="form-group">
@@ -80,23 +81,27 @@
                 </select>
                 @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+        </x-adminlte-card>
 
-            {{-- Buttons --}}
-            <div class="d-flex justify-content-end flex-wrap gap-2 mt-3">
-                <button class="btn btn-primary" type="submit">
-                    <i class="fas fa-save mr-1"></i>{{ __('users.form.buttons.save') }}
-                </button>
-                <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-times mr-1"></i>{{ __('users.form.buttons.cancel') }}
-                </a>
+        {{-- Card 2: Action Buttons --}}
+        <x-adminlte-card theme="primary" theme-mode="outline" class="mt-3">
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="actions-group">
+                    {{-- Save first --}}
+                    <x-adminlte-button type="submit" theme="primary" label="{{ __('users.form.buttons.save') }}" icon="fas fa-save" class="btn-eq action-btn"/>
+                    {{-- Cancel goes back --}}
+                    <button type="button" onclick="history.back()" class="btn btn-secondary action-btn">
+                        <i class="fas fa-times mr-1"></i>{{ __('users.form.buttons.cancel') }}
+                    </button>
+                </div>
             </div>
-        </form>
-    </x-adminlte-card>
+        </x-adminlte-card>
+    </form>
 @stop
 
 @push('css')
 <style>
-/* --- Header alignment and buttons --- */
+/* ===== Header buttons ===== */
 .header-actions {
     display: flex;
     flex-wrap: wrap;
@@ -104,10 +109,8 @@
     justify-content: flex-end;
     gap: .5rem;
 }
-
 .header-actions a.btn,
-.header-actions button.btn,
-.header-actions form button.btn {
+.header-actions button.btn {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -115,57 +118,39 @@
     line-height: 1 !important;
     padding: 0 .9rem !important;
     font-size: .875rem !important;
-    margin: 0 !important;
 }
-
 .header-actions i {
     font-size: .9rem;
     margin-right: .4rem;
 }
 
-.header-actions form {
-    margin: 0 !important;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-/* --- Header button consistency --- */
-.header-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 36px !important;
-    min-width: 120px;
-    padding: 0 .75rem;
-    font-size: .85rem;
-    line-height: 1.1 !important;
-    white-space: nowrap;
-}
-.header-btn i { font-size: .9rem; margin-right: .35rem; }
-
-@media (max-width: 992px){
-    .header-actions { justify-content: center !important; }
-    .header-btn { min-width: 110px; height: 34px !important; font-size: .8rem; padding: 0 .6rem; }
-}
-
-/* --- Form compact style --- */
+/* ===== Form compact style ===== */
 .form-control, .custom-select {
     height: calc(2.2rem + 2px);
     padding: .35rem .6rem;
     font-size: .9rem;
 }
 
-/* --- Buttons at form bottom --- */
-.btn {
-    min-width: 120px;
-    height: 38px;
+/* ===== Equal action buttons (Save / Cancel) ===== */
+.actions-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .75rem;
+}
+.actions-group .action-btn {
+    height: 38px !important;
+    min-width: 140px;
     font-size: .875rem;
     font-weight: 600;
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
+    line-height: 1 !important;
 }
-.btn i { font-size: .9rem; margin-right: .4rem; }
+.actions-group .action-btn i {
+    font-size: .9rem;
+    margin-right: .35rem;
+}
 </style>
 @endpush

@@ -25,6 +25,7 @@ return [
         'groups_label' => 'Grupos',
         'reports_label' => 'Relatórios',
         'buttons' => [
+            'back' => 'Voltar',
             'save' => 'Salvar',
             'cancel' => 'Cancelar',
         ],

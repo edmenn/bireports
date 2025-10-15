@@ -14,59 +14,73 @@
 @stop
 
 @section('content')
-    <form action="{{ route('groups.store') }}" method="POST">
+    {{-- Disable browser native validation bubbles --}}
+    <form action="{{ route('groups.store') }}" method="POST" novalidate>
         @csrf
 
-        {{-- Card 1: Group Details --}}
+        {{-- CARD 1: Group details --}}
         <x-adminlte-card title="{{ __('groups.cards.details.title') }}" icon="fas fa-users text-lightblue"
-                         theme="primary" theme-mode="outline" class="mt-3" body-class="pb-2">
+                         theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
-                <div class="col-12 mb-3">
-                    <x-adminlte-input name="name" label="{{ __('groups.form.name_label') }}" placeholder="{{ __('groups.form.name_placeholder') }}"
-                        value="{{ old('name') }}" required
-                        class="form-control-sm @error('name') is-invalid @enderror"/>
+                {{-- Name --}}
+                <div class="col-md-6 mb-3">
+                    <x-adminlte-input name="name"
+                        label="{{ __('groups.form.name_label') }}"
+                        placeholder="{{ __('groups.form.name_placeholder') }}"
+                        value="{{ old('name') }}"
+                        required
+                        class="@error('name') is-invalid @enderror"/>
                     @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
 
-                <div class="col-12">
-                    <x-adminlte-textarea name="description" label="{{ __('groups.form.description_label') }}" rows="3"
+                {{-- Description --}}
+                <div class="col-md-6 mb-3">
+                    <x-adminlte-textarea name="description"
+                        label="{{ __('groups.form.description_label') }}"
+                        rows="1"
                         placeholder="{{ __('groups.form.description_placeholder') }}"
-                        class="form-control-sm @error('description') is-invalid @enderror">{{ old('description') }}</x-adminlte-textarea>
+                        class="@error('description') is-invalid @enderror"
+                        data-no-required="true">{{ old('description') }}</x-adminlte-textarea>
                     @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
             </div>
         </x-adminlte-card>
 
-        {{-- Card 2: Assignments (Users) --}}
+        {{-- CARD 2: Assignments (Users) --}}
         <x-adminlte-card title="{{ __('groups.cards.assignments.title') }}" icon="fas fa-user-check text-lightblue"
-                         theme="primary" theme-mode="outline" class="mt-3" body-class="pb-2">
-            <div class="row">
+                         theme="primary" theme-mode="outline" class="mb-3">
+            <div class="row g-3">
                 <div class="col-md-12 d-flex flex-column">
-                    <label class="font-weight-semibold mb-2">{{ __('groups.form.users_label') }}</label>
-                    <div class="checkbox-list-container p-3 border rounded flex-grow-1 bg-light">
+                    <label class="fw-semibold mb-2">{{ __('groups.form.users_label') }}</label>
+                    <div class="checkbox-list-container p-3 border rounded flex-grow-1">
                         @forelse($users as $user)
                             <div class="custom-control custom-checkbox mb-2">
-                                <input class="custom-control-input" type="checkbox"
-                                       name="users[]" value="{{ $user->id }}" id="user_{{ $user->id }}"
+                                <input type="checkbox" class="custom-control-input" name="users[]"
+                                       value="{{ $user->id }}" id="user_{{ $user->id }}"
                                        @checked(in_array($user->id, old('users', [])))>
                                 <label class="custom-control-label" for="user_{{ $user->id }}">
                                     {{ $user->name }} <small class="text-muted">&lt;{{ $user->email }}&gt;</small>
                                 </label>
                             </div>
                         @empty
-                            <p class="text-muted mb-0">{{ __('groups.empty.users') }}</p>
+                            <p class="text-muted small mb-0">{{ __('groups.empty.users') }}</p>
                         @endforelse
                     </div>
                 </div>
             </div>
         </x-adminlte-card>
 
-        {{-- Card 3: Action Buttons --}}
-        <x-adminlte-card theme="primary" theme-mode="outline" class="mt-3">
-            <div class="d-flex justify-content-center align-items-center">
-                <div class="actions-group">
-                    <x-adminlte-button type="submit" theme="primary" label="{{ __('groups.form.buttons.save') }}" icon="fas fa-save" class="btn-eq action-btn"/>
-                    <x-adminlte-button :href="route('groups.index')" theme="secondary" label="{{ __('groups.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq action-btn"/>
+        {{-- CARD 3: Actions --}}
+        <x-adminlte-card theme="primary" theme-mode="outline">
+            <div class="d-flex justify-content-center">
+                <div class="d-flex gap-3" style="width: 320px;">
+                    {{-- Save first --}}
+                    <x-adminlte-button type="submit" theme="primary"
+                        label="{{ __('groups.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
+                    {{-- Cancel goes back --}}
+                    <button type="button" onclick="history.back()" class="btn btn-secondary btn-eq">
+                        <i class="fas fa-times mr-1"></i>{{ __('groups.form.buttons.cancel') }}
+                    </button>
                 </div>
             </div>
         </x-adminlte-card>
@@ -75,7 +89,7 @@
 
 @push('css')
 <style>
-/* ===== Header buttons ===== */
+/* ===== Header actions ===== */
 .header-actions {
     display: flex;
     flex-wrap: wrap;
@@ -83,37 +97,68 @@
     justify-content: flex-end;
     gap: .5rem;
 }
-.header-actions a.btn,
-.header-actions button.btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 38px !important;
-    line-height: 1 !important;
-    padding: 0 .9rem !important;
-    font-size: .875rem !important;
+.header-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    line-height: 1;
+    padding: 0 .9rem;
+    font-size: .875rem;
 }
-.header-actions i {
+.header-btn i {
     font-size: .9rem;
     margin-right: .4rem;
 }
 
-/* ===== Checkbox list ===== */
+/* ===== Checkbox containers ===== */
 .checkbox-list-container {
     max-height: 300px;
     overflow-y: auto;
     background-color: #f8f9fa;
 }
-.custom-control { margin-bottom: .5rem; }
+.custom-control { margin-bottom: 0.4rem; }
+.custom-control-label { font-size: 0.9rem; }
+
+/* ===== Inputs and textarea visual consistency ===== */
+input.form-control,
+textarea.form-control {
+    border: 1px solid #ced4da !important;
+    border-radius: .375rem !important;
+    padding: .5rem .75rem !important;
+    box-shadow: none !important;
+    height: 42px !important;
+}
+textarea.form-control { resize: none !important; }
+
+/* ===== Disable browser native validation visuals ===== */
+input:invalid,
+textarea:invalid,
+input:required,
+textarea:required {
+    box-shadow: none !important;
+    border-color: #ced4da !important;
+    outline: none !important;
+}
+::-webkit-validation-bubble,
+::-webkit-validation-bubble-arrow,
+::-webkit-validation-bubble-message {
+    display: none !important;
+}
+:focus:invalid {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== Focus style ===== */
+input:focus,
+textarea:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.1rem rgba(0,123,255,.25) !important;
+}
 
 /* ===== Equal action buttons ===== */
-.actions-group {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: .75rem;
-}
-.actions-group .action-btn {
+.btn-eq {
     height: 38px !important;
     min-width: 140px;
     font-size: .875rem;
@@ -123,7 +168,7 @@
     justify-content: center;
     line-height: 1 !important;
 }
-.actions-group .action-btn i {
+.btn-eq i {
     font-size: .9rem;
     margin-right: .35rem;
 }

@@ -2,6 +2,9 @@
 
 @section('title', __('users.page.title'))
 
+{{-- =========================
+     HEADER
+     ========================= --}}
 @section('content_header')
     {{-- Header with title on the left and compact, evenly spaced actions on the right (Bootstrap 4 + AdminLTE 3) --}}
     <x-page-header :title="__('users.page.title')" icon="fas fa-users">
@@ -36,6 +39,9 @@
     </x-page-header>
 @stop
 
+{{-- =========================
+     CONTENT
+     ========================= --}}
 @section('content')
     {{-- Flash messages --}}
     @if (session('success')) <x-adminlte-alert theme="success" title="{{ __('users.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-adminlte-alert> @endif
@@ -81,7 +87,9 @@
     <x-adminlte-card title="{{ __('users.index.card_title') }}" icon="fas fa-users text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
-        {{-- Filters + bulk actions --}}
+        {{-- =========================
+             FILTERS + BULK ACTIONS
+             ========================= --}}
         <div class="p-3">
             {{-- Compact, Bootstrap 4-friendly controls --}}
             <form id="usersFilterForm" method="GET" class="row align-items-end mb-3" role="search" aria-label="{{ __('users.index.filters.search') }}">
@@ -128,7 +136,7 @@
                 </div>
             </form>
 
-            {{-- Bulk toolbar --}}
+            {{-- Bulk toolbar (kept; labels remain) --}}
             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                 <small class="text-muted mb-2 mb-sm-0">
                     {{ __('users.index.bulk.selected_prefix') }} <span id="selCountUsers">0</span>
@@ -147,7 +155,9 @@
             </div>
         </div>
 
-        {{-- Users table --}}
+        {{-- =========================
+             USERS TABLE
+             ========================= --}}
         <div class="table-responsive shadow-sm rounded-4">
             <table class="table table-striped table-hover align-middle mb-0" id="usersTable">
                 <thead class="thead-light">
@@ -204,7 +214,7 @@
                                             $key = strtolower($role->name);
                                             $badgeClass = 'badge-role';
                                             if (!empty($role->badge_bg) || !empty($role->badge_text)) {
-            $badgeClass = 'badge-role role-badge-' . $role->getKey();
+                                                $badgeClass = 'badge-role role-badge-' . $role->getKey();
                                             } elseif ($key === 'admin') {
                                                 $badgeClass = 'badge-admin';
                                             } elseif ($key === 'editor') {
@@ -218,31 +228,40 @@
                                 @endif
                             </td>
                             <td class="py-3 text-center table-col-lg">
-                                {{-- Equal-sized action buttons with consistent spacing --}}
+                                {{-- Icon-only, compact actions (28x28) --}}
                                 <div class="actions-group">
-                                    <a href="{{ route('users.edit', ['user' => $u->id]) }}" class="btn btn-sm btn-info action-btn">
-                                        <i class="fas fa-edit"></i> {{ __('users.index.buttons.edit') }}
+                                    {{-- Edit --}}
+                                    <a href="{{ route('users.edit', ['user' => $u->id]) }}"
+                                       class="btn btn-outline-info btn-icon"
+                                       title="{{ __('users.index.buttons.edit') }}">
+                                        <i class="fas fa-pen"></i>
                                     </a>
 
                                     @php($isSelf = (int)($u->id) === (int)auth()->id())
                                     @if(!$isSelf)
+                                        {{-- Block / Unblock --}}
                                         <form action="{{ route('users.toggle-block', ['user' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form">
                                             @csrf
-                                            <button class="btn btn-sm {{ (bool)($u->is_blocked ?? false) ? 'btn-success' : 'btn-warning' }} action-btn">
+                                            <button type="submit"
+                                                    class="btn btn-icon {{ (bool)($u->is_blocked ?? false) ? 'btn-outline-success' : 'btn-outline-warning' }}"
+                                                    title="{{ (bool)($u->is_blocked ?? false) ? __('users.index.buttons.unblock') : __('users.index.buttons.block') }}">
                                                 <i class="fas {{ (bool)($u->is_blocked ?? false) ? 'fa-unlock' : 'fa-user-lock' }}"></i>
-                                                {{ (bool)($u->is_blocked ?? false) ? __('users.index.buttons.unblock') : __('users.index.buttons.block') }}
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('users.destroy', ['user' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form">
+                                        {{-- Delete (trash can) --}}
+                                        <form action="{{ route('users.destroy', ['user' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form"
+                                              onsubmit="return confirm('{{ __('users.index.confirm.delete') }}');">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-sm btn-danger action-btn">
-                                                <i class="fas fa-trash-alt"></i> {{ __('users.index.buttons.delete') }}
+                                            <button type="submit" class="btn btn-outline-danger btn-icon" title="{{ __('users.index.buttons.delete') }}">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     @else
-                                        <button class="btn btn-sm btn-danger action-btn" disabled title="{{ __('users.index.messages.self_delete') }}">
-                                            <i class="fas fa-ban"></i> {{ __('users.index.buttons.delete') }}
+                                        {{-- Self delete disabled --}}
+                                        <button type="button" class="btn btn-outline-danger btn-icon" disabled
+                                                title="{{ __('users.index.messages.self_delete') }}">
+                                            <i class="fas fa-ban"></i>
                                         </button>
                                     @endif
                                 </div>
@@ -259,7 +278,9 @@
             </table>
         </div>
 
-        {{-- Card footer with pagination and counter --}}
+        {{-- =========================
+             FOOTER (pagination + counter)
+             ========================= --}}
         <x-slot name="footerSlot">
             <div class="d-flex justify-content-between align-items-center w-100">
                 <small class="text-muted mb-0">
@@ -272,7 +293,9 @@
         </x-slot>
     </x-adminlte-card>
 
-    {{-- Modal: Import users from Microsoft Entra --}}
+    {{-- =========================
+         MODAL: Microsoft Entra import
+         ========================= --}}
     <div class="modal fade" id="modalSyncEntra" tabindex="-1" role="dialog" aria-labelledby="modalSyncEntraLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -346,7 +369,9 @@
         </div>
     </div>
 
-    {{-- Generic confirmation modal --}}
+    {{-- =========================
+         MODAL: Generic confirmation
+         ========================= --}}
     <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -368,99 +393,43 @@
     </div>
 @stop
 
+{{-- =========================
+     VIEW-SPECIFIC CSS (keeps BS4/AdminLTE3)
+     ========================= --}}
 @push('css')
 <style>
-/* ===== Header buttons: identical size, consistent spacing, perfect vertical alignment ===== */
-.header-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: .5rem;
-}
-
+/* Header actions: aligned and consistent */
+.header-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.5rem; }
+.header-actions form { display:flex; align-items:center; margin:0; padding:0; }
 .header-actions a.btn,
 .header-actions button.btn,
 .header-actions form button.btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 38px !important;
-    line-height: 1 !important;
-    padding: 0 .9rem !important;
-    font-size: .875rem !important;
-    margin: 0 !important;
+    display:inline-flex !important; align-items:center !important; justify-content:center !important;
+    height:38px !important; line-height:1 !important; padding:0 .9rem !important; font-size:.875rem !important;
 }
+.header-actions i { font-size:.9rem; margin-right:.4rem; }
 
-.header-actions i {
-    font-size: .9rem;
-    margin-right: .4rem;
-}
-
-.header-actions form {
-    margin: 0 !important;
-    padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-}
-/* Unify visual metrics for every top-right button */
-.header-btn{
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    height:36px !important;
-    min-width:120px;
-    padding:0 .75rem;
-    font-size:.85rem;
-    line-height:1.1 !important;
-    white-space:nowrap;
-}
+/* Unify top-right buttons (optional visual touch) */
+.header-btn{ display:inline-flex !important; align-items:center !important; justify-content:center !important;
+    height:36px !important; min-width:120px; padding:0 .75rem; font-size:.85rem; line-height:1.1 !important; white-space:nowrap; }
 .header-btn i{ font-size:.9rem; margin-right:.35rem; }
-.header-actions .btn{ vertical-align:middle !important; }
+@media (max-width: 992px){ .header-actions{ justify-content:center !important; } .header-btn{ min-width:110px; height:34px !important; font-size:.8rem; padding:0 .6rem; } }
 
-@media (max-width: 992px){
-    .header-actions{ justify-content:center !important; }
-    .header-btn{ min-width:110px; height:34px !important; font-size:.8rem; padding:0 .6rem; }
-}
-
-/* ===== Filters: compact inputs and equal buttons ===== */
-#usersFilterForm .form-control,
-#usersFilterForm .custom-select{
-    height:calc(1.9rem + 2px);
-    padding:.25rem .5rem;
-    font-size:.875rem;
-}
+/* Filters: compact inputs and equal buttons */
+#usersFilterForm .form-control, #usersFilterForm .custom-select{ height:calc(1.9rem + 2px); padding:.25rem .5rem; font-size:.875rem; }
 #usersFilterForm .form-label{ font-weight:600; font-size:.85rem; }
-
 .filter-actions{ display:flex; flex-direction:column; }
 @media (min-width:992px){ .filter-actions{ flex-direction:row; } }
-
 .filter-actions .filter-btn{
-    height:38px;
-    min-width:120px;
-    font-size:.875rem;
-    font-weight:600;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:.5rem;
+    height:38px; min-width:120px; font-size:.875rem; font-weight:600;
+    display:inline-flex; align-items:center; justify-content:center; margin-bottom:.5rem;
 }
 .filter-actions .filter-btn i{ font-size:.9rem; }
-@media (min-width:992px){
-    .filter-actions .filter-btn{ margin-bottom:0; }
-    .filter-actions .filter-btn + .filter-btn{ margin-left:.5rem; }
-}
+@media (min-width:992px){ .filter-actions .filter-btn{ margin-bottom:0; } .filter-actions .filter-btn + .filter-btn{ margin-left:.5rem; } }
 
-/* ===== Avatars and badges ===== */
-.avatar-initial{
-    width:36px; height:36px; border-radius:50%;
-    background:#f0f2f5; color:#555;
-    display:flex; align-items:center; justify-content:center;
-    font-weight:600;
-}
+/* Avatars and role badges */
+.avatar-initial{ width:36px; height:36px; border-radius:50%; background:#f0f2f5; color:#555; display:flex; align-items:center; justify-content:center; font-weight:600; }
 .u-badge-fixed{ font-size:.75rem; padding:.35rem .55rem; border-radius:8px; font-weight:600; }
-
-/* Role fallback palettes (kept) */
 .badge-admin{ background:#dc3545; color:#fff; }
 .badge-editor{ background:#17a2b8; color:#fff; }
 .badge-viewer{ background:#6c757d; color:#fff; }
@@ -469,27 +438,25 @@
 table th, table td{ vertical-align:middle !important; }
 .pagination{ margin-bottom:0 !important; }
 
-/* ===== Row actions: equal width/height and even spacing ===== */
-.actions-group{
-    display:flex; flex-wrap:wrap; justify-content:center;
-    margin:-4px;
+/* Actions group: uniform spacing */
+.actions-group{ display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:.35rem; }
+
+/* Icon-only compact buttons inside tables.
+   Override global .btn min-width (from your theme) to avoid huge buttons. */
+.table .btn-icon{
+    min-width:auto !important; width:28px !important; height:28px !important;
+    border-radius:4px !important; padding:0 !important;
+    display:inline-flex !important; align-items:center; justify-content:center;
+    line-height:1 !important; font-size:.8rem !important;
 }
-.actions-group .action-btn{
-    margin:4px;
-    height:34px;
-    padding:.25rem .6rem;
-    min-width:120px;
-    line-height:1.2;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    white-space:nowrap;
-    font-size:.8rem;
-}
-.actions-group .action-btn i{ font-size:.9rem; margin-right:.35rem; }
+.table .btn-icon i{ margin:0 !important; font-size:.8rem !important; }
+.table .btn-icon:hover{ transform:scale(1.1); transition:all .15s ease-in-out; }
 </style>
 @endpush
 
+{{-- =========================
+     VIEW-SPECIFIC JS
+     ========================= --}}
 @section('js')
 <script>
 /* i18n strings used by JS */

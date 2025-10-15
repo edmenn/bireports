@@ -23,6 +23,7 @@ return [
         'description_placeholder' => 'Describe the purpose of the group.',
         'users_label' => 'Group members',
         'buttons' => [
+            'back' => 'Back',
             'save' => 'Save',
             'cancel' => 'Cancel',
         ],
