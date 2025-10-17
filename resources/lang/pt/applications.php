@@ -46,6 +46,7 @@ return [
     ],
     'confirm' => [
         'delete' => 'Tem certeza de que deseja excluir esta aplicação?',
+        'cancel' => 'Deseja descartar as alterações e voltar?',
     ],
     'fields' => [
         'name' => 'Nome',

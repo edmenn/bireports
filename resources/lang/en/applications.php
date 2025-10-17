@@ -46,6 +46,7 @@ return [
     ],
     'confirm' => [
         'delete' => 'Are you sure you want to delete this application?',
+        'cancel' => 'Discard changes and go back?',
     ],
     'fields' => [
         'name' => 'Name',
