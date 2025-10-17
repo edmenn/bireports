@@ -106,6 +106,7 @@ return [
     'portal' => [
         'title' => 'My applications',
         'subtitle' => 'Launch an application to browse its reports',
+        'card_title' => 'Application list',
         'empty_title' => 'No applications assigned',
         'empty_description' => 'Your assigned applications will appear here when administrators publish them.',
         'reports_count' => 'Reports',

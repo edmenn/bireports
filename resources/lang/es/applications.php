@@ -106,6 +106,7 @@ return [
     'portal' => [
         'title' => 'Mis aplicaciones',
         'subtitle' => 'Accedé a una aplicación para navegar sus reportes',
+        'card_title' => 'Lista de aplicaciones',
         'empty_title' => 'No tenés aplicaciones asignadas',
         'empty_description' => 'Cuando los administradores publiquen tus aplicaciones asignadas, las vas a ver acá.',
         'reports_count' => 'Reportes',
