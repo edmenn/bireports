@@ -3,65 +3,56 @@
 @section('title', __('reports.edit.title'))
 
 @section('content_header')
-    {{-- Header: título a la izquierda, acciones a la derecha --}}
-    <div class="d-flex align-items-center justify-content-between w-100 mb-3" style="flex-wrap: nowrap;">
-        <div class="flex-grow-1 text-left">
-            <h1 class="m-0 font-weight-bold text-primary">{{ __('reports.edit.title') }}</h1>
-        </div>
-        <div class="text-right ml-auto d-flex flex-nowrap">
-            <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary mx-1">
-                <i class="fas fa-arrow-left mr-1"></i> {{ __("common.back") }}
+    {{-- Unified header with title, icon, and aligned actions --}}
+    <x-page-header :title="__('reports.edit.title')" icon="fas fa-edit">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ __('common.back') }}</span>
             </a>
-            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-sm btn-primary mx-1">
-                <i class="fas fa-chart-line mr-1"></i> {{ __('reports.edit.view_report') }}
+            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-sm header-btn">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ __('reports.edit.view_report') }}</span>
             </a>
         </div>
-    </div>
+    </x-page-header>
 @stop
 
 @section('content')
     @if(session('status'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('status') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+        <x-adminlte-alert theme="success" title="{{ __('reports.edit.alerts.success_title') }}" dismissable class="mb-2">
+            {{ session('status') }}
+        </x-adminlte-alert>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>{{ __('reports.edit.alerts.errors_title') }}</strong>
+        <x-adminlte-alert theme="danger" title="{{ __('reports.edit.alerts.errors_title') }}" dismissable class="mb-2">
             <ul class="mb-0">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+        </x-adminlte-alert>
     @endif
 
-    <form method="post"
-          action="{{ route('reports.update', $report) }}"
-          enctype="multipart/form-data"
-          class="card shadow-sm border-0">
-        @csrf
-        @method('PUT')
+    <x-adminlte-card title="{{ __('reports.edit.card_title') }}" icon="fas fa-edit text-lightblue"
+                     theme="primary" theme-mode="outline" class="mt-3" body-class="p-3">
 
-        <div class="card-body">
-            {{-- Datos base (solo lectura) --}}
+        <form method="post" action="{{ route('reports.update', $report) }}" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            {{-- Read-only base data --}}
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-6 mb-3">
                     <label class="font-weight-bold">{{ __('reports.edit.form.read_only.title') }}</label>
                     <input type="text" class="form-control" value="{{ $report->name }}" readonly>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <label class="font-weight-bold">{{ __('reports.edit.form.read_only.workspace_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->workspace_id }}" readonly>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mb-3">
                     <label class="font-weight-bold">{{ __('reports.edit.form.read_only.report_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->id }}" readonly>
                 </div>
@@ -69,7 +60,7 @@
 
             <hr class="my-4">
 
-            {{-- Preview solo visual --}}
+            {{-- Preview --}}
             <div class="mb-4">
                 <label class="font-weight-bold">{{ __('reports.edit.form.preview.label') }}</label>
                 <div id="previewBox"
@@ -105,17 +96,14 @@
                 <small class="text-muted d-block mt-2">{{ __('reports.edit.form.preview.hint') }}</small>
             </div>
 
-            {{-- Input de archivo debajo del cuadro --}}
+            {{-- Upload input --}}
             <div class="mb-3">
                 <label for="cover_file" class="font-weight-bold">{{ __('reports.edit.form.upload.label') }}</label>
                 <div class="d-flex align-items-center flex-wrap custom-upload">
-                    <input type="file"
-                           name="cover_file"
-                           id="cover_file"
+                    <input type="file" name="cover_file" id="cover_file"
                            class="@error('cover_file') is-invalid @enderror sr-only"
                            accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
-                    <button type="button"
-                            id="cover_file_trigger"
+                    <button type="button" id="cover_file_trigger"
                             class="btn btn-outline-secondary mr-2 mb-2 mb-md-0">
                         <i class="fas fa-folder-open mr-1"></i>{{ __('reports.edit.form.upload.button') }}
                     </button>
@@ -134,7 +122,7 @@
                 @enderror
             </div>
 
-            {{-- Checkbox predeterminado --}}
+            {{-- Default checkbox --}}
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" value="1" id="make_default" name="make_default"
                        {{ old('make_default') ? 'checked' : '' }}>
@@ -144,12 +132,10 @@
                 <small class="form-text text-muted">{{ __('reports.edit.form.make_default.hint') }}</small>
             </div>
 
-            {{-- URL alternativa --}}
+            {{-- Alternative URL --}}
             <div class="mb-3">
                 <label for="cover_url" class="font-weight-bold">{{ __('reports.edit.form.url.label') }}</label>
-                <input type="url"
-                       name="cover_url"
-                       id="cover_url"
+                <input type="url" name="cover_url" id="cover_url"
                        class="form-control @error('cover_url') is-invalid @enderror"
                        placeholder="{{ __('reports.edit.form.url.placeholder') }}"
                        value="{{ old('cover_url', $report->cover_url) }}">
@@ -160,16 +146,13 @@
                 @enderror
             </div>
 
-            {{-- Descripción --}}
+            {{-- Description --}}
             <div class="mb-1 d-flex justify-content-between align-items-center">
                 <label for="description" class="font-weight-bold mb-0">{{ __('reports.edit.form.description.label') }}</label>
                 <small class="text-muted"><span id="descCount">0</span>/2000</small>
             </div>
             <div class="mb-3">
-                <textarea name="description"
-                          id="description"
-                          rows="4"
-                          maxlength="2000"
+                <textarea name="description" id="description" rows="4" maxlength="2000"
                           class="form-control @error('description') is-invalid @enderror"
                           placeholder="{{ __('reports.edit.form.description.placeholder') }}">{{ old('description', $report->description) }}</textarea>
                 @error('description')
@@ -177,11 +160,10 @@
                 @enderror
             </div>
 
-            {{-- Checkbox extra --}}
+            {{-- Extra switch --}}
             <div class="form-check form-switch mt-3">
                 <input class="form-check-input" type="checkbox" role="switch"
-                       id="allow_resume_outside_window"
-                       name="allow_resume_outside_window" value="1"
+                       id="allow_resume_outside_window" name="allow_resume_outside_window" value="1"
                        {{ old('allow_resume_outside_window', $report->allow_resume_outside_window ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="allow_resume_outside_window">
                     {{ __('reports.edit.form.allow_resume.label') }}
@@ -189,25 +171,61 @@
                 <small class="form-text text-muted">{{ __('reports.edit.form.allow_resume.hint') }}</small>
             </div>
 
-        </div>
-
-        {{-- Footer: Save izquierda / Cancel derecha --}}
-        <div class="card-footer d-flex justify-content-between flex-wrap">
-            <button type="submit" class="btn btn-primary btn-eq">
-                <i class="fas fa-save mr-1"></i> {{ __('reports.edit.buttons.save') }}
-            </button>
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
-                <i class="fas fa-times mr-1"></i> {{ __('reports.edit.buttons.cancel') }}
-            </a>
-        </div>
-    </form>
+            <div class="d-flex justify-content-between flex-wrap mt-4">
+                <button type="submit" class="btn btn-primary btn-eq">
+                    <i class="fas fa-save mr-1"></i>{{ __('reports.edit.buttons.save') }}
+                </button>
+                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
+                    <i class="fas fa-times mr-1"></i>{{ __('reports.edit.buttons.cancel') }}
+                </a>
+            </div>
+        </form>
+    </x-adminlte-card>
 @stop
 
 @push('css')
 <style>
-.btn-eq { min-width: 140px; }
+/* Header buttons */
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+.header-actions a.btn,
+.header-actions button.btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 38px !important;
+    line-height: 1 !important;
+    padding: 0 .9rem !important;
+    font-size: .875rem !important;
+}
+.header-actions i { font-size: .9rem; margin-right: .4rem; }
+
+/* Form adjustments */
+.form-control {
+    height: calc(1.9rem + 2px);
+    font-size: .875rem;
+}
+.btn-eq {
+    min-width: 140px;
+    height: calc(1.9rem + 2px);
+    font-size: .875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.btn-eq i { font-size: .9rem; margin-right: .3rem; }
+
+/* Preview */
 #previewBox img, #previewBox svg { transition: all .2s ease-in-out; }
 #previewBox:hover { background-color: #fff3cd; }
+
+/* Responsive buttons */
 @media (max-width: 480px) {
     .btn-eq { flex: 1 1 auto; margin-top: .5rem; }
 }
@@ -279,9 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (fileInput) {
-        if (fileStatus && statusEmpty) {
-            fileStatus.textContent = statusEmpty;
-        }
+        if (fileStatus && statusEmpty) fileStatus.textContent = statusEmpty;
 
         fileInput.addEventListener('change', function () {
             const file = this.files && this.files[0];

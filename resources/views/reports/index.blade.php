@@ -3,18 +3,18 @@
 @section('title', __('reports.index.title'))
 
 @section('content_header')
-    {{-- Header container with title on the left and import button fully aligned to the right --}}
-    <div class="d-flex align-items-center justify-content-between w-100 mb-3" style="flex-wrap: nowrap;">
-        <div class="flex-grow-1 text-left">
-            <h1 class="m-0 font-weight-bold text-primary">{{ __('reports.index.title') }}</h1>
-            <small class="text-muted">{{ __('reports.index.subtitle') }}</small>
-        </div>
-        <div class="text-right ml-auto">
-            <a href="{{ route('powerbi.import.run') }}" class="btn btn-sm btn-outline-primary shadow-sm">
-                <i class="fas fa-cloud-download-alt"></i> {{ __('reports.index.import_now') }}
+    {{-- Unified header with title, icon, and aligned actions --}}
+    <x-page-header :title="__('reports.index.title')" icon="fas fa-chart-bar">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-primary btn-sm header-btn">
+                <i class="fas fa-cloud-download-alt"></i>
+                <span>{{ __('reports.index.import_now') }}</span>
             </a>
         </div>
-    </div>
+        <x-slot name="subtitle">
+            <small class="text-muted">{{ __('reports.index.subtitle') }}</small>
+        </x-slot>
+    </x-page-header>
 @stop
 
 @section('content')
