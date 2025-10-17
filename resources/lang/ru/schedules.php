@@ -5,7 +5,7 @@ return [
     'subtitle' => 'Локальные и Fabric (только для чтения)',
     'show_only_local' => 'Показать только локальные',
     'load_fabric' => 'Загрузить также Fabric',
-    'export_csv' => 'Экспорт CSV',
+    'export_excel' => 'Экспорт Excel',
     'filters' => [
         'type' => 'Тип',
         'all' => 'Все',

@@ -2,25 +2,32 @@
 
 @section('title', __('datasets.history.title'))
 
+{{-- =========================
+     HEADER
+     ========================= --}}
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div>
-            <h1 class="m-0">{{ __('datasets.history.title') }}</h1>
-            <small class="text-muted">{{ __('datasets.history.subtitle', ['workspace' => $workspace->name ?? $workspace->id, 'dataset' => $datasetId]) }}</small>
+    <x-page-header :title="__('datasets.history.title')" 
+                   :subtitle="__('datasets.history.subtitle', ['workspace' => $workspace->name ?? $workspace->id, 'dataset' => $datasetId])" 
+                   icon="fas fa-history">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('datasets.index') }}" class="btn btn-secondary btn-sm header-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ __('datasets.history.back') }}</span>
+            </a>
         </div>
-        <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ __('datasets.history.back') }}
-        </a>
-    </div>
+    </x-page-header>
 @stop
 
+{{-- =========================
+     CONTENT
+     ========================= --}}
 @section('content')
     @php $history = is_array($history ?? null) ? $history : []; @endphp
 
-    <div class="card">
-        <div class="card-body table-responsive p-0">
+    <x-adminlte-card theme="primary" theme-mode="outline" class="shadow-sm">
+        <div class="table-responsive datasets-table-wrap">
             <table class="table table-hover align-middle mb-0">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>{{ __('datasets.history.table.date') }}</th>
                         <th>{{ __('datasets.history.table.status') }}</th>
@@ -32,6 +39,7 @@
                 <tbody>
                     @forelse($history as $h)
                         <tr>
+                            {{-- Date --}}
                             <td class="text-nowrap text-monospace small" title="{{ $h['startTime'] ?? '' }}">
                                 @php
                                     $tz = \App\Support\AppTimezone::current();
@@ -40,15 +48,27 @@
                                         if (!empty($h['startTime'])) {
                                             $startFmt = \Carbon\Carbon::parse($h['startTime'])->setTimezone($tz)->format('d-m-Y H:i:s');
                                         }
-                                    } catch (\Throwable $e) { $startFmt = (string)($h['startTime'] ?? ''); }
+                                    } catch (\Throwable $e) { 
+                                        $startFmt = (string)($h['startTime'] ?? ''); 
+                                    }
                                 @endphp
                                 {{ $startFmt }}
                             </td>
+
+                            {{-- Status --}}
                             <td>
                                 @php $st = strtolower((string)($h['status'] ?? '')); @endphp
-                                <span class="badge {{ $st === 'completed' ? 'bg-success' : ($st === 'failed' ? 'bg-danger' : 'bg-secondary') }}">{{ $h['status'] ?? '' }}</span>
+                                <span class="badge {{ 
+                                    $st === 'completed' ? 'bg-success' : 
+                                    ($st === 'failed' ? 'bg-danger' : 
+                                    ($st === 'inprogress' ? 'bg-warning text-dark' : 'bg-secondary')) 
+                                }}">
+                                    {{ ucfirst($h['status'] ?? '') }}
+                                </span>
                             </td>
-                            <td>
+
+                            {{-- Duration --}}
+                            <td class="text-monospace small">
                                 @php
                                     $dur = '';
                                     if (!empty($h['startTime']) && !empty($h['endTime'])) {
@@ -61,16 +81,51 @@
                                 @endphp
                                 {{ $dur }}
                             </td>
-                            <td>{{ $h['requestedBy'] ?? '' }}</td>
-                            <td class="small text-muted">{{ $h['serviceExceptionJson'] ?? '' }}</td>
+
+                            {{-- Requested by --}}
+                            <td class="small">{{ $h['requestedBy'] ?? '' }}</td>
+
+                            {{-- Details --}}
+                            <td class="small text-muted">
+                                @if(!empty($h['serviceExceptionJson']))
+                                    <pre class="mb-0 small text-wrap" style="white-space: pre-wrap; word-break: break-word;">
+                                        {{ $h['serviceExceptionJson'] }}
+                                    </pre>
+                                @else
+                                    <span class="text-muted">{{ __('datasets.history.no_details') }}</span>
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">{{ __('datasets.history.empty') }}</td>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                {{ __('datasets.history.empty') }}
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
+    </x-adminlte-card>
 @stop
+
+{{-- =========================
+     STYLES
+     ========================= --}}
+@push('css')
+<style>
+.header-actions {
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:.5rem;
+}
+.header-btn {
+    display:inline-flex;align-items:center;justify-content:center;
+    height:38px;line-height:1;padding:0 .9rem;font-size:.875rem;
+}
+.header-btn i {font-size:.9rem;margin-right:.4rem;}
+.text-monospace {
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
+.table thead th {font-weight:600;}
+pre {background:transparent;border:none;padding:0;margin:0;}
+</style>
+@endpush

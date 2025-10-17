@@ -14,6 +14,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DatasetsController extends Controller
 {
@@ -202,9 +206,17 @@ class DatasetsController extends Controller
         ]);
     }
 
-    /** Export the combined schedule list as CSV. */
+    /** Export the combined schedule list as an Excel workbook. */
     public function schedulesExport(Request $request, PowerBiService $svc): StreamedResponse
     {
+        if (class_exists(\Debugbar::class)) {
+            \Debugbar::disable();
+        }
+        @ini_set('zlib.output_compression', 'Off');
+        while (ob_get_level() > 0) {
+            @ob_end_clean();
+        }
+
         $type      = $request->query('type', 'local');
         $workspace = trim((string) $request->query('workspace', ''));
         $day       = trim((string) $request->query('day', ''));
@@ -267,30 +279,109 @@ class DatasetsController extends Controller
             }
         }
 
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="dataset_schedules.csv"',
+        $columns = [
+            'source' => [
+                'header' => __('datasets.schedules.export.columns.source'),
+                'value'  => static function(array $row): string {
+                    $source = (string)($row['source'] ?? '');
+                    if ($source === 'local') {
+                        return __('datasets.schedules.badges.local');
+                    }
+                    if ($source === 'fabric') {
+                        return __('datasets.schedules.badges.fabric');
+                    }
+                    return $source;
+                },
+            ],
+            'workspace' => [
+                'header' => __('datasets.schedules.export.columns.workspace'),
+                'value'  => static fn(array $row): string => (string)($row['workspace'] ?? ''),
+            ],
+            'dataset_name' => [
+                'header' => __('datasets.schedules.export.columns.dataset_name'),
+                'value'  => static fn(array $row): string => (string)($row['dataset_name'] ?? ''),
+            ],
+            'dataset_id' => [
+                'header' => __('datasets.schedules.export.columns.dataset_id'),
+                'value'  => static fn(array $row): string => (string)($row['dataset_id'] ?? ''),
+            ],
+            'status' => [
+                'header' => __('datasets.schedules.export.columns.status'),
+                'value'  => static fn(array $row): string => ($row['enabled'] ?? false)
+                    ? __('datasets.schedules.enabled')
+                    : __('datasets.schedules.disabled'),
+            ],
+            'tz' => [
+                'header' => __('datasets.schedules.export.columns.tz'),
+                'value'  => static fn(array $row): string => (string)($row['tz'] ?? ''),
+            ],
+            'days' => [
+                'header' => __('datasets.schedules.export.columns.days'),
+                'value'  => static fn(array $row): string => implode(', ', (array)($row['days'] ?? [])),
+            ],
+            'times' => [
+                'header' => __('datasets.schedules.export.columns.times'),
+                'value'  => static fn(array $row): string => implode(', ', (array)($row['times'] ?? [])),
+            ],
+            'last_status' => [
+                'header' => __('datasets.schedules.export.columns.last_status'),
+                'value'  => static fn(array $row): string => (string)($row['last_status'] ?? ''),
+            ],
+            'last_at' => [
+                'header' => __('datasets.schedules.export.columns.last_at'),
+                'value'  => static fn(array $row): string => (string)($row['last_at'] ?? ''),
+            ],
         ];
 
-        return response()->streamDownload(function() use ($rows) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['source','workspace','dataset_name','dataset_id','enabled','tz','days','times','last_status','last_at']);
-            foreach ($rows as $r) {
-                fputcsv($out, [
-                    $r['source'] ?? '',
-                    $r['workspace'] ?? '',
-                    $r['dataset_name'] ?? '',
-                    $r['dataset_id'] ?? '',
-                    ($r['enabled'] ?? false) ? '1' : '0',
-                    $r['tz'] ?? '',
-                    implode(',', (array)($r['days'] ?? [])),
-                    implode(',', (array)($r['times'] ?? [])),
-                    $r['last_status'] ?? '',
-                    $r['last_at'] ?? '',
-                ]);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheetName = (string)__('datasets.schedules.export.sheet_name');
+        $sheet->setTitle(mb_substr($sheetName !== '' ? $sheetName : 'Sheet1', 0, 31));
+
+        $colIndex = 1;
+        foreach ($columns as $column) {
+            $coord = Coordinate::stringFromColumnIndex($colIndex) . '1';
+            $sheet->setCellValueExplicit($coord, (string)($column['header'] ?? ''), DataType::TYPE_STRING);
+            $sheet->getStyle($coord)->getFont()->setBold(true);
+            $colIndex++;
+        }
+
+        $rowIndex = 2;
+        foreach ($rows as $row) {
+            $colIndex = 1;
+            foreach ($columns as $column) {
+                $valueCallback = $column['value'] ?? static fn(array $r): string => '';
+                $value = $valueCallback($row);
+                $coord = Coordinate::stringFromColumnIndex($colIndex) . (string)$rowIndex;
+
+                if (is_int($value) || is_float($value)) {
+                    $sheet->setCellValueExplicit($coord, $value, DataType::TYPE_NUMERIC);
+                } else {
+                    $sheet->setCellValueExplicit($coord, (string)$value, DataType::TYPE_STRING);
+                }
+                $colIndex++;
             }
-            fclose($out);
-        }, 'dataset_schedules.csv', $headers);
+            $rowIndex++;
+        }
+
+        $totalColumns = count($columns);
+        for ($i = 1; $i <= $totalColumns; $i++) {
+            $columnLetter = Coordinate::stringFromColumnIndex($i);
+            $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $filename = __('datasets.schedules.export.filename') . '_' . now()->format('Ymd_His') . '.xlsx';
+        $writer   = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(static function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma'        => 'no-cache',
+        ]);
     }
 
     public function localScheduleStore(string $workspaceId, string $datasetId, Request $request): RedirectResponse

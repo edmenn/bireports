@@ -94,8 +94,10 @@ return [
         'subtitle' => 'Visão combinada dos agendamentos locais e do Fabric.',
         'show_only_local' => 'Mostrar apenas locais',
         'load_fabric' => 'Carregar agendamentos do Fabric',
-        'export_csv' => 'Exportar CSV',
+        'export_excel' => 'Exportar para Excel',
+        'back' => 'Voltar aos datasets',
         'filters' => [
+            'title' => 'Filtrar agendamentos',
             'type' => 'Origem',
             'workspace' => 'Workspace',
             'day' => 'Dia',
@@ -107,6 +109,7 @@ return [
             'local' => 'Locais',
             'fabric' => 'Fabric',
         ],
+        'table_title' => 'Lista de agendamentos',
         'table' => [
             'source' => 'Origem',
             'workspace' => 'Workspace',
@@ -127,6 +130,22 @@ return [
         'refresh_now' => 'Atualizar agora',
         'refresh_confirm' => 'Iniciar atualização agora?',
         'empty' => 'Nenhum agendamento encontrado.',
+        'export' => [
+            'sheet_name' => 'Agendamentos de datasets',
+            'filename' => 'agendamentos_datasets',
+            'columns' => [
+                'source' => 'Origem',
+                'workspace' => 'Área de trabalho',
+                'dataset_name' => 'Nome do dataset',
+                'dataset_id' => 'ID do dataset',
+                'status' => 'Status',
+                'tz' => 'Fuso horário',
+                'days' => 'Dias',
+                'times' => 'Horários',
+                'last_status' => 'Último status',
+                'last_at' => 'Última execução',
+            ],
+        ],
     ],
 
     'flash' => [

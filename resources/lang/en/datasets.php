@@ -28,7 +28,7 @@ return [
     'index' => [
         'tip_reload_metadata' => 'Tip: use "Actions -> Reload metadata" per row to avoid delays.',
         'empty' => [
-            'title' => 'No datasets found',
+        'title' => 'No datasets found',
             'hint' => 'Make sure you imported and have access to workspaces.',
         ],
         'table' => [
@@ -59,7 +59,7 @@ return [
         'subtitle' => 'Workspace: :workspace - Dataset: :dataset',
         'back' => 'Back to datasets',
         'fabric' => [
-            'title' => 'Fabric schedule summary',
+        'title' => 'Fabric schedule summary',
             'status' => 'Status',
             'timezone' => 'Time zone',
             'days' => 'Days',
@@ -67,7 +67,7 @@ return [
             'notification' => 'Notification',
         ],
         'local' => [
-            'title' => 'Local schedules',
+        'title' => 'Local schedules',
             'empty' => 'No local schedules defined.',
             'status' => 'Status',
             'last_result' => 'Last result',
@@ -90,12 +90,14 @@ return [
     ],
 
     'schedules' => [
-            'title' => 'Dataset schedules',
-            'subtitle' => 'Combined view of local and Fabric update plans.',
-            'show_only_local' => 'Show only local schedules',
-            'load_fabric' => 'Load Fabric schedules',
-        'export_csv' => 'Export CSV',
+        'title' => 'Dataset schedules',
+        'subtitle' => 'Combined view of local and Fabric update plans.',
+        'show_only_local' => 'Show only local schedules',
+        'load_fabric' => 'Load Fabric schedules',
+        'export_excel' => 'Export to Excel',
+        'back' => 'Back to datasets',
         'filters' => [
+            'title' => 'Filter schedules',
             'type' => 'Source',
             'workspace' => 'Workspace',
             'day' => 'Day',
@@ -107,6 +109,7 @@ return [
             'local' => 'Local',
             'fabric' => 'Fabric',
         ],
+        'table_title' => 'Schedules list',
         'table' => [
             'source' => 'Source',
             'workspace' => 'Workspace',
@@ -124,9 +127,25 @@ return [
         'enabled' => 'Enabled',
         'disabled' => 'Disabled',
         'last' => 'Last run:',
-            'refresh_now' => 'Run update now',
-            'refresh_confirm' => 'Run an update now?',
+        'refresh_now' => 'Run update now',
+        'refresh_confirm' => 'Run an update now?',
         'empty' => 'No schedules found.',
+        'export' => [
+            'sheet_name' => 'Dataset schedules',
+            'filename' => 'dataset_schedules',
+            'columns' => [
+                'source' => 'Source',
+                'workspace' => 'Workspace',
+                'dataset_name' => 'Dataset name',
+                'dataset_id' => 'Dataset ID',
+                'status' => 'Status',
+                'tz' => 'Time zone',
+                'days' => 'Days',
+                'times' => 'Times',
+                'last_status' => 'Last status',
+                'last_at' => 'Last run at',
+            ],
+        ],
     ],
 
     'flash' => [
