@@ -99,6 +99,11 @@ return [
         'title' => 'Edit report',
         'card_title' => 'Cover & description',
         'view_report' => 'View report',
+        'preview' => [
+            'card_title' => 'Report preview',
+            'scale_label' => 'Display size',
+            'scale_display' => 'Current size: :value%',
+        ],
         'alerts' => [
             'errors_title' => 'Please review the errors:',
             'close' => 'Close',
@@ -150,6 +155,8 @@ return [
         'cover_url_url' => 'The image must be a valid URL.',
         'cover_file_max' => 'The image must not exceed 2 MB.',
         'cover_file_mimetypes' => 'Allowed formats: JPG, PNG, WEBP, GIF or SVG.',
+        'cover_scale_between' => 'The display size must be between 50% and 150%.',
+        'cover_scale_numeric' => 'The display size must be a numeric value.',
     ],
 
     'flash' => [

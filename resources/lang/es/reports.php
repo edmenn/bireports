@@ -99,6 +99,11 @@ return [
         'title' => 'Editar reporte',
         'card_title' => 'Portada y descripción',
         'view_report' => 'Ver reporte',
+        'preview' => [
+            'card_title' => 'Vista previa del reporte',
+            'scale_label' => 'Tamaño en la lista',
+            'scale_display' => 'Tamaño actual: :value%',
+        ],
         'alerts' => [
             'errors_title' => 'Revisá los errores:',
             'close' => 'Cerrar',
@@ -150,6 +155,8 @@ return [
         'cover_url_url' => 'La imagen debe ser una URL válida.',
         'cover_file_max' => 'La imagen no debe superar los 2 MB.',
         'cover_file_mimetypes' => 'Formatos permitidos: JPG, PNG, WEBP, GIF o SVG.',
+        'cover_scale_between' => 'El tamaño debe estar entre 50% y 150%.',
+        'cover_scale_numeric' => 'El tamaño debe ser un valor numérico.',
     ],
 
     'flash' => [

@@ -168,10 +168,13 @@ class ReportsController extends Controller
             'cover_url'    => ['nullable', 'url', 'max:2048'],
             'cover_file'   => ['nullable','file','max:2048','mimetypes:image/jpeg,image/png,image/webp,image/gif,image/svg+xml'],
             'make_default' => ['nullable','boolean'],
+            'cover_scale'  => ['nullable','numeric','between:0.5,1.5'],
         ], [
             'cover_url.url'        => __('reports.validation.cover_url_url'),
             'cover_file.max'       => __('reports.validation.cover_file_max'),
             'cover_file.mimetypes' => __('reports.validation.cover_file_mimetypes'),
+            'cover_scale.between'  => __('reports.validation.cover_scale_between'),
+            'cover_scale.numeric'  => __('reports.validation.cover_scale_numeric'),
         ]);
 
         $makeDefault = (bool) ($validated['make_default'] ?? false);
@@ -208,6 +211,10 @@ class ReportsController extends Controller
         // --- Allow resume outside schedule window ---
         if ($request->has('allow_resume_outside_window')) {
             $report->allow_resume_outside_window = $request->boolean('allow_resume_outside_window');
+        }
+
+        if ($request->filled('cover_scale')) {
+            $report->cover_scale = (float) $request->input('cover_scale');
         }
 
         $report->save();

@@ -153,9 +153,13 @@
                            class="cover-link d-flex align-items-center justify-content-center w-100 h-100"
                            title="{{ __('reports.index.cards.open_title') }}">
                             @if($cover !== '')
-                                @php $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default'); @endphp
+                                @php
+                                    $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default');
+                                    $scale = number_format($r->cover_scale ?? 1, 3, '.', '');
+                                @endphp
                                 <img src="{{ $cover }}" alt="{{ __('reports.index.cards.cover_alt', ['name' => $r->name]) }}"
-                                     class="{{ $isDefault ? 'cover-default' : 'cover-full' }}">
+                                     class="cover-scale-target {{ $isDefault ? 'cover-default' : 'cover-full' }}"
+                                     style="transform: scale({{ $scale }});">
                             @else
                                 <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
                             @endif

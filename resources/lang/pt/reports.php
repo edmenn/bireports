@@ -99,6 +99,11 @@ return [
         'title' => 'Editar relatório',
         'card_title' => 'Capa e descrição',
         'view_report' => 'Ver relatório',
+        'preview' => [
+            'card_title' => 'Pré-visualização do relatório',
+            'scale_label' => 'Tamanho na lista',
+            'scale_display' => 'Tamanho atual: :value%',
+        ],
         'alerts' => [
             'errors_title' => 'Revise os erros:',
             'close' => 'Fechar',
@@ -145,6 +150,8 @@ return [
         'cover_url_url' => 'A imagem deve ser uma URL válida.',
         'cover_file_max' => 'A imagem não pode ultrapassar 2 MB.',
         'cover_file_mimetypes' => 'Formatos permitidos: JPG, PNG, WEBP, GIF ou SVG.',
+        'cover_scale_between' => 'O tamanho deve ficar entre 50% e 150%.',
+        'cover_scale_numeric' => 'O tamanho deve ser um valor numérico.',
     ],
 
     'flash' => [

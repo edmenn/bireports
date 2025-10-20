@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@include('portal.partials.report-card-styles')
+
 @section('title', __('reports.edit.title'))
 
 @section('content_header')
@@ -63,36 +65,72 @@
             {{-- Preview --}}
             <div class="mb-4">
                 <label class="font-weight-bold">{{ __('reports.edit.form.preview.label') }}</label>
-                <div id="previewBox"
-                     class="border rounded p-3 d-flex align-items-center justify-content-center bg-light"
-                     style="min-height:160px;">
-                    @php $cover = trim((string)($report->effective_cover_url ?? '')); @endphp
-                    @if($cover !== '')
-                        <img id="previewImg"
-                             src="{{ $cover }}"
-                             alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
-                             style="max-width:100%; max-height:150px; object-fit:cover;">
-                    @else
-                        <svg id="previewSvg" style="width:70px; height:auto;" viewBox="0 0 128 128" aria-hidden="true">
-                            <defs>
-                                <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#FFD93D"/>
-                                    <stop offset="100%" stop-color="#FFC107"/>
-                                </linearGradient>
-                            </defs>
-                            <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
-                            <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
-                            <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
-                            <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
-                            <g transform="translate(28,50)" fill="#fff">
-                                <rect x="0"   y="30" width="12" height="28" rx="2"/>
-                                <rect x="20"  y="18" width="12" height="40" rx="2"/>
-                                <rect x="40"  y="10" width="12" height="48" rx="2"/>
-                                <rect x="60"  y="4"  width="12" height="54" rx="2"/>
-                            </g>
-                        </svg>
-                    @endif
+                @php
+                    $scaleSource  = old('cover_scale', $report->cover_scale ?? 1);
+                    $scaleNumeric = is_numeric($scaleSource) ? (float) $scaleSource : 1.0;
+                    if ($scaleNumeric < 0.5 || $scaleNumeric > 1.5) {
+                        $percent     = (int) round($scaleNumeric);
+                        $percent     = $percent < 50 ? 50 : ($percent > 150 ? 150 : $percent);
+                        $storedScale = $percent / 100;
+                    } else {
+                        $storedScale = $scaleNumeric;
+                    }
+                    $initialScale = (int) round($storedScale * 100);
+                    $initialScale = $initialScale < 50 ? 50 : ($initialScale > 150 ? 150 : $initialScale);
+                    $scaleFactor  = $storedScale;
+                    $cover        = trim((string)($report->effective_cover_url ?? ''));
+                    $isDefaultCover = $cover !== '' && \Illuminate\Support\Str::contains($cover, 'report-covers/default');
+                @endphp
+                <div class="card card-outline card-secondary report-preview-card">
+                    <div class="card-header py-2">
+                        <h3 class="card-title mb-0">{{ __('reports.edit.preview.card_title') }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-card report-preview-tile shadow-none border">
+                            <div id="previewBox" class="report-cover bg-light">
+                                @if($cover !== '')
+                                    <img id="previewImg"
+                                         src="{{ $cover }}"
+                                         alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
+                                         class="cover-scale-target {{ $isDefaultCover ? 'cover-default' : 'cover-full' }}"
+                                         style="transform: scale({{ number_format($scaleFactor, 3, '.', '') }});">
+                                @else
+                                    <div id="previewFallback" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="px-3 pt-3 pb-2 text-center">
+                                <h3 class="h6 font-weight-bold text-dark mb-0 text-truncate" title="{{ $report->name }}">
+                                    {{ $report->name }}
+                                </h3>
+                                @if(!empty($report->workspace?->name))
+                                    <span class="badge badge-light border mt-2 d-inline-flex align-items-center justify-content-center px-2 py-1">
+                                        <i class="fas fa-layer-group mr-1"></i>{{ $report->workspace->name }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div id="previewControls" class="report-preview-controls {{ $cover !== '' ? '' : 'd-none' }}">
+                            <label for="cover_scale_slider" class="font-weight-bold mb-2">{{ __('reports.edit.preview.scale_label') }}</label>
+                            <input type="range"
+                                   class="custom-range"
+                                   id="cover_scale_slider"
+                                   min="50"
+                                   max="150"
+                                   step="1"
+                                   value="{{ $initialScale }}">
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small id="cover_scale_value"
+                                       class="text-muted font-weight-bold"
+                                       data-template="{{ __('reports.edit.preview.scale_display', ['value' => ':value']) }}">
+                                    {{ __('reports.edit.preview.scale_display', ['value' => $initialScale]) }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <input type="hidden" name="cover_scale" id="cover_scale" value="{{ number_format($storedScale, 4, '.', '') }}">
                 <small class="text-muted d-block mt-2">{{ __('reports.edit.form.preview.hint') }}</small>
             </div>
 
@@ -222,8 +260,13 @@
 .btn-eq i { font-size: .9rem; margin-right: .3rem; }
 
 /* Preview */
-#previewBox img, #previewBox svg { transition: all .2s ease-in-out; }
-#previewBox:hover { background-color: #fff3cd; }
+.report-preview-card { border-color: #d2d6de; border-radius: .5rem; }
+.report-preview-card .card-header { border-bottom: 1px solid #e1e6eb; border-top-left-radius: .5rem; border-top-right-radius: .5rem; }
+.report-preview-tile { border-style: dashed; border-color: #ced4da; border-radius: .75rem; }
+.report-preview-tile .report-cover { min-height: var(--cover-height, 170px); }
+.report-preview-tile .cover-scale-target { transition: transform .2s ease-in-out; transform-origin: center center; }
+.report-preview-controls { margin-top: 1.5rem; }
+.report-preview-controls .custom-range { height: 1.1rem; }
 
 /* Responsive buttons */
 @media (max-width: 480px) {
@@ -242,10 +285,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const descInput   = document.getElementById('description');
     const descCount   = document.getElementById('descCount');
     const previewBox  = document.getElementById('previewBox');
+    const previewControls = document.getElementById('previewControls');
+    const scaleSlider = document.getElementById('cover_scale_slider');
+    const scaleInput  = document.getElementById('cover_scale');
+    const scaleValue  = document.getElementById('cover_scale_value');
     let previewImg    = document.getElementById('previewImg');
-    let previewSvg    = document.getElementById('previewSvg');
+    let previewFallback = document.getElementById('previewFallback');
     const statusEmpty    = fileStatus?.dataset.statusEmpty || '';
     const statusSelected = fileStatus?.dataset.statusSelected || '';
+    const scaleTemplate      = scaleValue?.dataset.template || 'Current size: :value%';
+    const scaleMinPercent    = scaleSlider ? Number(scaleSlider.min || 50) : 50;
+    const scaleMaxPercent    = scaleSlider ? Number(scaleSlider.max || 150) : 150;
+    const defaultScaleFactor = scaleInput ? Number(scaleInput.value || 1) : 1;
+    const defaultPercent     = Math.round(defaultScaleFactor * 100);
 
     function updateDescCount() {
         const len = (descInput?.value || '').length;
@@ -256,40 +308,65 @@ document.addEventListener('DOMContentLoaded', function () {
         descInput.addEventListener('input', updateDescCount, {passive:true});
     }
 
-    function showImagePreview(src) {
+    if (previewImg) {
+        previewImg.dataset.defaultClass = previewImg.classList.contains('cover-default') ? 'cover-default' : 'cover-full';
+    }
+
+    function clampScale(value) {
+        const numeric = Number(value) || defaultPercent || 100;
+        return Math.min(scaleMaxPercent, Math.max(scaleMinPercent, numeric));
+    }
+
+    function togglePreviewControls(visible) {
+        if (!previewControls) return;
+        previewControls.classList.toggle('d-none', !visible);
+    }
+
+    function updateScaleDisplay(value, options = {}) {
+        const { syncInput = true, syncSlider = true } = options;
+        const normalized = clampScale(value);
+        if (scaleValue) {
+            scaleValue.textContent = scaleTemplate.replace(':value', String(normalized));
+        }
+        if (scaleInput && syncInput) {
+            scaleInput.value = (normalized / 100).toFixed(4);
+        }
+        if (scaleSlider && syncSlider) {
+            scaleSlider.value = normalized;
+        }
+        if (previewImg) {
+            previewImg.style.transform = `scale(${normalized / 100})`;
+        }
+    }
+
+    function showImagePreview(src, options = {}) {
+        const { imageClass } = options;
+        if (!previewBox) return;
         if (!previewImg) {
             previewImg = document.createElement('img');
             previewImg.id = 'previewImg';
-            previewImg.style.maxWidth  = '100%';
-            previewImg.style.maxHeight = '150px';
-            previewImg.style.objectFit = 'cover';
             previewBox.innerHTML = '';
             previewBox.appendChild(previewImg);
         }
+        const desiredClass = imageClass || previewImg.dataset.defaultClass || (src.includes('report-covers/default') ? 'cover-default' : 'cover-full');
+        previewImg.dataset.defaultClass = desiredClass;
+        previewImg.className = `cover-scale-target ${desiredClass}`;
         previewImg.src = src;
+        previewFallback = null;
+        togglePreviewControls(true);
+        const currentPercent = scaleInput ? Number(scaleInput.value) * 100 : defaultPercent;
+        updateScaleDisplay(currentPercent, { syncSlider: true, syncInput: true });
     }
 
-    function showFallbackSvg() {
+    function showFallbackIcon() {
+        if (!previewBox) return;
         previewBox.innerHTML = `
-            <svg id="previewSvg" style="width:70px; height:auto;" viewBox="0 0 128 128" aria-hidden="true">
-                <defs>
-                    <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#FFD93D"/>
-                        <stop offset="100%" stop-color="#FFC107"/>
-                    </linearGradient>
-                </defs>
-                <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
-                <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
-                <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
-                <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
-                <g transform="translate(28,50)" fill="#fff">
-                    <rect x="0" y="30" width="12" height="28" rx="2"/>
-                    <rect x="20" y="18" width="12" height="40" rx="2"/>
-                    <rect x="40" y="10" width="12" height="48" rx="2"/>
-                    <rect x="60" y="4"  width="12" height="54" rx="2"/>
-                </g>
-            </svg>`;
+            <div id="previewFallback" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+            </div>`;
         previewImg = null;
+        previewFallback = document.getElementById('previewFallback');
+        togglePreviewControls(false);
     }
 
     if (fileTrigger && fileInput) {
@@ -309,12 +386,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (file) {
                 if (urlInput) urlInput.value = '';
                 const reader = new FileReader();
-                reader.onload = e => showImagePreview(e.target.result);
+                reader.onload = e => showImagePreview(e.target.result, { imageClass: 'cover-full' });
                 reader.readAsDataURL(file);
             } else {
                 const url = (urlInput?.value || '').trim();
-                if (url) showImagePreview(url);
-                else showFallbackSvg();
+                if (url) showImagePreview(url, { imageClass: url.includes('report-covers/default') ? 'cover-default' : 'cover-full' });
+                else showFallbackIcon();
             }
         });
     }
@@ -326,15 +403,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (val) {
                     try {
                         const u = new URL(val);
-                        showImagePreview(u.href);
+                        const isDefault = u.href.includes('report-covers/default');
+                        showImagePreview(u.href, { imageClass: isDefault ? 'cover-default' : 'cover-full' });
                     } catch (_) {
-                        showFallbackSvg();
+                        showFallbackIcon();
                     }
                 } else {
-                    showFallbackSvg();
+                    showFallbackIcon();
                 }
             }
         }, {passive:true});
+    }
+
+    if (scaleSlider) {
+        scaleSlider.addEventListener('input', function () {
+            updateScaleDisplay(this.value, { syncInput: true, syncSlider: false });
+        }, {passive:true});
+        scaleSlider.addEventListener('change', function () {
+            updateScaleDisplay(this.value, { syncInput: true, syncSlider: false });
+        }, {passive:true});
+    }
+
+    if (previewImg) {
+        previewImg.classList.add('cover-scale-target');
+        togglePreviewControls(true);
+        const initialPercent = scaleInput ? Number(scaleInput.value) * 100 : defaultPercent;
+        updateScaleDisplay(initialPercent, { syncSlider: true, syncInput: true });
+    } else {
+        togglePreviewControls(false);
     }
 });
 </script>

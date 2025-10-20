@@ -98,6 +98,11 @@ return [
     'edit' => [
         'title' => 'Редактировать отчет',
         'view_report' => 'Просмотреть отчет',
+        'preview' => [
+            'card_title' => 'Предпросмотр отчета',
+            'scale_label' => 'Размер в списке',
+            'scale_display' => 'Текущий размер: :value%',
+        ],
         'alerts' => [
             'errors_title' => 'Проверьте ошибки:',
             'close' => 'Закрыть',
@@ -144,6 +149,8 @@ return [
         'cover_url_url' => 'Изображение должно быть корректным URL.',
         'cover_file_max' => 'Размер изображения не должен превышать 2 МБ.',
         'cover_file_mimetypes' => 'Допустимые форматы: JPG, PNG, WEBP, GIF или SVG.',
+        'cover_scale_between' => 'Размер должен находиться в диапазоне от 50% до 150%.',
+        'cover_scale_numeric' => 'Размер должен быть числовым значением.',
     ],
 
     'flash' => [

@@ -29,12 +29,14 @@ class Report extends Model
         'workspace_id',
         'dataset_id',
         'cover_url',
+        'cover_scale',
         'description',
         'allow_resume_outside_window',
     ];
 
     protected $casts = [
         'allow_resume_outside_window' => 'boolean',
+        'cover_scale' => 'float',
     ];
 
     /**
@@ -83,5 +85,23 @@ class Report extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Clamp the persisted cover scale to the supported range.
+     */
+    public function getCoverScaleAttribute($value): float
+    {
+        $numeric = is_numeric($value) ? (float) $value : 1.0;
+        return min(1.5, max(0.5, $numeric));
+    }
+
+    /**
+     * Persist cover scale keeping range constraints.
+     */
+    public function setCoverScaleAttribute($value): void
+    {
+        $numeric = is_numeric($value) ? (float) $value : 1.0;
+        $this->attributes['cover_scale'] = min(1.5, max(0.5, $numeric));
     }
 }

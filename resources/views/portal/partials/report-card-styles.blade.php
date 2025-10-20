@@ -40,6 +40,7 @@
             }
             .report-cover img.cover-full{ width:100%; height:100%; object-fit:cover; display:block; }
             .report-cover img.cover-default{ max-width:70%; max-height:70%; object-fit:contain; display:block; margin:auto; }
+            .report-cover .cover-scale-target{ transition: transform .2s ease-in-out; transform-origin:center center; }
             .bi-svg{ width:60%; max-height:80%; height:auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,.12)); }
 
             .description-clamp{
