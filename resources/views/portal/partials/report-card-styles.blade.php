@@ -35,12 +35,27 @@
             .report-cover{
                 height: var(--cover-height);
                 background: var(--cover-bg);
-                display:flex; align-items:center; justify-content:center;
+                display:flex;
+                align-items:center;
+                justify-content:center;
                 border-bottom:1px solid rgba(0,0,0,.05);
+                padding:.5rem;
             }
-            .report-cover img.cover-full{ width:100%; height:100%; object-fit:cover; display:block; }
-            .report-cover img.cover-default{ max-width:70%; max-height:70%; object-fit:contain; display:block; margin:auto; }
-            .report-cover .cover-scale-target{ transition: transform .2s ease-in-out; transform-origin:center center; }
+            .report-cover img.cover-full,
+            .report-cover img.cover-default{
+                max-width:100%;
+                max-height:100%;
+                width:auto;
+                height:auto;
+                object-fit:contain;
+                display:block;
+                margin:auto;
+                border-radius:.5rem;
+            }
+            .report-cover .cover-scale-target{
+                transition: transform .2s ease-in-out;
+                transform-origin:center center;
+            }
             .bi-svg{ width:60%; max-height:80%; height:auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,.12)); }
 
             .description-clamp{

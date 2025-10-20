@@ -103,6 +103,11 @@ return [
             'card_title' => 'Report preview',
             'scale_label' => 'Display size',
             'scale_display' => 'Current size: :value%',
+            'width_label' => 'Width',
+            'height_label' => 'Height',
+            'width_display' => 'Width: :value %',
+            'height_display' => 'Height: :value %',
+            'lock_label' => 'Lock aspect ratio',
         ],
         'alerts' => [
             'errors_title' => 'Please review the errors:',

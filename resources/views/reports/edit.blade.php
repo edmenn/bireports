@@ -75,57 +75,95 @@
                     } else {
                         $storedScale = $scaleNumeric;
                     }
-                    $initialScale = (int) round($storedScale * 100);
-                    $initialScale = $initialScale < 50 ? 50 : ($initialScale > 150 ? 150 : $initialScale);
+                    $sliderMin = 50;
+                    $sliderMax = 150;
+                    $initialSlider = (int) round($storedScale * 100);
+                    $initialSlider = $initialSlider < $sliderMin ? $sliderMin : ($initialSlider > $sliderMax ? $sliderMax : $initialSlider);
                     $scaleFactor  = $storedScale;
                     $cover        = trim((string)($report->effective_cover_url ?? ''));
                     $isDefaultCover = $cover !== '' && \Illuminate\Support\Str::contains($cover, 'report-covers/default');
                 @endphp
-                <div class="card card-outline card-secondary report-preview-card">
-                    <div class="card-header py-2">
-                        <h3 class="card-title mb-0">{{ __('reports.edit.preview.card_title') }}</h3>
+                <div class="report-preview-card">
+                    <div class="report-preview-header text-center">
+                        <span class="report-preview-icon mr-2"><i class="fas fa-chart-area"></i></span>
+                        <span class="report-preview-title">{{ __('reports.edit.preview.card_title') }}</span>
                     </div>
-                    <div class="card-body">
-                        <div class="report-card report-preview-tile shadow-none border">
-                            <div id="previewBox" class="report-cover bg-light">
-                                @if($cover !== '')
-                                    <img id="previewImg"
-                                         src="{{ $cover }}"
-                                         alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
-                                         class="cover-scale-target {{ $isDefaultCover ? 'cover-default' : 'cover-full' }}"
-                                         style="transform: scale({{ number_format($scaleFactor, 3, '.', '') }});">
-                                @else
-                                    <div id="previewFallback" class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+                    <div class="report-preview-body">
+                        <div class="preview-card-wrapper">
+                            <div class="report-card preview-card-tile shadow-sm mb-4 mx-auto">
+                                <div id="previewBox" class="report-cover">
+                                    <div class="cover-link preview-cover-link d-flex align-items-center justify-content-center w-100 h-100">
+                                        @if($cover !== '')
+                                            <img id="previewImg"
+                                                 src="{{ $cover }}"
+                                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
+                                                 class="cover-scale-target {{ $isDefaultCover ? 'cover-default' : 'cover-full' }}"
+                                                 style="transform: scale({{ number_format($scaleFactor, 3, '.', '') }}, {{ number_format($scaleFactor, 3, '.', '') }});">
+                                        @else
+                                            <div id="previewFallback" class="preview-fallback w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+                                            </div>
+                                        @endif
                                     </div>
-                                @endif
+                                </div>
+                                <div class="px-3 pt-3 pb-3 text-center">
+                                    <h3 class="h6 font-weight-bold text-dark mb-2 text-truncate" title="{{ $report->name }}">
+                                        {{ $report->name }}
+                                    </h3>
+                                    <div class="d-flex justify-content-center flex-wrap align-items-center">
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary mx-1 preview-action-btn"
+                                                title="{{ __('reports.index.cards.open_title') }}">
+                                            <i class="fas fa-chart-line mr-1"></i>{{ __('reports.index.actions.open') }}
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-warning mx-1 preview-action-btn"
+                                                title="{{ __('reports.index.cards.edit_title') }}">
+                                            <i class="fas fa-edit mr-1"></i>{{ __('reports.index.actions.edit') }}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="px-3 pt-3 pb-2 text-center">
-                                <h3 class="h6 font-weight-bold text-dark mb-0 text-truncate" title="{{ $report->name }}">
-                                    {{ $report->name }}
-                                </h3>
-                                @if(!empty($report->workspace?->name))
-                                    <span class="badge badge-light border mt-2 d-inline-flex align-items-center justify-content-center px-2 py-1">
-                                        <i class="fas fa-layer-group mr-1"></i>{{ $report->workspace->name }}
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                        <div id="previewControls" class="report-preview-controls {{ $cover !== '' ? '' : 'd-none' }}">
-                            <label for="cover_scale_slider" class="font-weight-bold mb-2">{{ __('reports.edit.preview.scale_label') }}</label>
-                            <input type="range"
-                                   class="custom-range"
-                                   id="cover_scale_slider"
-                                   min="50"
-                                   max="150"
-                                   step="1"
-                                   value="{{ $initialScale }}">
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small id="cover_scale_value"
-                                       class="text-muted font-weight-bold"
-                                       data-template="{{ __('reports.edit.preview.scale_display', ['value' => ':value']) }}">
-                                    {{ __('reports.edit.preview.scale_display', ['value' => $initialScale]) }}
-                                </small>
+                            <div id="previewControls" class="preview-control-card report-preview-controls {{ $cover !== '' ? '' : 'd-none' }}">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="cover_scale_slider" class="font-weight-bold mb-0">{{ __('reports.edit.preview.width_label') }}</label>
+                                        <small id="cover_scale_value"
+                                               class="text-muted font-weight-bold"
+                                               data-template="{{ __('reports.edit.preview.width_display', ['value' => ':value']) }}">
+                                            {{ __('reports.edit.preview.width_display', ['value' => $initialSlider]) }}
+                                        </small>
+                                    </div>
+                                    <input type="range"
+                                           class="custom-range preview-range"
+                                           id="cover_scale_slider"
+                                           min="{{ $sliderMin }}"
+                                           max="{{ $sliderMax }}"
+                                           step="1"
+                                           value="{{ $initialSlider }}">
+                                </div>
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="cover_scale_slider_y" class="font-weight-bold mb-0">{{ __('reports.edit.preview.height_label') }}</label>
+                                        <small id="cover_scale_value_y"
+                                               class="text-muted font-weight-bold"
+                                               data-template="{{ __('reports.edit.preview.height_display', ['value' => ':value']) }}">
+                                            {{ __('reports.edit.preview.height_display', ['value' => $initialSlider]) }}
+                                        </small>
+                                    </div>
+                                    <input type="range"
+                                           class="custom-range preview-range"
+                                           id="cover_scale_slider_y"
+                                           min="{{ $sliderMin }}"
+                                           max="{{ $sliderMax }}"
+                                           step="1"
+                                           value="{{ $initialSlider }}"
+                                           disabled>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="cover_scale_lock" checked>
+                                    <label class="custom-control-label font-weight-bold" for="cover_scale_lock">{{ __('reports.edit.preview.lock_label') }}</label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -260,17 +298,86 @@
 .btn-eq i { font-size: .9rem; margin-right: .3rem; }
 
 /* Preview */
-.report-preview-card { border-color: #d2d6de; border-radius: .5rem; }
-.report-preview-card .card-header { border-bottom: 1px solid #e1e6eb; border-top-left-radius: .5rem; border-top-right-radius: .5rem; }
-.report-preview-tile { border-style: dashed; border-color: #ced4da; border-radius: .75rem; }
-.report-preview-tile .report-cover { min-height: var(--cover-height, 170px); }
-.report-preview-tile .cover-scale-target { transition: transform .2s ease-in-out; transform-origin: center center; }
-.report-preview-controls { margin-top: 1.5rem; }
-.report-preview-controls .custom-range { height: 1.1rem; }
+.report-preview-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
+    overflow: hidden;
+}
+.report-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1rem .75rem;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.report-preview-icon { color: #007bff; font-size: 1.25rem; line-height: 1; }
+.report-preview-title { font-weight: 600; color: #1f2d3d; font-size: 1.05rem; }
+.report-preview-body {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.preview-card-wrapper {
+    max-width: 340px;
+    width: 100%;
+    margin: 0 auto;
+}
+.preview-card-wrapper .report-card {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+}
+.preview-card-tile {
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05) !important;
+    position: relative;
+    background: #fff;
+}
+.preview-fallback { color: #ced4da; }
+.preview-action-btn {
+    height: 38px;
+    padding: 0 .9rem;
+    font-size: .875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.preview-action-btn i { font-size: .875rem; }
+.report-preview-controls .form-group { margin-bottom: 1.25rem; }
+.preview-range { height: 1.1rem; }
+.report-preview-controls small { font-size: .8rem; }
+.preview-control-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
+    padding: 1.25rem;
+    margin: 1.5rem auto 0;
+    max-width: 340px;
+}
+.preview-control-card .form-group:last-child { margin-bottom: 0; }
+.preview-card-wrapper .preview-control-card { width: 100%; }
+.preview-cover-link {
+    width: 100%;
+    height: 100%;
+    border-radius: .5rem;
+    overflow: hidden;
+}
+.preview-cover-link .preview-fallback {
+    border-radius: .5rem;
+}
 
 /* Responsive buttons */
 @media (max-width: 480px) {
     .btn-eq { flex: 1 1 auto; margin-top: .5rem; }
+}
+@media (max-width: 576px) {
+    .preview-action-btn { flex: 1 1 auto; margin-top: .5rem; }
 }
 </style>
 @endpush
@@ -286,18 +393,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const descCount   = document.getElementById('descCount');
     const previewBox  = document.getElementById('previewBox');
     const previewControls = document.getElementById('previewControls');
-    const scaleSlider = document.getElementById('cover_scale_slider');
-    const scaleInput  = document.getElementById('cover_scale');
-    const scaleValue  = document.getElementById('cover_scale_value');
-    let previewImg    = document.getElementById('previewImg');
-    let previewFallback = document.getElementById('previewFallback');
+    const widthSlider  = document.getElementById('cover_scale_slider');
+    const heightSlider = document.getElementById('cover_scale_slider_y');
+    const lockToggle   = document.getElementById('cover_scale_lock');
+    const scaleInput   = document.getElementById('cover_scale');
+    const widthLabel   = document.getElementById('cover_scale_value');
+    const heightLabel  = document.getElementById('cover_scale_value_y');
+    let previewImg     = document.getElementById('previewImg');
     const statusEmpty    = fileStatus?.dataset.statusEmpty || '';
     const statusSelected = fileStatus?.dataset.statusSelected || '';
-    const scaleTemplate      = scaleValue?.dataset.template || 'Current size: :value%';
-    const scaleMinPercent    = scaleSlider ? Number(scaleSlider.min || 50) : 50;
-    const scaleMaxPercent    = scaleSlider ? Number(scaleSlider.max || 150) : 150;
-    const defaultScaleFactor = scaleInput ? Number(scaleInput.value || 1) : 1;
-    const defaultPercent     = Math.round(defaultScaleFactor * 100);
+    const sliderMin = widthSlider ? Number(widthSlider.min || 50) : 50;
+    const sliderMax = widthSlider ? Number(widthSlider.max || 150) : 150;
+    const scaleMin  = sliderMin / 100;
+    const scaleMax  = sliderMax / 100;
 
     function updateDescCount() {
         const len = (descInput?.value || '').length;
@@ -308,13 +416,20 @@ document.addEventListener('DOMContentLoaded', function () {
         descInput.addEventListener('input', updateDescCount, {passive:true});
     }
 
-    if (previewImg) {
-        previewImg.dataset.defaultClass = previewImg.classList.contains('cover-default') ? 'cover-default' : 'cover-full';
+    function clamp(value, min, max, fallback = min) {
+        const num = Number(value);
+        if (Number.isNaN(num)) return fallback;
+        return Math.min(max, Math.max(min, num));
     }
 
-    function clampScale(value) {
-        const numeric = Number(value) || defaultPercent || 100;
-        return Math.min(scaleMaxPercent, Math.max(scaleMinPercent, numeric));
+    function scaleFromSlider(sliderValue) {
+        const numeric = clamp(sliderValue, sliderMin, sliderMax, sliderMin);
+        return numeric / 100;
+    }
+
+    function sliderFromScale(scaleValue) {
+        const clamped = clamp(scaleValue, scaleMin, scaleMax, scaleMin);
+        return Math.round(clamped * 100);
     }
 
     function togglePreviewControls(visible) {
@@ -322,50 +437,88 @@ document.addEventListener('DOMContentLoaded', function () {
         previewControls.classList.toggle('d-none', !visible);
     }
 
-    function updateScaleDisplay(value, options = {}) {
-        const { syncInput = true, syncSlider = true } = options;
-        const normalized = clampScale(value);
-        if (scaleValue) {
-            scaleValue.textContent = scaleTemplate.replace(':value', String(normalized));
+    function ensurePreviewContainer() {
+        if (!previewBox) return null;
+        let container = previewBox.querySelector('.preview-cover-link');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'cover-link preview-cover-link d-flex align-items-center justify-content-center w-100 h-100';
+            previewBox.innerHTML = '';
+            previewBox.appendChild(container);
         }
-        if (scaleInput && syncInput) {
-            scaleInput.value = (normalized / 100).toFixed(4);
+        return container;
+    }
+
+    function updateLabels(widthValue, heightValue) {
+        if (widthLabel) {
+            const template = widthLabel.dataset.template || 'Width: :value %';
+            widthLabel.textContent = template.replace(':value', String(widthValue));
         }
-        if (scaleSlider && syncSlider) {
-            scaleSlider.value = normalized;
+        if (heightLabel) {
+            const template = heightLabel.dataset.template || 'Height: :value %';
+            heightLabel.textContent = template.replace(':value', String(heightValue));
         }
+    }
+
+    function applyScale() {
+        if (!widthSlider || !heightSlider) return;
+        const widthValue  = clamp(widthSlider.value, sliderMin, sliderMax, sliderMin);
+        const heightValue = clamp(heightSlider.value, sliderMin, sliderMax, sliderMin);
+        widthSlider.value  = widthValue;
+        heightSlider.value = heightValue;
+
+        const widthScale  = scaleFromSlider(widthValue);
+        const heightScale = scaleFromSlider(heightValue);
+
         if (previewImg) {
-            previewImg.style.transform = `scale(${normalized / 100})`;
+            previewImg.style.transform = `scale(${widthScale}, ${heightScale})`;
         }
+        if (scaleInput) {
+            scaleInput.value = widthScale.toFixed(4);
+        }
+        updateLabels(widthValue, heightValue);
+    }
+
+    function syncHeightToWidth() {
+        if (!widthSlider || !heightSlider) return;
+        heightSlider.value = widthSlider.value;
+        heightSlider.setAttribute('disabled', 'disabled');
+        applyScale();
+    }
+
+    function unlockHeightSlider() {
+        if (!heightSlider) return;
+        heightSlider.removeAttribute('disabled');
+        applyScale();
     }
 
     function showImagePreview(src, options = {}) {
         const { imageClass } = options;
         if (!previewBox) return;
-        if (!previewImg) {
-            previewImg = document.createElement('img');
-            previewImg.id = 'previewImg';
-            previewBox.innerHTML = '';
-            previewBox.appendChild(previewImg);
-        }
-        const desiredClass = imageClass || previewImg.dataset.defaultClass || (src.includes('report-covers/default') ? 'cover-default' : 'cover-full');
-        previewImg.dataset.defaultClass = desiredClass;
-        previewImg.className = `cover-scale-target ${desiredClass}`;
+        const container = ensurePreviewContainer();
+        if (!container) return;
+        container.innerHTML = '';
+
+        previewImg = document.createElement('img');
+        previewImg.id = 'previewImg';
+        const coverClass = imageClass || (typeof src === 'string' && src.includes('report-covers/default') ? 'cover-default' : 'cover-full');
+        previewImg.className = `cover-scale-target ${coverClass}`.trim();
         previewImg.src = src;
-        previewFallback = null;
+        container.appendChild(previewImg);
+
         togglePreviewControls(true);
-        const currentPercent = scaleInput ? Number(scaleInput.value) * 100 : defaultPercent;
-        updateScaleDisplay(currentPercent, { syncSlider: true, syncInput: true });
+        applyScale();
     }
 
     function showFallbackIcon() {
         if (!previewBox) return;
-        previewBox.innerHTML = `
-            <div id="previewFallback" class="w-100 h-100 d-flex align-items-center justify-content-center">
+        const container = ensurePreviewContainer();
+        if (!container) return;
+        container.innerHTML = `
+            <div id="previewFallback" class="preview-fallback w-100 h-100 d-flex align-items-center justify-content-center">
                 <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
             </div>`;
         previewImg = null;
-        previewFallback = document.getElementById('previewFallback');
         togglePreviewControls(false);
     }
 
@@ -415,20 +568,50 @@ document.addEventListener('DOMContentLoaded', function () {
         }, {passive:true});
     }
 
-    if (scaleSlider) {
-        scaleSlider.addEventListener('input', function () {
-            updateScaleDisplay(this.value, { syncInput: true, syncSlider: false });
-        }, {passive:true});
-        scaleSlider.addEventListener('change', function () {
-            updateScaleDisplay(this.value, { syncInput: true, syncSlider: false });
+    if (widthSlider) {
+        widthSlider.addEventListener('input', function () {
+            if (lockToggle?.checked && heightSlider) {
+                heightSlider.value = widthSlider.value;
+            }
+            applyScale();
         }, {passive:true});
     }
 
+    if (heightSlider) {
+        heightSlider.addEventListener('input', function () {
+            if (lockToggle?.checked && widthSlider) {
+                widthSlider.value = heightSlider.value;
+            }
+            applyScale();
+        }, {passive:true});
+    }
+
+    if (lockToggle) {
+        lockToggle.addEventListener('change', function () {
+            if (this.checked) {
+                syncHeightToWidth();
+            } else {
+                unlockHeightSlider();
+            }
+        });
+    }
+
+    if (scaleInput && widthSlider) {
+        const storedScale = clamp(scaleInput.value, scaleMin, scaleMax, 1);
+        const initialSlider = sliderFromScale(storedScale);
+        widthSlider.value = initialSlider;
+        if (heightSlider) heightSlider.value = initialSlider;
+    }
+
+    if (lockToggle?.checked) {
+        syncHeightToWidth();
+    } else {
+        unlockHeightSlider();
+    }
+
     if (previewImg) {
-        previewImg.classList.add('cover-scale-target');
         togglePreviewControls(true);
-        const initialPercent = scaleInput ? Number(scaleInput.value) * 100 : defaultPercent;
-        updateScaleDisplay(initialPercent, { syncSlider: true, syncInput: true });
+        applyScale();
     } else {
         togglePreviewControls(false);
     }

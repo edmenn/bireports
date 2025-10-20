@@ -102,6 +102,11 @@ return [
             'card_title' => 'Предпросмотр отчета',
             'scale_label' => 'Размер в списке',
             'scale_display' => 'Текущий размер: :value%',
+            'width_label' => '???????',
+            'height_label' => '??????',
+            'width_display' => '???????: :value %',
+            'height_display' => '??????: :value %',
+            'lock_label' => '????????????? ?????????',
         ],
         'alerts' => [
             'errors_title' => 'Проверьте ошибки:',

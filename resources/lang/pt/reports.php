@@ -103,6 +103,11 @@ return [
             'card_title' => 'Pré-visualização do relatório',
             'scale_label' => 'Tamanho na lista',
             'scale_display' => 'Tamanho atual: :value%',
+            'width_label' => 'Largura',
+            'height_label' => 'Altura',
+            'width_display' => 'Largura: :value %',
+            'height_display' => 'Altura: :value %',
+            'lock_label' => 'Bloquear propor�ao',
         ],
         'alerts' => [
             'errors_title' => 'Revise os erros:',
