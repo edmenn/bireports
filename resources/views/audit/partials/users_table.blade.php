@@ -1,12 +1,19 @@
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <strong class="text-primary">{{ $title }}</strong>
-        <span class="badge bg-light text-dark border">{{ trans_choice('audit.tables.records', count($rows), ['count' => count($rows)]) }}</span>
+<div class="portal-card portal-audit-card">
+    <div class="card-header">
+        <div class="d-flex align-items-center gap-3">
+            <span class="portal-icon icon-sky">
+                <i class="fas fa-users"></i>
+            </span>
+            <div>
+                <h5 class="mb-0">{{ $title }}</h5>
+                <small>{{ trans_choice('audit.tables.records', count($rows), ['count' => count($rows)]) }}</small>
+            </div>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="table portal-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th>{{ __('audit.tables.user') }}</th>
                         <th>{{ __('audit.tables.email') }}</th>

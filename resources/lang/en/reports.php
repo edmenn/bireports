@@ -97,6 +97,7 @@ return [
 
     'edit' => [
         'title' => 'Edit report',
+        'card_title' => 'Cover & description',
         'view_report' => 'View report',
         'alerts' => [
             'errors_title' => 'Please review the errors:',

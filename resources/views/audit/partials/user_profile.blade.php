@@ -28,20 +28,20 @@
     $maxTop = $maxTop > 0 ? $maxTop : 1;
 @endphp
 
-<div class="card shadow-sm border-0 overflow-hidden mb-3">
+<div class="portal-card portal-profile-card overflow-hidden mb-3">
     {{-- Header without buttons, high contrast --}}
-    <div class="up-header p-3 p-md-4">
+    <div class="card-header up-header p-3 p-md-4">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
                 <div class="up-avatar rounded-circle d-flex align-items-center justify-content-center">
                     {{ $initials }}
                 </div>
-                <div class="text-white">
-                    <div class="h5 fw-bold mb-1">{{ $uname !== '' ? $uname : __('audit.user_profile.user_without_name') }}</div>
-                    <div class="small opacity-90 d-flex flex-wrap align-items-center gap-2">
-                        <span><i class="far fa-id-badge me-1"></i>{{ __('audit.user_profile.id_label') }}: <code class="text-white-50">{{ $uid }}</code></span>
+                <div class="text-dark">
+                    <div class="h5 fw-bold mb-1 text-primary">{{ $uname !== '' ? $uname : __('audit.user_profile.user_without_name') }}</div>
+                    <div class="small opacity-90 d-flex flex-wrap align-items-center gap-2 text-muted">
+                        <span><i class="far fa-id-badge me-1"></i>{{ __('audit.user_profile.id_label') }}: <code class="text-muted">{{ $uid }}</code></span>
                         @if($mail !== '')
-                            <span class="text-white-75"><i class="far fa-envelope ms-1 me-1"></i>{{ $mail }}</span>
+                            <span><i class="far fa-envelope ms-1 me-1"></i>{{ $mail }}</span>
                         @endif
                     </div>
                 </div>
@@ -105,13 +105,13 @@
                 </div>
 
                 <div class="up-heat card border-0 shadow-xs mt-2">
-                    <div class="table-responsive">
+                    <div class="table-responsive up-hm-wrapper">
                         <table class="table table-borderless align-middle mb-0 up-hm-table">
                             <thead>
                                 <tr>
-                                    <th class="sticky-col text-muted small">{{ __('audit.dashboard.heatmap.hour') }}</th>
+                                    <th class="sticky-col text-muted small text-center">{{ __('audit.dashboard.heatmap.hour') }}</th>
                                     @foreach($dowLabels as $lbl)
-                                        <th class="text-muted small">{{ $lbl }}</th>
+                                        <th class="text-muted small text-center">{{ $lbl }}</th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -119,17 +119,18 @@
                             @forelse($hmap as $row)
                                 <tr>
                                     <th class="sticky-col text-muted small">{{ $row['hour'] }}</th>
-                                    @for($d=1; $d<=7; $d++)
-                                        @php $v = (int)($row[$d] ?? 0); @endphp
-                                        @php
-                                            $lvl = ($v===0?0:($v<=20?1:($v<=40?2:($v<=60?3:($v<=80?4:($v<=100?5:($v<=300?6:7)))))));
-                                        @endphp
-                                        <td class="text-center">
-                                            <div class="up-hm-cell up-hm-{{ $lvl }}" title="{{ __('audit.user_profile.heatmap_cell', ['day' => $dowLabels[$d-1] ?? '', 'hour' => $row['hour'], 'count' => $v]) }}">
-                                                <span class="visually-hidden">{{ $v }}</span>
-                                            </div>
-                                        </td>
-                                    @endfor
+                                @for($d=1; $d<=7; $d++)
+                                    @php
+                                        $v = (int)($row[$d] ?? 0);
+                                        $lvl = ($v===0?0:($v<=20?1:($v<=40?2:($v<=60?3:($v<=80?4:($v<=100?5:($v<=300?6:7)))))));
+                                        $displayValue = number_format($v, 0, ',', '.');
+                                    @endphp
+                                    <td class="text-center">
+                                        <div class="up-hm-cell up-hm-{{ $lvl }}" title="{{ __('audit.user_profile.heatmap_cell', ['day' => $dowLabels[$d-1] ?? '', 'hour' => $row['hour'], 'count' => $v]) }}">
+                                            <span class="up-hm-value">{{ $displayValue }}</span>
+                                        </div>
+                                    </td>
+                                @endfor
                                 </tr>
                             @empty
                                 <tr><td colspan="8" class="text-center text-muted p-3">{{ __('audit.user_profile.top_reports_empty') }}</td></tr>
@@ -218,26 +219,19 @@
 <style>
     .fw-600{font-weight:600;}
 
-    /* Header (más oscuro + overlay para contraste) */
+    /* Header */
     .up-header{
-        position: relative;
-        background:
-            radial-gradient(1100px 480px at 85% -15%, rgba(255,255,255,.15), transparent 60%),
-            linear-gradient(135deg, #1e293b, #0ea5e9);
-        color:#fff;
-    }
-    .up-header:after{
-        content:""; position:absolute; inset:0;
-        background: linear-gradient(0deg, rgba(0,0,0,.15), rgba(0,0,0,.05));
-        pointer-events:none;
+        background: linear-gradient(180deg, #f8fafc, #eef2f7);
+        color:#1f2d3d;
+        border-bottom:1px solid rgba(15,34,58,.08);
     }
 
     .up-avatar{
         width:56px;height:56px;
         font-weight:800;font-size:1.05rem;
-        color:#e2e8f0;background:#111827;            /* fondo oscuro */
-        border:1px solid rgba(255,255,255,.25);      /* borde tenue */
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,.08);
+        color:#1f2d3d;background:#e2e8f0;
+        border:1px solid rgba(15,34,58,.12);
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,.65);
     }
 
     /* KPIs */
@@ -255,12 +249,57 @@
 
     /* Heatmap */
     .up-heat{ border-radius:14px; padding:.75rem; background:#fff; }
-    .up-hm-table th{ font-weight:600; }
-    .up-hm-table thead th{ font-size:.8rem;color:#6b7280; white-space:nowrap; }
-    .up-hm-table .sticky-col{ position:sticky; left:0; background:#fff; z-index:1; }
-    .up-hm-cell{
-        width:24px;height:18px;border-radius:4px;margin:auto;border:1px solid rgba(0,0,0,.04);
+    .up-hm-wrapper{
+        overflow-x:auto;
     }
+    .up-hm-table{
+        table-layout:fixed;
+        width:100%;
+        min-width:520px;
+    }
+    .up-hm-table th{ font-weight:600; text-align:center; }
+    .up-hm-table thead th{ font-size:.8rem;color:#6b7280; white-space:nowrap; text-align:center; }
+    .up-hm-table tbody th{ text-align:center; font-weight:600; }
+    .up-hm-table .sticky-col{
+        position:sticky;
+        left:0;
+        background:#fff;
+        z-index:2;
+        width:12.5%;
+    }
+    .up-hm-table thead th,
+    .up-hm-table tbody th,
+    .up-hm-table td{
+        width:12.5%;
+    }
+    .up-hm-cell{
+        min-width:2.6rem;
+        height:2.1rem;
+        border-radius:6px;
+        margin:auto;
+        border:1px solid rgba(0,0,0,.05);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:.25rem;
+    }
+    .up-hm-value{
+        display:block;
+        text-align:center;
+        font-size:.78rem;
+        font-weight:600;
+        line-height:1;
+        color:#0f172a;
+        white-space:nowrap;
+    }
+    .up-hm-0 .up-hm-value,
+    .up-hm-1 .up-hm-value,
+    .up-hm-2 .up-hm-value{ color:#1e293b; }
+    .up-hm-3 .up-hm-value,
+    .up-hm-4 .up-hm-value{ color:#102a50; }
+    .up-hm-5 .up-hm-value,
+    .up-hm-6 .up-hm-value,
+    .up-hm-7 .up-hm-value{ color:#ffffff; }
     /* Paleta */
     .up-hm-0{ background:#f8fafc; }
     .up-hm-1{ background:#e6f0ff; }
@@ -299,3 +338,9 @@
     .opacity-90{ opacity:.9; }
 </style>
 @endpush
+
+
+
+
+
+

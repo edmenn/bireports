@@ -10,7 +10,7 @@
 @endphp
 <div class="row mt-3">
     <div class="col-12 col-xl-6 mb-3">
-        <div class="dash-card h-100 d-flex flex-column">
+        <div class="portal-card portal-dashboard-card dash-card h-100 d-flex flex-column">
             <div class="dash-head blue">
                 <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_month.title') }}</strong>
                 <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_month.subtitle') }}</span>
@@ -23,7 +23,7 @@
         </div>
     </div>
     <div class="col-12 col-xl-6 mb-3">
-        <div class="dash-card h-100 d-flex flex-column">
+        <div class="portal-card portal-dashboard-card dash-card h-100 d-flex flex-column">
             <div class="dash-head violet">
                 <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_day.title') }}</strong>
                 <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_day.subtitle') }}</span>
@@ -39,7 +39,7 @@
 
 <div class="row">
     <div class="col-12 col-xl-6 mb-3">
-        <div class="dash-card h-100 d-flex flex-column">
+        <div class="portal-card portal-dashboard-card dash-card h-100 d-flex flex-column">
             <div class="dash-head green">
                 <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_user.title') }}</strong>
                 <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_user.subtitle') }}</span>
@@ -52,7 +52,7 @@
         </div>
     </div>
     <div class="col-12 col-xl-6 mb-3">
-        <div class="dash-card h-100 d-flex flex-column">
+        <div class="portal-card portal-dashboard-card dash-card h-100 d-flex flex-column">
             <div class="dash-head orange">
                 <strong class="dash-title">{{ __('audit.dashboard.cards.access_by_report.title') }}</strong>
                 <span class="dash-sub">{{ __('audit.dashboard.cards.access_by_report.subtitle') }}</span>
@@ -69,7 +69,7 @@
 {{-- Heatmap area: no inner scroll, totals highlighted, accessible hover/focus --}}
 <div class="row mt-3">
     <div class="col-12 mb-3">
-        <div class="dash-card">
+        <div class="portal-card portal-dashboard-card dash-card">
             <div class="dash-head slate">
                 <strong class="dash-title">{{ __('audit.dashboard.heatmap.title') }}</strong>
                 <span class="dash-sub">{{ __('audit.dashboard.heatmap.subtitle') }}</span>
@@ -117,9 +117,11 @@
 <style>
 /* --- Cards modernas con contraste mejorado en títulos --- */
 .dash-card{
-    background:#fff; border:1px solid rgba(0,0,0,.06);
-    border-radius:16px; overflow:hidden;
-    box-shadow:0 .35rem 1rem rgba(0,0,0,.05);
+    border:none;
+    box-shadow:none;
+    background:transparent;
+    border-radius:inherit;
+    overflow:hidden;
 }
 .dash-head{
     display:flex; align-items:baseline; justify-content:space-between; gap:.5rem;
@@ -134,7 +136,7 @@
 .dash-head.slate { background: linear-gradient(135deg, #334155, #64748b); }
 .dash-head.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
 .dash-title{ font-weight:800; letter-spacing:.2px; }
-.dash-sub{ font-size:.85rem; opacity:.9; }
+.dash-sub{ font-size:1rem; opacity:.9; }
 .dash-body{ padding:1rem; }
 
 /* Charts: altura fluida, sin “saltos” al cargar */
@@ -146,19 +148,46 @@
 .heat-guard{ position: relative; overflow: hidden; }
 
 .hm-table{
-    border-collapse:separate; border-spacing:6px; table-layout: fixed; width:100%;
+    border-collapse:separate;
+    border-spacing:4px;
+    table-layout: fixed;
+    width:100%;
 }
 .hm-table thead th, .hm-table tfoot th{
-    text-align:center; color:#334155; font-weight:800; font-size:1rem; white-space:nowrap;
+    text-align:center;
+    color:#334155;
+    font-weight:700;
+    font-size:1rem;
+    white-space:nowrap;
+    height:2.3rem;
 }
 .hm-table th, .hm-table td{
-    text-align:center; padding:.6rem; border-radius:10px;
+    text-align:center;
+    padding:.38rem;
+    border-radius:10px;
     border:1px solid rgba(0,0,0,.06);
-    font-size:1rem; line-height:1.15;
+    font-size:1rem;
+    line-height:1.05;
+    vertical-align:middle;
+    height:2.35rem;
 }
 
 /* Desactiva cualquier sticky heredado */
 .hm-table [data-col="H"], .hm-table [data-col="T"]{ position: static !important; }
+
+    .hm-value{
+        display:block;
+        width:100%;
+        text-align:center;
+        font-size:1rem;
+        font-weight:600;
+        white-space:nowrap;
+    }
+    .hm-table th .hm-value{
+        font-weight:700;
+        font-size:1rem;
+    }
+
 
 /* Paleta 0..7 */
 .hm-0{ background:#f8fafc; color:#94a3b8; }
@@ -347,6 +376,17 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     const fmt = n => (n ?? 0).toLocaleString(undefined);
 
+    function setCellValue(cell, text) {
+        let span = cell.querySelector('.hm-value');
+        if (!span) {
+            span = document.createElement('span');
+            span.className = 'hm-value';
+            cell.textContent = '';
+            cell.appendChild(span);
+        }
+        span.textContent = text;
+    }
+
     const table     = document.getElementById('heatTable');
     const tbody     = document.getElementById('heatBody');
     const totalsRow = document.getElementById('heatTotalsRow');
@@ -360,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
         // Hora
         const th = document.createElement('th');
-        th.textContent = row.hour;
+        setCellValue(th, row.hour);
         th.setAttribute('data-col','H');
         tr.appendChild(th);
 
@@ -374,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
             const td = document.createElement('td');
             td.className = 'hm-' + bucket(v);
-            td.textContent = fmt(v);
+            setCellValue(td, fmt(v));
             td.setAttribute('data-col', String(d));
             td.setAttribute('tabindex', '0'); // foco por teclado
             tr.appendChild(td);
@@ -383,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function(){
         // Total por hora (última columna)
         const tdTotal = document.createElement('th');
         tdTotal.className = 'total-col';
-        tdTotal.textContent = fmt(rowSum);
+        setCellValue(tdTotal, fmt(rowSum));
         tdTotal.setAttribute('data-col','T');
         tr.appendChild(tdTotal);
 
@@ -393,9 +433,9 @@ document.addEventListener('DOMContentLoaded', function(){
     // Totales por día y gran total
     for(let d=1; d<=7; d++){
         const th = totalsRow.querySelector(`th[data-day="${d}"]`);
-        if(th) th.textContent = fmt(colTotals[d]);
+        if(th) setCellValue(th, fmt(colTotals[d]));
     }
-    if(grandCell) grandCell.textContent = fmt(grandTotal);
+    if(grandCell) setCellValue(grandCell, fmt(grandTotal));
 
     // Hover/foco fila/columna (incluye Total)
     let currentCol = null;
@@ -473,4 +513,5 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 @endpush
+
 

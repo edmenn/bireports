@@ -97,6 +97,7 @@ return [
 
     'edit' => [
         'title' => 'Editar relatório',
+        'card_title' => 'Capa e descrição',
         'view_report' => 'Ver relatório',
         'alerts' => [
             'errors_title' => 'Revise os erros:',

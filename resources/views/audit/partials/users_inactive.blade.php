@@ -1,12 +1,19 @@
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
-        <i class="fas fa-users me-2"></i>
-        <strong>{{ $title }}</strong>
+<div class="portal-card portal-audit-card">
+    <div class="card-header">
+        <div class="d-flex align-items-center gap-3">
+            <span class="portal-icon icon-emerald">
+                <i class="fas fa-user-clock"></i>
+            </span>
+            <div>
+                <h5 class="mb-0">{{ $title }}</h5>
+                <small>{{ trans_choice('audit.tables.records', count($rows), ['count' => count($rows)]) }}</small>
+            </div>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="table portal-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th>{{ __('audit.tables.user') }}</th>
                         <th>{{ __('audit.tables.email') }}</th>

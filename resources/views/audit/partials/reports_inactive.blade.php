@@ -1,12 +1,19 @@
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header d-flex align-items-center bg-gradient-primary text-white">
-        <i class="fas fa-chart-bar me-2"></i>
-        <strong>{{ $title }}</strong>
+<div class="portal-card portal-audit-card">
+    <div class="card-header">
+        <div class="d-flex align-items-center gap-3">
+            <span class="portal-icon icon-amber">
+                <i class="fas fa-chart-bar"></i>
+            </span>
+            <div>
+                <h5 class="mb-0">{{ $title }}</h5>
+                <small>{{ trans_choice('audit.tables.records', count($rows), ['count' => count($rows)]) }}</small>
+            </div>
+        </div>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="table portal-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th scope="col">{{ __('audit.tables.report') }}</th>
                         <th scope="col">{{ __('audit.tables.uuid') }}</th>
