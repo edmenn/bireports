@@ -210,6 +210,22 @@ return [
         'reset_error'   => 'No se pudo resetear la auditoria: :message',
     ],
 
+    'reset' => [
+        'title'         => 'Reiniciar auditoría',
+        'subtitle'      => 'Elimina de forma permanente el historial de auditoría.',
+        'back_to_usage' => 'Métricas de uso',
+        'card_title'    => 'Confirmación de borrado total',
+        'description'   => 'Esta acción eliminará todos los registros de la tabla de auditoría y reiniciará el contador de IDs. No se puede deshacer.',
+        'stats_current' => 'Registros actuales',
+        'stats_first'   => 'Primer evento',
+        'stats_last'    => 'Último evento',
+        'confirm_label' => 'Escribe RESET para confirmar',
+        'confirm_help'  => 'Debes escribir la palabra exactamente como se muestra.',
+        'submit'        => 'Borrar todo',
+        'cancel'        => 'Cancelar',
+        'confirm_prompt'=> '¿Seguro que deseas borrar todo? Esta acción no se puede deshacer.',
+    ],
+
     'api' => [
         'store_failed' => 'No se pudo registrar el evento de auditoria.',
     ],

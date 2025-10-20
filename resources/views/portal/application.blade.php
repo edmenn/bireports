@@ -3,6 +3,8 @@
 @section('title', $currentReport?->name ?? $application->name)
 
 @section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
 <style>
     :root {
         --pbi-min-height: 460px; /* Minimum height for Power BI tabs visibility */
@@ -71,45 +73,6 @@
     }
 
     /* ======================================== */
-    /* Compact header actions (AdminLTE 3 style) */
-    /* ======================================== */
-    .header-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        gap: .5rem;
-    }
-
-    .header-actions a.btn,
-    .header-actions button.btn,
-    .header-actions form button.btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 38px !important;
-        line-height: 1 !important;
-        padding: 0 .9rem !important;
-        font-size: .875rem !important;
-    }
-
-    .header-actions i {
-        font-size: .9rem;
-        margin-right: .4rem;
-    }
-
-    @media (max-width: 480px) {
-        .header-actions {
-            justify-content: center;
-            text-align: center;
-        }
-        .header-actions a.btn,
-        .header-actions button.btn {
-            flex: 1 1 auto;
-        }
-    }
-
-    /* ======================================== */
     /* Portal runtime layout tweaks              */
     /* ======================================== */
     .portal-application-runtime .content-wrapper,
@@ -130,6 +93,26 @@
 
     .portal-application-runtime .container-fluid {
         padding-top: 0 !important;
+    }
+
+    .portal-app-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .portal-app-card .pbi-wrapper {
+        border: 1px solid rgba(15, 34, 58, .08);
+        border-radius: .75rem;
+        background-color: #fff;
+        padding: 1.25rem;
+        box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
+    }
+
+    .portal-app-card .pbi-wrapper.fullscreen-active,
+    .portal-app-card .pbi-wrapper:fullscreen,
+    .portal-app-card .pbi-wrapper:-webkit-full-screen {
+        border-radius: 0;
+        border-color: transparent;
+        padding: 0;
     }
 
     /* ======================================== */
@@ -219,41 +202,57 @@
         ];
     @endphp
 
-    @if (! $currentReport)
-        <div class="alert alert-warning" role="alert">
-            <i class="fas fa-info-circle me-1"></i> {{ __('applications.runtime.no_reports') }}
+    <div class="portal-card portal-app-card">
+        <div class="card-header">
+            <span class="portal-icon">
+                <i class="fas fa-chart-line"></i>
+            </span>
+            <div>
+                <h5 class="mb-0">{{ $application->name }}</h5>
+                @if($currentReport)
+                    <small class="text-muted">{{ $currentReport->name }}</small>
+                @endif
+            </div>
         </div>
-    @else
-        <div class="pbi-wrapper">
-            @if($error)
-                <div class="alert alert-danger" role="alert">
-                    <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>{{ $error }}</h5>
-                    @if($error_debug)
-                        <details class="mt-2">
-                            <summary>{{ __('applications.runtime.technical_details') }}</summary>
-                            <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ $error_debug }}</pre>
-                        </details>
+        <div class="card-body">
+            @if (! $currentReport)
+                <div class="portal-empty-state">
+                    <i class="fas fa-info-circle"></i>
+                    <div>{{ __('applications.runtime.no_reports') }}</div>
+                </div>
+            @else
+                <div class="pbi-wrapper">
+                    @if($error)
+                        <div class="alert alert-danger" role="alert">
+                            <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>{{ $error }}</h5>
+                            @if($error_debug)
+                                <details class="mt-2">
+                                    <summary>{{ __('applications.runtime.technical_details') }}</summary>
+                                    <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ $error_debug }}</pre>
+                                </details>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div id="reportContainer" aria-live="polite" aria-busy="true">
+                        <div id="reportLoading">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status" aria-label="{{ __('reports.show.loading') }}"></div>
+                                <div class="mt-2">{{ __('reports.show.loading') }}</div>
+                            </div>
+                        </div>
+                        <div id="reportError" class="alert alert-danger d-none" role="alert"></div>
+                    </div>
+
+                    @if(!empty($currentReport->description))
+                        <div class="mt-3">
+                            <small class="text-muted">{{ $currentReport->description }}</small>
+                        </div>
                     @endif
                 </div>
             @endif
-
-            <div id="reportContainer" aria-live="polite" aria-busy="true">
-                <div id="reportLoading">
-                    <div class="text-center">
-                        <div class="spinner-border" role="status" aria-label="{{ __('reports.show.loading') }}"></div>
-                        <div class="mt-2">{{ __('reports.show.loading') }}</div>
-                    </div>
-                </div>
-                <div id="reportError" class="alert alert-danger d-none" role="alert"></div>
-            </div>
-
-            @if(!empty($currentReport->description))
-                <div class="mt-3">
-                    <small class="text-muted">{{ $currentReport->description }}</small>
-                </div>
-            @endif
         </div>
-    @endif
+    </div>
 
     @if (! request()->hasCookie('XSRF-TOKEN'))
         <meta name="csrf-token" content="{{ csrf_token() }}">

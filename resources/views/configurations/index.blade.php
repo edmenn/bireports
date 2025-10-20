@@ -2,19 +2,24 @@
 
 @section('title', __('settings.page.title'))
 
+@section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+@endsection
+
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div>
-            <h1 class="m-0 text-dark">{{ __('settings.page.title') }}</h1>
-            <small class="text-muted">{{ __('settings.page.subtitle') }}</small>
+    <x-page-header :title="__('settings.menu.parameters')" :subtitle="__('settings.page.subtitle')" icon="fas fa-sliders-h">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end gap-2 header-actions">
+            <a href="{{ route('audit.changes.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-list"></i>
+                <span>{{ __('settings.actions.view_audit') }}</span>
+            </a>
+            <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-cloud-download-alt"></i>
+                <span>{{ __('settings.actions.import_now') }}</span>
+            </a>
         </div>
-        <a href="{{ route('audit.changes.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-list"></i> {{ __('settings.actions.view_audit') }}
-        </a>
-        <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-cloud-download-alt mr-1"></i> {{ __('settings.actions.import_now') }}
-        </a>
-    </div>
+    </x-page-header>
 @stop
 
 @section('content')
@@ -39,10 +44,12 @@
         </x-adminlte-alert>
     @endif
 
-    <form method="POST" action="{{ route('configurations.update', $config->id) }}" enctype="multipart/form-data" novalidate>
-        @csrf
-        @method('PUT')
-        <input type="hidden" name="return_to" value="{{ route('configurations.index') }}">
+    <div class="portal-card mt-3">
+        <div class="card-body">
+            <form method="POST" action="{{ route('configurations.update', $config->id) }}" enctype="multipart/form-data" novalidate>
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="return_to" value="{{ route('configurations.index') }}">
 
         <div class="row">
             {{-- COLUMNA IZQUIERDA: FORMULARIO PRINCIPAL --}}
@@ -295,7 +302,9 @@
             </div>
         </x-adminlte-card>
 
-    </form>
+            </form>
+        </div>
+    </div>
 @stop
 
 @push('css')

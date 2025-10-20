@@ -210,6 +210,22 @@ return [
         'reset_error'   => 'Audit reset failed: :message',
     ],
 
+    'reset' => [
+        'title'        => 'Reset audit',
+        'subtitle'     => 'Permanently delete the audit trail.',
+        'back_to_usage'=> 'Usage metrics',
+        'card_title'   => 'Full deletion confirmation',
+        'description'  => 'This action will delete every record from the audit table and reset the ID counter. It cannot be undone.',
+        'stats_current'=> 'Current records',
+        'stats_first'  => 'First event',
+        'stats_last'   => 'Last event',
+        'confirm_label'=> 'Type RESET to confirm',
+        'confirm_help' => 'You must type the word exactly as shown.',
+        'submit'       => 'Delete everything',
+        'cancel'       => 'Cancel',
+        'confirm_prompt'=> 'Are you sure you want to delete everything? This action cannot be undone.',
+    ],
+
     'api' => [
         'store_failed' => 'Unable to record the audit event.',
     ],

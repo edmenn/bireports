@@ -2,8 +2,13 @@
 
 @section('title', __('config_theme.title'))
 
+@section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+@endsection
+
 @section('content_header')
-    <h1 class="m-0 text-dark">{{ __('config_theme.title') }}</h1>
+    <x-page-header :title="__('settings.menu.theme')" :subtitle="__('config_theme.title')" icon="fas fa-palette" />
 @stop
 
 @section('content')
@@ -34,27 +39,32 @@
         @method('PUT')
         <input type="hidden" name="return_to" value="{{ url()->current() }}">
 
-        <div class="card card-primary card-outline mt-3">
+        <div class="portal-card mt-3">
             <div class="card-header">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
-                    @php($active = request('tab', 'pagina'))
-                    {{-- Pestañas --}}
-                    <ul class="nav nav-tabs border-0" id="themeTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $active === 'pagina' ? 'active' : '' }}" id="tab-pagina" data-toggle="tab" href="#pane-pagina" role="tab" aria-controls="pane-pagina" aria-selected="{{ $active === 'pagina' ? 'true' : 'false' }}">
-                                <i class="fas fa-desktop mr-1"></i> {{ __('config_theme.tabs.page') }}
-                            </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ $active === 'login' ? 'active' : '' }}" id="tab-login" data-toggle="tab" href="#pane-login" role="tab" aria-controls="pane-login" aria-selected="{{ $active === 'login' ? 'true' : 'false' }}">
-                                <i class="fas fa-sign-in-alt mr-1"></i> {{ __('config_theme.tabs.login') }}
-                            </a>
-                        </li>
-                    </ul>
+                <span class="portal-icon">
+                    <i class="fas fa-swatchbook"></i>
+                </span>
+                <div>
+                    <h5 class="mb-0">{{ __('config_theme.title') }}</h5>
+                    <small class="text-muted">{{ __('settings.menu.theme') }}</small>
                 </div>
             </div>
 
             <div class="card-body">
+                @php($active = request('tab', 'pagina'))
+                <ul class="nav nav-tabs portal-theme-tabs border-0 mb-4" id="themeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ $active === 'pagina' ? 'active' : '' }}" id="tab-pagina" data-toggle="tab" href="#pane-pagina" role="tab" aria-controls="pane-pagina" aria-selected="{{ $active === 'pagina' ? 'true' : 'false' }}">
+                            <i class="fas fa-desktop mr-1"></i> {{ __('config_theme.tabs.page') }}
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ $active === 'login' ? 'active' : '' }}" id="tab-login" data-toggle="tab" href="#pane-login" role="tab" aria-controls="pane-login" aria-selected="{{ $active === 'login' ? 'true' : 'false' }}">
+                            <i class="fas fa-sign-in-alt mr-1"></i> {{ __('config_theme.tabs.login') }}
+                        </a>
+                    </li>
+                </ul>
+
                 <div class="tab-content" id="themeTabsContent">
 
                     {{-- ============================================= --}}
@@ -329,6 +339,8 @@
                 </div>
             </div>
         </x-adminlte-card>
+            </div>
+        </div>
     </form>
     <div class="modal fade" id="presetSaveModal" tabindex="-1" role="dialog" aria-labelledby="presetSaveModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -367,6 +379,33 @@
 
 @push('css')
 <style>
+/* ====== Ajustes para tabs y grillas ====== */
+
+.portal-theme-tabs .nav-link{
+    border: 1px solid transparent;
+    border-radius: .6rem;
+    color: #334155;
+    background-color: #edf2f8;
+    margin-right: .5rem;
+    transition: all .15s ease-in-out;
+}
+.portal-theme-tabs .nav-link i{
+    font-size: .9rem;
+}
+.portal-theme-tabs .nav-link.active{
+    background-color: #0d6efd;
+    color: #fff;
+    box-shadow: 0 1rem 1.6rem rgba(13, 110, 253, .18);
+}
+
+#theme_name.form-control{
+    font-size: .9rem;
+    line-height: 1.35;
+}
+#theme_name.form-control option{
+    font-size: .9rem;
+}
+
 /* ====== Grillas internas para reducir altura ====== */
 
 /* Logos: 3 columnas en >=1200px, 2 en >=768px, 1 en móvil */

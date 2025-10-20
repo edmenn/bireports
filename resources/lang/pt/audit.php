@@ -210,6 +210,22 @@ return [
         'reset_error'   => 'Nao foi possivel reiniciar a auditoria: :message',
     ],
 
+    'reset' => [
+        'title'          => 'Reiniciar auditoria',
+        'subtitle'       => 'Remove permanentemente o historico de auditoria.',
+        'back_to_usage'  => 'Metricas de uso',
+        'card_title'     => 'Confirmacao de exclusao total',
+        'description'    => 'Esta acao vai excluir todos os registros da tabela de auditoria e reiniciar o contador de IDs. Nao pode ser desfeita.',
+        'stats_current'  => 'Registros atuais',
+        'stats_first'    => 'Primeiro evento',
+        'stats_last'     => 'Ultimo evento',
+        'confirm_label'  => 'Digite RESET para confirmar',
+        'confirm_help'   => 'Voce deve digitar a palavra exatamente como mostrado.',
+        'submit'         => 'Excluir tudo',
+        'cancel'         => 'Cancelar',
+        'confirm_prompt' => 'Tem certeza de que deseja excluir tudo? Esta acao nao pode ser desfeita.',
+    ],
+
     'api' => [
         'store_failed' => 'Nao foi possivel registrar o evento de auditoria.',
     ],

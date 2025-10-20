@@ -1,85 +1,97 @@
 @extends('adminlte::page')
 
-@section('title', 'Resetear Auditoría')
+@section('title', __('audit.reset.title'))
+
+@section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+@endsection
 
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h1 class="m-0 text-dark">Resetear Auditoría</h1>
-        <a href="{{ route('audit.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-chart-line mr-1"></i> Métricas de Uso
-        </a>
-    </div>
+    <x-page-header :title="__('audit.reset.title')" icon="fas fa-trash-alt">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('audit.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ __('audit.reset.back_to_usage') }}</span>
+            </a>
+        </div>
+    </x-page-header>
 @stop
 
 @section('content')
-    {{-- Alertas con el componente de AdminLTE --}}
     @if (session('status'))
-        <x-adminlte-alert theme="success" title="Éxito" dismissable>
+        <x-adminlte-alert theme="success" title="{{ __('settings.alerts.success') }}" dismissable>
             {{ session('status') }}
         </x-adminlte-alert>
     @endif
     @if (session('error'))
-        <x-adminlte-alert theme="danger" title="Error" dismissable>
+        <x-adminlte-alert theme="danger" title="{{ __('settings.alerts.error') }}" dismissable>
             {{ session('error') }}
         </x-adminlte-alert>
     @endif
 
-    <form method="post" 
-          action="{{ route('admin.audit.reset.run') }}" 
-          onsubmit="return confirm('¿Seguro que deseas BORRAR TODO? Esta acción no se puede deshacer.');">
+    <form method="post"
+          action="{{ route('admin.audit.reset.run') }}"
+          onsubmit="return confirm('{{ __('audit.reset.confirm_prompt') }}');">
         @csrf
 
-        <x-adminlte-card title="⚠️ Confirmación de Borrado Total" icon="fas fa-exclamation-triangle"
-                         theme="danger" theme-mode="outline" class="mt-3">
-            
-            <p class="lead">
-                Esta acción <strong>eliminará todos los registros</strong> de la tabla <code>audits</code> y
-                <strong>reiniciará</strong> el contador de IDs. <span class="text-danger font-weight-bold">No se puede deshacer.</span>
-            </p>
-
-            {{-- Eliminamos la clase "small" para que el texto sea más grande --}}
-            <ul class="list-unstyled text-muted my-4">
-                <li><strong>Registros actuales:</strong> {{ number_format($total) }}</li>
-                <li><strong>Primer evento:</strong> {{ $first_at ?? '—' }}</li>
-                <li><strong>Último evento:</strong> {{ $last_at ?? '—' }}</li>
-            </ul>
-
-            <x-adminlte-input name="confirm" label="Escribe RESET para confirmar" placeholder="RESET" required>
-                <x-slot name="prependSlot"><div class="input-group-text text-danger"><i class="fas fa-keyboard"></i></div></x-slot>
-                <x-slot name="bottom"><small class="text-muted">Debes escribir la palabra exactamente como se muestra.</small></x-slot>
-            </x-adminlte-input>
-
-        </x-adminlte-card>
-
-        {{-- Tarjeta de acciones con los botones centrados y de igual tamaño --}}
-        <x-adminlte-card theme="primary" theme-mode="outline">
-            <div class="d-flex justify-content-center">
-                <div class="d-flex" style="gap: 0.75rem; width: 320px;">
-                    <x-adminlte-button type="submit" theme="danger" label="Borrar Todo" icon="fas fa-trash-alt" class="btn-eq"/>
-                    <x-adminlte-button :href="route('audit.index')" theme="secondary" label="Cancelar" icon="fas fa-times" class="btn-eq"/>
+        <div class="portal-card mt-3">
+            <div class="card-header">
+                <span class="portal-icon text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </span>
+                <div>
+                    <h5 class="mb-0 text-danger">{{ __('audit.reset.card_title') }}</h5>
+                    <small class="text-muted">{{ __('audit.reset.subtitle') }}</small>
                 </div>
             </div>
-        </x-adminlte-card>
+            <div class="card-body">
+                <p class="portal-reset-text">
+                    {{ __('audit.reset.description') }}
+                </p>
 
+                <ul class="portal-reset-stats list-unstyled text-muted my-4">
+                    <li><strong>{{ __('audit.reset.stats_current') }}:</strong> {{ number_format($total) }}</li>
+                    <li><strong>{{ __('audit.reset.stats_first') }}:</strong> {{ $first_at ?? '-' }}</li>
+                    <li><strong>{{ __('audit.reset.stats_last') }}:</strong> {{ $last_at ?? '-' }}</li>
+                </ul>
+
+                <x-adminlte-input name="confirm"
+                                  label="{{ __('audit.reset.confirm_label') }}"
+                                  placeholder="RESET"
+                                  required>
+                    <x-slot name="prependSlot">
+                        <div class="input-group-text text-danger"><i class="fas fa-keyboard"></i></div>
+                    </x-slot>
+                    <x-slot name="bottom">
+                        <small class="text-muted">{{ __('audit.reset.confirm_help') }}</small>
+                    </x-slot>
+                </x-adminlte-input>
+            </div>
+        </div>
+
+        <div class="portal-card">
+            <div class="card-body d-flex justify-content-center">
+                <div class="d-flex flex-column flex-sm-row gap-3" style="min-width: 260px;">
+                    <x-adminlte-button type="submit" theme="danger" icon="fas fa-trash-alt"
+                                       label="{{ __('audit.reset.submit') }}" class="btn-eq"/>
+                    <x-adminlte-button :href="route('audit.index')" theme="secondary" icon="fas fa-times"
+                                       label="{{ __('audit.reset.cancel') }}" class="btn-eq"/>
+                </div>
+            </div>
+        </div>
     </form>
 @stop
 
 @push('css')
 <style>
-    /* ================================== */
-    /* CSS PARA TEXTOS MÁS GRANDES      */
-    /* ================================== */
-    .card-body .lead {
-        font-size: 1.15rem; /* Párrafo principal */
-        font-weight: 400;
+    .portal-reset-text {
+        font-size: 1.05rem;
+        color: #4a4a4a;
     }
-    .card-body ul li {
-        font-size: 1rem; /* Lista de estadísticas */
-        padding-bottom: 0.25rem;
-    }
-    #confirm-group label,
-    #confirm-group .form-text {
-        font-size: 1rem; /* Etiqueta y texto de ayuda del input */
+    .portal-reset-stats li {
+        font-size: .95rem;
+        padding-bottom: .35rem;
     }
 </style>
 @endpush

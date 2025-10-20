@@ -3,106 +3,79 @@
 @section('title', __('portal.most_accessed.title'))
 
 @section('css')
-<style>
-    /* Compact and consistent header actions (AdminLTE 3 + Bootstrap 4) */
-    .header-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        gap: .5rem;
-    }
-
-    .header-actions a.btn,
-    .header-actions button.btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 38px !important;
-        line-height: 1 !important;
-        padding: 0 .9rem !important;
-        font-size: .875rem !important;
-    }
-
-    .header-actions i {
-        font-size: .9rem;
-        margin-right: .4rem;
-    }
-
-    @media (max-width: 480px) {
-        .header-actions {
-            justify-content: center;
-            text-align: center;
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+    <style>
+        .portal-table thead th {
+            background-color: #eef2f7;
+            font-weight: 600;
+            font-size: .9rem;
+            color: #1f2d3d;
+            border-bottom: none;
         }
-        .header-actions a.btn,
-        .header-actions button.btn {
-            flex: 1 1 auto;
+
+        .portal-table tbody tr:hover {
+            background-color: rgba(13, 110, 253, .04);
         }
-    }
 
-    /* Table consistency */
-    .card {
-        box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.05);
-        border-radius: .5rem;
-    }
+        .portal-table th,
+        .portal-table td {
+            vertical-align: middle !important;
+            border-top: 1px solid rgba(15, 34, 58, .08);
+        }
 
-    table th, table td {
-        vertical-align: middle !important;
-    }
+        .portal-table td {
+            font-size: .9rem;
+        }
 
-    .table thead th {
-        background-color: #e9ecef;
-        font-weight: 600;
-        font-size: .9rem;
-    }
+        .portal-table .actions-group {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .5rem;
+        }
 
-    /* Centered "Open" button inside table */
-    .actions-group {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-    }
+        .portal-table .actions-group .btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: .35rem;
+            height: 34px !important;
+            line-height: 1 !important;
+            padding: 0 .75rem !important;
+            font-size: .8125rem !important;
+            border-radius: .35rem;
+        }
 
-    .actions-group .btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: .4rem;
-        height: 34px !important;
-        line-height: 1 !important;
-        padding: 0 .75rem !important;
-        font-size: .8125rem !important;
-        border-radius: .35rem;
-    }
-
-    .actions-group .btn i {
-        font-size: .85rem;
-        margin: 0;
-    }
-
-    .text-center.text-muted.py-4 i {
-        opacity: .5;
-    }
-</style>
+        .portal-table .actions-group .btn i {
+            font-size: .85rem;
+            margin: 0;
+        }
+    </style>
 @endsection
 
 @section('content_header')
-    {{-- Centered title and cleaner header --}}
     <x-page-header :title="__('portal.most_accessed.title')" icon="fas fa-chart-bar" />
 @stop
 
 @section('content')
-    <div class="card shadow-sm">
+    <div class="portal-card">
+        <div class="card-header">
+            <span class="portal-icon">
+                <i class="fas fa-chart-line"></i>
+            </span>
+            <h5 class="mb-0">{{ __('portal.most_accessed.title') }}</h5>
+        </div>
         <div class="card-body">
             @if($items->isEmpty())
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                <div class="portal-empty-state">
+                    <i class="fas fa-chart-line"></i>
                     <div>{{ __('portal.most_accessed.empty') }}</div>
                 </div>
             @else
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="thead-light">
+                    <table class="table portal-table mb-0">
+                        <thead>
                             <tr>
                                 <th>{{ __('portal.most_accessed.columns.report') }}</th>
                                 <th class="text-right">{{ __('portal.most_accessed.columns.views') }}</th>

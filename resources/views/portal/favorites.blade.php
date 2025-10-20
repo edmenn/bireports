@@ -2,17 +2,37 @@
 
 @section('title', __('portal.favorites.title'))
 
+@section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+    @include('portal.partials.report-card-styles')
+@endsection
+
 @section('content_header')
-    <h1>{{ __('portal.favorites.title') }}</h1>
+    <x-page-header :title="__('portal.favorites.title')" icon="fas fa-star">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('portal.index') }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-home"></i>
+                <span>{{ __('applications.actions.go_home') }}</span>
+            </a>
+        </div>
+    </x-page-header>
 @stop
 
 @section('content')
-    @include('portal.partials.report-card-styles')
-
-    <div class="card">
+    <div class="portal-card">
+        <div class="card-header">
+            <span class="portal-icon">
+                <i class="fas fa-star"></i>
+            </span>
+            <h5 class="mb-0">{{ __('portal.favorites.title') }}</h5>
+        </div>
         <div class="card-body">
             @if($reports->isEmpty())
-                <div class="text-center text-muted py-4">{{ __('portal.favorites.empty') }}</div>
+                <div class="portal-empty-state">
+                    <i class="fas fa-star"></i>
+                    <div>{{ __('portal.favorites.empty') }}</div>
+                </div>
             @else
                 <div class="report-grid">
                     @foreach($reports as $report)
