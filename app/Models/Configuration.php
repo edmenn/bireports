@@ -26,6 +26,14 @@ class Configuration extends Model
         'tipo_visualizacion',
         'email_locale',
         'app_timezone_db',
+        'mail_driver',
+        'mail_host',
+        'mail_port',
+        'mail_encryption',
+        'mail_username',
+        'mail_password',
+        'mail_from_address',
+        'mail_from_name',
         'powerbi_client_id',
         'powerbi_client_secret',
         'powerbi_tenant_id',
@@ -86,6 +94,7 @@ class Configuration extends Model
         'site_logo_height' => 'integer',
         'site_logo_compact_width' => 'integer',
         'site_logo_compact_height' => 'integer',
+        'mail_port' => 'integer',
     ];
 
     // Store the client secret encrypted; tolerate legacy plaintext values

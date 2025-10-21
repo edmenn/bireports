@@ -76,6 +76,48 @@ return [
         'description' => 'Si está activo, antes de una actualización programada reanudamos (encendemos) la capacidad asociada para evitar fallos por estar pausada. Desactívalo si preferís controlarlo externamente.',
     ],
 
+    'mail' => [
+        'card_title' => 'Configuración de envío de correo',
+        'fields' => [
+            'driver' => [
+                'label' => 'Driver de correo',
+                'placeholder' => 'smtp',
+                'help' => 'Ejemplo: smtp, sendmail, log',
+            ],
+            'host' => [
+                'label' => 'Servidor SMTP',
+                'placeholder' => 'smtp.mailjet.com',
+                'help' => 'Nombre de host de tu servidor de correo',
+            ],
+            'port' => [
+                'label' => 'Puerto',
+                'placeholder' => '587',
+                'help' => 'Puertos comunes: 25, 465, 587',
+            ],
+            'encryption' => [
+                'label' => 'Encriptación',
+                'placeholder' => 'tls',
+                'help' => 'Usualmente tls o ssl',
+            ],
+            'username' => [
+                'label' => 'Usuario',
+                'placeholder' => 'user@mail.com',
+            ],
+            'password' => [
+                'label' => 'Contraseña',
+                'placeholder' => '********',
+            ],
+            'from_address' => [
+                'label' => 'Dirección remitente',
+                'placeholder' => 'noreply@dominio.com',
+            ],
+            'from_name' => [
+                'label' => 'Nombre remitente',
+                'placeholder' => 'Notificaciones del sistema',
+            ],
+        ],
+    ],
+
     'login' => [
         'cards' => [
             'uploads' => [

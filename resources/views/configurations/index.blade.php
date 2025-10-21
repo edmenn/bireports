@@ -200,6 +200,102 @@
         </div>
 
         {{-- ========================================================== --}}
+        {{--         EMAIL SENDING CONFIGURATION (SMTP SETTINGS)        --}}
+        {{-- ========================================================== --}}
+        <div class="row mt-3">
+            <div class="col-12 d-flex">
+                <x-adminlte-card title="{{ __('settings.mail.card_title') }}" icon="fas fa-envelope text-primary"
+                                 theme="primary" theme-mode="outline" class="flex-grow-1">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="mail_driver" class="form-label">{{ __('settings.mail.fields.driver.label') }}</label>
+                            <div class="input-group">
+                                <div class="input-group-text"><i class="fas fa-cogs"></i></div>
+                                @php
+                                    $mailDriver = old('mail_driver', $config->mail_driver);
+                                @endphp
+                                <select name="mail_driver" id="mail_driver" class="form-control" placeholder="{{ __('settings.mail.fields.driver.placeholder') }}">
+                                    <option value="">{{ __('settings.mail.fields.driver.placeholder') }}</option>
+                                    @foreach (['smtp', 'sendmail', 'log'] as $driver)
+                                        <option value="{{ $driver }}" {{ $mailDriver === $driver ? 'selected' : '' }}>{{ strtoupper($driver) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <small class="text-muted">{{ __('settings.mail.fields.driver.help') }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="mail_host" label="{{ __('settings.mail.fields.host.label') }}"
+                                              placeholder="{{ __('settings.mail.fields.host.placeholder') }}"
+                                              value="{{ old('mail_host', $config->mail_host) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-server"></i></div></x-slot>
+                                <x-slot name="bottom">
+                                    <small class="text-muted">{{ __('settings.mail.fields.host.help') }}</small>
+                                </x-slot>
+                            </x-adminlte-input>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="mail_port" type="number" min="1" max="65535"
+                                              label="{{ __('settings.mail.fields.port.label') }}"
+                                              placeholder="{{ __('settings.mail.fields.port.placeholder') }}"
+                                              value="{{ old('mail_port', $config->mail_port) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-plug"></i></div></x-slot>
+                                <x-slot name="bottom">
+                                    <small class="text-muted">{{ __('settings.mail.fields.port.help') }}</small>
+                                </x-slot>
+                            </x-adminlte-input>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="mail_encryption" class="form-label">{{ __('settings.mail.fields.encryption.label') }}</label>
+                            <div class="input-group">
+                                <div class="input-group-text"><i class="fas fa-lock"></i></div>
+                                @php
+                                    $mailEncryption = old('mail_encryption', $config->mail_encryption);
+                                @endphp
+                                <select name="mail_encryption" id="mail_encryption" class="form-control" placeholder="{{ __('settings.mail.fields.encryption.placeholder') }}">
+                                    <option value="">{{ __('settings.mail.fields.encryption.placeholder') }}</option>
+                                    @foreach (['tls', 'ssl', 'none'] as $encryption)
+                                        <option value="{{ $encryption }}" {{ $mailEncryption === $encryption ? 'selected' : '' }}>{{ strtoupper($encryption) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <small class="text-muted">{{ __('settings.mail.fields.encryption.help') }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="mail_username" label="{{ __('settings.mail.fields.username.label') }}"
+                                              placeholder="{{ __('settings.mail.fields.username.placeholder') }}"
+                                              value="{{ old('mail_username', $config->mail_username) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-user"></i></div></x-slot>
+                            </x-adminlte-input>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="mail_password" type="password"
+                                              label="{{ __('settings.mail.fields.password.label') }}"
+                                              placeholder="{{ __('settings.mail.fields.password.placeholder') }}"
+                                              value="{{ old('mail_password', $config->mail_password) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-key"></i></div></x-slot>
+                            </x-adminlte-input>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="mail_from_address" type="email"
+                                              label="{{ __('settings.mail.fields.from_address.label') }}"
+                                              placeholder="{{ __('settings.mail.fields.from_address.placeholder') }}"
+                                              value="{{ old('mail_from_address', $config->mail_from_address) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-at"></i></div></x-slot>
+                            </x-adminlte-input>
+                        </div>
+                        <div class="col-md-6">
+                            <x-adminlte-input name="mail_from_name"
+                                              label="{{ __('settings.mail.fields.from_name.label') }}"
+                                              placeholder="{{ __('settings.mail.fields.from_name.placeholder') }}"
+                                              value="{{ old('mail_from_name', $config->mail_from_name) }}">
+                                <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-id-card"></i></div></x-slot>
+                            </x-adminlte-input>
+                        </div>
+                    </div>
+                </x-adminlte-card>
+            </div>
+        </div>
+        {{-- ========================================================== --}}
         {{--         CAPACIDAD ON‑DEMAND (Parámetros del Viewer)         --}}
         {{-- ========================================================== --}}
         <div class="row mt-3">
@@ -462,3 +558,4 @@
 })();
 </script>
 @endpush
+

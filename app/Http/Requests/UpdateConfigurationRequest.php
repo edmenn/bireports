@@ -19,6 +19,14 @@ class UpdateConfigurationRequest extends FormRequest
             'google_analytics_code'          => ['nullable','string','max:255'],
             'tipo_visualizacion'             => ['nullable','in:pastas,iconos,lista'],
             'email_locale'                   => ['nullable','in:es,pt,en,ru,tr'],
+            'mail_driver'                    => ['nullable','in:smtp,sendmail,log'],
+            'mail_host'                      => ['nullable','string','max:255'],
+            'mail_port'                      => ['nullable','integer','min:1','max:65535'],
+            'mail_encryption'                => ['nullable','in:tls,ssl,none'],
+            'mail_username'                  => ['nullable','string','max:255'],
+            'mail_password'                  => ['nullable','string','max:255'],
+            'mail_from_address'              => ['nullable','email','max:255'],
+            'mail_from_name'                 => ['nullable','string','max:255'],
             'powerbi_client_id'              => ['nullable','string','max:255'],
             'powerbi_client_secret'          => ['nullable','string'],
             'powerbi_tenant_id'              => ['nullable','string','max:255'],
@@ -72,6 +80,20 @@ class UpdateConfigurationRequest extends FormRequest
             'color_btn_active'               => ['nullable','string','max:9'],
 
             // Footer fijo por código: no se valida ni acepta desde UI
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'mail_driver' => __('settings.mail.fields.driver.label'),
+            'mail_host' => __('settings.mail.fields.host.label'),
+            'mail_port' => __('settings.mail.fields.port.label'),
+            'mail_encryption' => __('settings.mail.fields.encryption.label'),
+            'mail_username' => __('settings.mail.fields.username.label'),
+            'mail_password' => __('settings.mail.fields.password.label'),
+            'mail_from_address' => __('settings.mail.fields.from_address.label'),
+            'mail_from_name' => __('settings.mail.fields.from_name.label'),
         ];
     }
 }

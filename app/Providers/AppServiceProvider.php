@@ -43,6 +43,45 @@ class AppServiceProvider extends ServiceProvider
         }
 
         if ($cfg) {
+            $mailOverrides = [];
+            $mailDriver = trim((string) ($cfg->mail_driver ?? ''));
+            if ($mailDriver !== '') {
+                $mailOverrides['mail.default'] = $mailDriver;
+            }
+
+            $smtpOverrides = [];
+            if (!empty($cfg->mail_host)) {
+                $smtpOverrides['mail.mailers.smtp.host'] = $cfg->mail_host;
+            }
+            if (!empty($cfg->mail_port)) {
+                $smtpOverrides['mail.mailers.smtp.port'] = (int) $cfg->mail_port;
+            }
+            $encryption = $cfg->mail_encryption;
+            if ($encryption !== null && $encryption !== '') {
+                $smtpOverrides['mail.mailers.smtp.encryption'] = $encryption === 'none' ? null : $encryption;
+            }
+            if (!empty($cfg->mail_username)) {
+                $smtpOverrides['mail.mailers.smtp.username'] = $cfg->mail_username;
+            }
+            if (!empty($cfg->mail_password)) {
+                $smtpOverrides['mail.mailers.smtp.password'] = $cfg->mail_password;
+            }
+            if (!empty($smtpOverrides)) {
+                $smtpOverrides['mail.mailers.smtp.transport'] = 'smtp';
+            }
+            if (!empty($cfg->mail_from_address)) {
+                $mailOverrides['mail.from.address'] = $cfg->mail_from_address;
+            }
+            if (!empty($cfg->mail_from_name)) {
+                $mailOverrides['mail.from.name'] = $cfg->mail_from_name;
+            }
+            if (!empty($mailOverrides)) {
+                config($mailOverrides);
+            }
+            if (!empty($smtpOverrides)) {
+                config($smtpOverrides);
+            }
+
             $isDark = (bool) session('adminlte_dark_mode', (bool) config('adminlte.layout_dark_mode', false));
             // Force the global footer to stay fixed.
             config(['adminlte.layout_fixed_footer' => true]);

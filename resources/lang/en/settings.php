@@ -76,6 +76,48 @@ return [
         'description' => 'If enabled, before a scheduled refresh we resume (start) the related capacity to avoid failures due to being paused. Disable it if you prefer to control this externally.',
     ],
 
+    'mail' => [
+        'card_title' => 'Email sending configuration',
+        'fields' => [
+            'driver' => [
+                'label' => 'Mail driver',
+                'placeholder' => 'smtp',
+                'help' => 'Example: smtp, sendmail, log',
+            ],
+            'host' => [
+                'label' => 'SMTP Host',
+                'placeholder' => 'smtp.mailjet.com',
+                'help' => 'Your mail server hostname',
+            ],
+            'port' => [
+                'label' => 'Port',
+                'placeholder' => '587',
+                'help' => 'Common ports: 25, 465, 587',
+            ],
+            'encryption' => [
+                'label' => 'Encryption',
+                'placeholder' => 'tls',
+                'help' => 'Usually tls or ssl',
+            ],
+            'username' => [
+                'label' => 'Username',
+                'placeholder' => 'user@mail.com',
+            ],
+            'password' => [
+                'label' => 'Password',
+                'placeholder' => '********',
+            ],
+            'from_address' => [
+                'label' => 'From address',
+                'placeholder' => 'noreply@domain.com',
+            ],
+            'from_name' => [
+                'label' => 'From name',
+                'placeholder' => 'System Notifications',
+            ],
+        ],
+    ],
+
     'login' => [
         'cards' => [
             'uploads' => [
