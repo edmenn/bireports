@@ -30,6 +30,8 @@ class Report extends Model
         'dataset_id',
         'cover_url',
         'cover_scale',
+        'cover_scale_x',
+        'cover_scale_y',
         'description',
         'allow_resume_outside_window',
     ];
@@ -37,6 +39,8 @@ class Report extends Model
     protected $casts = [
         'allow_resume_outside_window' => 'boolean',
         'cover_scale' => 'float',
+        'cover_scale_x' => 'float',
+        'cover_scale_y' => 'float',
     ];
 
     /**
@@ -92,8 +96,10 @@ class Report extends Model
      */
     public function getCoverScaleAttribute($value): float
     {
-        $numeric = is_numeric($value) ? (float) $value : 1.0;
-        return min(1.5, max(0.5, $numeric));
+        if (!is_numeric($value)) {
+            $value = $this->attributes['cover_scale_x'] ?? $this->attributes['cover_scale_y'] ?? 1.0;
+        }
+        return $this->normalizeScaleValue($value);
     }
 
     /**
@@ -101,7 +107,38 @@ class Report extends Model
      */
     public function setCoverScaleAttribute($value): void
     {
+        $this->attributes['cover_scale'] = $this->normalizeScaleValue($value);
+    }
+
+    public function getCoverScaleXAttribute($value): float
+    {
+        if (!is_numeric($value)) {
+            $value = $this->attributes['cover_scale'] ?? $this->attributes['cover_scale_y'] ?? 1.0;
+        }
+        return $this->normalizeScaleValue($value);
+    }
+
+    public function setCoverScaleXAttribute($value): void
+    {
+        $this->attributes['cover_scale_x'] = $this->normalizeScaleValue($value);
+    }
+
+    public function getCoverScaleYAttribute($value): float
+    {
+        if (!is_numeric($value)) {
+            $value = $this->attributes['cover_scale'] ?? $this->attributes['cover_scale_x'] ?? 1.0;
+        }
+        return $this->normalizeScaleValue($value);
+    }
+
+    public function setCoverScaleYAttribute($value): void
+    {
+        $this->attributes['cover_scale_y'] = $this->normalizeScaleValue($value);
+    }
+
+    protected function normalizeScaleValue($value): float
+    {
         $numeric = is_numeric($value) ? (float) $value : 1.0;
-        $this->attributes['cover_scale'] = min(1.5, max(0.5, $numeric));
+        return min(1.5, max(0.5, $numeric));
     }
 }

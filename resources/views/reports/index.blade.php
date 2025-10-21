@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@include('portal.partials.report-card-styles')
+
 @section('title', __('reports.index.title'))
 
 @section('content_header')
@@ -133,6 +135,8 @@
                 @php
                     $title = (string)($r->name ?? '');
                     $cover = trim((string)($r->effective_cover_url ?? ''));
+                    $scaleX = max(0.5, min((float)($r->cover_scale_x ?? $r->cover_scale ?? 1.0), 1.5));
+                    $scaleY = max(0.5, min((float)($r->cover_scale_y ?? $r->cover_scale ?? 1.0), 1.5));
                     $wsName = $r->workspace->name ?? '';
                     $wsKey  = $wsName !== '' ? $wsName : (string)($r->workspace_id ?? '');
                     $datasetId = $r->dataset_id ?? '';
@@ -141,25 +145,26 @@
                     $searchBlob = \Illuminate\Support\Str::lower($title.' '.$rid.' '.$wsKey.' '.$datasetId);
                 @endphp
 
-                <div class="report-card shadow-sm"
+                <div class="report-card"
                      data-title="{{ \Illuminate\Support\Str::lower($title) }}"
                      data-ws="{{ \Illuminate\Support\Str::lower($wsKey) }}"
                      data-cover="{{ $hasCover }}"
                      data-search="{{ $searchBlob }}">
 
                     {{-- Cover --}}
-                    <div class="report-cover bg-light">
+                    <div class="report-cover">
                         <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
-                           class="cover-link d-flex align-items-center justify-content-center w-100 h-100"
+                           class="cover-link"
                            title="{{ __('reports.index.cards.open_title') }}">
                             @if($cover !== '')
                                 @php
                                     $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default');
-                                    $scale = number_format($r->cover_scale ?? 1, 3, '.', '');
+                                    $scaleXFormatted = number_format($scaleX, 3, '.', '');
+                                    $scaleYFormatted = number_format($scaleY, 3, '.', '');
                                 @endphp
                                 <img src="{{ $cover }}" alt="{{ __('reports.index.cards.cover_alt', ['name' => $r->name]) }}"
-                                     class="cover-scale-target {{ $isDefault ? 'cover-default' : 'cover-full' }}"
-                                     style="transform: scale({{ $scale }});">
+                                     class="cover-scale-target {{ $isDefault ? 'cover-default' : '' }}"
+                                     style="transform: scale({{ $scaleXFormatted }}, {{ $scaleYFormatted }});">
                             @else
                                 <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
                             @endif
@@ -239,7 +244,7 @@
         --card-radius: 14px;
         --card-border: rgba(0,0,0,.08);
         --card-hover: rgba(0,123,255,.4);
-        --cover-height: 180px;
+        --cover-height: 190px;
         --cover-bg: #f8f9fa;
     }
     .report-grid{
@@ -250,12 +255,6 @@
     @media (min-width:576px){ .report-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
     @media (min-width:992px){ .report-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
     @media (min-width:1400px){ .report-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
-    .report-card{ border:1px solid var(--card-border); border-radius: var(--card-radius); background:#fff; transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; overflow:hidden; }
-    .report-card:hover{ transform:translateY(-3px); border-color:var(--card-hover); box-shadow:0 .65rem 1.2rem rgba(0,0,0,.10); }
-    .report-cover{ height: var(--cover-height); background: var(--cover-bg); border-bottom:1px solid rgba(0,0,0,.05); }
-    .cover-link{ text-decoration:none; }
-    .cover-full{ width:100%; height:100%; object-fit:cover; display:block; }
-    .cover-default{ max-width:80%; max-height:80%; object-fit:contain; display:block; }
     .report-title-link:hover{ text-decoration:underline; }
     .description-clamp{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.4em; }
     .copy-pill{ cursor:pointer; user-select:none; transition:all .15s ease; }

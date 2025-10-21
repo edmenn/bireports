@@ -66,20 +66,29 @@
             <div class="mb-4">
                 <label class="font-weight-bold">{{ __('reports.edit.form.preview.label') }}</label>
                 @php
-                    $scaleSource  = old('cover_scale', $report->cover_scale ?? 1);
-                    $scaleNumeric = is_numeric($scaleSource) ? (float) $scaleSource : 1.0;
-                    if ($scaleNumeric < 0.5 || $scaleNumeric > 1.5) {
-                        $percent     = (int) round($scaleNumeric);
-                        $percent     = $percent < 50 ? 50 : ($percent > 150 ? 150 : $percent);
-                        $storedScale = $percent / 100;
-                    } else {
-                        $storedScale = $scaleNumeric;
-                    }
+                    $defaultScale = $report->cover_scale ?? 1;
+                    $scaleXSource = old('cover_scale_x', $report->cover_scale_x ?? $defaultScale);
+                    $scaleYSource = old('cover_scale_y', $report->cover_scale_y ?? $defaultScale);
+                    $normalizeScale = function ($value) {
+                        $numeric = is_numeric($value) ? (float) $value : 1.0;
+                        if ($numeric < 0.5 || $numeric > 1.5) {
+                            $percent = (int) round($numeric * 100);
+                            if ($percent < 50) {
+                                $percent = 50;
+                            } elseif ($percent > 150) {
+                                $percent = 150;
+                            }
+                            return $percent / 100;
+                        }
+                        return max(0.5, min($numeric, 1.5));
+                    };
+                    $storedScaleX = $normalizeScale($scaleXSource);
+                    $storedScaleY = $normalizeScale($scaleYSource);
                     $sliderMin = 50;
                     $sliderMax = 150;
-                    $initialSlider = (int) round($storedScale * 100);
-                    $initialSlider = $initialSlider < $sliderMin ? $sliderMin : ($initialSlider > $sliderMax ? $sliderMax : $initialSlider);
-                    $scaleFactor  = $storedScale;
+                    $displayPercentX = (int) round($storedScaleX * 100);
+                    $displayPercentY = (int) round($storedScaleY * 100);
+                    $lockChecked = abs($storedScaleX - $storedScaleY) < 0.001;
                     $cover        = trim((string)($report->effective_cover_url ?? ''));
                     $isDefaultCover = $cover !== '' && \Illuminate\Support\Str::contains($cover, 'report-covers/default');
                 @endphp
@@ -90,15 +99,15 @@
                     </div>
                     <div class="report-preview-body">
                         <div class="preview-card-wrapper">
-                            <div class="report-card preview-card-tile shadow-sm mb-4 mx-auto">
+                            <div class="report-card preview-card-tile mb-4 mx-auto">
                                 <div id="previewBox" class="report-cover">
-                                    <div class="cover-link preview-cover-link d-flex align-items-center justify-content-center w-100 h-100">
+                                    <div class="cover-link preview-cover-link">
                                         @if($cover !== '')
                                             <img id="previewImg"
                                                  src="{{ $cover }}"
                                                  alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
-                                                 class="cover-scale-target {{ $isDefaultCover ? 'cover-default' : 'cover-full' }}"
-                                                 style="transform: scale({{ number_format($scaleFactor, 3, '.', '') }}, {{ number_format($scaleFactor, 3, '.', '') }});">
+                                                 class="cover-scale-target {{ $isDefaultCover ? 'cover-default' : '' }}"
+                                                 style="transform: scale({{ number_format($storedScaleX, 3, '.', '') }}, {{ number_format($storedScaleY, 3, '.', '') }});">
                                         @else
                                             <div id="previewFallback" class="preview-fallback w-100 h-100 d-flex align-items-center justify-content-center">
                                                 <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
@@ -131,7 +140,7 @@
                                         <small id="cover_scale_value"
                                                class="text-muted font-weight-bold"
                                                data-template="{{ __('reports.edit.preview.width_display', ['value' => ':value']) }}">
-                                            {{ __('reports.edit.preview.width_display', ['value' => $initialSlider]) }}
+                                            {{ __('reports.edit.preview.width_display', ['value' => $displayPercentX]) }}
                                         </small>
                                     </div>
                                     <input type="range"
@@ -140,7 +149,7 @@
                                            min="{{ $sliderMin }}"
                                            max="{{ $sliderMax }}"
                                            step="1"
-                                           value="{{ $initialSlider }}">
+                                           value="{{ $displayPercentX }}">
                                 </div>
                                 <div class="form-group">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
@@ -148,7 +157,7 @@
                                         <small id="cover_scale_value_y"
                                                class="text-muted font-weight-bold"
                                                data-template="{{ __('reports.edit.preview.height_display', ['value' => ':value']) }}">
-                                            {{ __('reports.edit.preview.height_display', ['value' => $initialSlider]) }}
+                                            {{ __('reports.edit.preview.height_display', ['value' => $displayPercentY]) }}
                                         </small>
                                     </div>
                                     <input type="range"
@@ -157,18 +166,20 @@
                                            min="{{ $sliderMin }}"
                                            max="{{ $sliderMax }}"
                                            step="1"
-                                           value="{{ $initialSlider }}"
-                                           disabled>
+                                           value="{{ $displayPercentY }}"
+                                           {{ $lockChecked ? 'disabled' : '' }}>
                                 </div>
                                 <div class="custom-control custom-checkbox">
-                                    <input type="checkbox" class="custom-control-input" id="cover_scale_lock" checked>
+                                    <input type="checkbox" class="custom-control-input" id="cover_scale_lock" {{ $lockChecked ? 'checked' : '' }}>
                                     <label class="custom-control-label font-weight-bold" for="cover_scale_lock">{{ __('reports.edit.preview.lock_label') }}</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <input type="hidden" name="cover_scale" id="cover_scale" value="{{ number_format($storedScale, 4, '.', '') }}">
+                <input type="hidden" name="cover_scale_x" id="cover_scale_x" value="{{ number_format($storedScaleX, 4, '.', '') }}">
+                <input type="hidden" name="cover_scale_y" id="cover_scale_y" value="{{ number_format($storedScaleY, 4, '.', '') }}">
+                <input type="hidden" name="cover_scale" id="cover_scale" value="{{ number_format($storedScaleX, 4, '.', '') }}">
                 <small class="text-muted d-block mt-2">{{ __('reports.edit.form.preview.hint') }}</small>
             </div>
 
@@ -300,8 +311,8 @@
 /* Preview */
 .report-preview-card {
     background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: .5rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
     box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
     overflow: hidden;
 }
@@ -322,21 +333,32 @@
     flex-direction: column;
 }
 .preview-card-wrapper {
-    max-width: 340px;
+    max-width: var(--card-max-width);
     width: 100%;
     margin: 0 auto;
 }
 .preview-card-wrapper .report-card {
     width: 100%;
-    max-width: 340px;
+    max-width: var(--card-max-width);
     margin: 0 auto;
-}
-.preview-card-tile {
-    border: 1px solid #dee2e6;
-    border-radius: .5rem;
-    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05) !important;
-    position: relative;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
     background: #fff;
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05) !important;
+    overflow: hidden;
+}
+.preview-card-wrapper .cover-link {
+    background: var(--cover-bg);
+}
+.preview-card-wrapper .cover-scale-target {
+    transition: all .2s ease-in-out;
+}
+.preview-card-wrapper .cover-default {
+    padding: .75rem;
+}
+.preview-card-wrapper .preview-fallback {
+    border-radius: var(--card-radius);
+    background: var(--cover-bg);
 }
 .preview-fallback { color: #ced4da; }
 .preview-action-btn {
@@ -353,8 +375,8 @@
 .report-preview-controls small { font-size: .8rem; }
 .preview-control-card {
     background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: .5rem;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
     box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
     padding: 1.25rem;
     margin: 1.5rem auto 0;
@@ -363,13 +385,16 @@
 .preview-control-card .form-group:last-child { margin-bottom: 0; }
 .preview-card-wrapper .preview-control-card { width: 100%; }
 .preview-cover-link {
-    width: 100%;
-    height: 100%;
-    border-radius: .5rem;
+    background: var(--cover-bg);
+    border-radius: var(--card-radius);
     overflow: hidden;
 }
+.preview-cover-link .cover-scale-target {
+    transition: all .2s ease-in-out;
+}
 .preview-cover-link .preview-fallback {
-    border-radius: .5rem;
+    border-radius: var(--card-radius);
+    background: var(--cover-bg);
 }
 
 /* Responsive buttons */
@@ -393,12 +418,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const descCount   = document.getElementById('descCount');
     const previewBox  = document.getElementById('previewBox');
     const previewControls = document.getElementById('previewControls');
-    const widthSlider  = document.getElementById('cover_scale_slider');
-    const heightSlider = document.getElementById('cover_scale_slider_y');
-    const lockToggle   = document.getElementById('cover_scale_lock');
-    const scaleInput   = document.getElementById('cover_scale');
-    const widthLabel   = document.getElementById('cover_scale_value');
-    const heightLabel  = document.getElementById('cover_scale_value_y');
+    const widthSlider    = document.getElementById('cover_scale_slider');
+    const heightSlider   = document.getElementById('cover_scale_slider_y');
+    const lockToggle     = document.getElementById('cover_scale_lock');
+    const scaleInputX    = document.getElementById('cover_scale_x');
+    const scaleInputY    = document.getElementById('cover_scale_y');
+    const legacyScaleInp = document.getElementById('cover_scale');
+    const widthLabel     = document.getElementById('cover_scale_value');
+    const heightLabel    = document.getElementById('cover_scale_value_y');
     let previewImg     = document.getElementById('previewImg');
     const statusEmpty    = fileStatus?.dataset.statusEmpty || '';
     const statusSelected = fileStatus?.dataset.statusSelected || '';
@@ -442,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let container = previewBox.querySelector('.preview-cover-link');
         if (!container) {
             container = document.createElement('div');
-            container.className = 'cover-link preview-cover-link d-flex align-items-center justify-content-center w-100 h-100';
+            container.className = 'cover-link preview-cover-link';
             previewBox.innerHTML = '';
             previewBox.appendChild(container);
         }
@@ -467,16 +494,24 @@ document.addEventListener('DOMContentLoaded', function () {
         widthSlider.value  = widthValue;
         heightSlider.value = heightValue;
 
-        const widthScale  = scaleFromSlider(widthValue);
-        const heightScale = scaleFromSlider(heightValue);
+        const scaleX = scaleFromSlider(widthValue);
+        const scaleY = scaleFromSlider(heightValue);
 
         if (previewImg) {
-            previewImg.style.transform = `scale(${widthScale}, ${heightScale})`;
+            previewImg.style.transform = `scale(${scaleX}, ${scaleY})`;
         }
-        if (scaleInput) {
-            scaleInput.value = widthScale.toFixed(4);
+        const clampedX = clamp(scaleX, scaleMin, scaleMax, 1);
+        const clampedY = clamp(scaleY, scaleMin, scaleMax, 1);
+        if (scaleInputX) {
+            scaleInputX.value = clampedX.toFixed(4);
         }
-        updateLabels(widthValue, heightValue);
+        if (scaleInputY) {
+            scaleInputY.value = clampedY.toFixed(4);
+        }
+        if (legacyScaleInp) {
+            legacyScaleInp.value = clampedX.toFixed(4);
+        }
+        updateLabels(Math.round(clampedX * 100), Math.round(clampedY * 100));
     }
 
     function syncHeightToWidth() {
@@ -501,8 +536,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         previewImg = document.createElement('img');
         previewImg.id = 'previewImg';
-        const coverClass = imageClass || (typeof src === 'string' && src.includes('report-covers/default') ? 'cover-default' : 'cover-full');
-        previewImg.className = `cover-scale-target ${coverClass}`.trim();
+        const isDefault = imageClass === 'cover-default' || (typeof src === 'string' && src.includes('report-covers/default'));
+        const coverClass = isDefault ? 'cover-scale-target cover-default' : 'cover-scale-target';
+        previewImg.className = coverClass;
         previewImg.src = src;
         container.appendChild(previewImg);
 
@@ -539,11 +575,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (file) {
                 if (urlInput) urlInput.value = '';
                 const reader = new FileReader();
-                reader.onload = e => showImagePreview(e.target.result, { imageClass: 'cover-full' });
+                reader.onload = e => showImagePreview(e.target.result);
                 reader.readAsDataURL(file);
             } else {
                 const url = (urlInput?.value || '').trim();
-                if (url) showImagePreview(url, { imageClass: url.includes('report-covers/default') ? 'cover-default' : 'cover-full' });
+                if (url) showImagePreview(url, { imageClass: url.includes('report-covers/default') ? 'cover-default' : undefined });
                 else showFallbackIcon();
             }
         });
@@ -557,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     try {
                         const u = new URL(val);
                         const isDefault = u.href.includes('report-covers/default');
-                        showImagePreview(u.href, { imageClass: isDefault ? 'cover-default' : 'cover-full' });
+                        showImagePreview(u.href, { imageClass: isDefault ? 'cover-default' : undefined });
                     } catch (_) {
                         showFallbackIcon();
                     }
@@ -596,11 +632,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (scaleInput && widthSlider) {
-        const storedScale = clamp(scaleInput.value, scaleMin, scaleMax, 1);
-        const initialSlider = sliderFromScale(storedScale);
-        widthSlider.value = initialSlider;
-        if (heightSlider) heightSlider.value = initialSlider;
+    const initialScaleX = scaleInputX ? clamp(scaleInputX.value, scaleMin, scaleMax, 1) : (widthSlider ? scaleFromSlider(widthSlider.value) : 1);
+    const initialScaleY = scaleInputY ? clamp(scaleInputY.value, scaleMin, scaleMax, 1) : (heightSlider ? scaleFromSlider(heightSlider.value) : 1);
+
+    if (widthSlider) {
+        widthSlider.value = sliderFromScale(initialScaleX);
+    }
+    if (heightSlider) {
+        heightSlider.value = sliderFromScale(initialScaleY);
     }
 
     if (lockToggle?.checked) {

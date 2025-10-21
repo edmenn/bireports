@@ -169,12 +169,18 @@ class ReportsController extends Controller
             'cover_file'   => ['nullable','file','max:2048','mimetypes:image/jpeg,image/png,image/webp,image/gif,image/svg+xml'],
             'make_default' => ['nullable','boolean'],
             'cover_scale'  => ['nullable','numeric','between:0.5,1.5'],
+            'cover_scale_x'=> ['nullable','numeric','between:0.5,1.5'],
+            'cover_scale_y'=> ['nullable','numeric','between:0.5,1.5'],
         ], [
             'cover_url.url'        => __('reports.validation.cover_url_url'),
             'cover_file.max'       => __('reports.validation.cover_file_max'),
             'cover_file.mimetypes' => __('reports.validation.cover_file_mimetypes'),
             'cover_scale.between'  => __('reports.validation.cover_scale_between'),
             'cover_scale.numeric'  => __('reports.validation.cover_scale_numeric'),
+            'cover_scale_x.between'=> __('reports.validation.cover_scale_between'),
+            'cover_scale_x.numeric'=> __('reports.validation.cover_scale_numeric'),
+            'cover_scale_y.between'=> __('reports.validation.cover_scale_between'),
+            'cover_scale_y.numeric'=> __('reports.validation.cover_scale_numeric'),
         ]);
 
         $makeDefault = (bool) ($validated['make_default'] ?? false);
@@ -213,8 +219,16 @@ class ReportsController extends Controller
             $report->allow_resume_outside_window = $request->boolean('allow_resume_outside_window');
         }
 
-        if ($request->filled('cover_scale')) {
-            $report->cover_scale = (float) $request->input('cover_scale');
+        if ($request->hasAny(['cover_scale', 'cover_scale_x', 'cover_scale_y'])) {
+            $scaleX = $request->input('cover_scale_x', $request->input('cover_scale', $report->cover_scale_x ?? $report->cover_scale ?? 1));
+            $scaleY = $request->input('cover_scale_y', $request->input('cover_scale', $report->cover_scale_y ?? $report->cover_scale ?? 1));
+            $scaleX = min(1.5, max(0.5, (float) $scaleX));
+            $scaleY = min(1.5, max(0.5, (float) $scaleY));
+
+            $report->cover_scale_x = $scaleX;
+            $report->cover_scale_y = $scaleY;
+            // Maintain legacy column for backward compatibility.
+            $report->cover_scale   = $scaleX;
         }
 
         $report->save();
