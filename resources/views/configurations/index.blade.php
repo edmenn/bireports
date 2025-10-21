@@ -309,23 +309,89 @@
 
 @push('css')
 <style>
-    /* Pequeño refinamiento visual */
-    .input-group .btn i { pointer-events: none; }
-    .callout h5 { font-weight: 600; }
+    /* ======================================== */
+    /* Uniform form controls                    */
+    /* ======================================== */
 
-    /* Estilo para el interruptor ON/OFF personalizado */
+    .form-control {
+        height: calc(2.25rem + 2px) !important;
+        padding: .375rem .75rem !important;
+        line-height: 1.5 !important;
+        font-size: .875rem !important;
+        color: #212529 !important;
+        background-color: #fff !important;
+        border: 1px solid #ced4da !important;
+        border-radius: .25rem !important;
+        box-shadow: none !important;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+
+    select.form-control {
+        padding-top: .4rem !important;
+        padding-bottom: .4rem !important;
+    }
+
+    .form-control:focus {
+        color: #212529;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 .15rem rgba(0,123,255,.25);
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: .875rem;
+        margin-bottom: .25rem;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-right: 0;
+        height: calc(2.25rem + 2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .875rem;
+        color: #6c757d;
+    }
+
+    .input-group > .form-control {
+        height: calc(2.25rem + 2px);
+        border-left: 0;
+    }
+
+    small.text-muted {
+        display: block;
+        margin-top: .25rem;
+        font-size: .75rem;
+    }
+
+    .x-adminlte-card .card-body label,
+    .card-body .form-label {
+        margin-top: .5rem;
+    }
+
+    /* ======================================== */
+    /* Custom toggle switch (unchanged)         */
+    /* ======================================== */
+
     .custom-toggle-switch {
         position: relative;
         display: inline-block;
         width: 60px;
         height: 34px;
         margin-bottom: 0;
+        vertical-align: middle;
     }
+
     .custom-toggle-switch input {
         opacity: 0;
         width: 0;
         height: 0;
     }
+
     .slider {
         position: absolute;
         cursor: pointer;
@@ -334,9 +400,9 @@
         right: 0;
         bottom: 0;
         background-color: #ccc;
-        -webkit-transition: .4s;
         transition: .4s;
     }
+
     .slider:before {
         position: absolute;
         content: "";
@@ -345,28 +411,31 @@
         left: 4px;
         bottom: 4px;
         background-color: white;
-        -webkit-transition: .4s;
         transition: .4s;
     }
+
     input:checked + .slider {
         background-color: #28a745;
     }
+
     input:focus + .slider {
         box-shadow: 0 0 1px #28a745;
     }
+
     input:checked + .slider:before {
-        -webkit-transform: translateX(26px);
-        -ms-transform: translateX(26px);
         transform: translateX(26px);
     }
+
     .slider.round {
         border-radius: 34px;
     }
+
     .slider.round:before {
         border-radius: 50%;
     }
 </style>
 @endpush
+
 
 @push('js')
 <script>
