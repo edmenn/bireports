@@ -132,14 +132,14 @@ return [
                     'selected' => 'Archivo seleccionado: :name',
                 ],
             ],
-            'make_default' => [
-                'label' => 'Usar esta imagen como predeterminada para reportes sin portada',
-                'hint' => 'Solo aplica cuando subís un archivo.',
+            'remove_cover' => [
+                'label' => 'Eliminar imagen actual',
+                'hint' => 'Vuelve a la portada predeterminada o al icono por defecto.',
             ],
             'url' => [
                 'label' => 'URL de imagen (opcional)',
                 'placeholder' => 'https://tu-cdn/portadas/reporte.png',
-                'hint' => 'Si subís un archivo, la URL se ignora. La opción de predeterminada solo aplica al archivo subido.',
+                'hint' => 'Si subís un archivo, la URL se ignora.',
             ],
             'description' => [
                 'label' => 'Descripción (opcional)',

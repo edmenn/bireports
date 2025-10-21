@@ -91,6 +91,12 @@
                     $lockChecked = abs($storedScaleX - $storedScaleY) < 0.001;
                     $cover        = trim((string)($report->effective_cover_url ?? ''));
                     $isDefaultCover = $cover !== '' && \Illuminate\Support\Str::contains($cover, 'report-covers/default');
+                    $hasCustomCover = !empty($report->cover_url);
+                    $removeCoverChecked = old('remove_cover') ? true : false;
+                    if ($removeCoverChecked) {
+                        $cover = '';
+                        $isDefaultCover = false;
+                    }
                 @endphp
                 <div class="report-preview-card">
                     <div class="report-preview-header text-center">
@@ -100,7 +106,10 @@
                     <div class="report-preview-body">
                         <div class="preview-card-wrapper">
                             <div class="report-card preview-card-tile mb-4 mx-auto">
-                                <div id="previewBox" class="report-cover">
+                                <div id="previewBox"
+                                     class="report-cover"
+                                     data-initial-cover="{{ e($cover) }}"
+                                     data-initial-cover-class="{{ $isDefaultCover ? 'cover-default' : '' }}">
                                     <div class="cover-link preview-cover-link">
                                         @if($cover !== '')
                                             <img id="previewImg"
@@ -209,15 +218,16 @@
                 @enderror
             </div>
 
-            {{-- Default checkbox --}}
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" value="1" id="make_default" name="make_default"
-                       {{ old('make_default') ? 'checked' : '' }}>
-                <label class="form-check-label" for="make_default">
-                    {{ __('reports.edit.form.make_default.label') }}
-                </label>
-                <small class="form-text text-muted">{{ __('reports.edit.form.make_default.hint') }}</small>
-            </div>
+            @if($hasCustomCover || $removeCoverChecked)
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" value="1" id="remove_cover" name="remove_cover"
+                           {{ $removeCoverChecked ? 'checked' : '' }}>
+                    <label class="form-check-label" for="remove_cover">
+                        {{ __('reports.edit.form.remove_cover.label') }}
+                    </label>
+                    <small class="form-text text-muted">{{ __('reports.edit.form.remove_cover.hint') }}</small>
+                </div>
+            @endif
 
             {{-- Alternative URL --}}
             <div class="mb-3">
@@ -426,6 +436,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const legacyScaleInp = document.getElementById('cover_scale');
     const widthLabel     = document.getElementById('cover_scale_value');
     const heightLabel    = document.getElementById('cover_scale_value_y');
+    const removeCoverToggle = document.getElementById('remove_cover');
     let previewImg     = document.getElementById('previewImg');
     const statusEmpty    = fileStatus?.dataset.statusEmpty || '';
     const statusSelected = fileStatus?.dataset.statusSelected || '';
@@ -433,6 +444,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const sliderMax = widthSlider ? Number(widthSlider.max || 150) : 150;
     const scaleMin  = sliderMin / 100;
     const scaleMax  = sliderMax / 100;
+    let storedCoverSrc = previewBox?.dataset.initialCover || '';
+    let storedCoverClass = previewBox?.dataset.initialCoverClass || '';
 
     function updateDescCount() {
         const len = (descInput?.value || '').length;
@@ -528,7 +541,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showImagePreview(src, options = {}) {
-        const { imageClass } = options;
+        const { imageClass, suppressToggleReset } = options;
         if (!previewBox) return;
         const container = ensurePreviewContainer();
         if (!container) return;
@@ -541,6 +554,15 @@ document.addEventListener('DOMContentLoaded', function () {
         previewImg.className = coverClass;
         previewImg.src = src;
         container.appendChild(previewImg);
+
+        storedCoverSrc = src;
+        storedCoverClass = isDefault ? 'cover-default' : '';
+        previewBox.dataset.initialCover = src;
+        previewBox.dataset.initialCoverClass = storedCoverClass;
+
+        if (removeCoverToggle && !suppressToggleReset) {
+            removeCoverToggle.checked = false;
+        }
 
         togglePreviewControls(true);
         applyScale();
@@ -632,6 +654,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function handleRemoveToggle(checked) {
+        if (checked) {
+            const defaultSlider = sliderFromScale(1);
+            if (widthSlider) widthSlider.value = defaultSlider;
+            if (heightSlider) heightSlider.value = defaultSlider;
+            applyScale();
+            showFallbackIcon();
+            if (scaleInputX) scaleInputX.value = '1.0000';
+            if (scaleInputY) scaleInputY.value = '1.0000';
+            if (legacyScaleInp) legacyScaleInp.value = '1.0000';
+        } else {
+            if (storedCoverSrc) {
+                showImagePreview(storedCoverSrc, {
+                    imageClass: storedCoverClass === 'cover-default' ? 'cover-default' : undefined,
+                    suppressToggleReset: true
+                });
+            } else {
+                showFallbackIcon();
+            }
+        }
+    }
+
     const initialScaleX = scaleInputX ? clamp(scaleInputX.value, scaleMin, scaleMax, 1) : (widthSlider ? scaleFromSlider(widthSlider.value) : 1);
     const initialScaleY = scaleInputY ? clamp(scaleInputY.value, scaleMin, scaleMax, 1) : (heightSlider ? scaleFromSlider(heightSlider.value) : 1);
 
@@ -653,6 +697,15 @@ document.addEventListener('DOMContentLoaded', function () {
         applyScale();
     } else {
         togglePreviewControls(false);
+    }
+
+    if (removeCoverToggle) {
+        removeCoverToggle.addEventListener('change', function () {
+            handleRemoveToggle(this.checked);
+        });
+        if (removeCoverToggle.checked) {
+            handleRemoveToggle(true);
+        }
     }
 });
 </script>

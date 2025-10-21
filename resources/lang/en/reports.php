@@ -132,14 +132,14 @@ return [
                     'selected' => 'Selected: :name',
                 ],
             ],
-            'make_default' => [
-                'label' => 'Use this image as the default cover for reports without one',
-                'hint' => 'Applies only when you upload an image file.',
+            'remove_cover' => [
+                'label' => 'Remove current image',
+                'hint' => 'Reverts to the default cover or fallback icon.',
             ],
             'url' => [
                 'label' => 'Image URL (optional)',
                 'placeholder' => 'https://your-cdn/covers/report.png',
-                'hint' => 'If you upload a file, the URL is ignored. The default option applies only to uploaded files.',
+                'hint' => 'If you upload a file, the URL is ignored.',
             ],
             'description' => [
                 'label' => 'Description (optional)',

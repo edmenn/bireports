@@ -127,6 +127,10 @@ return [
                 'label' => 'Enviar imagem (opcional)',
                 'hint' => 'Formatos permitidos: JPG, PNG, WEBP, GIF ou SVG. Máximo de 2 MB.',
             ],
+            'remove_cover' => [
+                'label' => 'Remover imagem atual',
+                'hint' => 'Retorna � capa padr�o ou ao �cone padr�o.',
+            ],
             'make_default' => [
                 'label' => 'Usar esta imagem como capa padrão para relatórios sem capa',
                 'hint' => 'Válido apenas quando você envia um arquivo.',

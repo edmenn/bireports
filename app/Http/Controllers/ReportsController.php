@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ReportsController extends Controller
@@ -167,10 +168,10 @@ class ReportsController extends Controller
             'description'  => ['nullable', 'string', 'max:2000'],
             'cover_url'    => ['nullable', 'url', 'max:2048'],
             'cover_file'   => ['nullable','file','max:2048','mimetypes:image/jpeg,image/png,image/webp,image/gif,image/svg+xml'],
-            'make_default' => ['nullable','boolean'],
             'cover_scale'  => ['nullable','numeric','between:0.5,1.5'],
             'cover_scale_x'=> ['nullable','numeric','between:0.5,1.5'],
             'cover_scale_y'=> ['nullable','numeric','between:0.5,1.5'],
+            'remove_cover' => ['nullable','boolean'],
         ], [
             'cover_url.url'        => __('reports.validation.cover_url_url'),
             'cover_file.max'       => __('reports.validation.cover_file_max'),
@@ -181,9 +182,11 @@ class ReportsController extends Controller
             'cover_scale_x.numeric'=> __('reports.validation.cover_scale_numeric'),
             'cover_scale_y.between'=> __('reports.validation.cover_scale_between'),
             'cover_scale_y.numeric'=> __('reports.validation.cover_scale_numeric'),
+            'remove_cover.boolean'=> __('validation.boolean', ['attribute' => 'remove_cover']),
         ]);
 
-        $makeDefault = (bool) ($validated['make_default'] ?? false);
+        $removeCover = $request->boolean('remove_cover');
+        $originalCoverUrl = $report->cover_url;
 
         // --- Uploaded image takes priority ---
         if ($request->hasFile('cover_file')) {
@@ -195,17 +198,28 @@ class ReportsController extends Controller
 
             $report->cover_url = $publicUrl;
 
-            // When set as default, copy into report-covers/default.png
-            if ($makeDefault) {
-                $defaultRelPath = 'report-covers/default.png';
-                Storage::disk('public')->makeDirectory('report-covers');
-                Storage::disk('public')->put($defaultRelPath, Storage::disk('public')->get($path));
-            }
+            $removeCover = false;
         }
         // --- Otherwise accept a manual URL ---
-        elseif (array_key_exists('cover_url', $validated)) {
+        elseif (!$removeCover && array_key_exists('cover_url', $validated)) {
             $url = trim((string) ($validated['cover_url'] ?? ''));
             $report->cover_url = $url !== '' ? $url : null;
+            if ($report->cover_url !== null) {
+                $removeCover = false;
+            }
+        }
+
+        if ($removeCover && !$request->hasFile('cover_file')) {
+            if (!empty($originalCoverUrl) && Str::startsWith($originalCoverUrl, asset('storage/'))) {
+                $relative = Str::after($originalCoverUrl, asset('storage/'));
+                if ($relative !== '') {
+                    Storage::disk('public')->delete($relative);
+                }
+            }
+            $report->cover_url = null;
+            $report->cover_scale_x = 1.0;
+            $report->cover_scale_y = 1.0;
+            $report->cover_scale   = 1.0;
         }
 
         // --- Description ---
@@ -235,9 +249,6 @@ class ReportsController extends Controller
 
         return redirect()
             ->route('reports.edit', $report)
-            ->with('status', $makeDefault
-                ? __('reports.flash.updated_default')
-                : __('reports.flash.updated')
-            );
+            ->with('status', __('reports.flash.updated'));
     }
 }
