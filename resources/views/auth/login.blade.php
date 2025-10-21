@@ -30,17 +30,30 @@
             border-radius: 14px;
             box-shadow: 0 10px 40px rgba(2,6,23,.18);
         }
-        .login-card .input-group-text{
-            background: #f8fafc;
-            border-right: 0;
+
+        /* Input group unified border */
+        .login-card .input-group {
+            border: 1px solid #ced4da;
+            border-radius: .5rem;
+            overflow: hidden;
         }
-        .login-card .form-control{
-            border-left: 0;
-        }
-        .login-card .form-control:focus{
-            box-shadow: none;
+        .login-card .input-group:focus-within {
             border-color: #93c5fd;
+            box-shadow: 0 0 0 0.15rem rgba(147,197,253,.25);
         }
+        .login-card .input-group-text {
+            background: #f8fafc;
+            border: none;
+        }
+        .login-card .form-control {
+            border: none;
+            box-shadow: none;
+        }
+        .login-card .form-control:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
         .btn-brand{
             background: #2563eb; color:#fff; border: 0;
         }
@@ -48,12 +61,14 @@
         .btn-microsoft{
             border-color:#2563eb;
         }
+
         /* Centrado y ancho cómodo */
         .login-box{ max-width: 380px; width: 100%; }
         .login-logo{ display:none; }
-        /* Tamaño del logo (controlado por config si existe) */
+
 @php($loginLogoW = (int) config('adminlte.auth_logo.img.width'))
 @php($loginLogoH = (int) config('adminlte.auth_logo.img.height'))
+
         .brand-logo{
 @if($loginLogoW > 0)
             max-width: {{ $loginLogoW }}px;
@@ -82,8 +97,8 @@
             @elseif($appCfg && $appCfg->site_logo_path)
                 <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" class="mb-1 brand-logo">
             @endif
-            <!-- <h1 class="h6 mb-0">{{ __('Log in') }}</h1> -->
         </div>
+
         @if (session('status'))
             <div class="alert alert-success small">{{ session('status') }}</div>
         @endif
