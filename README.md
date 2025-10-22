@@ -1,61 +1,245 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+```markdown
+# 📊 BI Reports Web System 
+A web system to view PowerBI dashboards from Fabric or Power Embedded. Empowering data-driven decisions with seamless PowerBI integration.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![License](https://img.shields.io/github/license/edmenn/bireports)
+![GitHub stars](https://img.shields.io/github/stars/edmenn/bireports?style=social)
+![GitHub forks](https://img.shields.io/github/forks/edmenn/bireports?style=social)
+![GitHub issues](https://img.shields.io/github/issues/edmenn/bireports)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/edmenn/bireports)
+![GitHub last commit](https://img.shields.io/github/last-commit/edmenn/bireports)
 
-## About Laravel
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📋 Table of Contents
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [About](#about)
+- [Features](#features)
+- [Demo](#demo)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [FAQ](#faq)
+- [License](#license)
+- [Support](#support)
+- [Acknowledgments](#acknowledgments)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## About
 
-## Learning Laravel
+The BI Reports Web System is a PHP-based application designed to facilitate the viewing of PowerBI dashboards, whether sourced from Microsoft Fabric or PowerBI Embedded. This system addresses the need for a centralized and easily accessible platform to consume PowerBI reports, eliminating the complexities of direct PowerBI access for end-users. It provides a streamlined interface for interacting with critical business intelligence data.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+This project aims to bridge the gap between PowerBI's powerful reporting capabilities and the need for a simplified, web-based viewing experience. It's ideal for organizations that want to distribute PowerBI dashboards to a wider audience without requiring extensive PowerBI training or licensing for every user. The system is built using PHP, HTML, CSS, and JavaScript, providing a flexible and customizable foundation.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Key technologies include PHP for server-side logic, HTML/CSS for the user interface, and JavaScript for enhancing interactivity. The architecture focuses on retrieving and displaying PowerBI dashboards through the PowerBI REST API, ensuring data is always up-to-date and accurate. A unique selling point is its ease of integration with existing web infrastructure, allowing for a seamless addition to any organization's data ecosystem.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ✨ Features
 
-## Laravel Sponsors
+- 🎯 **Dashboard Integration**: Seamlessly integrates PowerBI dashboards from Fabric and Power Embedded.
+- ⚡ **Performance**: Optimized for fast loading and efficient data retrieval.
+- 🔒 **Security**: Secure authentication and authorization mechanisms to protect sensitive data.
+- 🎨 **UI/UX**: User-friendly interface for easy navigation and interaction with dashboards.
+- 📱 **Responsive**: Accessible on various devices, ensuring a consistent experience across platforms.
+- 🛠️ **Extensible**: Designed for customization and integration with other systems.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🎬 Demo
 
-### Premium Partners
+🔗 **Live Demo**: [https://your-demo-url.com](https://your-demo-url.com)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Screenshots
+![Main Interface](screenshots/main-interface.png)
+*Main application interface showing PowerBI dashboards*
 
-## Contributing
+![Dashboard View](screenshots/dashboard.png)  
+*User dashboard displaying key PowerBI reports*
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Quick Start
 
-## Code of Conduct
+Clone and run in 3 steps:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+git clone https://github.com/edmenn/bireports.git
+cd bireports
+composer install
+# Configure your database and PowerBI settings in .env
+php -S localhost:8000 -t public
+```
 
-## Security Vulnerabilities
+Open [http://localhost:8000](http://localhost:8000) to view it in your browser.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 📦 Installation
 
-## License
+### Prerequisites
+- PHP 7.4+
+- Composer
+- A web server (e.g., Apache, Nginx)
+- PowerBI account with necessary permissions
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### From Source
+
+```bash
+# Clone repository
+git clone https://github.com/edmenn/bireports.git
+cd bireports
+
+# Install dependencies
+composer install
+
+# Configure your environment (.env file)
+cp .env.example .env
+# Edit .env with your database and PowerBI settings
+
+# Set up your web server to point to the 'public' directory
+# Example for Apache:
+# <VirtualHost *:80>
+#     DocumentRoot /path/to/bireports/public
+#     <Directory /path/to/bireports/public>
+#         AllowOverride All
+#         Require all granted
+#     </Directory>
+# </VirtualHost>
+```
+
+## 💻 Usage
+
+### Basic Usage
+
+1.  **Configure your `.env` file** with your database credentials and PowerBI API keys.
+2.  **Access the web application** through your web browser.
+3.  **Navigate** through the available dashboards.
+4.  **Interact** with the dashboards as you would in PowerBI.
+
+### Advanced Examples
+
+// More complex usage scenarios (e.g., embedding in other applications)
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory (copy `.env.example`):
+
+```env
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=bireports
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+
+# PowerBI
+POWERBI_CLIENT_ID=your_powerbi_client_id
+POWERBI_CLIENT_SECRET=your_powerbi_client_secret
+POWERBI_TENANT_ID=your_powerbi_tenant_id
+POWERBI_WORKSPACE_ID=your_powerbi_workspace_id
+```
+
+## 📁 Project Structure
+
+```
+bireports/
+├── 📁 app/                   # Application logic
+│   ├── 📁 Controllers/      # Controllers for handling requests
+│   ├── 📁 Models/           # Data models
+│   ├── 📁 Providers/        # Service providers
+├── 📁 config/                # Configuration files
+├── 📁 database/              # Database migrations and seeds
+├── 📁 public/                # Publicly accessible files (CSS, JS, images)
+├── 📁 resources/             # Views (HTML templates)
+│   ├── 📁 views/           # Blade templates
+│   ├── 📁 sass/            # Sass files for styling
+├── 📁 routes/                # Route definitions
+├── 📁 storage/               # Storage for uploaded files and cache
+├── 📁 tests/                 # PHPUnit tests
+├── 📄 .env                   # Environment configuration
+├── 📄 .env.example           # Example environment configuration
+├── 📄 composer.json          # Composer dependencies
+├── 📄 README.md              # Project documentation
+└── 📄 LICENSE                # License file
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details. (Create a CONTRIBUTING.md file)
+
+### Quick Contribution Steps
+
+1.  🍴 Fork the repository
+2.  🌟 Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3.  ✅ Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4.  📤 Push to the branch (`git push origin feature/AmazingFeature`)
+5.  🔃 Open a Pull Request
+
+### Development Setup
+
+```bash
+# Fork and clone the repo
+git clone https://github.com/yourusername/bireports.git
+
+# Install dependencies
+composer install
+
+# Create a new branch
+git checkout -b feature/your-feature-name
+
+# Make your changes and test
+# (Add testing instructions here)
+
+# Commit and push
+git commit -m "Description of changes"
+git push origin feature/your-feature-name
+```
+
+### Code Style
+
+-   Follow PSR-2 coding standards.
+-   Use meaningful variable and function names.
+-   Write clear and concise comments.
+
+## Testing
+
+// Include testing instructions and commands (e.g., using PHPUnit)
+
+## Deployment
+
+// Provide deployment instructions for different platforms (e.g., Apache, Nginx, Docker)
+
+## FAQ
+
+// Address common questions and issues
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### License Summary
+
+-   ✅ Commercial use
+-   ✅ Modification
+-   ✅ Distribution
+-   ✅ Private use
+-   ❌ Liability
+-   ❌ Warranty
+
+## 💬 Support
+
+-   📧 **Email**: your.email@example.com
+-   🐛 **Issues**: [GitHub Issues](https://github.com/edmenn/bireports/issues)
+-   📖 **Documentation**: [Full Documentation](https://docs.your-site.com) (Create a documentation site)
+
+## 🙏 Acknowledgments
+
+-   📚 **Libraries used**:
+    -   [PHP](https://www.php.net/) - Server-side scripting language
+    -   [Composer](https://getcomposer.org/) - Dependency Management
+    -   [PowerBI REST API](https://docs.microsoft.com/en-us/power-bi/developer/embedded/rest-api) - For PowerBI integration
+-   👥 **Contributors**: Thanks to all [contributors](https://github.com/edmenn/bireports/contributors)
+```
