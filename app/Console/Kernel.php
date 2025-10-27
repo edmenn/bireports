@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console;
 
 use App\Console\Commands\ProjectAuditCommand;
+use App\Console\Commands\ResetAudit;
 use App\Console\Commands\SyncEntraUsers;
 use App\Console\Commands\UiAudit;
 use App\Console\Commands\UiPlan;
@@ -18,6 +19,7 @@ final class Kernel extends ConsoleKernel
      */
     protected $commands = [
         ProjectAuditCommand::class,
+        ResetAudit::class,
         SyncEntraUsers::class, // Entra sync command (if present in the installation)
         UiAudit::class,        // UI stack audit (AdminLTE/Bootstrap/jQuery/plugins)
         UiPlan::class,         // Migration plan to Argon (Bootstrap 5) based on ui_audit.json

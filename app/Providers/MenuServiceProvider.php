@@ -76,7 +76,6 @@ class MenuServiceProvider extends ServiceProvider
                         'classes' => 'menu-open',
                         'submenu' => [
                             [ 'text' => 'nav.audit_usage_metrics', 'icon'=>'nav-icon fas fa-chart-bar fa-fw',    'route'=>'audit.index',        'can'=>'menu.audit' ],
-                            [ 'text' => 'nav.audit_reset',         'icon'=>'nav-icon fas fa-broom fa-fw',        'route'=>'admin.audit.reset.show', 'can'=>'menu.audit' ],
                             [ 'text' => 'nav.audit_changes',       'icon'=>'nav-icon fas fa-exchange-alt fa-fw', 'route'=>'audit.changes.index','can'=>'menu.audit' ],
                         ],
                     ],

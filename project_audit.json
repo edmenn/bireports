@@ -417,7 +417,6 @@
     "controllers": {
         "withoutAuthorizeResource": [
             "Admin\/AdminController.php",
-            "Admin\/AuditAdminController.php",
             "Admin\/AuditDiagController.php",
             "Admin\/ClientController.php",
             "Api\/AuditController.php",
@@ -490,9 +489,6 @@
             "Console\/Kernel.php → auditoría podría no registrar user_id.",
             "Console\/Kernel.php → auditoría podría no registrar report_uuid.",
             "Console\/Kernel.php → auditoría podría no registrar action.",
-            "Http\/Controllers\/Admin\/AuditAdminController.php → auditoría podría no registrar client_id.",
-            "Http\/Controllers\/Admin\/AuditAdminController.php → auditoría podría no registrar user_id.",
-            "Http\/Controllers\/Admin\/AuditAdminController.php → auditoría podría no registrar report_uuid.",
             "Http\/Controllers\/Admin\/AuditDiagController.php → auditoría podría no registrar client_id.",
             "Http\/Controllers\/Api\/AuditController.php → auditoría podría no registrar client_id.",
             "Http\/Controllers\/AuditAnalyticsController.php → auditoría podría no registrar client_id.",

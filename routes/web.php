@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\AuditAdminController; // reset auditoría
 use App\Http\Controllers\Admin\AuditChangesController;
 use App\Http\Controllers\Admin\EntityAuditController;
 use App\Http\Controllers\ConfigurationsController;
@@ -443,13 +442,6 @@ Route::prefix('admin')
         Route::put('/reportes/{report}', [ReportsController::class, 'update'])
             ->whereUuid('report')
             ->name('reports.update');
-
-        // 🔒 Reset total de auditoría (solo admin)
-        Route::get('/audit/reset', [AuditAdminController::class, 'showReset'])
-            ->name('admin.audit.reset.show');
-
-        Route::post('/audit/reset', [AuditAdminController::class, 'reset'])
-            ->name('admin.audit.reset.run');
 
         // Auditoría unificada de cambios (sistema + configuración)
         Route::get('/audit/cambios', [AuditChangesController::class, 'index'])
