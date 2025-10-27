@@ -10,10 +10,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\AuditAdminController; // reset auditoría
 use App\Http\Controllers\Admin\AuditChangesController;
 use App\Http\Controllers\Admin\EntityAuditController;
-use App\Http\Controllers\ConfiguracionesController;
+use App\Http\Controllers\ConfigurationsController;
 use App\Http\Controllers\PowerBiImportController;
 use App\Http\Controllers\WorkspacesController;
 use App\Http\Controllers\ReportsController;
@@ -23,7 +22,7 @@ use App\Http\Controllers\AuditAnalyticsController;
 use App\Http\Controllers\CapacityController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\GruposController;
+use App\Http\Controllers\GroupsController;
 use App\Http\Controllers\FoldersController;
 use App\Http\Controllers\ApplicationsController;
 use App\Http\Controllers\ApplicationSectionsController;
@@ -52,55 +51,92 @@ Route::get('/dashboard', function () {
 // Grupo interno protegido
 Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
 
-    // Forzar que {usuario} sea numérico para evitar capturar strings como "bulk-destroy"
-    Route::pattern('usuario', '[0-9]+');
+    // Enforce that {user} captures only numeric identifiers for user routes.
+    Route::pattern('user', '[0-9]+');
 
     // Menú principal
 
     // Capacidades (solo admin/editor)
-    Route::prefix('capacidades')->middleware('role:admin|editor')->group(function () {
-        Route::get('/', [CapacityController::class, 'index'])->name('capacities.index');
-        Route::post('/refresh', [CapacityController::class, 'refresh'])->name('capacities.refresh');
-        Route::post('/{capacity}/pause', [CapacityController::class, 'pause'])->name('capacities.pause');
-        Route::post('/{capacity}/resume', [CapacityController::class, 'resume'])->name('capacities.resume');
-        // Programación y auditoría
-        Route::get('/{capacity}/schedule', [CapacityController::class, 'schedule'])->name('capacities.schedule');
-        Route::post('/{capacity}/schedule', [CapacityController::class, 'scheduleStore'])->name('capacities.schedule.store');
-        Route::post('/{capacity}/schedule/{slot}/toggle', [CapacityController::class, 'scheduleToggle'])->name('capacities.schedule.toggle');
-        Route::delete('/{capacity}/schedule/{slot}', [CapacityController::class, 'scheduleDelete'])->name('capacities.schedule.delete');
-        Route::put('/{capacity}/settings', [CapacityController::class, 'settingsUpdate'])->name('capacities.settings.update');
-        Route::get('/{capacity}/audit', [CapacityController::class, 'audit'])->name('capacities.audit');
-        Route::post('/{capacity}/audit/refresh', [CapacityController::class, 'auditRefresh'])->name('capacities.audit.refresh');
-    });
+    $registerCapacityRoutes = static function (string $prefix, bool $withNames = false): void {
+        Route::prefix($prefix)
+            ->middleware('role:admin|editor')
+            ->group(function () use ($withNames): void {
+                $route = Route::get('/', [CapacityController::class, 'index']);
+                if ($withNames) { $route->name('capacities.index'); }
 
-    // Workspaces (solo admin/editor)
-    Route::get('/espacios-trabajo', [WorkspacesController::class, 'index'])
+                $route = Route::post('/refresh', [CapacityController::class, 'refresh']);
+                if ($withNames) { $route->name('capacities.refresh'); }
+
+                $route = Route::post('/{capacity}/pause', [CapacityController::class, 'pause']);
+                if ($withNames) { $route->name('capacities.pause'); }
+
+                $route = Route::post('/{capacity}/resume', [CapacityController::class, 'resume']);
+                if ($withNames) { $route->name('capacities.resume'); }
+
+                // Scheduling and audit
+                $route = Route::get('/{capacity}/schedule', [CapacityController::class, 'schedule']);
+                if ($withNames) { $route->name('capacities.schedule'); }
+
+                $route = Route::post('/{capacity}/schedule', [CapacityController::class, 'scheduleStore']);
+                if ($withNames) { $route->name('capacities.schedule.store'); }
+
+                $route = Route::post('/{capacity}/schedule/{slot}/toggle', [CapacityController::class, 'scheduleToggle']);
+                if ($withNames) { $route->name('capacities.schedule.toggle'); }
+
+                $route = Route::delete('/{capacity}/schedule/{slot}', [CapacityController::class, 'scheduleDelete']);
+                if ($withNames) { $route->name('capacities.schedule.delete'); }
+
+                $route = Route::put('/{capacity}/settings', [CapacityController::class, 'settingsUpdate']);
+                if ($withNames) { $route->name('capacities.settings.update'); }
+
+                $route = Route::get('/{capacity}/audit', [CapacityController::class, 'audit']);
+                if ($withNames) { $route->name('capacities.audit'); }
+
+                $route = Route::post('/{capacity}/audit/refresh', [CapacityController::class, 'auditRefresh']);
+                if ($withNames) { $route->name('capacities.audit.refresh'); }
+            });
+    };
+
+    $registerCapacityRoutes('capacities', true);
+    $registerCapacityRoutes('capacidades');
+
+    // Workspaces (admin/editor)
+    Route::get('/workspaces', [WorkspacesController::class, 'index'])
         ->middleware('role:admin|editor')
         ->name('workspaces.index');
 
-    Route::get('/espacios-trabajo/{workspace}', [WorkspacesController::class, 'show'])
+    Route::get('/workspaces/{workspace}', [WorkspacesController::class, 'show'])
         ->whereUuid('workspace')
         ->name('workspaces.show');
 
-    Route::get('/espacios-trabajo/{workspace}/reportes/{report}', [ReportsController::class, 'show'])
+    Route::get('/workspaces/{workspace}/reports/{report}', [ReportsController::class, 'show'])
         ->whereUuid('workspace')
         ->whereUuid('report')
         ->name('reports.show');
+
+    Route::prefix('espacios-trabajo')
+        ->middleware('role:admin|editor')
+        ->group(function () {
+            Route::get('/', fn () => redirect()->route('workspaces.index'));
+            Route::get('/{workspace}', [WorkspacesController::class, 'show'])->whereUuid('workspace');
+            Route::get('/{workspace}/reportes/{report}', [ReportsController::class, 'show'])
+                ->whereUuid('workspace')
+                ->whereUuid('report');
+        });
 
     // 🚀 Vista embebida con powerbi-client + auditoría
     Route::get('/reports/{report_uuid}', [ReportViewerController::class, 'show'])
         ->whereUuid('report_uuid')
         ->name('reports.viewer');
 
-    // ✅ Eliminación masiva de usuarios (solo admin) — DEFINIR PRIMERO
-    Route::delete('/usuarios/bulk-destroy', [UsersController::class, 'bulkDestroy'])
+    // User management (admin only)
+    Route::delete('/users/bulk-destroy', [UsersController::class, 'bulkDestroy'])
         ->middleware('role:admin')
         ->name('users.bulk-destroy');
 
-    // ABM Usuarios (solo admin)
-    Route::resource('usuarios', UsersController::class)
+    Route::resource('users', UsersController::class)
         ->middleware('role:admin')
-        ->parameters(['usuarios' => 'usuario'])
+        ->parameters(['users' => 'user'])
         ->names([
             'index'   => 'users.index',
             'create'  => 'users.create',
@@ -112,24 +148,22 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
         ])
         ->except(['show']);
 
-    // Toggle bloqueo individual
-    Route::post('/usuarios/{usuario}/toggle-block', [UsersController::class, 'toggleBlock'])
+    Route::post('/users/{user}/toggle-block', [UsersController::class, 'toggleBlock'])
         ->middleware('role:admin')
-        ->where(['usuario' => '[0-9]+'])
+        ->whereNumber('user')
         ->name('users.toggle-block');
 
-    // Bloqueo/Desbloqueo masivo de usuarios (solo admin)
-    Route::post('/usuarios/bulk-block', [UsersController::class, 'bulkBlock'])
+    Route::post('/users/bulk-block', [UsersController::class, 'bulkBlock'])
         ->middleware('role:admin')
         ->name('users.bulk-block');
-    Route::post('/usuarios/bulk-unblock', [UsersController::class, 'bulkUnblock'])
+    Route::post('/users/bulk-unblock', [UsersController::class, 'bulkUnblock'])
         ->middleware('role:admin')
         ->name('users.bulk-unblock');
 
-    // ABM Perfiles/Roles (solo admin)
-    Route::resource('perfiles', RoleController::class)
+    // Role management (admin only)
+    Route::resource('roles', RoleController::class)
         ->middleware('role:admin')
-        ->parameters(['perfiles' => 'rol'])
+        ->parameters(['roles' => 'role'])
         ->names([
             'index'   => 'roles.index',
             'create'  => 'roles.create',
@@ -141,44 +175,92 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
         ])
         ->except(['show']);
 
-    // Importación Entra (solo admin)
-    Route::post('/usuarios/sync-entra', [UsersSyncController::class, 'sync'])
+    Route::prefix('perfiles')
+        ->middleware('role:admin')
+        ->group(function () {
+            Route::get('/', fn () => redirect()->route('roles.index'));
+            Route::get('/create', fn () => redirect()->route('roles.create'));
+            Route::post('/', [RoleController::class, 'store']);
+            Route::get('/{role}/edit', [RoleController::class, 'edit'])->whereNumber('role');
+            Route::put('/{role}', [RoleController::class, 'update'])->whereNumber('role');
+            Route::patch('/{role}', [RoleController::class, 'update'])->whereNumber('role');
+            Route::delete('/{role}', [RoleController::class, 'destroy'])->whereNumber('role');
+        });
+
+    // Entra synchronisation (admin only)
+    Route::post('/users/sync-entra', [UsersSyncController::class, 'sync'])
         ->middleware('role:admin')
         ->name('users.sync-entra');
 
-    // Previsualización/paginación Entra (AJAX)
-    Route::get('/usuarios/sync-entra/preview', [UsersSyncController::class, 'preview'])
+    Route::get('/users/sync-entra/preview', [UsersSyncController::class, 'preview'])
         ->middleware('role:admin')
         ->name('users.sync-entra.preview');
 
-    // Importar SOLO los seleccionados desde el modal
-    Route::post('/usuarios/sync-entra/selected', [UsersSyncController::class, 'importSelected'])
+    Route::post('/users/sync-entra/selected', [UsersSyncController::class, 'importSelected'])
         ->middleware('role:admin')
         ->name('users.sync-entra.selected');
-    // Actualizar usuarios existentes desde Entra (no crea nuevos)
-    Route::post('/usuarios/sync-entra/refresh-existing', [UsersSyncController::class, 'refreshExisting'])
+
+    Route::post('/users/sync-entra/refresh-existing', [UsersSyncController::class, 'refreshExisting'])
         ->middleware('role:admin')
         ->name('users.sync-entra.refresh-existing');
 
-    // ABM Grupos (solo admin)
-    Route::resource('grupos', GruposController::class)
+    // Legacy Spanish aliases for /usuarios*
+    // Legacy alias: keep /usuarios endpoints pointing to the English controllers.
+    Route::prefix('usuarios')
         ->middleware('role:admin')
-        ->parameters(['grupos' => 'grupo'])
+        ->group(function () {
+            Route::delete('/bulk-destroy', [UsersController::class, 'bulkDestroy']);
+
+            Route::get('/', fn () => redirect()->route('users.index'));
+            Route::get('/create', fn () => redirect()->route('users.create'));
+            Route::post('/', [UsersController::class, 'store']);
+            Route::get('/{user}/edit', [UsersController::class, 'edit'])->whereNumber('user');
+            Route::put('/{user}', [UsersController::class, 'update'])->whereNumber('user');
+            Route::patch('/{user}', [UsersController::class, 'update'])->whereNumber('user');
+            Route::delete('/{user}', [UsersController::class, 'destroy'])->whereNumber('user');
+
+            Route::post('/{user}/toggle-block', [UsersController::class, 'toggleBlock'])->whereNumber('user');
+            Route::post('/bulk-block', [UsersController::class, 'bulkBlock']);
+            Route::post('/bulk-unblock', [UsersController::class, 'bulkUnblock']);
+
+            Route::post('/sync-entra', [UsersSyncController::class, 'sync']);
+            Route::get('/sync-entra/preview', [UsersSyncController::class, 'preview']);
+            Route::post('/sync-entra/selected', [UsersSyncController::class, 'importSelected']);
+            Route::post('/sync-entra/refresh-existing', [UsersSyncController::class, 'refreshExisting']);
+        });
+
+    // ABM Grupos (solo admin)
+    Route::resource('groups', GroupsController::class)
+        ->middleware('role:admin')
+        ->parameters(['groups' => 'group'])
         ->names([
-            'index'   => 'grupos.index',
-            'create'  => 'grupos.create',
-            'store'   => 'grupos.store',
-            'edit'    => 'grupos.edit',
-            'update'  => 'grupos.update',
-            'destroy' => 'grupos.destroy',
-            'show'    => 'grupos.show',
+            'index'   => 'groups.index',
+            'create'  => 'groups.create',
+            'store'   => 'groups.store',
+            'edit'    => 'groups.edit',
+            'update'  => 'groups.update',
+            'destroy' => 'groups.destroy',
+            'show'    => 'groups.show',
         ])
         ->except(['show']);
 
-    // ABM Carpetas (solo admin)
-    Route::resource('carpetas', FoldersController::class)
+    // Legacy alias: keep /grupos endpoints pointing to the English controllers.
+    Route::prefix('grupos')
         ->middleware('role:admin')
-        ->parameters(['carpetas' => 'carpeta'])
+        ->group(function () {
+            Route::get('/', fn () => redirect()->route('groups.index'));
+            Route::get('/create', fn () => redirect()->route('groups.create'));
+            Route::post('/', [GroupsController::class, 'store']);
+            Route::get('/{group}/edit', [GroupsController::class, 'edit'])->whereNumber('group');
+            Route::put('/{group}', [GroupsController::class, 'update'])->whereNumber('group');
+            Route::patch('/{group}', [GroupsController::class, 'update'])->whereNumber('group');
+            Route::delete('/{group}', [GroupsController::class, 'destroy'])->whereNumber('group');
+        });
+
+    // ABM Carpetas (solo admin)
+    Route::resource('folders', FoldersController::class)
+        ->middleware('role:admin')
+        ->parameters(['folders' => 'folder'])
         ->names([
             'index'   => 'folders.index',
             'create'  => 'folders.create',
@@ -189,48 +271,72 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
             'show'    => 'folders.show',
         ])
         ->except(['show']);
+    // Legacy alias: keep /carpetas endpoints pointing to the English controllers.
+    Route::prefix('carpetas')
+        ->middleware('role:admin')
+        ->group(function () {
+            Route::get('/', fn () => redirect()->route('folders.index'));
+            Route::get('/create', fn () => redirect()->route('folders.create'));
+            Route::post('/', [FoldersController::class, 'store']);
+            Route::get('/{folder}/edit', [FoldersController::class, 'edit'])->whereNumber('folder');
+            Route::put('/{folder}', [FoldersController::class, 'update'])->whereNumber('folder');
+            Route::patch('/{folder}', [FoldersController::class, 'update'])->whereNumber('folder');
+            Route::delete('/{folder}', [FoldersController::class, 'destroy'])->whereNumber('folder');
+        });
     // Applications (admin)
     Route::resource('applications', ApplicationsController::class)
         ->middleware('role:admin')
         ->except(['show']);
-    // Portal de usuario
-    Route::prefix('mi')->group(function () {
+    // User portal
+    Route::prefix('portal')->group(function () {
         Route::get('/', [UserPortalController::class, 'index'])->name('portal.index');
-        Route::get('/favoritos', [UserPortalController::class, 'favorites'])->name('portal.favoritos');
-        Route::post('/favoritos/{report}/toggle', [UserPortalController::class, 'toggleFavorite'])->name('portal.fav.toggle');
-        Route::get('/mas-accedidos', [UserPortalController::class, 'mostAccessed'])->name('portal.mas');
-        Route::get('/aplicaciones', [UserPortalController::class, 'apps'])->name('portal.apps');
-        Route::get('/aplicaciones/{application:slug}', [UserPortalController::class, 'application'])->name('portal.applications.show');
+        Route::get('/favorites', [UserPortalController::class, 'favorites'])->name('portal.favorites');
+        Route::post('/favorites/{report}/toggle', [UserPortalController::class, 'toggleFavorite'])->name('portal.favorites.toggle');
+        Route::get('/most-accessed', [UserPortalController::class, 'mostAccessed'])->name('portal.most-accessed');
+        Route::get('/applications', [UserPortalController::class, 'apps'])->name('portal.apps');
+        Route::get('/applications/{application:slug}', [UserPortalController::class, 'application'])->name('portal.applications.show');
+    });
+
+    // Legacy alias: keep /mi endpoints pointing to the English portal routes.
+    Route::prefix('mi')->group(function () {
+        Route::get('/', fn () => redirect()->route('portal.index'));
+        Route::get('/favoritos', fn () => redirect()->route('portal.favorites'));
+        Route::post('/favoritos/{report}/toggle', [UserPortalController::class, 'toggleFavorite'])->name('legacy.portal.favorites.toggle');
+        Route::get('/mas-accedidos', fn () => redirect()->route('portal.most-accessed'));
+        Route::get('/aplicaciones', fn () => redirect()->route('portal.apps'));
+        Route::get('/aplicaciones/{application:slug}', [UserPortalController::class, 'application'])->name('legacy.portal.applications.show');
     });
 
     // Auditoría (analítica y export)
-    Route::get('/auditoria', [AuditAnalyticsController::class, 'index'])
-        ->name('auditoria.index');
+    Route::get('/audit', [AuditAnalyticsController::class, 'index'])
+        ->name('audit.index');
 
-    Route::get('/auditoria/export', [AuditAnalyticsController::class, 'export'])
-        ->name('auditoria.export');
+    Route::get('/audit/export', [AuditAnalyticsController::class, 'export'])
+        ->name('audit.export');
 
-    // Configuraciones (solo admin)
+    // Configurationes (solo admin)
     Route::middleware('role:admin')->group(function () {
-        Route::get('/configuraciones', [ConfiguracionesController::class, 'index'])
-            ->name('configuraciones.index');
+        Route::get('/configurations', [ConfigurationsController::class, 'index'])
+            ->name('configurations.index');
     // Legacy: redirige a auditoría unificada
-    Route::get('/configuraciones/auditoria', function(){
-        return redirect()->route('auditoria.changes.index');
+    Route::get('/configurations/audit', function(){
+        return redirect()->route('audit.changes.index');
     })->name('config.audit.index');
 
-        Route::get('/configuraciones/tema', [ConfiguracionesController::class, 'theme'])
-            ->name('configuraciones.tema');
-        Route::post('/configuraciones/tema/presets', [ConfiguracionesController::class, 'storeThemePreset'])
-            ->name('configuraciones.tema.presets.store');
-        Route::delete('/configuraciones/tema/presets/{preset}', [ConfiguracionesController::class, 'destroyThemePreset'])
-            ->name('configuraciones.tema.presets.destroy');
+        Route::get('/configurations/theme', [ConfigurationsController::class, 'theme'])
+            ->name('configurations.theme');
+        Route::post('/configurations/theme/presets', [ConfigurationsController::class, 'storeThemePreset'])
+            ->name('configurations.theme.presets.store');
+        Route::delete('/configurations/theme/presets/{preset}', [ConfigurationsController::class, 'destroyThemePreset'])
+            ->name('configurations.theme.presets.destroy');
 
-        Route::get('/configuraciones/login', [ConfiguracionesController::class, 'login'])
-            ->name('configuraciones.login');
+        Route::get('/configurations/login', [ConfigurationsController::class, 'login'])
+            ->name('configurations.login');
+        Route::post('/configurations/mail/test', [ConfigurationsController::class, 'testMail'])
+            ->name('configurations.mail.test');
 
-        Route::post('/configuraciones/tema/reset', function (Request $request) {
-            $cfg = \App\Models\Configuracion::firstOrCreate(['id' => 1]);
+        Route::post('/configurations/theme/reset', function (Request $request) {
+            $cfg = \App\Models\Configuration::firstOrCreate(['id' => 1]);
             $cfg->forceFill([
                 'theme_config'        => null,
                 'theme_name'          => null,
@@ -239,13 +345,40 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
             ])->save();
 
             return redirect()
-                ->route('configuraciones.tema')
-                ->with('success', 'Colores restablecidos a valores de fábrica.');
-        })->name('configuraciones.tema.reset');
+                ->route('configurations.theme')
+                ->with('success', __('configurations.alerts.theme_reset'));
+        })->name('configurations.theme.reset');
 
-        Route::put('/configuraciones/{configuracion}', [ConfiguracionesController::class, 'update'])
-            ->name('configuraciones.update');
+        Route::put('/configurations/{configuration}', [ConfigurationsController::class, 'update'])
+            ->name('configurations.update');
     });
+
+    // Legacy alias: keep /configuraciones endpoints pointing to the English configuration routes.
+    Route::prefix('configuraciones')
+        ->middleware('role:admin')
+        ->group(function () {
+            Route::get('/', fn () => redirect()->route('configurations.index'));
+            Route::get('/auditoria', fn () => redirect()->route('audit.changes.index'));
+            Route::get('/tema', [ConfigurationsController::class, 'theme'])->name('legacy.configurations.theme');
+            Route::post('/tema/presets', [ConfigurationsController::class, 'storeThemePreset'])->name('legacy.configurations.theme.presets.store');
+            Route::delete('/tema/presets/{preset}', [ConfigurationsController::class, 'destroyThemePreset'])->name('legacy.configurations.theme.presets.destroy');
+            Route::get('/login', [ConfigurationsController::class, 'login'])->name('legacy.configurations.login');
+            Route::post('/mail/prueba', [ConfigurationsController::class, 'testMail'])->name('legacy.configurations.mail.test');
+            Route::post('/tema/reset', function (Request $request) {
+                $cfg = \App\Models\Configuration::firstOrCreate(['id' => 1]);
+                $cfg->forceFill([
+                    'theme_config'        => null,
+                    'theme_name'          => null,
+                    'theme_navbar_class'  => null,
+                    'theme_sidebar_class' => null,
+                ])->save();
+
+                return redirect()
+                    ->route('configurations.theme')
+                    ->with('success', __('configurations.alerts.theme_reset'));
+            })->name('legacy.configurations.theme.reset');
+            Route::put('/{configuration}', [ConfigurationsController::class, 'update'])->name('legacy.configurations.update');
+        });
 
     // ✅ Endpoint de auditoría llamado desde Blade → route('api.audit.store')
     Route::post('/api/audits', [AuditController::class, 'store'])
@@ -313,21 +446,14 @@ Route::prefix('admin')
             ->whereUuid('report')
             ->name('reports.update');
 
-        // 🔒 Reset total de auditoría (solo admin)
-        Route::get('/auditoria/reset', [AuditAdminController::class, 'showReset'])
-            ->name('admin.audit.reset.show');
-
-        Route::post('/auditoria/reset', [AuditAdminController::class, 'reset'])
-            ->name('admin.audit.reset.run');
-
         // Auditoría unificada de cambios (sistema + configuración)
-        Route::get('/auditoria/cambios', [AuditChangesController::class, 'index'])
-            ->name('auditoria.changes.index');
+        Route::get('/audit/cambios', [AuditChangesController::class, 'index'])
+            ->name('audit.changes.index');
 
-        // Legacy: /auditoria/entidades -> unificada
-        Route::get('/auditoria/entidades', function(){
-            return redirect()->route('auditoria.changes.index');
-        })->name('auditoria.entities.index');
+        // Legacy: /audit/entidades -> unificada
+        Route::get('/audit/entidades', function(){
+            return redirect()->route('audit.changes.index');
+        })->name('audit.entities.index');
 
         // Diagnóstico rápido del token/alcance
         Route::get('dev/powerbi/ping', function (\App\Services\PowerBiService $svc) {

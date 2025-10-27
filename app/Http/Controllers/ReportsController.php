@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers; 
+namespace App\Http\Controllers;
 
-use App\Models\Report; 
-use App\Models\Capacity; // [Minimalista] Para mapear workspace.capacity_id (UUID) a la fila local (PK)
+use App\Models\Report;
+use App\Models\Capacity; // Minimal mapping between workspace.capacity_id (UUID) and the local PK
 use App\Models\Workspace;
 use App\Services\PowerBiService;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class ReportsController extends Controller
@@ -43,23 +44,23 @@ class ReportsController extends Controller
     }
 
     /**
-     * Muestra el reporte embebido asegurando que pertenece al workspace de la URL.
-     * En caso de error al obtener el embed token, NO rompemos: devolvemos la vista con 'error' y 'error_debug'.
+     * Render the embedded report ensuring it belongs to the workspace in the route.
+     * If generating the embed token fails, render the view with 'error' and 'error_debug' instead of throwing.
      */
     public function show(string $workspaceId, string $reportId, Request $request): View
     {
-        // 1) Cargar workspace (404 si no existe)
+        // 1) Load workspace (404 when missing)
         $workspace = Workspace::findOrFail($workspaceId);
 
-        // 2) Cargar reporte que pertenezca a ese workspace (404 si no coincide)
+        // 2) Load the report belonging to that workspace (404 otherwise)
         $report = Report::where('id', $reportId)
             ->where('workspace_id', $workspace->id)
             ->firstOrFail();
 
-        // [Minimalista] Resolver la capacidad asociada al workspace
-        // - workspace.capacity_id almacena el UUID de Power BI/Fabric
-        // - La API /api/capacities/{capacity}/ping usa RouteModelBinding por PK local (entero)
-        //   Mapeamos aquí para que la vista pueda hacer ping/resume on-demand.
+        // Optional capacity mapping required for warm-up endpoints
+        // - workspace.capacity_id stores the Power BI/Fabric UUID
+        // - /api/capacities/{capacity}/ping expects the local PK (integer)
+        //   Map it here so the view can trigger ping/resume on demand.
         $capacityModelId = null;
         $capacityUuid    = (string) ($workspace->capacity_id ?? '');
         if ($capacityUuid !== '') {
@@ -67,7 +68,7 @@ class ReportsController extends Controller
             $capacityModelId = $capModel?->id;
         }
 
-        // 3) Parámetros opcionales de RLS desde querystring
+        // 3) Optional RLS parameters from the query string
         $rlsUser  = $request->query('rls_user');
         $rlsRoles = array_values(array_filter(array_map('trim', explode(',', (string) $request->query('rls_roles', '')))));
 
@@ -75,8 +76,8 @@ class ReportsController extends Controller
         $errShort  = null;
         $errDetail = null;
 
-        // 4) Si no hay configuración completa, devolvemos vista con error amigable
-        $hasConfig = Configuracion::query()
+        // 4) When configuration is incomplete, return a friendly error view
+        $hasConfig = Configuration::query()
             ->whereNotNull('powerbi_tenant_id')->where('powerbi_tenant_id', '!=', '')
             ->whereNotNull('powerbi_client_id')->where('powerbi_client_id', '!=', '')
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
@@ -87,7 +88,7 @@ class ReportsController extends Controller
             $embedArr  = [];
         } else {
             try {
-                // 4) Generar token de embed
+                // 4) Generate an embed token
                 $svc = app(PowerBiService::class);
                 $embed = $svc->generateReportEmbedToken(
                 workspaceId: $workspace->id,
@@ -97,7 +98,7 @@ class ReportsController extends Controller
                 rlsRoles:    $rlsRoles
             );
 
-                // 4.1) Normalización de claves para la vista
+                // 4.1) Normalise keys expected by the view
                 $embedArr = is_array($embed) ? $embed : (array) $embed;
 
                 $embedArr['accessToken'] = $embedArr['accessToken']
@@ -110,9 +111,9 @@ class ReportsController extends Controller
                 $embedArr['datasetId']   = $embedArr['datasetId']   ?? $report->dataset_id;
                 $embedArr['workspaceId'] = $embedArr['workspaceId'] ?? $workspace->id;
             } catch (Throwable $e) {
-                // 5) Fast-fail: NO lanzamos a la página de error; mostramos banner en la misma vista
+                // 5) Fail fast without redirecting to an error page; render a banner instead
                 $errShort  = __('reports.show.errors.embed_failure');
-                // Detalle seguro para copiar/pegar (sin exponer secrets del env; mostramos clase, mensaje y stack)
+                // Provide a safe diagnostic payload (no secrets exposed; include class, message, stack)
                 $errDetail = __('reports.show.errors.debug_template', [
                     'exception' => get_class($e),
                     'message'   => $e->getMessage(),
@@ -121,31 +122,31 @@ class ReportsController extends Controller
                     'line'      => $e->getLine(),
                     'trace'     => $e->getTraceAsString(),
                 ]);
-                // Devolvemos con $embedArr vacío; la vista mostrará el diagnóstico y no romperá
+                // Return with an empty embed array so the view renders diagnostics without breaking
                 $embedArr = [];
             }
         }
 
-        // 5.5) Parámetros minimalistas para warmup on-demand desde la vista
-        $cfg = Configuracion::first();
+        // 5.5) Minimal warm-up parameters consumed by the view
+        $cfg = Configuration::first();
         $capacityOnDemandEnable = (bool) ($cfg?->capacity_on_demand_enable ?? true);
         $capacityOnDemandMessage = (string) ($cfg?->capacity_on_demand_message ?? __('reports.show.on_demand.starting'));
         $capacityStartTimeoutSec = (int) ($cfg?->capacity_start_timeout_sec ?? 120);
         $capacityStartPollSec    = (int) ($cfg?->capacity_start_poll_interval_sec ?? 5);
         $reportLoadTimeoutSec    = (int) ($cfg?->report_load_timeout_sec ?? 10);
 
-        // 6) Vista
+        // 6) Render view
         return view('reports.show', [
             'report'       => $report,
             'workspace'    => $workspace,
             'embedded'     => $request->boolean('embedded'),
             'embed'        => $embedArr,
-            'error'        => $errShort,   // mensaje corto arriba
-            'error_debug'  => $errDetail,  // detalle dentro de <details> para copiar
-            // [Minimalista] IDs de capacidad para warmup on-demand desde la vista
-            'capacityModelId' => $capacityModelId, // PK local (entero) para /api/capacities/{id}/ping
-            'capacityUuid'    => $capacityUuid,    // UUID de Fabric/PBI (informativo/eventos)
-            // [Minimalista] Parámetros on-demand
+            'error'        => $errShort,   // short banner message
+            'error_debug'  => $errDetail,  // <details> payload for copy/paste
+            // Capacity identifiers used by on-demand warm-up
+            'capacityModelId' => $capacityModelId, // Local PK for /api/capacities/{id}/ping
+            'capacityUuid'    => $capacityUuid,    // Fabric/PBI UUID (informational/logging)
+            // On-demand parameters
             'capacityOnDemandEnable' => $capacityOnDemandEnable,
             'capacityOnDemandMessage' => $capacityOnDemandMessage,
             'capacityStartTimeoutSec' => $capacityStartTimeoutSec,
@@ -167,56 +168,87 @@ class ReportsController extends Controller
             'description'  => ['nullable', 'string', 'max:2000'],
             'cover_url'    => ['nullable', 'url', 'max:2048'],
             'cover_file'   => ['nullable','file','max:2048','mimetypes:image/jpeg,image/png,image/webp,image/gif,image/svg+xml'],
-            'make_default' => ['nullable','boolean'],
+            'cover_scale'  => ['nullable','numeric','between:0.5,1.5'],
+            'cover_scale_x'=> ['nullable','numeric','between:0.5,1.5'],
+            'cover_scale_y'=> ['nullable','numeric','between:0.5,1.5'],
+            'remove_cover' => ['nullable','boolean'],
         ], [
             'cover_url.url'        => __('reports.validation.cover_url_url'),
             'cover_file.max'       => __('reports.validation.cover_file_max'),
             'cover_file.mimetypes' => __('reports.validation.cover_file_mimetypes'),
+            'cover_scale.between'  => __('reports.validation.cover_scale_between'),
+            'cover_scale.numeric'  => __('reports.validation.cover_scale_numeric'),
+            'cover_scale_x.between'=> __('reports.validation.cover_scale_between'),
+            'cover_scale_x.numeric'=> __('reports.validation.cover_scale_numeric'),
+            'cover_scale_y.between'=> __('reports.validation.cover_scale_between'),
+            'cover_scale_y.numeric'=> __('reports.validation.cover_scale_numeric'),
+            'remove_cover.boolean'=> __('validation.boolean', ['attribute' => 'remove_cover']),
         ]);
 
-        $makeDefault = (bool) ($validated['make_default'] ?? false);
+        $removeCover = $request->boolean('remove_cover');
+        $originalCoverUrl = $report->cover_url;
 
-        // --- Imagen subida (tiene prioridad) ---
+        // --- Uploaded image takes priority ---
         if ($request->hasFile('cover_file')) {
             $file = $request->file('cover_file');
 
-            // Guarda en storage/app/public/reports
+            // Store under storage/app/public/reports
             $path = $file->store('reports', 'public');
             $publicUrl = asset('storage/'.$path);
 
             $report->cover_url = $publicUrl;
 
-            // Si marcó "Usar como predeterminada", copiamos a report-covers/default.png
-            if ($makeDefault) {
-                $defaultRelPath = 'report-covers/default.png';
-                Storage::disk('public')->makeDirectory('report-covers');
-                Storage::disk('public')->put($defaultRelPath, Storage::disk('public')->get($path));
-            }
+            $removeCover = false;
         }
-        // --- Si no sube archivo pero envía URL ---
-        elseif (array_key_exists('cover_url', $validated)) {
+        // --- Otherwise accept a manual URL ---
+        elseif (!$removeCover && array_key_exists('cover_url', $validated)) {
             $url = trim((string) ($validated['cover_url'] ?? ''));
             $report->cover_url = $url !== '' ? $url : null;
+            if ($report->cover_url !== null) {
+                $removeCover = false;
+            }
         }
 
-        // --- Descripción ---
+        if ($removeCover && !$request->hasFile('cover_file')) {
+            if (!empty($originalCoverUrl) && Str::startsWith($originalCoverUrl, asset('storage/'))) {
+                $relative = Str::after($originalCoverUrl, asset('storage/'));
+                if ($relative !== '') {
+                    Storage::disk('public')->delete($relative);
+                }
+            }
+            $report->cover_url = null;
+            $report->cover_scale_x = 1.0;
+            $report->cover_scale_y = 1.0;
+            $report->cover_scale   = 1.0;
+        }
+
+        // --- Description ---
         if (array_key_exists('description', $validated)) {
             $desc = trim((string) ($validated['description'] ?? ''));
             $report->description = $desc !== '' ? $desc : null;
         }
 
-        // --- Permitir encendido fuera de ventana ---
+        // --- Allow resume outside schedule window ---
         if ($request->has('allow_resume_outside_window')) {
             $report->allow_resume_outside_window = $request->boolean('allow_resume_outside_window');
+        }
+
+        if ($request->hasAny(['cover_scale', 'cover_scale_x', 'cover_scale_y'])) {
+            $scaleX = $request->input('cover_scale_x', $request->input('cover_scale', $report->cover_scale_x ?? $report->cover_scale ?? 1));
+            $scaleY = $request->input('cover_scale_y', $request->input('cover_scale', $report->cover_scale_y ?? $report->cover_scale ?? 1));
+            $scaleX = min(1.5, max(0.5, (float) $scaleX));
+            $scaleY = min(1.5, max(0.5, (float) $scaleY));
+
+            $report->cover_scale_x = $scaleX;
+            $report->cover_scale_y = $scaleY;
+            // Maintain legacy column for backward compatibility.
+            $report->cover_scale   = $scaleX;
         }
 
         $report->save();
 
         return redirect()
             ->route('reports.edit', $report)
-            ->with('status', $makeDefault
-                ? __('reports.flash.updated_default')
-                : __('reports.flash.updated')
-            );
+            ->with('status', __('reports.flash.updated'));
     }
 }

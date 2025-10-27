@@ -9,12 +9,12 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     /**
-     * Middleware globales que se ejecutan en cada request (en orden).
-     * El primero envuelve a todo y puede capturar excepciones tempranas,
+     * Global middleware executed on every request (in order).
+     * The first item wraps the entire stack and can capture early exceptions.
      */
     protected $middleware = [
 
-        // Protección básica y cabeceras
+        // Basic protection and headers
         \Illuminate\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
@@ -24,7 +24,7 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * Grupos de middleware para rutas web y API.
+     * Middleware groups for web and API routes.
      */
     protected $middlewareGroups = [
         'web' => [
@@ -39,10 +39,10 @@ class Kernel extends HttpKernel
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
 
-            // Auditoría existente
+            // Existing audit tracker
             \App\Http\Middleware\TrackAudit::class,
 
-            // Actividad de capacidad
+            // Capacity activity tracking
             \App\Http\Middleware\AutoCapacityActivity::class,
         ],
 
@@ -53,7 +53,7 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * Aliases de middleware para usarlos por nombre en rutas.
+     * Middleware aliases referenced by name in routes.
      */
     protected $middlewareAliases = [
         'auth'              => \App\Http\Middleware\Authenticate::class,
@@ -66,12 +66,12 @@ class Kernel extends HttpKernel
         'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'          => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // Alias opcionales propios
+        // Custom optional aliases
         'track.audit'       => \App\Http\Middleware\TrackAudit::class,
         'capacity.activity' => \App\Http\Middleware\AutoCapacityActivity::class,
         'ensure.not.blocked' => \App\Http\Middleware\EnsureUserIsNotBlocked::class,
 
-        // ⬇️ NUEVO: bloquea cambio de contraseña para usuarios Entra
+        // Prevent password changes for Entra-managed users
         'no-external-password' => \App\Http\Middleware\ForbidExternalPasswordChange::class,
     ];
 }

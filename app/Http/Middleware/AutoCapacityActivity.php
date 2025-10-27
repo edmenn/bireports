@@ -17,16 +17,16 @@ class AutoCapacityActivity
     }
 
     /**
-     * Aplica actividad on-demand y auto-resume si corresponde.
+     * Applies on-demand activity tracking and auto-resume when appropriate.
      *
-     * Reglas de activación:
-     * - Path que comience con /embed (GET/HEAD), o
-     * - Request con capacity_id (query ?capacity_id= o header X-Capacity-Id)
+     * Activation rules:
+     * - Paths that start with /embed (GET/HEAD), or
+     * - Requests that include capacity_id (query ?capacity_id= or X-Capacity-Id header)
      */
     public function handle(Request $request, Closure $next)
     {
-        // ¿Debemos actuar en esta request?
-        $path = $request->path(); // sin slash inicial
+        // Should this request trigger the middleware?
+        $path = $request->path(); // without the leading slash
         $hasCapacityParam = $request->query('capacity_id') !== null || $request->headers->has('X-Capacity-Id');
         $looksLikeEmbed   = str_starts_with('/' . ltrim($path, '/'), '/embed');
 
@@ -34,29 +34,29 @@ class AutoCapacityActivity
             return $next($request);
         }
 
-        // Resolver capacity_id (prioridad: query -> header)
+        // Resolve capacity_id (priority: query -> header)
         $capacityId = (string) ($request->query('capacity_id') ?? $request->headers->get('X-Capacity-Id', ''));
 
         /** @var Capacity|null $capacity */
         $capacity = null;
 
         if ($capacityId !== '') {
-            // Acepta ID numérico (PK) o UUID; primero intentamos por PK
+            // Accepts numeric id (PK) or UUID; try PK first
             $capacity = is_numeric($capacityId)
                 ? Capacity::query()->with('schedules', 'activity')->find((int) $capacityId)
                 : Capacity::query()->with('schedules', 'activity')->where('capacity_uuid', $capacityId)->first();
         }
 
-        // Si no vino capacity_id pero el path es /embed/*, podés mapear por tu lógica:
-        // (Aquí no asumimos un mapa; si lo necesitás, en un paso aparte agregamos tabla workspace/report -> capacity)
+        // If capacity_id is missing for /embed/* requests, provide your own mapping:
+        // (We do not assume any mapping here; build a workspace/report -> capacity table if required.)
         if ($capacity === null && $looksLikeEmbed) {
             return $next($request);
         }
 
-        // Marcar actividad siempre
+        // Always register activity
         $this->svc->markActivity($capacity);
 
-        // Intentar reanudar si está pausada y es pausable
+        // Attempt to resume when paused and eligible
         if ($capacity->isPausable() && ! $capacity->is_active) {
             $now = Carbon::now();
             $inWindow = $this->isInWindowNow($capacity, $now);
@@ -66,7 +66,7 @@ class AutoCapacityActivity
                     $this->resumeCapacity($capacity, $now);
                 }
             } else {
-                // Sin forzar por horario => reanudar on-demand
+                // No forced schedule => resume on-demand
                 $this->resumeCapacity($capacity, $now);
             }
         }
@@ -86,7 +86,7 @@ class AutoCapacityActivity
     {
         $weekday = (int) $now->dayOfWeek; // 0..6
         foreach ($cap->schedules()->where('weekday', $weekday)->where('enabled', true)->get() as $slot) {
-            // En tus modelos, los accessors de start_time/end_time devuelven Carbon "de hoy"
+            // The start_time/end_time accessors return Carbon instances set to "today"
             $start = $slot->start_time;
             $end   = $slot->end_time;
             if ($start->lessThanOrEqualTo($now) && $now->lessThan($end)) {

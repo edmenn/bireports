@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Capacity;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use App\Models\Dataset;
 use App\Models\Workspace;
 use App\Services\PowerBiCapacityService;
@@ -25,9 +25,9 @@ class DatasetsPrewarm extends Command
 
     public function handle(PowerBiService $pbi, PowerBiCapacityService $caps): int
     {
-        $cfg = Configuracion::query()->first();
+        $cfg = Configuration::query()->first();
         if (!($cfg?->prewarm_enabled)) {
-            $this->info('Pre-warm deshabilitado por configuraciones. Nada que hacer.');
+            $this->info('Pre-warm deshabilitado por configurations. Nada que hacer.');
             return self::SUCCESS;
         }
         $tz  = $cfg?->app_timezone_db ?: config('app.timezone');

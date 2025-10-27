@@ -2,45 +2,141 @@
 
 @section('title', __('portal.home.title'))
 
+@section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+    @include('portal.partials.report-card-styles')
+    <style>
+        .portal-folders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .portal-folder-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .55rem 1rem;
+            border-radius: .6rem;
+            font-size: .875rem;
+            color: #334155;
+            background-color: #f8fafd;
+            border: 1px solid transparent;
+            transition: all .15s ease-in-out;
+            text-decoration: none;
+        }
+
+        .portal-folder-link i {
+            font-size: .95rem;
+        }
+
+        .portal-folder-link .badge {
+            font-size: .75rem;
+            font-weight: 600;
+            padding: .2rem .5rem;
+            background-color: rgba(15, 34, 58, .08);
+            color: inherit;
+        }
+
+        .portal-folder-name {
+            font-weight: 600;
+            max-width: 16rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .portal-folder-link.active {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+            box-shadow: 0 1rem 1.6rem rgba(13, 110, 253, .2);
+        }
+
+        .portal-folder-link.active .badge {
+            background-color: rgba(255, 255, 255, .25);
+            color: #fff;
+        }
+
+        .portal-folder-link:not(.active):hover {
+            background-color: rgba(13, 110, 253, .12);
+            color: #0d6efd;
+        }
+
+        .portal-folder-link:not(.active):hover .badge {
+            background-color: rgba(13, 110, 253, .18);
+        }
+
+        .portal-folders-empty {
+            color: #6c757d;
+            padding: .5rem 0;
+        }
+
+        @media (max-width: 576px) {
+            .portal-folder-link {
+                flex: 1 1 calc(50% - .5rem);
+                justify-content: center;
+                text-align: center;
+            }
+        }
+    </style>
+@endsection
+
 @section('content_header')
-    <h1>{{ __('portal.home.title') }}</h1>
+    <x-page-header :title="__('portal.home.title')" icon="fas fa-th-large" />
 @stop
 
 @section('content')
-    @include('portal.partials.report-card-styles')
-
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-    <div class="card mb-3">
-        <div class="card-header">{{ __('portal.home.folders.title') }}</div>
-        <div class="card-body p-2">
-            <div class="nav nav-pills flex-wrap">
+
+    {{-- Folder Section --}}
+    <div class="portal-card">
+        <div class="card-header">
+            <span class="portal-icon">
+                <i class="fas fa-folder-open"></i>
+            </span>
+            <h5 class="mb-0">{{ __('portal.home.folders.title') }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="portal-folders">
                 @forelse($folders as $f)
-                    <a class="nav-link {{ ($selected && $selected->id===$f->id) ? 'active' : '' }}"
+                    <a class="portal-folder-link {{ ($selected && $selected->id === $f->id) ? 'active' : '' }}"
                        href="{{ route('portal.index', ['carpeta_id'=>$f->id]) }}">
-                        <i class="fas fa-folder mr-1"></i> {{ $f->name }}
-                        <span class="badge badge-light ml-2">{{ $f->reports_count }}</span>
+                        <i class="fas fa-folder"></i>
+                        <span class="portal-folder-name">{{ $f->name }}</span>
+                        <span class="badge">{{ $f->reports_count }}</span>
                     </a>
                 @empty
-                    <span class="text-muted p-2">{{ __('portal.home.folders.empty') }}</span>
+                    <span class="portal-folders-empty">{{ __('portal.home.folders.empty') }}</span>
                 @endforelse
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
+    {{-- Reports Section --}}
+    <div class="portal-card">
+        <div class="card-header">
+            <span class="portal-icon">
+                <i class="fas fa-chart-bar"></i>
+            </span>
             <div>
-                {{ __('portal.home.reports.title') }}
+                <h5 class="mb-0">{{ __('portal.home.reports.title') }}</h5>
                 @if($selected)
-                    <small class="text-muted">{{ __('portal.home.reports.in_folder', ['name' => $selected->name]) }}</small>
+                    <small>
+                        {{ __('portal.home.reports.in_folder', ['name' => $selected->name]) }}
+                    </small>
                 @endif
             </div>
         </div>
         <div class="card-body">
             @if(($reports ?? collect())->isEmpty())
-                <div class="text-center text-muted py-4">{{ __('portal.home.reports.empty') }}</div>
+                <div class="portal-empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <div>{{ __('portal.home.reports.empty') }}</div>
+                </div>
             @else
                 <div class="report-grid">
                     @foreach($reports as $report)

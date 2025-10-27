@@ -9,8 +9,8 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as Mi
 class PreventRequestsDuringMaintenance extends Middleware
 {
     /**
-     * URIs que deben estar accesibles aún en mantenimiento.
-     * Deja vacío salvo que necesites exponer algo (webhooks, healthchecks, etc.).
+     * URIs that should remain reachable during maintenance mode.
+     * Leave empty unless you must expose something (webhooks, health checks, etc.).
      *
      * @var array<int, string>
      */

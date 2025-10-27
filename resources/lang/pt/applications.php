@@ -46,6 +46,7 @@ return [
     ],
     'confirm' => [
         'delete' => 'Tem certeza de que deseja excluir esta aplicação?',
+        'cancel' => 'Deseja descartar as alterações e voltar?',
     ],
     'fields' => [
         'name' => 'Nome',
@@ -105,6 +106,7 @@ return [
     'portal' => [
         'title' => 'Minhas aplicações',
         'subtitle' => 'Abra uma aplicação para navegar pelos relatórios',
+        'card_title' => 'Lista de aplicações',
         'empty_title' => 'Nenhuma aplicação atribuída',
         'empty_description' => 'As aplicações atribuídas aparecerão aqui quando os administradores as publicarem.',
         'reports_count' => 'Relatórios',

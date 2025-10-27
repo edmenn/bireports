@@ -2,12 +2,12 @@
 
 return [
     'menu' => 'Idioma',
-    'english' => 'English',
+    'english' => 'Inglês',
     'spanish' => 'Espanhol',
     'portuguese' => 'Português',
     'russian' => 'Russo',
     'turkish' => 'Turco',
-    'en' => 'English',
+    'en' => 'Inglês',
     'es' => 'Espanhol',
     'pt' => 'Português',
     'ru' => 'Russo',

@@ -204,6 +204,32 @@ return [
         'usage_drop'    => 'Usage drop ≥30%: Last 7 days (:current) vs previous (:previous) -> :delta%.',
         'high_error_rate' => 'High error rate in 7 days: :rate% (:errors errors / :views accesses).',
     ],
+    'admin' => [
+        'confirm_exact' => 'You must type RESET exactly to confirm.',
+        'reset_success' => 'All audit records were deleted and the ID counter was reset.',
+        'reset_error'   => 'Audit reset failed: :message',
+    ],
+
+    'reset' => [
+        'title'        => 'Reset audit',
+        'subtitle'     => 'Permanently delete the audit trail.',
+        'back_to_usage'=> 'Usage metrics',
+        'card_title'   => 'Full deletion confirmation',
+        'description'  => 'This action will delete every record from the audit table and reset the ID counter. It cannot be undone.',
+        'stats_current'=> 'Current records',
+        'stats_first'  => 'First event',
+        'stats_last'   => 'Last event',
+        'confirm_label'=> 'Type RESET to confirm',
+        'confirm_help' => 'You must type the word exactly as shown.',
+        'submit'       => 'Delete everything',
+        'cancel'       => 'Cancel',
+        'confirm_prompt'=> 'Are you sure you want to delete everything? This action cannot be undone.',
+    ],
+
+    'api' => [
+        'store_failed' => 'Unable to record the audit event.',
+    ],
 ];
+
 
 

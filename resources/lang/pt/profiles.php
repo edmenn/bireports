@@ -56,7 +56,7 @@ return [
             'folders' => 'Pastas',
             'config' => 'Configuração',
             'audit' => 'Auditoria',
-            'otros' => 'Outras permissões',
+            'other' => 'Outras permissões',
         ],
         'labels' => [
             'menu' => [
@@ -68,9 +68,9 @@ return [
                 'groups' => 'Organização: Grupos',
                 'folders' => 'Organização: Pastas',
                 'applications' => 'Organização: Aplicações',
-                'configuraciones' => 'Configurações',
-                'auditoria' => 'Auditoria',
-                'roles' => 'Organização: Perfis e Acessos',
+                'configurations' => 'Configurações',
+                'audit' => 'Auditoria',
+                'roles' => 'Organização: Papéis e acessos',
             ],
             'portal' => [
                 'view' => 'Acessar o portal',

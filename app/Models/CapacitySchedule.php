@@ -14,7 +14,7 @@ class CapacitySchedule extends Model
 
     protected $fillable = [
         'capacity_id',
-        'weekday',       // 0=Dom ... 6=Sab
+        'weekday',       // 0=Sun ... 6=Sat
         'start_time',    // HH:MM:SS (TIME)
         'end_time',      // HH:MM:SS (TIME)
         'enabled',
@@ -31,8 +31,8 @@ class CapacitySchedule extends Model
     }
 
     /**
-     * Accessor para devolver un Carbon "de hoy" con la hora de start_time.
-     * Así los Jobs pueden comparar directamente con now().
+     * Return a Carbon instance anchored to "today" for start_time so jobs can
+     * compare it directly against now().
      */
     public function getStartTimeAttribute($value): Carbon
     {
@@ -42,7 +42,7 @@ class CapacitySchedule extends Model
     }
 
     /**
-     * Accessor para devolver un Carbon "de hoy" con la hora de end_time.
+     * Return a Carbon instance anchored to "today" for end_time.
      */
     public function getEndTimeAttribute($value): Carbon
     {

@@ -97,7 +97,18 @@ return [
 
     'edit' => [
         'title' => 'Editar relatório',
+        'card_title' => 'Capa e descrição',
         'view_report' => 'Ver relatório',
+        'preview' => [
+            'card_title' => 'Pré-visualização do relatório',
+            'scale_label' => 'Tamanho na lista',
+            'scale_display' => 'Tamanho atual: :value%',
+            'width_label' => 'Largura',
+            'height_label' => 'Altura',
+            'width_display' => 'Largura: :value %',
+            'height_display' => 'Altura: :value %',
+            'lock_label' => 'Bloquear propor�ao',
+        ],
         'alerts' => [
             'errors_title' => 'Revise os erros:',
             'close' => 'Fechar',
@@ -115,6 +126,10 @@ return [
             'upload' => [
                 'label' => 'Enviar imagem (opcional)',
                 'hint' => 'Formatos permitidos: JPG, PNG, WEBP, GIF ou SVG. Máximo de 2 MB.',
+            ],
+            'remove_cover' => [
+                'label' => 'Remover imagem atual',
+                'hint' => 'Retorna � capa padr�o ou ao �cone padr�o.',
             ],
             'make_default' => [
                 'label' => 'Usar esta imagem como capa padrão para relatórios sem capa',
@@ -144,6 +159,8 @@ return [
         'cover_url_url' => 'A imagem deve ser uma URL válida.',
         'cover_file_max' => 'A imagem não pode ultrapassar 2 MB.',
         'cover_file_mimetypes' => 'Formatos permitidos: JPG, PNG, WEBP, GIF ou SVG.',
+        'cover_scale_between' => 'O tamanho deve ficar entre 50% e 150%.',
+        'cover_scale_numeric' => 'O tamanho deve ser um valor numérico.',
     ],
 
     'flash' => [

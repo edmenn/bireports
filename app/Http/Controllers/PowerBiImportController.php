@@ -14,24 +14,24 @@ class PowerBiImportController extends Controller
 {
     public function importWorkspacesAndReports(PowerBiService $powerBi)
     {
-        // 1) Traer workspaces
+        // 1) Fetch workspaces
         $groups = $powerBi->listWorkspaces();
 
         $wsCount = 0;
         $rpCount = 0;
 
         foreach ($groups as $g) {
-            // Normalizar campos que usamos en tu migración
+            // Normalise fields used in the migration
             $workspaceData = [
                 'id'           => (string)($g['id'] ?? ''),
-                'name'         => (string)($g['name'] ?? '(sin nombre)'),
+                'name'         => (string)($g['name'] ?? __('common.unnamed')),
                 'type'         => (string)($g['type'] ?? null),
                 'is_read_only' => (bool)  ($g['isReadOnly'] ?? false),
                 'capacity_id'  => isset($g['capacityId']) ? (string)$g['capacityId'] : null,
             ];
 
             if (!$workspaceData['id']) {
-                continue; // sin ID no guardamos
+                continue; // Skip entries without an id
             }
 
             Workspace::updateOrCreate(
@@ -45,12 +45,12 @@ class PowerBiImportController extends Controller
             );
             $wsCount++;
 
-            // 2) Por cada workspace, traer datasets y guardarlos
+            // 2) For each workspace, fetch and persist datasets
             $datasets = $powerBi->listDatasets($workspaceData['id']);
             foreach ($datasets as $d) {
                 $datasetData = [
                     'id'                   => (string)($d['id'] ?? ''),
-                    'name'                 => (string)($d['name'] ?? '(sin nombre)'),
+                    'name'                 => (string)($d['name'] ?? __('common.unnamed')),
                     'workspace_id'         => $workspaceData['id'],
                     'configured_by'        => isset($d['configuredBy']) ? (string)$d['configuredBy'] : null,
                     'is_refreshable'       => (bool)  ($d['isRefreshable'] ?? false),
@@ -69,12 +69,12 @@ class PowerBiImportController extends Controller
                 );
             }
 
-            // 3) Por cada workspace, traer reports y guardarlos
+            // 3) For each workspace, fetch and persist reports
             $reports = $powerBi->listReports($workspaceData['id']);
             foreach ($reports as $r) {
                 $reportData = [
                     'id'           => (string)($r['id'] ?? ''),
-                    'name'         => (string)($r['name'] ?? '(sin nombre)'),
+                    'name'         => (string)($r['name'] ?? __('common.unnamed')),
                     'workspace_id' => $workspaceData['id'],
                     'dataset_id'   => isset($r['datasetId']) ? (string)$r['datasetId'] : null,
                     'web_url'      => isset($r['webUrl']) ? (string)$r['webUrl'] : null,
@@ -97,7 +97,7 @@ class PowerBiImportController extends Controller
             }
         }
 
-        // 3b) Importar capacidades + descubrir ARM (suscripción/RG y arm_resource_name) de forma automática
+        // 3b) Import capacities and discover ARM details (subscription/RG and arm_resource_name) automatically
         try {
             Artisan::call('powerbi:capacities:import');
             Artisan::call('powerbi:discover', ['--dry-run' => 0]);
@@ -105,7 +105,7 @@ class PowerBiImportController extends Controller
             Log::warning('Auto ARM discovery after import failed', ['error' => $e->getMessage()]);
         }
 
-        // 4) Mostrar un resumen simple
+        // 4) Show a simple summary
         return view('admin.dev.powerbi_import_result', [
             'wsCount' => $wsCount,
             'rpCount' => $rpCount,
@@ -113,7 +113,7 @@ class PowerBiImportController extends Controller
         ]);
     }
 
-    /** Importa/actualiza solo Datasets para todos los workspaces. */
+    /** Import or update datasets for every workspace. */
     public function importDatasets(PowerBiService $powerBi)
     {
         $groups = $powerBi->listWorkspaces();
@@ -122,9 +122,9 @@ class PowerBiImportController extends Controller
             $wsId = (string)($g['id'] ?? '');
             if ($wsId === '') continue;
 
-            // Asegurar workspace exista en BD aunque sea mínimo
+            // Ensure the workspace exists locally even if minimal
             Workspace::firstOrCreate(['id' => $wsId], [
-                'name' => (string)($g['name'] ?? '(sin nombre)'),
+                'name' => (string)($g['name'] ?? 'Unnamed'),
                 'type' => (string)($g['type'] ?? null),
                 'is_read_only' => (bool)($g['isReadOnly'] ?? false),
                 'capacity_id' => isset($g['capacityId']) ? (string)$g['capacityId'] : null,
@@ -134,7 +134,7 @@ class PowerBiImportController extends Controller
             foreach ($datasets as $d) {
                 $datasetData = [
                     'id'                   => (string)($d['id'] ?? ''),
-                    'name'                 => (string)($d['name'] ?? '(sin nombre)'),
+                    'name'                 => (string)($d['name'] ?? 'Unnamed'),
                     'workspace_id'         => $wsId,
                     'configured_by'        => isset($d['configuredBy']) ? (string)$d['configuredBy'] : null,
                     'is_refreshable'       => (bool)  ($d['isRefreshable'] ?? false),
@@ -163,3 +163,4 @@ class PowerBiImportController extends Controller
         ]);
     }
 }
+

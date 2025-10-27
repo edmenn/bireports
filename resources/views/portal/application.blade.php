@@ -3,23 +3,28 @@
 @section('title', $currentReport?->name ?? $application->name)
 
 @section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
 <style>
-    :root{
-        --pbi-min-height: 460px;
+    :root {
+        --pbi-min-height: 460px; /* Minimum height for Power BI tabs visibility */
     }
-    html, body, .content-wrapper, .content, .container-fluid{
+
+    html, body, .content-wrapper, .content, .container-fluid {
         height: 100%;
     }
-    .pbi-wrapper{
+
+    .pbi-wrapper {
         position: relative;
         display: flex;
         flex-direction: column;
         min-height: calc(100vh - 120px);
         overflow: hidden;
     }
+
     .pbi-wrapper.fullscreen-active,
     .pbi-wrapper:fullscreen,
-    .pbi-wrapper:-webkit-full-screen{
+    .pbi-wrapper:-webkit-full-screen {
         position: fixed;
         inset: 0;
         z-index: 1050;
@@ -27,14 +32,19 @@
         padding: 0;
         box-sizing: border-box;
     }
+
     .pbi-wrapper.fullscreen-active #reportContainer,
     .pbi-wrapper:fullscreen #reportContainer,
-    .pbi-wrapper:-webkit-full-screen #reportContainer{
+    .pbi-wrapper:-webkit-full-screen #reportContainer {
         height: 100%;
         min-height: 100%;
     }
-    body.fullscreen-scroll-lock{ overflow: hidden !important; }
-    #reportContainer{
+
+    body.fullscreen-scroll-lock {
+        overflow: hidden !important;
+    }
+
+    #reportContainer {
         position: relative;
         width: 100%;
         height: var(--pbi-min-height);
@@ -42,7 +52,8 @@
         background: transparent;
         overflow: hidden;
     }
-    #reportLoading{
+
+    #reportLoading {
         position: absolute;
         inset: 0;
         display: flex;
@@ -52,77 +63,110 @@
         background: transparent;
         z-index: 2;
     }
-    #reportError{
+
+    #reportError {
         position: absolute;
         left: 1rem;
         right: 1rem;
         top: 1rem;
         z-index: 3;
     }
+
+    /* ======================================== */
+    /* Portal runtime layout tweaks              */
+    /* ======================================== */
     .portal-application-runtime .content-wrapper,
     .portal-application-runtime .content,
-    .portal-application-runtime .container-fluid{
+    .portal-application-runtime .container-fluid {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
     }
-    .portal-application-runtime .content-header{
+
+    .portal-application-runtime .content-header {
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
     }
-    .portal-application-runtime .content{
+
+    .portal-application-runtime .content {
         padding-top: 0 !important;
     }
-    .portal-application-runtime .container-fluid{
+
+    .portal-application-runtime .container-fluid {
         padding-top: 0 !important;
     }
-    .nav-sidebar[data-portal-app-nav="1"] .nav-header{
+
+    .portal-app-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .portal-app-card .pbi-wrapper {
+        border: 1px solid rgba(15, 34, 58, .08);
+        border-radius: .75rem;
+        background-color: #fff;
+        padding: 1.25rem;
+        box-shadow: inset 0 0 0 rgba(0, 0, 0, 0);
+    }
+
+    .portal-app-card .pbi-wrapper.fullscreen-active,
+    .portal-app-card .pbi-wrapper:fullscreen,
+    .portal-app-card .pbi-wrapper:-webkit-full-screen {
+        border-radius: 0;
+        border-color: transparent;
+        padding: 0;
+    }
+
+    /* ======================================== */
+    /* Sidebar navigation adjustments            */
+    /* ======================================== */
+    .nav-sidebar[data-portal-app-nav="1"] .nav-header {
         font-size: 0.75rem;
         letter-spacing: .05em;
     }
-    .nav-sidebar[data-portal-app-nav="1"] .nav-header.app-title{
+
+    .nav-sidebar[data-portal-app-nav="1"] .nav-header.app-title {
         font-size: 1rem;
         font-weight: 700;
         text-transform: none;
         letter-spacing: 0;
     }
-    .nav-sidebar[data-portal-app-nav="1"] .nav-treeview > .nav-item > .nav-link{
+
+    .nav-sidebar[data-portal-app-nav="1"] .nav-treeview > .nav-item > .nav-link {
         padding-left: 2.75rem;
     }
-    .nav-sidebar[data-portal-app-nav="1"] .nav-treeview > .nav-item > .nav-link p{
+
+    .nav-sidebar[data-portal-app-nav="1"] .nav-treeview > .nav-item > .nav-link p {
         font-size: 0.8rem;
         margin: 0;
     }
 </style>
 @endsection
 
+
 @section('content_header')
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h1 class="h5 mb-0">
-            {{ $currentReport?->name ?? $application->name }}
-            @if($currentReport)
-                <small class="text-muted">/ {{ $application->name }}</small>
-            @endif
-        </h1>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
+    <x-page-header :title="$currentReport?->name ?? $application->name" icon="fas fa-chart-line">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
             @if($currentReport)
                 <button type="button"
                         id="reportFullscreenBtn"
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-outline-primary btn-sm header-btn"
                         data-label-enter="{{ __('reports.show.fullscreen_enter') }}"
                         data-label-exit="{{ __('reports.show.fullscreen_exit') }}"
                         title="{{ __('reports.show.fullscreen_enter') }}"
                         aria-label="{{ __('reports.show.fullscreen_enter') }}">
-                    <i class="fas fa-expand me-1" aria-hidden="true"></i> {{ __('reports.show.fullscreen_enter') }}
+                    <i class="fas fa-expand"></i>
+                    <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
             @endif
-            <a href="{{ route('portal.apps') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> {{ __('applications.actions.exit_application') }}
+            <a href="{{ route('portal.apps') }}" class="btn btn-outline-secondary btn-sm header-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ __('applications.actions.exit_application') }}</span>
             </a>
-            <a href="{{ route('portal.index') }}" class="btn btn-sm btn-outline-primary">
-                <i class="fas fa-home me-1"></i> {{ __('applications.actions.go_home') }}
+            <a href="{{ route('portal.index') }}" class="btn btn-outline-primary btn-sm header-btn">
+                <i class="fas fa-home"></i>
+                <span>{{ __('applications.actions.go_home') }}</span>
             </a>
         </div>
-    </div>
+    </x-page-header>
 @stop
 
 @section('content')
@@ -158,41 +202,57 @@
         ];
     @endphp
 
-    @if (! $currentReport)
-        <div class="alert alert-warning" role="alert">
-            <i class="fas fa-info-circle me-1"></i> {{ __('applications.runtime.no_reports') }}
+    <div class="portal-card portal-app-card">
+        <div class="card-header">
+            <span class="portal-icon">
+                <i class="fas fa-chart-line"></i>
+            </span>
+            <div>
+                <h5 class="mb-0">{{ $application->name }}</h5>
+                @if($currentReport)
+                    <small class="text-muted">{{ $currentReport->name }}</small>
+                @endif
+            </div>
         </div>
-    @else
-        <div class="pbi-wrapper">
-            @if($error)
-                <div class="alert alert-danger" role="alert">
-                    <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>{{ $error }}</h5>
-                    @if($error_debug)
-                        <details class="mt-2">
-                            <summary>{{ __('applications.runtime.technical_details') }}</summary>
-                            <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ $error_debug }}</pre>
-                        </details>
+        <div class="card-body">
+            @if (! $currentReport)
+                <div class="portal-empty-state">
+                    <i class="fas fa-info-circle"></i>
+                    <div>{{ __('applications.runtime.no_reports') }}</div>
+                </div>
+            @else
+                <div class="pbi-wrapper">
+                    @if($error)
+                        <div class="alert alert-danger" role="alert">
+                            <h5 class="mb-2"><i class="fas fa-times-circle me-2"></i>{{ $error }}</h5>
+                            @if($error_debug)
+                                <details class="mt-2">
+                                    <summary>{{ __('applications.runtime.technical_details') }}</summary>
+                                    <pre class="mt-2 bg-light p-2 border rounded" style="white-space: pre-wrap;">{{ $error_debug }}</pre>
+                                </details>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div id="reportContainer" aria-live="polite" aria-busy="true">
+                        <div id="reportLoading">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status" aria-label="{{ __('reports.show.loading') }}"></div>
+                                <div class="mt-2">{{ __('reports.show.loading') }}</div>
+                            </div>
+                        </div>
+                        <div id="reportError" class="alert alert-danger d-none" role="alert"></div>
+                    </div>
+
+                    @if(!empty($currentReport->description))
+                        <div class="mt-3">
+                            <small class="text-muted">{{ $currentReport->description }}</small>
+                        </div>
                     @endif
                 </div>
             @endif
-
-            <div id="reportContainer" aria-live="polite" aria-busy="true">
-                <div id="reportLoading">
-                    <div class="text-center">
-                        <div class="spinner-border" role="status" aria-label="{{ __('reports.show.loading') }}"></div>
-                        <div class="mt-2">{{ __('reports.show.loading') }}</div>
-                    </div>
-                </div>
-                <div id="reportError" class="alert alert-danger d-none" role="alert"></div>
-            </div>
-
-            @if(!empty($currentReport->description))
-                <div class="mt-3">
-                    <small class="text-muted">{{ $currentReport->description }}</small>
-                </div>
-            @endif
         </div>
-    @endif
+    </div>
 
     @if (! request()->hasCookie('XSRF-TOKEN'))
         <meta name="csrf-token" content="{{ csrf_token() }}">

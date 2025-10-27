@@ -113,8 +113,8 @@ return [
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
     // Permitir/ocultar el login local (email+password) desde .env
-    // Override de emergencia: si es true, habilita login local aunque esté deshabilitado en Configuraciones.
-    // Por defecto false: no interfiere con el valor de Configuraciones.
+    // Override de emergencia: si es true, habilita login local aunque esté deshabilitado en Configurationes.
+    // Por defecto false: no interfiere con el valor de Configurationes.
     'allow_local_login' => (bool) env('AUTH_ALLOW_LOCAL_LOGIN', false),
 
 ];

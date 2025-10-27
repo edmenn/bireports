@@ -5,7 +5,7 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center flex-wrap">
         <h1 class="m-0">{{ __('changes.page.header') }}</h1>
-        <a href="{{ route('auditoria.changes.index') }}" class="btn btn-outline-secondary">{{ __('changes.buttons.clear_filters') }}</a>
+        <a href="{{ route('audit.changes.index') }}" class="btn btn-outline-secondary">{{ __('changes.buttons.clear_filters') }}</a>
     </div>
 @stop
 

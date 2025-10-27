@@ -3,112 +3,195 @@
 @section('title', __('folders.page.create'))
 
 @section('content_header')
-    <h1 class="m-0 text-dark">{{ __('folders.page.create') }}</h1>
+    <x-page-header :title="__('folders.page.create')" icon="fas fa-folder-plus">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('folders.index') }}" class="btn btn-secondary btn-sm header-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ __('folders.form.buttons.back') }}</span>
+            </a>
+        </div>
+    </x-page-header>
 @stop
 
 @section('content')
-    <form action="{{ route('folders.store') }}" method="POST">
+    {{-- Important: disable browser validation bubbles --}}
+    <form action="{{ route('folders.store') }}" method="POST" novalidate>
         @csrf
 
-        {{-- TARJETA 1: DATOS DE LA CARPETA --}}
+        {{-- CARD 1: Folder details --}}
         <x-adminlte-card title="{{ __('folders.cards.details.title') }}" icon="fas fa-folder text-lightblue"
-                         theme="primary" theme-mode="outline">
-            
-            {{-- CAMBIO: Se elimina la estructura de dos columnas para un mejor flujo vertical --}}
+                         theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
-                <div class="col-12">
-                    <x-adminlte-input name="name" label="{{ __('folders.form.name_label') }}" placeholder="{{ __('folders.form.name_placeholder') }}"
-                                      value="{{ old('name') }}" required/>
+                {{-- Name (required) --}}
+                <div class="col-md-6 mb-3">
+                    <x-adminlte-input name="name"
+                        label="{{ __('folders.form.name_label') }}"
+                        placeholder="{{ __('folders.form.name_placeholder') }}"
+                        value="{{ old('name') }}"
+                        required
+                        class="@error('name') is-invalid @enderror"/>
+                    @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-12">
-                    <x-adminlte-textarea name="description" label="{{ __('folders.form.description_label') }}" rows="3"
-                                         placeholder="{{ __('folders.form.description_placeholder') }}">{{ old('description') }}</x-adminlte-textarea>
+
+                {{-- Description (optional) --}}
+                <div class="col-md-6 mb-3">
+                    <x-adminlte-textarea name="description"
+                        label="{{ __('folders.form.description_label') }}"
+                        rows="1"
+                        placeholder="{{ __('folders.form.description_placeholder') }}"
+                        class="@error('description') is-invalid @enderror"
+                        data-no-required="true">{{ old('description') }}</x-adminlte-textarea>
+                    @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
             </div>
         </x-adminlte-card>
 
-        {{-- TARJETA 2: ASIGNACIONES --}}
+        {{-- CARD 2: Assignments --}}
         <x-adminlte-card title="{{ __('folders.cards.assignments.title') }}" icon="fas fa-users text-lightblue"
-                         theme="primary" theme-mode="outline">
-            <div class="row">
+                         theme="primary" theme-mode="outline" class="mb-3">
+            <div class="row g-3">
 
-                {{-- Columna de Usuarios --}}
+                {{-- Users --}}
                 <div class="col-md-4 d-flex flex-column">
-                    <label>{{ __('folders.form.users_label') }}</label>
+                    <label class="fw-semibold mb-2">{{ __('folders.form.users_label') }}</label>
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
                         @forelse($users as $user)
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" type="checkbox" name="users[]" value="{{ $user->id }}" id="user_{{ $user->id }}">
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input" name="users[]"
+                                       value="{{ $user->id }}" id="user_{{ $user->id }}"
+                                       @checked(in_array($user->id, old('users', [])))>
                                 <label class="custom-control-label" for="user_{{ $user->id }}">
                                     {{ $user->name }} <small class="text-muted">&lt;{{ $user->email }}&gt;</small>
                                 </label>
                             </div>
                         @empty
-                            <p class="text-muted">{{ __('folders.empty.users') }}</p>
+                            <p class="text-muted small mb-0">{{ __('folders.empty.users') }}</p>
                         @endforelse
                     </div>
                 </div>
 
-                {{-- Columna de Grupos --}}
+                {{-- Groups --}}
                 <div class="col-md-4 d-flex flex-column">
-                    <label>{{ __('folders.form.groups_label') }}</label>
+                    <label class="fw-semibold mb-2">{{ __('folders.form.groups_label') }}</label>
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
                         @forelse($groups as $group)
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" type="checkbox" name="groups[]" value="{{ $group->id }}" id="group_{{ $group->id }}">
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input" name="groups[]"
+                                       value="{{ $group->id }}" id="group_{{ $group->id }}"
+                                       @checked(in_array($group->id, old('groups', [])))>
                                 <label class="custom-control-label" for="group_{{ $group->id }}">
                                     {{ $group->name }}
                                 </label>
                             </div>
                         @empty
-                            <p class="text-muted">{{ __('folders.empty.groups') }}</p>
+                            <p class="text-muted small mb-0">{{ __('folders.empty.groups') }}</p>
                         @endforelse
                     </div>
                 </div>
 
-                {{-- Columna de Reportes --}}
+                {{-- Reports --}}
                 <div class="col-md-4 d-flex flex-column">
-                    <label>{{ __('folders.form.reports_label') }}</label>
+                    <label class="fw-semibold mb-2">{{ __('folders.form.reports_label') }}</label>
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
                         @forelse($reports as $report)
-                            <div class="custom-control custom-checkbox">
-                                <input class="custom-control-input" type="checkbox" name="reports[]" value="{{ $report->id }}" id="report_{{ $report->id }}">
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input" name="reports[]"
+                                       value="{{ $report->id }}" id="report_{{ $report->id }}"
+                                       @checked(in_array($report->id, old('reports', [])))>
                                 <label class="custom-control-label" for="report_{{ $report->id }}">
                                     {{ $report->name }}
                                 </label>
                             </div>
                         @empty
-                            <p class="text-muted">{{ __('folders.empty.reports') }}</p>
+                            <p class="text-muted small mb-0">{{ __('folders.empty.reports') }}</p>
                         @endforelse
                     </div>
                 </div>
-
             </div>
         </x-adminlte-card>
 
-        {{-- TARJETA DE ACCIONES: BOTONES --}}
+        {{-- CARD 3: Actions --}}
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex" style="gap: 0.75rem; width: 320px;">
-                    <x-adminlte-button type="submit" theme="primary" label="{{ __('folders.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
-                    <x-adminlte-button :href="route('folders.index')" theme="secondary" label="{{ __('folders.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq"/>
+                <div class="d-flex gap-3" style="width: 320px;">
+                    <x-adminlte-button type="submit" theme="primary"
+                        label="{{ __('folders.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
+                    <x-adminlte-button :href="route('folders.index')" theme="secondary"
+                        label="{{ __('folders.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq"/>
                 </div>
             </div>
         </x-adminlte-card>
-
     </form>
 @stop
 
 @push('css')
 <style>
-    /* Estilo para los contenedores de checkboxes con scroll */
-    .checkbox-list-container {
-        max-height: 300px; /* Altura máxima antes de mostrar el scroll */
-        overflow-y: auto;  /* Scroll vertical automático */
-        background-color: #f8f9fa; /* Fondo ligero para destacar */
-    }
-    .custom-control {
-        margin-bottom: 0.5rem; /* Espacio entre cada checkbox */
-    }
+/* Header actions */
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+.header-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    line-height: 1;
+    padding: 0 .9rem;
+    font-size: .875rem;
+}
+.header-btn i {
+    font-size: .9rem;
+    margin-right: .4rem;
+}
+
+/* Checkbox containers */
+.checkbox-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+.custom-control { margin-bottom: 0.4rem; }
+.custom-control-label { font-size: 0.9rem; }
+
+/* Inputs and textarea same height */
+input.form-control,
+textarea.form-control {
+    border: 1px solid #ced4da !important;
+    border-radius: .375rem !important;
+    padding: .5rem .75rem !important;
+    box-shadow: none !important;
+    height: 42px !important;
+}
+textarea.form-control { resize: none !important; }
+
+/* Disable browser native validation visuals */
+input:invalid,
+textarea:invalid,
+input:required,
+textarea:required {
+    box-shadow: none !important;
+    border-color: #ced4da !important;
+    outline: none !important;
+}
+::-webkit-validation-bubble,
+::-webkit-validation-bubble-arrow,
+::-webkit-validation-bubble-message {
+    display: none !important;
+}
+:focus:invalid {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Focus style */
+input:focus,
+textarea:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.1rem rgba(0,123,255,.25) !important;
+}
 </style>
 @endpush

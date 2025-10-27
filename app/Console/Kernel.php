@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console;
 
 use App\Console\Commands\ProjectAuditCommand;
+use App\Console\Commands\ResetAudit;
 use App\Console\Commands\SyncEntraUsers;
 use App\Console\Commands\UiAudit;
 use App\Console\Commands\UiPlan;
@@ -14,23 +15,23 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 final class Kernel extends ConsoleKernel
 {
     /**
-     * Registrar comandos de consola de forma explícita.
-     * Mantiene el comportamiento existente.
+     * Explicitly register console commands while preserving existing behaviour.
      */
     protected $commands = [
         ProjectAuditCommand::class,
-        SyncEntraUsers::class, // comando de sync Entra (si lo tienes creado)
-        UiAudit::class,        // auditoría de stack UI (AdminLTE/Bootstrap/jQuery/plugins)
-        UiPlan::class,         // plan de migración a Argon (Bootstrap 5) basado en ui_audit.json
+        ResetAudit::class,
+        SyncEntraUsers::class, // Entra sync command (if present in the installation)
+        UiAudit::class,        // UI stack audit (AdminLTE/Bootstrap/jQuery/plugins)
+        UiPlan::class,         // Migration plan to Argon (Bootstrap 5) based on ui_audit.json
     ];
 
     /**
-     * Zona horaria aplicada al scheduler.
+     * Scheduler timezone.
      */
     protected function scheduleTimezone(): \DateTimeZone|string|null
     {
         try {
-            $cfgTz = optional(\App\Models\Configuracion::query()->first())->app_timezone_db;
+            $cfgTz = optional(\App\Models\Configuration::query()->first())->app_timezone_db;
             return $cfgTz ?: \config('app.timezone');
         } catch (\Throwable $e) {
             return \config('app.timezone');
@@ -38,34 +39,34 @@ final class Kernel extends ConsoleKernel
     }
 
     /**
-     * Definición de tareas programadas.
+     * Scheduled tasks definition.
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Importar capacidades periódicamente (sin cambios)
+        // Periodically import capacities (unchanged behaviour)
         $schedule->command('powerbi:capacities:import')
             ->hourly()
             ->withoutOverlapping()
             ->onOneServer();
 
-        // Evaluar horarios e inactividad de capacidades (sin cambios)
+        // Evaluate capacity schedules and inactivity (unchanged behaviour)
         $schedule->command('powerbi:capacities:evaluate')
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->onOneServer();
 
-        /* [Minimalista] Scheduler de datasets locales del portal
-         * La idea es usar 100% el portal, por eso dejamos el tick
-         * cada minuto para evaluar y disparar refresh locales.
+        /* [Minimalist] Local dataset scheduler for the portal.
+         * The portal is responsible for refreshes, so we keep a one-minute tick
+         * to evaluate and trigger local refresh jobs.
          */
         $schedule->command('datasets:scheduler-tick')
             ->everyMinute()
             ->withoutOverlapping()
             ->onOneServer();
 
-        // Pre-warm de datasets (sólo si está habilitado en Configuraciones)
+        // Dataset pre-warm (only if enabled in Configurations)
         try {
-            $cfg = \App\Models\Configuracion::query()->first();
+            $cfg = \App\Models\Configuration::query()->first();
             if ($cfg && $cfg->prewarm_enabled) {
                 $schedule->command('powerbi:datasets:prewarm --window=10')
                     ->everyFiveMinutes()
@@ -73,16 +74,16 @@ final class Kernel extends ConsoleKernel
                     ->onOneServer();
             }
         } catch (\Throwable $e) {
-            // Silencioso: si no hay tabla/config todavía
+            // Silently ignore when the configuration table is not available yet
         }
 
-        // (Opcional) Auditoría semanal automática del stack UI
+        // (Optional) Weekly automatic UI stack audit
         // $schedule->command('ui:audit')
         //     ->weeklyOn(1, '03:10')
         //     ->withoutOverlapping()
         //     ->onOneServer();
 
-        // (Opcional) Sync de usuarios Entra
+        // (Optional) Entra user sync
         // $schedule->command('users:sync-entra --domain=sarcom.com.py')
         //     ->dailyAt('02:10')
         //     ->withoutOverlapping()
@@ -90,14 +91,14 @@ final class Kernel extends ConsoleKernel
     }
 
     /**
-     * Registro de comandos y rutas de consola.
+     * Register console commands and routes.
      */
     protected function commands(): void
     {
-        // Autocargar todos los comandos del directorio App\Console\Commands
+        // Auto-load every command located in App\Console\Commands
         $this->load(__DIR__ . '/Commands');
 
-        // Rutas de consola (si las usas)
+        // Console routes (if used)
         require \base_path('routes/console.php');
     }
 }

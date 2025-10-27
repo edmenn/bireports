@@ -193,7 +193,7 @@ final class EntraUserImporter
                         }
                     } catch (Throwable $e) {
                         $errors++;
-                        Log::warning('refreshExisting: error actualizando usuario', [
+                        Log::warning('refreshExisting: error updating user', [
                             'user_id' => $user->id,
                             'email'   => $user->email,
                             'error'   => $e->getMessage(),
@@ -230,7 +230,7 @@ final class EntraUserImporter
                 $page = $this->graph->listUsers($query, $next);
             } catch (Throwable $e) {
                 Log::error('Graph listUsers error', ['exception' => $e]);
-                throw new RuntimeException('No se pudo consultar Microsoft Graph: ' . $e->getMessage(), 0, $e);
+                throw new RuntimeException('Unable to query Microsoft Graph: ' . $e->getMessage(), 0, $e);
             }
 
             $items = $page['items'] ?? [];
@@ -355,7 +355,7 @@ final class EntraUserImporter
                             try {
                                 $user->assignRole($assignRole);
                             } catch (Throwable $e) {
-                                Log::warning('No se pudo asignar rol al usuario recién creado', [
+                                Log::warning('Failed to assign role to the newly created user', [
                                     'email' => $emailToSave,
                                     'role'  => $assignRole,
                                     'error' => $e->getMessage(),
@@ -373,7 +373,7 @@ final class EntraUserImporter
                     };
                 } catch (Throwable $e) {
                     $errors++;
-                    Log::error('Error al importar usuario desde Graph', [
+                    Log::error('Error importing user from Graph', [
                         'graph_user' => $it,
                         'exception'  => $e,
                     ]);
@@ -436,7 +436,7 @@ final class EntraUserImporter
                 try {
                     $user->assignRole($assignRole);
                 } catch (Throwable $e) {
-                    Log::warning('No se pudo asignar rol al usuario recién creado', [
+                    Log::warning('Failed to assign role to the newly created user', [
                         'email' => $email,
                         'role'  => $assignRole,
                         'error' => $e->getMessage(),
@@ -513,7 +513,7 @@ final class EntraUserImporter
                 try {
                     $user->assignRole($assignRole);
                 } catch (Throwable $e) {
-                    Log::warning('No se pudo asignar rol al usuario recién creado', [
+                    Log::warning('Failed to assign role to the newly created user', [
                         'email' => $emailToSave,
                         'role'  => $assignRole,
                         'error' => $e->getMessage(),

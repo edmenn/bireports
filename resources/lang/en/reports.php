@@ -97,7 +97,18 @@ return [
 
     'edit' => [
         'title' => 'Edit report',
+        'card_title' => 'Cover & description',
         'view_report' => 'View report',
+        'preview' => [
+            'card_title' => 'Report preview',
+            'scale_label' => 'Display size',
+            'scale_display' => 'Current size: :value%',
+            'width_label' => 'Width',
+            'height_label' => 'Height',
+            'width_display' => 'Width: :value %',
+            'height_display' => 'Height: :value %',
+            'lock_label' => 'Lock aspect ratio',
+        ],
         'alerts' => [
             'errors_title' => 'Please review the errors:',
             'close' => 'Close',
@@ -115,15 +126,20 @@ return [
             'upload' => [
                 'label' => 'Upload image (optional)',
                 'hint' => 'Accepted formats: JPG, PNG, WEBP, GIF or SVG. Maximum 2 MB.',
+                'button' => 'Choose file',
+                'status' => [
+                    'empty' => 'No file selected',
+                    'selected' => 'Selected: :name',
+                ],
             ],
-            'make_default' => [
-                'label' => 'Use this image as the default cover for reports without one',
-                'hint' => 'Applies only when you upload an image file.',
+            'remove_cover' => [
+                'label' => 'Remove current image',
+                'hint' => 'Reverts to the default cover or fallback icon.',
             ],
             'url' => [
                 'label' => 'Image URL (optional)',
                 'placeholder' => 'https://your-cdn/covers/report.png',
-                'hint' => 'If you upload a file, the URL is ignored. The default option applies only to uploaded files.',
+                'hint' => 'If you upload a file, the URL is ignored.',
             ],
             'description' => [
                 'label' => 'Description (optional)',
@@ -144,6 +160,8 @@ return [
         'cover_url_url' => 'The image must be a valid URL.',
         'cover_file_max' => 'The image must not exceed 2 MB.',
         'cover_file_mimetypes' => 'Allowed formats: JPG, PNG, WEBP, GIF or SVG.',
+        'cover_scale_between' => 'The display size must be between 50% and 150%.',
+        'cover_scale_numeric' => 'The display size must be a numeric value.',
     ],
 
     'flash' => [

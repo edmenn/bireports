@@ -5,7 +5,7 @@ return [
     'subtitle' => 'Locais e do Fabric (somente leitura)',
     'show_only_local' => 'Mostrar apenas locais',
     'load_fabric' => 'Carregar também Fabric',
-    'export_csv' => 'Exportar CSV',
+    'export_excel' => 'Exportar para Excel',
     'filters' => [
         'type' => 'Tipo',
         'all' => 'Todos',

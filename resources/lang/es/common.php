@@ -24,6 +24,11 @@ return [
     'warning' => 'Aviso',
     'done' => 'Listo',
     'error' => 'Error',
+    'session_expired' => 'Sesion expirada.',
+    'session_expired_prompt' => 'Tu sesion expiro. Vuelve a iniciar sesion.',
+    'account_blocked' => 'Tu cuenta esta bloqueada. Contacta al administrador.',
+    'account_blocked_short' => 'Tu cuenta esta bloqueada.',
+    'unnamed' => 'Sin nombre',
     'active' => 'Activa',
     'paused' => 'Pausada',
     'capacities' => 'Capacidades',
@@ -47,4 +52,6 @@ return [
         'saturday' => 'Sábado',
         'sunday' => 'Domingo',
     ],
+
+
 ];

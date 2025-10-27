@@ -14,6 +14,10 @@ return [
         'entra_managed_html' => 'Este usuario está administrado por <strong>Microsoft Entra</strong>. La contraseña se gestiona en tu directorio corporativo y no puede cambiarse desde la aplicación.',
     ],
 
+    'password' => [
+        'managed_by_entra' => 'Esta contraseña se gestiona en Microsoft Entra y no puede cambiarse aquí.',
+    ],
+
     'header' => [
         'new' => 'Nuevo usuario',
         'import' => 'Importar Entra',
@@ -25,8 +29,11 @@ return [
     'index' => [
         'card_title' => 'Listado de usuarios',
         'filters' => [
+            'search_label' => 'Búsqueda',
             'search_placeholder' => 'Buscar por nombre o email',
+            'role_label' => 'Rol',
             'role_all' => 'Todos los roles',
+            'status_label' => 'Estado',
             'status_all' => 'Todos los estados',
             'status_active' => 'Activos',
             'status_blocked' => 'Bloqueados',
@@ -103,6 +110,23 @@ return [
         ],
     ],
 
+    'sync' => [
+        'summary' => [
+            'dry_run'  => 'Simulacion completada - creados: :created, actualizados: :updated, omitidos: :skipped, errores: :errors.',
+            'import'   => 'Importacion completada - creados: :created, actualizados: :updated, omitidos: :skipped, errores: :errors.',
+            'selected' => 'Importacion de seleccionados - creados: :created, actualizados: :updated, omitidos: :skipped, errores: :errors.',
+            'refresh'  => 'Actualizacion completada - actualizados: :updated, sin cambios: :skipped, errores: :errors, total evaluados: :total.',
+        ],
+        'no_selection' => 'No seleccionaste usuarios para importar.',
+        'no_entries'   => 'No hay entradas validas para importar.',
+        'errors' => [
+            'sync'            => 'Error al sincronizar: :message',
+            'import_selected' => 'Error al importar seleccionados: :message',
+            'refresh'         => 'Error al actualizar usuarios: :message',
+            'graph'           => 'Error al consultar Microsoft Graph.',
+        ],
+    ],
+
     'form' => [
         'name' => 'Nombre',
         'email' => 'Email',
@@ -113,6 +137,7 @@ return [
         'object_id' => 'Object ID (Entra)',
         'entra_label' => 'Entra',
         'buttons' => [
+            'back' => 'Volver',
             'save' => 'Guardar',
             'cancel' => 'Cancelar',
         ],

@@ -1,6 +1,6 @@
 <?php
 // Helper to compile a single Blade file and dump compiled PHP to stdout.
-// Usage: php scripts/compile_blade.php resources/views/configuraciones/tema.blade.php
+// Usage: php scripts/compile_blade.php resources/views/configurations/theme.blade.php
 
 declare(strict_types=1);
 

@@ -152,13 +152,8 @@ Route::prefix('admin')
             ->middleware('permission:reports.edit')
             ->name('reports.update');
 
-        // ?? Reset total de auditor?a (solo admin)
-        Route::get('/auditoria/reset', [AuditAdminController::class, 'showReset'])
-            ->middleware('permission:audit.reset')
             ->name('admin.audit.reset.show');
 
-        Route::post('/auditoria/reset', [AuditAdminController::class, 'reset'])
-            ->middleware('permission:audit.reset')
             ->name('admin.audit.reset.run');
 
         // Auditor?a unificada de cambios (sistema + configuraci?n)

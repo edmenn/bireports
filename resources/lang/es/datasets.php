@@ -94,8 +94,10 @@ return [
         'subtitle' => 'Vista combinada de las programaciones locales y de Fabric.',
         'show_only_local' => 'Solo programaciones locales',
         'load_fabric' => 'Cargar programaciones de Fabric',
-        'export_csv' => 'Exportar CSV',
+        'export_excel' => 'Exportar a Excel',
+        'back' => 'Volver a los datasets',
         'filters' => [
+            'title' => 'Filtrar programaciones',
             'type' => 'Origen',
             'workspace' => 'Workspace',
             'day' => 'Día',
@@ -107,6 +109,7 @@ return [
             'local' => 'Locales',
             'fabric' => 'Fabric',
         ],
+        'table_title' => 'Lista de programaciones',
         'table' => [
             'source' => 'Origen',
             'workspace' => 'Workspace',
@@ -127,6 +130,22 @@ return [
         'refresh_now' => 'Actualizar ahora',
         'refresh_confirm' => '¿Iniciar la actualización ahora?',
         'empty' => 'No se encontraron programaciones.',
+        'export' => [
+            'sheet_name' => 'Programaciones de datasets',
+            'filename' => 'programaciones_datasets',
+            'columns' => [
+                'source' => 'Origen',
+                'workspace' => 'Área de trabajo',
+                'dataset_name' => 'Nombre del dataset',
+                'dataset_id' => 'ID del dataset',
+                'status' => 'Estado',
+                'tz' => 'Zona horaria',
+                'days' => 'Días',
+                'times' => 'Horarios',
+                'last_status' => 'Último estado',
+                'last_at' => 'Última ejecución',
+            ],
+        ],
     ],
 
     'flash' => [

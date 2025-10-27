@@ -10,8 +10,8 @@ class Audit extends Model
 {
     protected $table = 'audits';
     
-    // Asegura que Eloquent incluya el offset al persistir (e.g. "+00:00"),
-    // evitando que Postgres interprete timestamps sin zona en la TZ de la sesión.
+    // Ensure Eloquent persists offsets (e.g. "+00:00") to prevent Postgres from
+    // interpreting timezone-less timestamps in the session timezone.
     protected $dateFormat = 'Y-m-d H:i:sP';
 
     protected $fillable = [

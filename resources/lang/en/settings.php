@@ -19,6 +19,11 @@ return [
         'validation' => 'Validation errors',
     ],
 
+    'menu' => [
+        'parameters' => 'Parameters',
+        'theme' => 'Theme',
+    ],
+
     'service_principal' => [
         'card_title' => 'Connection credentials (Service Principal)',
         'intro' => 'Configure an Entra ID application (Service Principal) with Power BI permissions for unattended authentication.',
@@ -69,6 +74,67 @@ return [
     'prewarm' => [
         'title' => 'Capacity pre-warm',
         'description' => 'If enabled, before a scheduled refresh we resume (start) the related capacity to avoid failures due to being paused. Disable it if you prefer to control this externally.',
+    ],
+
+    'mail' => [
+        'card_title' => 'Email sending configuration',
+        'fields' => [
+            'driver' => [
+                'label' => 'Mail driver',
+                'placeholder' => 'Select driver',
+                'help' => 'Example: smtp, sendmail, log',
+            ],
+            'host' => [
+                'label' => 'SMTP Host',
+                'placeholder' => 'smtp.mailjet.com',
+                'help' => 'Your mail server hostname',
+            ],
+            'port' => [
+                'label' => 'Port',
+                'placeholder' => '587',
+                'help' => 'Common ports: 25, 465, 587',
+            ],
+            'encryption' => [
+                'label' => 'Encryption',
+                'placeholder' => 'Select encryption',
+                'help' => 'Usually tls or ssl',
+            ],
+            'username' => [
+                'label' => 'Username',
+                'placeholder' => 'user@mail.com',
+            ],
+            'password' => [
+                'label' => 'Password',
+                'placeholder' => '********',
+            ],
+            'from_address' => [
+                'label' => 'From address',
+                'placeholder' => 'noreply@domain.com',
+            ],
+            'from_name' => [
+                'label' => 'From name',
+                'placeholder' => 'System Notifications',
+            ],
+        ],
+        'test' => [
+            'button' => 'Send test email',
+            'modal_title' => 'Send test email',
+            'description' => 'Use the saved mail settings to send a quick test message.',
+            'recipient_label' => 'Recipient',
+            'recipient_placeholder' => 'user@example.com',
+            'subject_label' => 'Subject',
+            'subject_placeholder' => 'Configuration test',
+            'message_label' => 'Message',
+            'message_placeholder' => 'This is a test message to verify the mail configuration.',
+            'send_button' => 'Send test',
+            'sending' => 'Sending...',
+            'success' => 'Test email sent successfully.',
+            'failed' => 'Unable to send the test email: :error',
+            'driver_missing' => 'Configure a valid mail driver before sending a test.',
+            'smtp_missing' => 'Configure the SMTP host and port before sending a test.',
+            'default_subject' => 'Test email from :app',
+            'generic_error' => 'We could not send the test email. Please review the configuration and try again.',
+        ],
     ],
 
     'login' => [

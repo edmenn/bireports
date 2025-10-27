@@ -26,6 +26,11 @@ return [
     'warning' => 'Warning',
     'done' => 'Done',
     'error' => 'Error',
+    'session_expired' => 'Session expired.',
+    'session_expired_prompt' => 'Your session expired. Please sign in again.',
+    'account_blocked' => 'Your account is blocked. Contact the administrator.',
+    'account_blocked_short' => 'Your account is blocked.',
+    'unnamed' => 'Unnamed',
 
     // States
     'active' => 'Active',

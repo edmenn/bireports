@@ -1,6 +1,13 @@
 ﻿<?php
 
 return [
+    'menu' => [
+        'title' => 'My space',
+        'home' => 'Home',
+        'favorites' => 'Favorites',
+        'most_accessed' => 'Most accessed',
+        'applications' => 'Applications',
+    ],
     'home' => [
         'title' => 'My home',
         'folders' => [

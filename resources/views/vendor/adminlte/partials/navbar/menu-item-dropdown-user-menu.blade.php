@@ -28,7 +28,7 @@
     </a>
 
     {{-- User menu dropdown --}}
-    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+    <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-4 p-2">
 
         {{-- User menu header --}}
         @if(!View::hasSection('usermenu_header') && config('adminlte.usermenu_header'))
@@ -61,18 +61,18 @@
         @endif
 
         {{-- User menu footer --}}
-        <li class="user-footer py-2">
+        <li class="user-footer py-2 d-flex flex-column gap-1">
             @if($profile_url)
-                <a href="{{ $profile_url }}" class="dropdown-item text-sm d-flex align-items-center">
+                <a href="{{ $profile_url }}" class="dropdown-item text-sm d-flex align-items-center rounded-3">
                     <i class="fa fa-fw fa-user text-primary mr-2"></i>
-                    <span>{{ __('Perfil') }}</span>
+                    <span>{{ __('menu.user.profile') }}</span>
                 </a>
             @endif
-            <a class="dropdown-item text-sm d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <a class="dropdown-item text-sm d-flex align-items-center rounded-3" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="fa fa-fw fa-power-off text-danger mr-2"></i>
-                <span>{{ __('Salir') }}</span>
+                <span>{{ __('menu.user.logout') }}</span>
             </a>
-            <form id="logout-form" action="{{ $logout_url }}" method="POST" style="display: none;">
+            <form id="logout-form" action="{{ $logout_url }}" method="POST" class="d-none">
                 @if(config('adminlte.logout_method'))
                     {{ method_field(config('adminlte.logout_method')) }}
                 @endif

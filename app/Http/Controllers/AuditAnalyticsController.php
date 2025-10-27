@@ -16,7 +16,7 @@ use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
-// PhpSpreadsheet (librería completa de Excel)
+// PhpSpreadsheet (full Excel library)
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
@@ -25,13 +25,13 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 final class AuditAnalyticsController extends Controller
 {
-    /** ÚNICA Acción que cuenta como “acceso”. Según tu dump real. */
+    /** ONLY action that counts as an "access" event. Adjust to match your dataset. */
     private const ACCESS_ACTIONS = ['render','view'];
 
     public function index(Request $request): View
     {
         $data = $this->composeViewData($request);
-        return view('auditoria.index', $data);
+        return view('audit.index', $data);
     }
 
     /**
@@ -439,7 +439,7 @@ final class AuditAnalyticsController extends Controller
             return ['label' => $reportNames[$id] ?? $id, 'total' => (int)$r->total];
         })->values();
 
-        // Heatmap por día/hora
+        // Heatmap grouped by day and hour
         $gridRaw = (clone $base)
             ->selectRaw("EXTRACT(ISODOW FROM (occurred_at AT TIME ZONE '$tz'))::int AS dow, EXTRACT(HOUR FROM (occurred_at AT TIME ZONE '$tz'))::int AS hr, COUNT(*) AS total")
             ->groupBy('dow','hr')->get();
@@ -501,7 +501,7 @@ final class AuditAnalyticsController extends Controller
         return [$profile, $events];
     }
 
-    /** Exporta la vista de analítica a un libro Excel con múltiples hojas (PhpSpreadsheet). */
+    /** Export the analytics view to a multi-sheet Excel workbook (PhpSpreadsheet). */
     public function export(Request $request): StreamedResponse
     {
         if (class_exists(\Debugbar::class)) {
@@ -594,7 +594,7 @@ final class AuditAnalyticsController extends Controller
     }
 
     /**
-     * Prepara las hojas que se exportarán al libro de Excel.
+     * Prepare the sheets that will be exported to the Excel workbook.
      *
      * @param array<string, mixed> $data
      * @return array<int, array{name: string, headers: array<int, string>, rows: array<int, array<int, int|float|string|bool|null>>}>

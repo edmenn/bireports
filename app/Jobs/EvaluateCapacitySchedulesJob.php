@@ -36,7 +36,7 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
         }
 
         $now = Carbon::now();
-        $weekday = (int) $now->dayOfWeek; // 0=Dom..6=Sab
+        $weekday = (int) $now->dayOfWeek; // 0=Sun .. 6=Sat
 
         /** @var CapacitySchedule[] $today */
         $today = $cap->schedules->where('weekday', $weekday)->where('enabled', true)->all();
@@ -76,9 +76,9 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
                     ]);
                 }
             } elseif (! $inWindow && $cap->is_active) {
-                // Si hay un período de gracia vigente (encendido on-demand), no forzar pausa por horario
+                // Do not pause while the grace period (on-demand resume) is still active.
                 if ($cap->outside_window_grace_until && $cap->outside_window_grace_until->greaterThan(\Illuminate\Support\Carbon::now())) {
-                    return; // dejar que lo apague por inactividad
+                    return; // Allow the inactivity job to pause it later.
                 }
                 try {
                     $svc->pause($cap->capacity_uuid);

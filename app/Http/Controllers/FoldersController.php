@@ -54,36 +54,36 @@ class FoldersController extends Controller
         return redirect()->route('folders.index')->with('success', __('folders.flash.created'));
     }
 
-    public function edit(Folder $carpeta): View
+    public function edit(Folder $folder): View
     {
         $users = User::orderBy('name')->get();
         $groups = Group::orderBy('name')->get();
         $reports = Report::orderBy('name')->get();
-        return view('folders.edit', ['folder'=>$carpeta, 'users'=>$users, 'groups'=>$groups, 'reports'=>$reports]);
+        return view('folders.edit', ['folder' => $folder, 'users' => $users, 'groups' => $groups, 'reports' => $reports]);
     }
 
-    public function update(Request $request, Folder $carpeta): RedirectResponse
+    public function update(Request $request, Folder $folder): RedirectResponse
     {
         $data = $request->validate([
-            'name'        => ['required','string','max:255','unique:folders,name,'.$carpeta->id],
+            'name'        => ['required','string','max:255','unique:folders,name,'.$folder->id],
             'description' => ['nullable','string','max:2000'],
             'users'   => ['array'], 'users.*'   => ['integer','exists:users,id'],
             'groups'  => ['array'], 'groups.*'  => ['integer','exists:groups,id'],
             'reports' => ['array'], 'reports.*' => ['string','exists:reports,id'],
         ]);
-        $carpeta->update([
+        $folder->update([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
         ]);
-        $carpeta->users()->sync($data['users'] ?? []);
-        $carpeta->groups()->sync($data['groups'] ?? []);
-        $carpeta->reports()->sync($data['reports'] ?? []);
+        $folder->users()->sync($data['users'] ?? []);
+        $folder->groups()->sync($data['groups'] ?? []);
+        $folder->reports()->sync($data['reports'] ?? []);
         return redirect()->route('folders.index')->with('success', __('folders.flash.updated'));
     }
 
-    public function destroy(Folder $carpeta): RedirectResponse
+    public function destroy(Folder $folder): RedirectResponse
     {
-        $carpeta->delete();
+        $folder->delete();
         return redirect()->route('folders.index')->with('success', __('folders.flash.deleted'));
     }
 }

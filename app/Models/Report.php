@@ -14,14 +14,14 @@ class Report extends Model
     use HasFactory;
 
     /**
-     * Clave primaria UUID (no incremental, tipo string).
+     * UUID primary key (string, non-incrementing).
      */
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
 
     /**
-     * Campos asignables.
+     * Mass assignable attributes.
      */
     protected $fillable = [
         'id',
@@ -29,16 +29,22 @@ class Report extends Model
         'workspace_id',
         'dataset_id',
         'cover_url',
+        'cover_scale',
+        'cover_scale_x',
+        'cover_scale_y',
         'description',
         'allow_resume_outside_window',
     ];
 
     protected $casts = [
         'allow_resume_outside_window' => 'boolean',
+        'cover_scale' => 'float',
+        'cover_scale_x' => 'float',
+        'cover_scale_y' => 'float',
     ];
 
     /**
-     * Relación (ajusta si tu clase Workspace se llama distinto).
+     * Workspace relationship (adjust if your Workspace model uses a different class).
      */
     public function workspace()
     {
@@ -46,7 +52,7 @@ class Report extends Model
     }
 
     /**
-     * Asociaciones con aplicaciones publicadas en el portal.
+     * Associations with portal applications.
      */
     public function applications(): BelongsToMany
     {
@@ -56,7 +62,7 @@ class Report extends Model
     }
 
     /**
-     * Normaliza cover_url a string o null sin espacios.
+     * Normalize cover_url to a trimmed string or null.
      */
     public function getCoverUrlAttribute($value): ?string
     {
@@ -66,10 +72,10 @@ class Report extends Model
     }
 
     /**
-     * URL efectiva de portada:
-     * - cover_url propia, o
-     * - predeterminada en storage/app/public/report-covers/default.png, o
-     * - null.
+     * Resolve the effective cover URL:
+     * - explicit cover_url
+     * - default stored at storage/app/public/report-covers/default.png
+     * - null otherwise
      */
     public function getEffectiveCoverUrlAttribute(): ?string
     {
@@ -83,5 +89,56 @@ class Report extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Clamp the persisted cover scale to the supported range.
+     */
+    public function getCoverScaleAttribute($value): float
+    {
+        if (!is_numeric($value)) {
+            $value = $this->attributes['cover_scale_x'] ?? $this->attributes['cover_scale_y'] ?? 1.0;
+        }
+        return $this->normalizeScaleValue($value);
+    }
+
+    /**
+     * Persist cover scale keeping range constraints.
+     */
+    public function setCoverScaleAttribute($value): void
+    {
+        $this->attributes['cover_scale'] = $this->normalizeScaleValue($value);
+    }
+
+    public function getCoverScaleXAttribute($value): float
+    {
+        if (!is_numeric($value)) {
+            $value = $this->attributes['cover_scale'] ?? $this->attributes['cover_scale_y'] ?? 1.0;
+        }
+        return $this->normalizeScaleValue($value);
+    }
+
+    public function setCoverScaleXAttribute($value): void
+    {
+        $this->attributes['cover_scale_x'] = $this->normalizeScaleValue($value);
+    }
+
+    public function getCoverScaleYAttribute($value): float
+    {
+        if (!is_numeric($value)) {
+            $value = $this->attributes['cover_scale'] ?? $this->attributes['cover_scale_x'] ?? 1.0;
+        }
+        return $this->normalizeScaleValue($value);
+    }
+
+    public function setCoverScaleYAttribute($value): void
+    {
+        $this->attributes['cover_scale_y'] = $this->normalizeScaleValue($value);
+    }
+
+    protected function normalizeScaleValue($value): float
+    {
+        $numeric = is_numeric($value) ? (float) $value : 1.0;
+        return min(1.5, max(0.5, $numeric));
     }
 }

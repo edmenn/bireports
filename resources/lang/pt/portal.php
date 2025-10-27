@@ -1,8 +1,15 @@
-﻿<?php
+<?php
 
 return [
+    'menu' => [
+        'title' => 'Meu espaco',
+        'home' => 'Inicio',
+        'favorites' => 'Favoritos',
+        'most_accessed' => 'Mais acessados',
+        'applications' => 'Aplicativos',
+    ],
     'home' => [
-        'title' => 'Meu início',
+        'title' => 'Meu Inicio',
         'folders' => [
             'title' => 'Pastas',
             'empty' => 'Nenhuma pasta atribuída.',

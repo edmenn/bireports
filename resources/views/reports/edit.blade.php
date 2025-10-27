@@ -1,162 +1,255 @@
 @extends('adminlte::page')
 
+@include('portal.partials.report-card-styles')
+
 @section('title', __('reports.edit.title'))
 
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h1 class="m-0">{{ __('reports.edit.title') }}</h1>
-
-        {{-- Acciones de header: ancho fijo + buen espaciado --}}
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
-                <i class="fas fa-arrow-left me-1"></i> {{ __("common.back") }}
+    {{-- Unified header with title, icon, and aligned actions --}}
+    <x-page-header :title="__('reports.edit.title')" icon="fas fa-edit">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>{{ __('common.back') }}</span>
             </a>
-            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-eq">
-                <i class="fas fa-chart-line me-1"></i> {{ __('reports.edit.view_report') }}
+            <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-sm header-btn">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ __('reports.edit.view_report') }}</span>
             </a>
         </div>
-    </div>
+    </x-page-header>
 @stop
 
 @section('content')
     @if(session('status'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}"></button>
-        </div>
+        <x-adminlte-alert theme="success" title="{{ __('reports.edit.alerts.success_title') }}" dismissable class="mb-2">
+            {{ session('status') }}
+        </x-adminlte-alert>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>{{ __('reports.edit.alerts.errors_title') }}</strong>
+        <x-adminlte-alert theme="danger" title="{{ __('reports.edit.alerts.errors_title') }}" dismissable class="mb-2">
             <ul class="mb-0">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('reports.edit.alerts.close') }}"></button>
-        </div>
+        </x-adminlte-alert>
     @endif
 
-    <form method="post"
-          action="{{ route('reports.update', $report) }}"
-          enctype="multipart/form-data"
-          class="card shadow-sm border-0">
-        @csrf
-        @method('PUT')
+    <x-adminlte-card title="{{ __('reports.edit.card_title') }}" icon="fas fa-edit text-lightblue"
+                     theme="primary" theme-mode="outline" class="mt-3" body-class="p-3">
 
-        <div class="card-body">
-            {{-- Datos base (solo lectura) --}}
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">{{ __('reports.edit.form.read_only.title') }}</label>
+        <form method="post" action="{{ route('reports.update', $report) }}" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            {{-- Read-only base data --}}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="font-weight-bold">{{ __('reports.edit.form.read_only.title') }}</label>
                     <input type="text" class="form-control" value="{{ $report->name }}" readonly>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ __('reports.edit.form.read_only.workspace_id') }}</label>
+                <div class="col-md-3 mb-3">
+                    <label class="font-weight-bold">{{ __('reports.edit.form.read_only.workspace_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->workspace_id }}" readonly>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">{{ __('reports.edit.form.read_only.report_id') }}</label>
+                <div class="col-md-3 mb-3">
+                    <label class="font-weight-bold">{{ __('reports.edit.form.read_only.report_id') }}</label>
                     <input type="text" class="form-control" value="{{ $report->id }}" readonly>
                 </div>
             </div>
 
             <hr class="my-4">
 
-            {{-- Preview actual (usa effective_cover_url) --}}
-            <div class="mb-3">
-                <label class="form-label">{{ __('reports.edit.form.preview.label') }}</label>
-                <div id="previewBox"
-                     class="border rounded p-3 d-flex align-items-center gap-3"
-                     style="background:#fff8e1; min-height:140px;">
-                    <div class="flex-shrink-0"
-                         style="width: 220px; height: 130px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                        @php $cover = trim((string)($report->effective_cover_url ?? '')); @endphp
-                        @if($cover !== '')
-                            <img id="previewImg"
-                                 src="{{ $cover }}"
-                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
-                                 style="max-width:100%; max-height:100%; object-fit:cover;">
-                        @else
-                            {{-- Fallback: ícono BI amarillo/blanco --}}
-                            <svg id="previewSvg" style="width:70%; height:auto;" viewBox="0 0 128 128" aria-hidden="true">
-                                <defs>
-                                    <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#FFD93D"/>
-                                        <stop offset="100%" stop-color="#FFC107"/>
-                                    </linearGradient>
-                                </defs>
-                                <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
-                                <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
-                                <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
-                                <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
-                                <g transform="translate(28,50)" fill="#fff">
-                                    <rect x="0"   y="30" width="12" height="28" rx="2"/>
-                                    <rect x="20"  y="18" width="12" height="40" rx="2"/>
-                                    <rect x="40"  y="10" width="12" height="48" rx="2"/>
-                                    <rect x="60"  y="4"  width="12" height="54" rx="2"/>
-                                </g>
-                            </svg>
-                        @endif
+            {{-- Preview --}}
+            <div class="mb-4">
+                <label class="font-weight-bold">{{ __('reports.edit.form.preview.label') }}</label>
+                @php
+                    $defaultScale = $report->cover_scale ?? 1;
+                    $scaleXSource = old('cover_scale_x', $report->cover_scale_x ?? $defaultScale);
+                    $scaleYSource = old('cover_scale_y', $report->cover_scale_y ?? $defaultScale);
+                    $normalizeScale = function ($value) {
+                        $numeric = is_numeric($value) ? (float) $value : 1.0;
+                        if ($numeric < 0.5 || $numeric > 1.5) {
+                            $percent = (int) round($numeric * 100);
+                            if ($percent < 50) {
+                                $percent = 50;
+                            } elseif ($percent > 150) {
+                                $percent = 150;
+                            }
+                            return $percent / 100;
+                        }
+                        return max(0.5, min($numeric, 1.5));
+                    };
+                    $storedScaleX = $normalizeScale($scaleXSource);
+                    $storedScaleY = $normalizeScale($scaleYSource);
+                    $sliderMin = 50;
+                    $sliderMax = 150;
+                    $displayPercentX = (int) round($storedScaleX * 100);
+                    $displayPercentY = (int) round($storedScaleY * 100);
+                    $lockChecked = abs($storedScaleX - $storedScaleY) < 0.001;
+                    $cover        = trim((string)($report->effective_cover_url ?? ''));
+                    $isDefaultCover = $cover !== '' && \Illuminate\Support\Str::contains($cover, 'report-covers/default');
+                    $hasCustomCover = !empty($report->cover_url);
+                    $removeCoverChecked = old('remove_cover') ? true : false;
+                    if ($removeCoverChecked) {
+                        $cover = '';
+                        $isDefaultCover = false;
+                    }
+                @endphp
+                <div class="report-preview-card">
+                    <div class="report-preview-header text-center">
+                        <span class="report-preview-icon mr-2"><i class="fas fa-chart-area"></i></span>
+                        <span class="report-preview-title">{{ __('reports.edit.preview.card_title') }}</span>
                     </div>
-                    <div class="text-muted small">
-                        {{ __('reports.edit.form.preview.hint') }}
+                    <div class="report-preview-body">
+                        <div class="preview-card-wrapper">
+                            <div class="report-card preview-card-tile mb-4 mx-auto">
+                                <div id="previewBox"
+                                     class="report-cover"
+                                     data-initial-cover="{{ e($cover) }}"
+                                     data-initial-cover-class="{{ $isDefaultCover ? 'cover-default' : '' }}">
+                                    <div class="cover-link preview-cover-link">
+                                        @if($cover !== '')
+                                            <img id="previewImg"
+                                                 src="{{ $cover }}"
+                                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $report->name]) }}"
+                                                 class="cover-scale-target {{ $isDefaultCover ? 'cover-default' : '' }}"
+                                                 style="transform: scale({{ number_format($storedScaleX, 3, '.', '') }}, {{ number_format($storedScaleY, 3, '.', '') }});">
+                                        @else
+                                            <div id="previewFallback" class="preview-fallback w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="px-3 pt-3 pb-3 text-center">
+                                    <h3 class="h6 font-weight-bold text-dark mb-2 text-truncate" title="{{ $report->name }}">
+                                        {{ $report->name }}
+                                    </h3>
+                                    <div class="d-flex justify-content-center flex-wrap align-items-center">
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary mx-1 preview-action-btn"
+                                                title="{{ __('reports.index.cards.open_title') }}">
+                                            <i class="fas fa-chart-line mr-1"></i>{{ __('reports.index.actions.open') }}
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-warning mx-1 preview-action-btn"
+                                                title="{{ __('reports.index.cards.edit_title') }}">
+                                            <i class="fas fa-edit mr-1"></i>{{ __('reports.index.actions.edit') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="previewControls" class="preview-control-card report-preview-controls {{ $cover !== '' ? '' : 'd-none' }}">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="cover_scale_slider" class="font-weight-bold mb-0">{{ __('reports.edit.preview.width_label') }}</label>
+                                        <small id="cover_scale_value"
+                                               class="text-muted font-weight-bold"
+                                               data-template="{{ __('reports.edit.preview.width_display', ['value' => ':value']) }}">
+                                            {{ __('reports.edit.preview.width_display', ['value' => $displayPercentX]) }}
+                                        </small>
+                                    </div>
+                                    <input type="range"
+                                           class="custom-range preview-range"
+                                           id="cover_scale_slider"
+                                           min="{{ $sliderMin }}"
+                                           max="{{ $sliderMax }}"
+                                           step="1"
+                                           value="{{ $displayPercentX }}">
+                                </div>
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label for="cover_scale_slider_y" class="font-weight-bold mb-0">{{ __('reports.edit.preview.height_label') }}</label>
+                                        <small id="cover_scale_value_y"
+                                               class="text-muted font-weight-bold"
+                                               data-template="{{ __('reports.edit.preview.height_display', ['value' => ':value']) }}">
+                                            {{ __('reports.edit.preview.height_display', ['value' => $displayPercentY]) }}
+                                        </small>
+                                    </div>
+                                    <input type="range"
+                                           class="custom-range preview-range"
+                                           id="cover_scale_slider_y"
+                                           min="{{ $sliderMin }}"
+                                           max="{{ $sliderMax }}"
+                                           step="1"
+                                           value="{{ $displayPercentY }}"
+                                           {{ $lockChecked ? 'disabled' : '' }}>
+                                </div>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="cover_scale_lock" {{ $lockChecked ? 'checked' : '' }}>
+                                    <label class="custom-control-label font-weight-bold" for="cover_scale_lock">{{ __('reports.edit.preview.lock_label') }}</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <input type="hidden" name="cover_scale_x" id="cover_scale_x" value="{{ number_format($storedScaleX, 4, '.', '') }}">
+                <input type="hidden" name="cover_scale_y" id="cover_scale_y" value="{{ number_format($storedScaleY, 4, '.', '') }}">
+                <input type="hidden" name="cover_scale" id="cover_scale" value="{{ number_format($storedScaleX, 4, '.', '') }}">
+                <small class="text-muted d-block mt-2">{{ __('reports.edit.form.preview.hint') }}</small>
             </div>
 
-            {{-- Subir archivo (prioridad sobre URL) --}}
-            <div class="mb-2">
-                <label for="cover_file" class="form-label">{{ __('reports.edit.form.upload.label') }}</label>
-                <input type="file"
-                       name="cover_file"
-                       id="cover_file"
-                       class="form-control @error('cover_file') is-invalid @enderror"
-                       accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
+            {{-- Upload input --}}
+            <div class="mb-3">
+                <label for="cover_file" class="font-weight-bold">{{ __('reports.edit.form.upload.label') }}</label>
+                <div class="d-flex align-items-center flex-wrap custom-upload">
+                    <input type="file" name="cover_file" id="cover_file"
+                           class="@error('cover_file') is-invalid @enderror sr-only"
+                           accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
+                    <button type="button" id="cover_file_trigger"
+                            class="btn btn-outline-secondary mr-2 mb-2 mb-md-0">
+                        <i class="fas fa-folder-open mr-1"></i>{{ __('reports.edit.form.upload.button') }}
+                    </button>
+                    <span id="cover_file_status"
+                          class="text-muted small"
+                          aria-live="polite"
+                          data-status-empty="{{ __('reports.edit.form.upload.status.empty') }}"
+                          data-status-selected="{{ __('reports.edit.form.upload.status.selected') }}">
+                        {{ __('reports.edit.form.upload.status.empty') }}
+                    </span>
+                </div>
                 @error('cover_file')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
                 @else
-                    <div class="form-text">{{ __('reports.edit.form.upload.hint') }}</div>
+                    <small class="form-text text-muted">{{ __('reports.edit.form.upload.hint') }}</small>
                 @enderror
             </div>
 
-            {{-- Marcar como predeterminada (solo aplica a archivo subido) --}}
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" value="1" id="make_default" name="make_default"
-                       {{ old('make_default') ? 'checked' : '' }}>
-                <label class="form-check-label" for="make_default">
-                    {{ __('reports.edit.form.make_default.label') }}
-                </label>
-                <div class="form-text">{{ __('reports.edit.form.make_default.hint') }}</div>
-            </div>
+            @if($hasCustomCover || $removeCoverChecked)
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" value="1" id="remove_cover" name="remove_cover"
+                           {{ $removeCoverChecked ? 'checked' : '' }}>
+                    <label class="form-check-label" for="remove_cover">
+                        {{ __('reports.edit.form.remove_cover.label') }}
+                    </label>
+                    <small class="form-text text-muted">{{ __('reports.edit.form.remove_cover.hint') }}</small>
+                </div>
+            @endif
 
-            {{-- URL de imagen (opcional) --}}
+            {{-- Alternative URL --}}
             <div class="mb-3">
-                <label for="cover_url" class="form-label">{{ __('reports.edit.form.url.label') }}</label>
-                <input type="url"
-                       name="cover_url"
-                       id="cover_url"
+                <label for="cover_url" class="font-weight-bold">{{ __('reports.edit.form.url.label') }}</label>
+                <input type="url" name="cover_url" id="cover_url"
                        class="form-control @error('cover_url') is-invalid @enderror"
                        placeholder="{{ __('reports.edit.form.url.placeholder') }}"
                        value="{{ old('cover_url', $report->cover_url) }}">
                 @error('cover_url')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @else
-                    <div class="form-text">{{ __('reports.edit.form.url.hint') }}</div>
+                    <small class="form-text text-muted">{{ __('reports.edit.form.url.hint') }}</small>
                 @enderror
             </div>
 
-            {{-- Descripción --}}
+            {{-- Description --}}
             <div class="mb-1 d-flex justify-content-between align-items-center">
-                <label for="description" class="form-label mb-0">{{ __('reports.edit.form.description.label') }}</label>
+                <label for="description" class="font-weight-bold mb-0">{{ __('reports.edit.form.description.label') }}</label>
                 <small class="text-muted"><span id="descCount">0</span>/2000</small>
             </div>
             <div class="mb-3">
-                <textarea name="description"
-                          id="description"
-                          rows="4"
-                          maxlength="2000"
+                <textarea name="description" id="description" rows="4" maxlength="2000"
                           class="form-control @error('description') is-invalid @enderror"
                           placeholder="{{ __('reports.edit.form.description.placeholder') }}">{{ old('description', $report->description) }}</textarea>
                 @error('description')
@@ -164,36 +257,162 @@
                 @enderror
             </div>
 
-            {{-- Encendido fuera de ventana (on-demand) --}}
+            {{-- Extra switch --}}
             <div class="form-check form-switch mt-3">
                 <input class="form-check-input" type="checkbox" role="switch"
-                       id="allow_resume_outside_window"
-                       name="allow_resume_outside_window" value="1"
+                       id="allow_resume_outside_window" name="allow_resume_outside_window" value="1"
                        {{ old('allow_resume_outside_window', $report->allow_resume_outside_window ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="allow_resume_outside_window">
                     {{ __('reports.edit.form.allow_resume.label') }}
                 </label>
-                <div class="form-text">{{ __('reports.edit.form.allow_resume.hint') }}</div>
+                <small class="form-text text-muted">{{ __('reports.edit.form.allow_resume.hint') }}</small>
             </div>
 
-        </div>
-
-        {{-- Footer: botones iguales y con buen aire --}}
-        <div class="card-footer d-flex flex-wrap justify-content-end gap-2">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">{{ __('reports.edit.buttons.cancel') }}</a>
-            <button type="submit" class="btn btn-primary btn-eq">{{ __('reports.edit.buttons.save') }}</button>
-        </div>
-    </form>
+            <div class="d-flex justify-content-between flex-wrap mt-4">
+                <button type="submit" class="btn btn-primary btn-eq">
+                    <i class="fas fa-save mr-1"></i>{{ __('reports.edit.buttons.save') }}
+                </button>
+                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
+                    <i class="fas fa-times mr-1"></i>{{ __('reports.edit.buttons.cancel') }}
+                </a>
+            </div>
+        </form>
+    </x-adminlte-card>
 @stop
 
 @push('css')
 <style>
-/* Ancho mínimo uniforme para todos los botones de acción */
-.btn-eq{ min-width: 138px; }
+/* Header buttons */
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+.header-actions a.btn,
+.header-actions button.btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 38px !important;
+    line-height: 1 !important;
+    padding: 0 .9rem !important;
+    font-size: .875rem !important;
+}
+.header-actions i { font-size: .9rem; margin-right: .4rem; }
 
-/* En móviles, que los botones puedan ocupar todo el ancho y no queden pegados */
-@media (max-width: 480px){
-    .btn-eq{ flex: 1 1 auto; }
+/* Form adjustments */
+.form-control {
+    height: calc(1.9rem + 2px);
+    font-size: .875rem;
+}
+.btn-eq {
+    min-width: 140px;
+    height: calc(1.9rem + 2px);
+    font-size: .875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.btn-eq i { font-size: .9rem; margin-right: .3rem; }
+
+/* Preview */
+.report-preview-card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
+    overflow: hidden;
+}
+.report-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 1rem .75rem;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.report-preview-icon { color: #007bff; font-size: 1.25rem; line-height: 1; }
+.report-preview-title { font-weight: 600; color: #1f2d3d; font-size: 1.05rem; }
+.report-preview-body {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.preview-card-wrapper {
+    max-width: var(--card-max-width);
+    width: 100%;
+    margin: 0 auto;
+}
+.preview-card-wrapper .report-card {
+    width: 100%;
+    max-width: var(--card-max-width);
+    margin: 0 auto;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    background: #fff;
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05) !important;
+    overflow: hidden;
+}
+.preview-card-wrapper .cover-link {
+    background: var(--cover-bg);
+}
+.preview-card-wrapper .cover-scale-target {
+    transition: all .2s ease-in-out;
+}
+.preview-card-wrapper .cover-default {
+    padding: .75rem;
+}
+.preview-card-wrapper .preview-fallback {
+    border-radius: var(--card-radius);
+    background: var(--cover-bg);
+}
+.preview-fallback { color: #ced4da; }
+.preview-action-btn {
+    height: 38px;
+    padding: 0 .9rem;
+    font-size: .875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.preview-action-btn i { font-size: .875rem; }
+.report-preview-controls .form-group { margin-bottom: 1.25rem; }
+.preview-range { height: 1.1rem; }
+.report-preview-controls small { font-size: .8rem; }
+.preview-control-card {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
+    padding: 1.25rem;
+    margin: 1.5rem auto 0;
+    max-width: 340px;
+}
+.preview-control-card .form-group:last-child { margin-bottom: 0; }
+.preview-card-wrapper .preview-control-card { width: 100%; }
+.preview-cover-link {
+    background: var(--cover-bg);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+}
+.preview-cover-link .cover-scale-target {
+    transition: all .2s ease-in-out;
+}
+.preview-cover-link .preview-fallback {
+    border-radius: var(--card-radius);
+    background: var(--cover-bg);
+}
+
+/* Responsive buttons */
+@media (max-width: 480px) {
+    .btn-eq { flex: 1 1 auto; margin-top: .5rem; }
+}
+@media (max-width: 576px) {
+    .preview-action-btn { flex: 1 1 auto; margin-top: .5rem; }
 }
 </style>
 @endpush
@@ -201,17 +420,33 @@
 @push('js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const fileInput  = document.getElementById('cover_file');
-    const urlInput   = document.getElementById('cover_url');
-    const descInput  = document.getElementById('description');
-    const descCount  = document.getElementById('descCount');
+    const fileInput   = document.getElementById('cover_file');
+    const fileTrigger = document.getElementById('cover_file_trigger');
+    const fileStatus  = document.getElementById('cover_file_status');
+    const urlInput    = document.getElementById('cover_url');
+    const descInput   = document.getElementById('description');
+    const descCount   = document.getElementById('descCount');
+    const previewBox  = document.getElementById('previewBox');
+    const previewControls = document.getElementById('previewControls');
+    const widthSlider    = document.getElementById('cover_scale_slider');
+    const heightSlider   = document.getElementById('cover_scale_slider_y');
+    const lockToggle     = document.getElementById('cover_scale_lock');
+    const scaleInputX    = document.getElementById('cover_scale_x');
+    const scaleInputY    = document.getElementById('cover_scale_y');
+    const legacyScaleInp = document.getElementById('cover_scale');
+    const widthLabel     = document.getElementById('cover_scale_value');
+    const heightLabel    = document.getElementById('cover_scale_value_y');
+    const removeCoverToggle = document.getElementById('remove_cover');
+    let previewImg     = document.getElementById('previewImg');
+    const statusEmpty    = fileStatus?.dataset.statusEmpty || '';
+    const statusSelected = fileStatus?.dataset.statusSelected || '';
+    const sliderMin = widthSlider ? Number(widthSlider.min || 50) : 50;
+    const sliderMax = widthSlider ? Number(widthSlider.max || 150) : 150;
+    const scaleMin  = sliderMin / 100;
+    const scaleMax  = sliderMax / 100;
+    let storedCoverSrc = previewBox?.dataset.initialCover || '';
+    let storedCoverClass = previewBox?.dataset.initialCoverClass || '';
 
-    // Preview elements
-    const previewBox = document.getElementById('previewBox');
-    let previewImg   = document.getElementById('previewImg'); // puede no existir
-    let previewSvg   = document.getElementById('previewSvg'); // puede no existir
-
-    // --- Contador descripción ---
     function updateDescCount() {
         const len = (descInput?.value || '').length;
         if (descCount) descCount.textContent = String(len);
@@ -221,96 +456,153 @@ document.addEventListener('DOMContentLoaded', function () {
         descInput.addEventListener('input', updateDescCount, {passive:true});
     }
 
-    // --- Helpers de preview ---
-    function showImagePreview(src) {
-        if (!previewImg) {
-            // crear el <img> si no existe
-            previewImg = document.createElement('img');
-            previewImg.id = 'previewImg';
-            previewImg.style.maxWidth  = '100%';
-            previewImg.style.maxHeight = '100%';
-            previewImg.style.objectFit = 'cover';
-            // reemplazar SVG si existe
-            const box = previewBox.querySelector('div.flex-shrink-0');
-            if (previewSvg && previewSvg.parentNode) previewSvg.parentNode.removeChild(previewSvg);
-            box.appendChild(previewImg);
+    function clamp(value, min, max, fallback = min) {
+        const num = Number(value);
+        if (Number.isNaN(num)) return fallback;
+        return Math.min(max, Math.max(min, num));
+    }
+
+    function scaleFromSlider(sliderValue) {
+        const numeric = clamp(sliderValue, sliderMin, sliderMax, sliderMin);
+        return numeric / 100;
+    }
+
+    function sliderFromScale(scaleValue) {
+        const clamped = clamp(scaleValue, scaleMin, scaleMax, scaleMin);
+        return Math.round(clamped * 100);
+    }
+
+    function togglePreviewControls(visible) {
+        if (!previewControls) return;
+        previewControls.classList.toggle('d-none', !visible);
+    }
+
+    function ensurePreviewContainer() {
+        if (!previewBox) return null;
+        let container = previewBox.querySelector('.preview-cover-link');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'cover-link preview-cover-link';
+            previewBox.innerHTML = '';
+            previewBox.appendChild(container);
         }
+        return container;
+    }
+
+    function updateLabels(widthValue, heightValue) {
+        if (widthLabel) {
+            const template = widthLabel.dataset.template || 'Width: :value %';
+            widthLabel.textContent = template.replace(':value', String(widthValue));
+        }
+        if (heightLabel) {
+            const template = heightLabel.dataset.template || 'Height: :value %';
+            heightLabel.textContent = template.replace(':value', String(heightValue));
+        }
+    }
+
+    function applyScale() {
+        if (!widthSlider || !heightSlider) return;
+        const widthValue  = clamp(widthSlider.value, sliderMin, sliderMax, sliderMin);
+        const heightValue = clamp(heightSlider.value, sliderMin, sliderMax, sliderMin);
+        widthSlider.value  = widthValue;
+        heightSlider.value = heightValue;
+
+        const scaleX = scaleFromSlider(widthValue);
+        const scaleY = scaleFromSlider(heightValue);
+
+        if (previewImg) {
+            previewImg.style.transform = `scale(${scaleX}, ${scaleY})`;
+        }
+        const clampedX = clamp(scaleX, scaleMin, scaleMax, 1);
+        const clampedY = clamp(scaleY, scaleMin, scaleMax, 1);
+        if (scaleInputX) {
+            scaleInputX.value = clampedX.toFixed(4);
+        }
+        if (scaleInputY) {
+            scaleInputY.value = clampedY.toFixed(4);
+        }
+        if (legacyScaleInp) {
+            legacyScaleInp.value = clampedX.toFixed(4);
+        }
+        updateLabels(Math.round(clampedX * 100), Math.round(clampedY * 100));
+    }
+
+    function syncHeightToWidth() {
+        if (!widthSlider || !heightSlider) return;
+        heightSlider.value = widthSlider.value;
+        heightSlider.setAttribute('disabled', 'disabled');
+        applyScale();
+    }
+
+    function unlockHeightSlider() {
+        if (!heightSlider) return;
+        heightSlider.removeAttribute('disabled');
+        applyScale();
+    }
+
+    function showImagePreview(src, options = {}) {
+        const { imageClass, suppressToggleReset } = options;
+        if (!previewBox) return;
+        const container = ensurePreviewContainer();
+        if (!container) return;
+        container.innerHTML = '';
+
+        previewImg = document.createElement('img');
+        previewImg.id = 'previewImg';
+        const isDefault = imageClass === 'cover-default' || (typeof src === 'string' && src.includes('report-covers/default'));
+        const coverClass = isDefault ? 'cover-scale-target cover-default' : 'cover-scale-target';
+        previewImg.className = coverClass;
         previewImg.src = src;
+        container.appendChild(previewImg);
+
+        storedCoverSrc = src;
+        storedCoverClass = isDefault ? 'cover-default' : '';
+        previewBox.dataset.initialCover = src;
+        previewBox.dataset.initialCoverClass = storedCoverClass;
+
+        if (removeCoverToggle && !suppressToggleReset) {
+            removeCoverToggle.checked = false;
+        }
+
+        togglePreviewControls(true);
+        applyScale();
     }
 
-    function showFallbackSvg() {
-        // Si hay un <img>, lo quitamos y reponemos SVG
-        const holder = previewBox.querySelector('div.flex-shrink-0');
-        if (previewImg && previewImg.parentNode) {
-            previewImg.parentNode.removeChild(previewImg);
-            previewImg = null;
-        }
-        if (!previewSvg) {
-            const ns = 'http://www.w3.org/2000/svg';
-            previewSvg = document.createElementNS(ns, 'svg');
-            previewSvg.setAttribute('id', 'previewSvg');
-            previewSvg.setAttribute('viewBox', '0 0 128 128');
-            previewSvg.setAttribute('aria-hidden', 'true');
-            previewSvg.setAttribute('style', 'width:70%; height:auto;');
-
-            const defs = document.createElementNS(ns, 'defs');
-            const grad = document.createElementNS(ns, 'linearGradient');
-            grad.setAttribute('id', 'biYellow');
-            grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
-            grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
-            const s1 = document.createElementNS(ns, 'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#FFD93D');
-            const s2 = document.createElementNS(ns, 'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#FFC107');
-            grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad);
-
-            const rect1 = document.createElementNS(ns, 'rect'); rect1.setAttribute('x','8'); rect1.setAttribute('y','28'); rect1.setAttribute('width','112'); rect1.setAttribute('height','80'); rect1.setAttribute('rx','12'); rect1.setAttribute('fill','url(#biYellow)');
-            const rect1s = document.createElementNS(ns, 'rect'); rect1s.setAttribute('x','8'); rect1s.setAttribute('y','28'); rect1s.setAttribute('width','112'); rect1s.setAttribute('height','80'); rect1s.setAttribute('rx','12'); rect1s.setAttribute('fill','#000'); rect1s.setAttribute('opacity','.05');
-
-            const rect2 = document.createElementNS(ns, 'rect'); rect2.setAttribute('x','8'); rect2.setAttribute('y','18'); rect2.setAttribute('width','56'); rect2.setAttribute('height','20'); rect2.setAttribute('rx','6'); rect2.setAttribute('fill','url(#biYellow)');
-            const rect2s = document.createElementNS(ns, 'rect'); rect2s.setAttribute('x','8'); rect2s.setAttribute('y','18'); rect2s.setAttribute('width','56'); rect2s.setAttribute('height','20'); rect2s.setAttribute('rx','6'); rect2s.setAttribute('fill','#000'); rect2s.setAttribute('opacity','.05');
-
-            const g = document.createElementNS(ns, 'g'); g.setAttribute('transform','translate(28,50)'); g.setAttribute('fill','#fff');
-            const bars = [
-                {x:0,  y:30, w:12, h:28},
-                {x:20, y:18, w:12, h:40},
-                {x:40, y:10, w:12, h:48},
-                {x:60, y:4,  w:12, h:54},
-            ];
-            bars.forEach(b => {
-                const r = document.createElementNS(ns, 'rect');
-                r.setAttribute('x', String(b.x));
-                r.setAttribute('y', String(b.y));
-                r.setAttribute('width',  String(b.w));
-                r.setAttribute('height', String(b.h));
-                r.setAttribute('rx','2');
-                g.appendChild(r);
-            });
-
-            previewSvg.appendChild(defs);
-            previewSvg.appendChild(rect1); previewSvg.appendChild(rect1s);
-            previewSvg.appendChild(rect2); previewSvg.appendChild(rect2s);
-            previewSvg.appendChild(g);
-            holder.appendChild(previewSvg);
-        }
+    function showFallbackIcon() {
+        if (!previewBox) return;
+        const container = ensurePreviewContainer();
+        if (!container) return;
+        container.innerHTML = `
+            <div id="previewFallback" class="preview-fallback w-100 h-100 d-flex align-items-center justify-content-center">
+                <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+            </div>`;
+        previewImg = null;
+        togglePreviewControls(false);
     }
 
-    // --- Eventos de preview ---
+    if (fileTrigger && fileInput) {
+        fileTrigger.addEventListener('click', () => fileInput.click());
+    }
+
     if (fileInput) {
+        if (fileStatus && statusEmpty) fileStatus.textContent = statusEmpty;
+
         fileInput.addEventListener('change', function () {
             const file = this.files && this.files[0];
+            if (fileStatus) {
+                fileStatus.textContent = file
+                    ? statusSelected.replace(':name', file.name)
+                    : statusEmpty;
+            }
             if (file) {
-                // Prioridad archivo > URL: si hay archivo, limpiamos URL
                 if (urlInput) urlInput.value = '';
                 const reader = new FileReader();
                 reader.onload = e => showImagePreview(e.target.result);
                 reader.readAsDataURL(file);
             } else {
-                // si quitó el archivo, ver si hay URL válida
                 const url = (urlInput?.value || '').trim();
-                if (url) {
-                    showImagePreview(url);
-                } else {
-                    showFallbackSvg();
-                }
+                if (url) showImagePreview(url, { imageClass: url.includes('report-covers/default') ? 'cover-default' : undefined });
+                else showFallbackIcon();
             }
         });
     }
@@ -318,22 +610,102 @@ document.addEventListener('DOMContentLoaded', function () {
     if (urlInput) {
         urlInput.addEventListener('input', function () {
             const val = (this.value || '').trim();
-            // Solo previsualizar URL si NO hay archivo seleccionado
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
                 if (val) {
                     try {
-                        // Validación básica de URL
                         const u = new URL(val);
-                        showImagePreview(u.href);
+                        const isDefault = u.href.includes('report-covers/default');
+                        showImagePreview(u.href, { imageClass: isDefault ? 'cover-default' : undefined });
                     } catch (_) {
-                        // URL inválida → mostramos fallback
-                        showFallbackSvg();
+                        showFallbackIcon();
                     }
                 } else {
-                    showFallbackSvg();
+                    showFallbackIcon();
                 }
             }
         }, {passive:true});
+    }
+
+    if (widthSlider) {
+        widthSlider.addEventListener('input', function () {
+            if (lockToggle?.checked && heightSlider) {
+                heightSlider.value = widthSlider.value;
+            }
+            applyScale();
+        }, {passive:true});
+    }
+
+    if (heightSlider) {
+        heightSlider.addEventListener('input', function () {
+            if (lockToggle?.checked && widthSlider) {
+                widthSlider.value = heightSlider.value;
+            }
+            applyScale();
+        }, {passive:true});
+    }
+
+    if (lockToggle) {
+        lockToggle.addEventListener('change', function () {
+            if (this.checked) {
+                syncHeightToWidth();
+            } else {
+                unlockHeightSlider();
+            }
+        });
+    }
+
+    function handleRemoveToggle(checked) {
+        if (checked) {
+            const defaultSlider = sliderFromScale(1);
+            if (widthSlider) widthSlider.value = defaultSlider;
+            if (heightSlider) heightSlider.value = defaultSlider;
+            applyScale();
+            showFallbackIcon();
+            if (scaleInputX) scaleInputX.value = '1.0000';
+            if (scaleInputY) scaleInputY.value = '1.0000';
+            if (legacyScaleInp) legacyScaleInp.value = '1.0000';
+        } else {
+            if (storedCoverSrc) {
+                showImagePreview(storedCoverSrc, {
+                    imageClass: storedCoverClass === 'cover-default' ? 'cover-default' : undefined,
+                    suppressToggleReset: true
+                });
+            } else {
+                showFallbackIcon();
+            }
+        }
+    }
+
+    const initialScaleX = scaleInputX ? clamp(scaleInputX.value, scaleMin, scaleMax, 1) : (widthSlider ? scaleFromSlider(widthSlider.value) : 1);
+    const initialScaleY = scaleInputY ? clamp(scaleInputY.value, scaleMin, scaleMax, 1) : (heightSlider ? scaleFromSlider(heightSlider.value) : 1);
+
+    if (widthSlider) {
+        widthSlider.value = sliderFromScale(initialScaleX);
+    }
+    if (heightSlider) {
+        heightSlider.value = sliderFromScale(initialScaleY);
+    }
+
+    if (lockToggle?.checked) {
+        syncHeightToWidth();
+    } else {
+        unlockHeightSlider();
+    }
+
+    if (previewImg) {
+        togglePreviewControls(true);
+        applyScale();
+    } else {
+        togglePreviewControls(false);
+    }
+
+    if (removeCoverToggle) {
+        removeCoverToggle.addEventListener('change', function () {
+            handleRemoveToggle(this.checked);
+        });
+        if (removeCoverToggle.checked) {
+            handleRemoveToggle(true);
+        }
     }
 });
 </script>

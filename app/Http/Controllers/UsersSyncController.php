@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-// Importar funciones nativas desde el namespace global (evita P1010 de Intelephense)
+// Import native functions from the global namespace (avoid Intelephense P1010)
 use function trim;
 use function ltrim;
 use function strtolower;
@@ -27,11 +27,11 @@ final class UsersSyncController extends Controller
         private readonly MicrosoftGraphService $graph,
         private readonly EntraUserImporter $importer
     ) {
-        // El middleware de rol admin se declara en routes/web.php
+        // Admin role middleware is defined in routes/web.php
     }
 
     /**
-     * Previsualiza usuarios desde Entra con paginación (AJAX).
+     * Preview Entra users with pagination (AJAX).
      * GET /usuarios/sync-entra/preview
      */
     public function preview(Request $request): JsonResponse
@@ -46,7 +46,7 @@ final class UsersSyncController extends Controller
             $items = (array) ($page['items'] ?? []);
             $nextLink = $page['next'] ?? null;
 
-            // Filtro por dominio en el controlador: aceptamos si CUALQUIER alias coincide
+            // Apply domain filtering here: accept when ANY alias matches
             if ($domain !== '') {
                 $domain = ltrim($domain, '@');
                 $domainLower = strtolower($domain);
@@ -67,14 +67,14 @@ final class UsersSyncController extends Controller
                     foreach ((array)($u['proxyAddresses'] ?? []) as $p) {
                         $p = trim((string)$p);
                         if ($p === '') { continue; }
-                        // proxyAddresses: "smtp:alias@dominio" o "SMTP:principal@dominio"
+                        // proxyAddresses: "smtp:alias@domain" or "SMTP:primary@domain"
                         $parts = explode(':', $p, 2);
                         $addr  = isset($parts[1]) ? strtolower($parts[1]) : strtolower($parts[0]);
                         if ($addr !== '') { $candidates[] = $addr; }
                     }
 
                     foreach ($candidates as $cand) {
-                        // Coincidencia por dominio al final de la dirección
+                        // Match addresses whose domain suffix equals the requested domain
                         if (str_ends_with($cand, '@' . $domainLower)) {
                             return true;
                         }
@@ -83,7 +83,7 @@ final class UsersSyncController extends Controller
                 }));
             }
 
-            // Render parcial de filas (Blade)
+            // Render Blade partial rows
             $rows = view('users.partials.entra_rows', ['items' => $items])->render();
 
             return response()->json([
@@ -94,14 +94,14 @@ final class UsersSyncController extends Controller
         } catch (Throwable $e) {
             Log::error('Preview Entra error', ['exception' => $e]);
             return response()->json([
-                'message' => 'No se pudo consultar Microsoft Graph.',
+                'message' => __('users.sync.errors.graph'),
                 'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Importación masiva (sin selección, según filtros).
+     * Bulk import (without selection, honouring filters).
      * POST /usuarios/sync-entra
      */
     public function sync(Request $request): RedirectResponse
@@ -119,14 +119,17 @@ final class UsersSyncController extends Controller
                 $dryRun
             );
 
-            $msg = $dryRun
-                ? "Simulación OK — crear: {$stats['created']}, actualizar: {$stats['updated']}, saltados: {$stats['skipped']}, errores: {$stats['errors']}."
-                : "Importación OK — creados: {$stats['created']}, actualizados: {$stats['updated']}, saltados: {$stats['skipped']}, errores: {$stats['errors']}.";
+            $summary = $dryRun
+                ? __('users.sync.summary.dry_run', $stats)
+                : __('users.sync.summary.import', $stats);
 
-            return redirect()->route('users.index')->with('success', $msg);
+            return redirect()->route('users.index')->with('success', $summary);
         } catch (Throwable $e) {
             Log::error('Sync Entra error', ['exception' => $e]);
-            return redirect()->route('users.index')->with('error', 'Error al sincronizar: ' . $e->getMessage());
+            return redirect()->route('users.index')->with(
+                'error',
+                __('users.sync.errors.sync', ['message' => $e->getMessage()])
+            );
         }
     }
 
@@ -140,7 +143,7 @@ final class UsersSyncController extends Controller
         $selected = $request->input('selected', []);
 
         if (!is_array($selected) || empty($selected)) {
-            return redirect()->route('users.index')->with('warning', 'No seleccionaste usuarios para importar.');
+            return redirect()->route('users.index')->with('warning', __('users.sync.no_selection'));
         }
 
         $entries = [];
@@ -156,7 +159,7 @@ final class UsersSyncController extends Controller
                     $a = strtolower(trim((string)$a));
                     if ($a !== '') $aliases[] = $a;
                 }
-                // aseguramos único
+                // Ensure aliases remain unique
                 $aliases = array_values(array_unique($aliases));
             }
 
@@ -170,7 +173,7 @@ final class UsersSyncController extends Controller
         }
 
         if (empty($entries)) {
-            return redirect()->route('users.index')->with('warning', 'No hay entradas válidas para importar.');
+            return redirect()->route('users.index')->with('warning', __('users.sync.no_entries'));
         }
 
         $assignRole = trim($request->input('assign_role', ''));
@@ -181,13 +184,15 @@ final class UsersSyncController extends Controller
                 $assignRole !== '' ? $assignRole : null
             );
 
-            $msg = "Importación de seleccionados — creados: {$stats['created']}, actualizados: {$stats['updated']}, "
-                 . "saltados: {$stats['skipped']}, errores: {$stats['errors']}.";
+            $summary = __('users.sync.summary.selected', $stats);
 
-            return redirect()->route('users.index')->with('success', $msg);
+            return redirect()->route('users.index')->with('success', $summary);
         } catch (Throwable $e) {
             Log::error('Import Selected Entra error', ['exception' => $e]);
-            return redirect()->route('users.index')->with('error', 'Error al importar seleccionados: ' . $e->getMessage());
+            return redirect()->route('users.index')->with(
+                'error',
+                __('users.sync.errors.import_selected', ['message' => $e->getMessage()])
+            );
         }
     }
 
@@ -199,11 +204,15 @@ final class UsersSyncController extends Controller
     {
         try {
             $stats = $this->importer->refreshExisting();
-            $msg = "Actualización desde Entra — actualizados: {$stats['updated']}, sin cambios: {$stats['skipped']}, errores: {$stats['errors']}, total evaluados: {$stats['total']}";
-            return redirect()->route('users.index')->with('success', $msg);
+            $summary = __('users.sync.summary.refresh', $stats);
+            return redirect()->route('users.index')->with('success', $summary);
         } catch (Throwable $e) {
             Log::error('Refresh Existing Entra error', ['exception' => $e]);
-            return redirect()->route('users.index')->with('error', 'Error al actualizar usuarios: ' . $e->getMessage());
+            return redirect()->route('users.index')->with(
+                'error',
+                __('users.sync.errors.refresh', ['message' => $e->getMessage()])
+            );
         }
     }
 }
+

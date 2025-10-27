@@ -14,6 +14,10 @@ return [
         'entra_managed_html' => 'This user is managed by <strong>Microsoft Entra</strong>. The password is handled through your corporate directory and cannot be changed from within this application.',
     ],
 
+    'password' => [
+        'managed_by_entra' => 'This password is managed in Microsoft Entra and cannot be changed here.',
+    ],
+
     'header' => [
         'new' => 'New user',
         'import' => 'Import Entra',
@@ -25,8 +29,11 @@ return [
     'index' => [
         'card_title' => 'User list',
         'filters' => [
+            'search_label' => 'Search',
             'search_placeholder' => 'Search by name or email',
+            'role_label' => 'Role',
             'role_all' => 'All roles',
+            'status_label' => 'Status',
             'status_all' => 'All statuses',
             'status_active' => 'Active',
             'status_blocked' => 'Blocked',
@@ -103,6 +110,23 @@ return [
         ],
     ],
 
+    'sync' => [
+        'summary' => [
+            'dry_run'  => 'Dry-run complete - created: :created, updated: :updated, skipped: :skipped, errors: :errors.',
+            'import'   => 'Import complete - created: :created, updated: :updated, skipped: :skipped, errors: :errors.',
+            'selected' => 'Selected import - created: :created, updated: :updated, skipped: :skipped, errors: :errors.',
+            'refresh'  => 'Refresh complete - updated: :updated, unchanged: :skipped, errors: :errors, total reviewed: :total.',
+        ],
+        'no_selection' => 'No users were selected for import.',
+        'no_entries'   => 'No valid entries were provided for import.',
+        'errors' => [
+            'sync'            => 'Synchronization error: :message',
+            'import_selected' => 'Import error: :message',
+            'refresh'         => 'Refresh error: :message',
+            'graph'           => 'Unable to query Microsoft Graph.',
+        ],
+    ],
+
     'form' => [
         'name' => 'Name',
         'email' => 'Email',
@@ -113,6 +137,7 @@ return [
         'object_id' => 'Object ID (Entra)',
         'entra_label' => 'Entra',
         'buttons' => [
+            'back' => 'Back',
             'save' => 'Save',
             'cancel' => 'Cancel',
         ],

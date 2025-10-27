@@ -12,19 +12,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuario de prueba solo si no existe
+        // Seed default administrator if it does not already exist
         User::firstOrCreate(
-            ['email' => 'admin@birentable.com'], // condición de búsqueda
+            ['email' => 'admin@birentable.com'], // lookup condition
             [
                 'name'     => 'Administrator',
-                'password' => bcrypt('XH6cdURvPXk2uOhTm3K8'), // contraseña por defecto
+                'password' => bcrypt('XH6cdURvPXk2uOhTm3K8'), // default password
             ]
         );
 
         $this->call([
             PermissionsSeeder::class,
             RolesAndPermissionsSeeder::class,
-            ConfiguracionSeeder::class,
+            ConfigurationSeeder::class,
         ]);
     }
 }

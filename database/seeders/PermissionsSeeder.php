@@ -12,7 +12,19 @@ class PermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        // Taxonomia de permisos por modulo/accion
+        // Normalize legacy role slug before assigning permissions.
+        $legacyRole = Role::query()->where('name', 'usuario')->where('guard_name', 'web')->first();
+        if ($legacyRole) {
+            $existingViewer = Role::query()->where('name', 'viewer')->where('guard_name', 'web')->first();
+            if ($existingViewer) {
+                $legacyRole->users()->each(fn ($user) => $user->assignRole($existingViewer));
+                $legacyRole->delete();
+            } else {
+                $legacyRole->forceFill(['name' => 'viewer'])->save();
+            }
+        }
+
+        // Permission taxonomy per module/action
         Permission::query()->where('name', 'apps.view')->where('guard_name', 'web')->delete();
         $perms = [
             // Portal
@@ -44,20 +56,20 @@ class PermissionsSeeder extends Seeder
             'audit.view', 'audit.export', 'audit.reset',
         ];
 
-        // Crear permisos si no existen
+        // Create permissions where missing
         foreach ($perms as $name) {
             Permission::findOrCreate($name, 'web');
         }
 
-        // Asignacion de permisos por rol
+        // Role permission assignments
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $editor = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
-        $usuario = Role::firstOrCreate(['name' => 'usuario', 'guard_name' => 'web']);
+        $viewer = Role::firstOrCreate(['name' => 'viewer', 'guard_name' => 'web']);
 
-        // Admin: todos
+        // Admin: full access
         $admin->syncPermissions(Permission::all());
 
-        // Editor: acceso de trabajo (sin administrar usuarios/config)
+        // Editor: operational access (no user/config management)
         $editorPerms = [
             'portal.view',
             'reports.view', 'reports.create', 'reports.edit', 'reports.export',
@@ -69,14 +81,14 @@ class PermissionsSeeder extends Seeder
         ];
         $editor->syncPermissions($editorPerms);
 
-        // Usuario: solo lectura de portal y consumo
-        $usuarioPerms = [
+        // Viewer: portal consumption only
+        $viewerPerms = [
             'portal.view',
             'reports.view',
             'datasets.view',
             'workspaces.view',
             'applications.view',
         ];
-        $usuario->syncPermissions($usuarioPerms);
+        $viewer->syncPermissions($viewerPerms);
     }
 }

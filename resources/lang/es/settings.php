@@ -19,6 +19,11 @@ return [
         'validation' => 'Errores de validación',
     ],
 
+    'menu' => [
+        'parameters' => 'Parámetros',
+        'theme' => 'Tema',
+    ],
+
     'service_principal' => [
         'card_title' => 'Credenciales de Conexión (Service Principal)',
         'intro' => 'Configura una aplicación de Entra ID (Service Principal) con permisos de Power BI para la autenticación desatendida.',
@@ -69,6 +74,67 @@ return [
     'prewarm' => [
         'title' => 'Pre-warm de capacidades',
         'description' => 'Si está activo, antes de una actualización programada reanudamos (encendemos) la capacidad asociada para evitar fallos por estar pausada. Desactívalo si preferís controlarlo externamente.',
+    ],
+
+    'mail' => [
+        'card_title' => 'Configuración de envío de correo',
+        'fields' => [
+            'driver' => [
+                'label' => 'Driver de correo',
+                'placeholder' => 'Selecciona driver',
+                'help' => 'Ejemplo: smtp, sendmail, log',
+            ],
+            'host' => [
+                'label' => 'Servidor SMTP',
+                'placeholder' => 'smtp.mailjet.com',
+                'help' => 'Nombre de host de tu servidor de correo',
+            ],
+            'port' => [
+                'label' => 'Puerto',
+                'placeholder' => '587',
+                'help' => 'Puertos comunes: 25, 465, 587',
+            ],
+            'encryption' => [
+                'label' => 'Encriptación',
+                'placeholder' => 'Selecciona encriptación',
+                'help' => 'Usualmente tls o ssl',
+            ],
+            'username' => [
+                'label' => 'Usuario',
+                'placeholder' => 'user@mail.com',
+            ],
+            'password' => [
+                'label' => 'Contraseña',
+                'placeholder' => '********',
+            ],
+            'from_address' => [
+                'label' => 'Dirección remitente',
+                'placeholder' => 'noreply@dominio.com',
+            ],
+            'from_name' => [
+                'label' => 'Nombre remitente',
+                'placeholder' => 'Notificaciones del sistema',
+            ],
+        ],
+        'test' => [
+            'button' => 'Enviar correo de prueba',
+            'modal_title' => 'Enviar correo de prueba',
+            'description' => 'Usa la configuración guardada para enviar un mensaje de prueba.',
+            'recipient_label' => 'Destinatario',
+            'recipient_placeholder' => 'usuario@empresa.com',
+            'subject_label' => 'Asunto',
+            'subject_placeholder' => 'Prueba de configuración',
+            'message_label' => 'Mensaje',
+            'message_placeholder' => 'Este es un mensaje de prueba para verificar la configuración de correo.',
+            'send_button' => 'Enviar prueba',
+            'sending' => 'Enviando...',
+            'success' => 'Correo de prueba enviado correctamente.',
+            'failed' => 'No se pudo enviar el correo de prueba: :error',
+            'driver_missing' => 'Configura un driver de correo válido antes de enviar la prueba.',
+            'smtp_missing' => 'Configura el host y el puerto SMTP antes de enviar la prueba.',
+            'default_subject' => 'Correo de prueba de :app',
+            'generic_error' => 'No se pudo enviar el correo de prueba. Revisa la configuración e intenta nuevamente.',
+        ],
     ],
 
     'login' => [

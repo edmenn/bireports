@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Workspace;
 use App\Models\Capacity;
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use App\Services\PowerBiService;
 use App\Services\PowerBiCapacityService;
 use Illuminate\Contracts\View\View;
@@ -14,6 +14,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DatasetsController extends Controller
 {
@@ -29,14 +33,14 @@ class DatasetsController extends Controller
     public function refresh(string $workspaceId, string $datasetId, PowerBiService $svc, PowerBiCapacityService $capSvc): RedirectResponse
     {
         try {
-            // 0) Si el workspace tiene capacidad asociada y est3 pausada, reanudar antes del refresh
+            // 0) If the workspace is linked to a paused capacity, resume it before refreshing
             $ws = Workspace::find($workspaceId);
             if ($ws && !empty($ws->capacity_id)) {
                 /** @var Capacity|null $cap */
                 $cap = Capacity::query()->where('capacity_uuid', $ws->capacity_id)->first();
                 if ($cap && $cap->isPausable() && $cap->is_active === false) {
                     $capSvc->resume($cap);
-                    // Nota: opcionalmente podramos esperar unos segundos o reintentar si el refresh falla por estado.
+                    // Optional: wait a few seconds or retry if the refresh fails due to state
                 }
             }
             $svc->refreshDataset($workspaceId, $datasetId);
@@ -72,7 +76,7 @@ class DatasetsController extends Controller
         } catch (Throwable $e) {
             $schedule = [];
         }
-        $cfg = Configuracion::query()->first();
+        $cfg = Configuration::query()->first();
         return view('datasets.schedule', [
             'workspace' => $ws,
             'dataset'   => $dataset,
@@ -92,7 +96,7 @@ class DatasetsController extends Controller
                 \App\Models\Dataset::updateOrCreate(
                     ['id' => (string)$d['id']],
                     [
-                        'name'                  => (string)($d['name'] ?? '(sin nombre)'),
+                        'name'                  => (string)($d['name'] ?? __('common.unnamed')),
                         'workspace_id'          => (string)$workspaceId,
                         'configured_by'         => isset($d['configuredBy']) ? (string)$d['configuredBy'] : null,
                         'is_refreshable'        => (bool)  ($d['isRefreshable'] ?? false),
@@ -106,7 +110,7 @@ class DatasetsController extends Controller
         }
     }
 
-    /** Lista combinada de programaciones (local + Fabric) con filtros. */
+    /** Combined schedule list (local + Fabric) with filtering support. */
     public function schedulesIndex(Request $request, PowerBiService $svc): View
     {
         $type      = $request->query('type', 'local'); // default: local
@@ -202,9 +206,17 @@ class DatasetsController extends Controller
         ]);
     }
 
-    /** Exportación CSV de la lista combinada. */
+    /** Export the combined schedule list as an Excel workbook. */
     public function schedulesExport(Request $request, PowerBiService $svc): StreamedResponse
     {
+        if (class_exists(\Debugbar::class)) {
+            \Debugbar::disable();
+        }
+        @ini_set('zlib.output_compression', 'Off');
+        while (ob_get_level() > 0) {
+            @ob_end_clean();
+        }
+
         $type      = $request->query('type', 'local');
         $workspace = trim((string) $request->query('workspace', ''));
         $day       = trim((string) $request->query('day', ''));
@@ -267,30 +279,109 @@ class DatasetsController extends Controller
             }
         }
 
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="dataset_schedules.csv"',
+        $columns = [
+            'source' => [
+                'header' => __('datasets.schedules.export.columns.source'),
+                'value'  => static function(array $row): string {
+                    $source = (string)($row['source'] ?? '');
+                    if ($source === 'local') {
+                        return __('datasets.schedules.badges.local');
+                    }
+                    if ($source === 'fabric') {
+                        return __('datasets.schedules.badges.fabric');
+                    }
+                    return $source;
+                },
+            ],
+            'workspace' => [
+                'header' => __('datasets.schedules.export.columns.workspace'),
+                'value'  => static fn(array $row): string => (string)($row['workspace'] ?? ''),
+            ],
+            'dataset_name' => [
+                'header' => __('datasets.schedules.export.columns.dataset_name'),
+                'value'  => static fn(array $row): string => (string)($row['dataset_name'] ?? ''),
+            ],
+            'dataset_id' => [
+                'header' => __('datasets.schedules.export.columns.dataset_id'),
+                'value'  => static fn(array $row): string => (string)($row['dataset_id'] ?? ''),
+            ],
+            'status' => [
+                'header' => __('datasets.schedules.export.columns.status'),
+                'value'  => static fn(array $row): string => ($row['enabled'] ?? false)
+                    ? __('datasets.schedules.enabled')
+                    : __('datasets.schedules.disabled'),
+            ],
+            'tz' => [
+                'header' => __('datasets.schedules.export.columns.tz'),
+                'value'  => static fn(array $row): string => (string)($row['tz'] ?? ''),
+            ],
+            'days' => [
+                'header' => __('datasets.schedules.export.columns.days'),
+                'value'  => static fn(array $row): string => implode(', ', (array)($row['days'] ?? [])),
+            ],
+            'times' => [
+                'header' => __('datasets.schedules.export.columns.times'),
+                'value'  => static fn(array $row): string => implode(', ', (array)($row['times'] ?? [])),
+            ],
+            'last_status' => [
+                'header' => __('datasets.schedules.export.columns.last_status'),
+                'value'  => static fn(array $row): string => (string)($row['last_status'] ?? ''),
+            ],
+            'last_at' => [
+                'header' => __('datasets.schedules.export.columns.last_at'),
+                'value'  => static fn(array $row): string => (string)($row['last_at'] ?? ''),
+            ],
         ];
 
-        return response()->streamDownload(function() use ($rows) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['source','workspace','dataset_name','dataset_id','enabled','tz','days','times','last_status','last_at']);
-            foreach ($rows as $r) {
-                fputcsv($out, [
-                    $r['source'] ?? '',
-                    $r['workspace'] ?? '',
-                    $r['dataset_name'] ?? '',
-                    $r['dataset_id'] ?? '',
-                    ($r['enabled'] ?? false) ? '1' : '0',
-                    $r['tz'] ?? '',
-                    implode(',', (array)($r['days'] ?? [])),
-                    implode(',', (array)($r['times'] ?? [])),
-                    $r['last_status'] ?? '',
-                    $r['last_at'] ?? '',
-                ]);
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheetName = (string)__('datasets.schedules.export.sheet_name');
+        $sheet->setTitle(mb_substr($sheetName !== '' ? $sheetName : 'Sheet1', 0, 31));
+
+        $colIndex = 1;
+        foreach ($columns as $column) {
+            $coord = Coordinate::stringFromColumnIndex($colIndex) . '1';
+            $sheet->setCellValueExplicit($coord, (string)($column['header'] ?? ''), DataType::TYPE_STRING);
+            $sheet->getStyle($coord)->getFont()->setBold(true);
+            $colIndex++;
+        }
+
+        $rowIndex = 2;
+        foreach ($rows as $row) {
+            $colIndex = 1;
+            foreach ($columns as $column) {
+                $valueCallback = $column['value'] ?? static fn(array $r): string => '';
+                $value = $valueCallback($row);
+                $coord = Coordinate::stringFromColumnIndex($colIndex) . (string)$rowIndex;
+
+                if (is_int($value) || is_float($value)) {
+                    $sheet->setCellValueExplicit($coord, $value, DataType::TYPE_NUMERIC);
+                } else {
+                    $sheet->setCellValueExplicit($coord, (string)$value, DataType::TYPE_STRING);
+                }
+                $colIndex++;
             }
-            fclose($out);
-        }, 'dataset_schedules.csv', $headers);
+            $rowIndex++;
+        }
+
+        $totalColumns = count($columns);
+        for ($i = 1; $i <= $totalColumns; $i++) {
+            $columnLetter = Coordinate::stringFromColumnIndex($i);
+            $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $filename = __('datasets.schedules.export.filename') . '_' . now()->format('Ymd_His') . '.xlsx';
+        $writer   = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(static function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma'        => 'no-cache',
+        ]);
     }
 
     public function localScheduleStore(string $workspaceId, string $datasetId, Request $request): RedirectResponse
@@ -314,7 +405,7 @@ class DatasetsController extends Controller
 
         $days = array_values(array_unique(array_intersect($validated['days'], ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'])));
 
-        // Detección de solapamientos con existentes
+        // Detect overlapping schedules
         $warning = null;
         $existing = $dataset->schedules()->get();
         foreach ($existing as $ex) {

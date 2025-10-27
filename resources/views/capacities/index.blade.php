@@ -4,25 +4,29 @@
 @section('title', __('capacities.page.title'))
 
 @section('content_header')
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-            <h1 class="h3 mb-0">{{ __('capacities.page.title') }}</h1>
-            <small class="text-muted">{{ __('capacities.page.subtitle') }}</small>
+    {{-- Unified header with title, icon, and aligned actions --}}
+    <x-page-header :title="__('capacities.page.title')" icon="fas fa-server">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            @if(!empty($hasConfig) && $hasConfig)
+                <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
+                    @csrf
+                    <button class="btn btn-outline-primary btn-sm header-btn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>{{ __('capacities.buttons.refresh') }}</span>
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('configurations.index') }}"
+                   class="btn btn-outline-secondary btn-sm header-btn"
+                   title="{{ __('capacities.page.configure_hint') }}">
+                    <i class="fas fa-cogs"></i>
+                    <span>{{ __('capacities.buttons.configure') }}</span>
+                </a>
+            @endif
         </div>
-        @if(!empty($hasConfig) && $hasConfig)
-            <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
-                @csrf
-                <button class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                    <i class="fas fa-sync-alt me-1"></i> {{ __('capacities.buttons.refresh') }}
-                </button>
-            </form>
-        @else
-            <a href="{{ route('configuraciones.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="{{ __('capacities.page.configure_hint') }}">
-                <i class="fas fa-cogs me-1"></i> {{ __('capacities.buttons.configure') }}
-            </a>
-        @endif
-    </div>
+    </x-page-header>
 @stop
+
 
 @section('content')
     {{-- Alerts --}}
@@ -41,7 +45,7 @@
 
     @if(empty($hasConfig) || !$hasConfig)
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.alerts.no_config_html', ['url' => route('configuraciones.index')]) !!}
+            <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.alerts.no_config_html', ['url' => route('configurations.index')]) !!}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{{ __('common.close') }}"></button>
         </div>
     @endif
@@ -69,7 +73,7 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('configuraciones.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                    <a href="{{ route('configurations.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
                         <i class="fas fa-cogs me-1"></i> {{ __('capacities.buttons.configure') }}
                     </a>
                 @endif

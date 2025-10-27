@@ -22,47 +22,121 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // En producción, forzar que las URLs absolutas usen el dominio y esquema HTTPS
+        // In production, enforce absolute URLs and HTTPS.
         if (app()->environment('production')) {
             try {
                 if (config('app.url')) {
                     URL::forceRootUrl(config('app.url'));
                 }
             } catch (\Throwable $e) {
-                // No bloquear el arranque por problemas de configuración
+                // Do not block the boot sequence because of configuration issues.
             }
             URL::forceScheme('https');
         }
-        // Footer fijo siempre habilitado (usa layout nativo de AdminLTE)
+        // Always keep the footer fixed (native AdminLTE layout behaviour).
         config(['adminlte.layout_fixed_footer' => true]);
-        // Cargar branding/tema desde configuraciones (fila única)
+        // Load branding/theme settings from the single configuration row.
         try {
-            $cfg = \App\Models\Configuracion::query()->find(1);
+            $cfg = \App\Models\Configuration::query()->find(1);
         } catch (\Throwable $e) {
             $cfg = null;
         }
 
         if ($cfg) {
+            $mailOverrides = [];
+            $mailDriver = trim((string) ($cfg->mail_driver ?? ''));
+            if ($mailDriver !== '') {
+                $mailOverrides['mail.default'] = $mailDriver;
+            }
+
+            $smtpOverrides = [];
+            if (!empty($cfg->mail_host)) {
+                $smtpOverrides['mail.mailers.smtp.host'] = $cfg->mail_host;
+            }
+            if (!empty($cfg->mail_port)) {
+                $smtpOverrides['mail.mailers.smtp.port'] = (int) $cfg->mail_port;
+            }
+            $encryption = $cfg->mail_encryption;
+            if ($encryption !== null && $encryption !== '') {
+                $smtpOverrides['mail.mailers.smtp.encryption'] = $encryption === 'none' ? null : $encryption;
+            }
+            if (!empty($cfg->mail_username)) {
+                $smtpOverrides['mail.mailers.smtp.username'] = $cfg->mail_username;
+            }
+            if (!empty($cfg->mail_password)) {
+                $smtpOverrides['mail.mailers.smtp.password'] = $cfg->mail_password;
+            }
+            if (!empty($smtpOverrides)) {
+                $smtpOverrides['mail.mailers.smtp.transport'] = 'smtp';
+            }
+            if (!empty($cfg->mail_from_address)) {
+                $mailOverrides['mail.from.address'] = $cfg->mail_from_address;
+            }
+            if (!empty($cfg->mail_from_name)) {
+                $mailOverrides['mail.from.name'] = $cfg->mail_from_name;
+            }
+            if (!empty($mailOverrides)) {
+                config($mailOverrides);
+            }
+            if (!empty($smtpOverrides)) {
+                config($smtpOverrides);
+            }
+
             $isDark = (bool) session('adminlte_dark_mode', (bool) config('adminlte.layout_dark_mode', false));
-            // Footer global fijo con texto
+            // Force the global footer to stay fixed.
             config(['adminlte.layout_fixed_footer' => true]);
+
+            $navbarClass = $cfg->theme_navbar_class ?: config('adminlte.classes_topnav', 'navbar-white navbar-light');
+            $sidebarClass = $cfg->theme_sidebar_class ?: config('adminlte.classes_sidebar', 'sidebar-dark-primary elevation-4');
+            $navbarTokens = array_filter(preg_split('/\\s+/', (string) $navbarClass));
+            $bgToken = null;
+            foreach ($navbarTokens as $token) {
+                if (Str::startsWith($token, 'navbar-') && !in_array($token, ['navbar-dark', 'navbar-light'], true)) {
+                    $bgToken = $token;
+                    break;
+                }
+            }
+            if ($bgToken) {
+                $tone = Str::after($bgToken, 'navbar-');
+                $footerTextClass = in_array($tone, ['white', 'light', 'default'], true) ? 'text-muted' : 'text-white';
+                $footerClass = 'bg-' . $tone . ' ' . $footerTextClass . ' border-0 text-sm';
+            } elseif (Str::contains($navbarClass, 'navbar-dark')) {
+                $footerClass = 'bg-dark text-light border-0 text-sm';
+            } else {
+                $footerClass = 'bg-white text-muted border-0 text-sm';
+            }
+
+            config([
+                'adminlte.theme.navbar_class' => $navbarClass,
+                'adminlte.theme.sidebar_class' => $sidebarClass,
+                'adminlte.theme.footer_class' => $footerClass,
+            ]);
+
+            if (! $isDark) {
+                config([
+                    'adminlte.classes_topnav' => $navbarClass,
+                    'adminlte.classes_sidebar' => $sidebarClass,
+                    'adminlte.classes_footer' => $footerClass,
+                ]);
+            }
 
             if (!empty($cfg->site_title)) {
                 config(['adminlte.title' => $cfg->site_title]);
             }
             if ($isDark) {
-                // En modo oscuro, forzamos clases dark para navbar y sidebar
+                // When dark mode is enabled, enforce dark classes for navbar and sidebar.
                 config([
                     'adminlte.classes_topnav' => 'navbar-dark navbar-dark',
                     'adminlte.classes_sidebar' => 'sidebar-dark-primary elevation-4',
+                    'adminlte.classes_footer' => 'bg-dark text-light border-0 text-sm',
                 ]);
             }
-            // AdminLTE espera:
-            //  - logo_img     => versión reducida (xs)
-            //  - logo_img_xl  => logo principal (xl)
-            // Invertimos las asignaciones para que coincidan con los campos
+            // AdminLTE expects:
+            //  - logo_img     => compact variant (xs)
+            //  - logo_img_xl  => main logo (xl)
+            // Map configuration fields accordingly.
             if (!empty($cfg->site_logo_path)) {
-                // Logo principal (grande)
+                // Full-size logo.
                 $logoUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_path);
                 config([
                     'adminlte.logo_img_xl' => ltrim(parse_url($logoUrl, PHP_URL_PATH), '/'),
@@ -70,7 +144,7 @@ class AppServiceProvider extends ServiceProvider
                 ]);
             }
             if (!empty($cfg->site_logo_compact_path)) {
-                // Logo reducido (compacto)
+                // Compact logo.
                 $logoSmallUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_logo_compact_path);
                 config([
                     'adminlte.logo_img' => ltrim(parse_url($logoSmallUrl, PHP_URL_PATH), '/'),
@@ -78,8 +152,7 @@ class AppServiceProvider extends ServiceProvider
                 ]);
             }
             if (!empty($cfg->site_favicon_path)) {
-                // Si hay favicon, habilitamos el uso de .ico simple y
-                // exponemos la ruta para la vista principal.
+                // When a favicon is present, enable ico usage and expose the relative path for the layout.
                 $favUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->site_favicon_path);
                 config([
                     'adminlte.use_ico_only' => true,
@@ -87,13 +160,13 @@ class AppServiceProvider extends ServiceProvider
                     'adminlte.favicon_path' => ltrim(parse_url($favUrl, PHP_URL_PATH), '/'),
                 ]);
             }
-            // Preloader (imagen central al refrescar)
+            // Preloader (central image shown during refresh).
             if (!empty($cfg->preloader_logo_path)) {
                 $preUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($cfg->preloader_logo_path);
                 config([
                     'adminlte.preloader.img.path'   => ltrim(parse_url($preUrl, PHP_URL_PATH), '/'),
-                    'adminlte.preloader.img.alt'    => $cfg->site_title ?: 'Cargando...',
-                    // Evitar efectos que puedan distorsionar la percepción del ícono
+                    'adminlte.preloader.img.alt'    => $cfg->site_title ?: 'Loading...',
+                    // Avoid effects that distort the perception of the icon.
                     'adminlte.preloader.img.effect' => null,
                 ]);
             }
@@ -103,7 +176,7 @@ class AppServiceProvider extends ServiceProvider
             if (!empty($cfg->preloader_logo_height)) {
                 config(['adminlte.preloader.img.height' => (int) $cfg->preloader_logo_height]);
             }
-            // Opcional: tamaño del preloader desde theme_config (si está definido allí)
+            // Optional: honour preloader size stored in theme_config.
             try {
                 $varsTheme = is_array($cfg->theme_config)
                     ? $cfg->theme_config
@@ -165,10 +238,23 @@ class AppServiceProvider extends ServiceProvider
                     $view->getFactory()->startPush('css', "<style>".$css."</style>");
                 }
 
-                // Footer fijo (texto) dentro del contenedor estándar + JS de sincronización de colores
-                $text = 'Desarrollado por Edgar Menna - 2025';
-                $view->getFactory()->startSection('footer', view('partials.footer-fixed', ['text' => $text])->render());
-                $view->getFactory()->startPush('js', view('partials.footer-sync-js')->render());
+                // Footer aligned with the active theme plus color synchronization
+                $footerEnabled = $cfg->footer_enabled ?? true;
+                if ($footerEnabled) {
+                    $footerRaw = $cfg->footer_text;
+                    $footerText = is_string($footerRaw) ? trim($footerRaw) : '';
+                    $replacements = [
+                        'app' => $cfg->site_title ?: config('app.name', 'PowerBIDash'),
+                        'year' => date('Y'),
+                    ];
+
+                    $view->getFactory()->startSection('footer', view('partials.footer-fixed', [
+                        'text' => $footerText !== '' ? $footerText : null,
+                        'text_key' => 'footer.signature',
+                        'replacements' => $replacements,
+                    ])->render());
+                    $view->getFactory()->startPush('js', view('partials.footer-sync-js')->render());
+                }
             });
 
             // CSS específico para login: imagen de fondo responsive (contain) + tamaño de logo

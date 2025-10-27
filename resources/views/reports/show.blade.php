@@ -5,6 +5,7 @@
 
 @section('css')
 <style>
+    /* Embedded mode hides layout */
     @if($embedded)
     body.sidebar-mini .main-header,
     body.sidebar-mini .main-sidebar,
@@ -13,13 +14,16 @@
     .preloader,
     .main-footer { display: none !important; }
     @endif
-    :root{
-        --pbi-min-height: 460px; /* Mínimo para que se vean tabs cómodamente */
+
+    :root {
+        --pbi-min-height: 460px; /* Minimum height for Power BI tabs visibility */
     }
-    html, body, .content-wrapper, .content, .container-fluid{
+
+    html, body, .content-wrapper, .content, .container-fluid {
         height: 100%;
     }
-    .pbi-wrapper{
+
+    .pbi-wrapper {
         position: relative;
         display: flex;
         flex-direction: column;
@@ -29,7 +33,7 @@
 
     .pbi-wrapper.fullscreen-active,
     .pbi-wrapper:fullscreen,
-    .pbi-wrapper:-webkit-full-screen{
+    .pbi-wrapper:-webkit-full-screen {
         position: fixed;
         inset: 0;
         z-index: 1050;
@@ -37,14 +41,19 @@
         padding: 0;
         box-sizing: border-box;
     }
+
     .pbi-wrapper.fullscreen-active #reportContainer,
     .pbi-wrapper:fullscreen #reportContainer,
-    .pbi-wrapper:-webkit-full-screen #reportContainer{
+    .pbi-wrapper:-webkit-full-screen #reportContainer {
         height: 100%;
         min-height: 100%;
     }
-    body.fullscreen-scroll-lock{ overflow: hidden !important; }
-    #reportContainer{
+
+    body.fullscreen-scroll-lock {
+        overflow: hidden !important;
+    }
+
+    #reportContainer {
         position: relative;
         width: 100%;
         height: var(--pbi-min-height);
@@ -52,41 +61,92 @@
         background: transparent;
         overflow: hidden;
     }
-    #reportLoading{
-        position: absolute; inset: 0;
-        display: flex; align-items: center; justify-content: center;
-        color: #666; background: transparent; z-index: 2;
+
+    #reportLoading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        background: transparent;
+        z-index: 2;
     }
-    #reportError{
-        position: absolute; left: 1rem; right: 1rem; top: 1rem; z-index: 3;
+
+    #reportError {
+        position: absolute;
+        left: 1rem;
+        right: 1rem;
+        top: 1rem;
+        z-index: 3;
+    }
+
+    /* ============================= */
+    /* Header actions (AdminLTE 3 UI)
+       Consistent visual style for header buttons */
+    /* ============================= */
+    .header-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .5rem; /* uniform spacing between buttons */
+    }
+
+    .header-actions a.btn,
+    .header-actions button.btn,
+    .header-actions form button.btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 38px !important;
+        line-height: 1 !important;
+        padding: 0 .9rem !important;
+        font-size: .875rem !important;
+    }
+
+    .header-actions i {
+        font-size: .9rem;
+        margin-right: .4rem;
+    }
+
+    /* On small screens: wrap header buttons */
+    @media (max-width: 480px) {
+        .header-actions {
+            justify-content: center;
+            text-align: center;
+        }
+        .header-actions a.btn,
+        .header-actions button.btn {
+            flex: 1 1 auto;
+        }
     }
 </style>
 @endsection
 
+
+{{-- REPLACE the whole content_header section with this --}}
 @section('content_header')
     @if (! $embedded)
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h1 class="h5 mb-0">
-                {{ $report->name ?? __('reports.show.title_fallback') }}
-                @if(!empty($workspace?->name))
-                    <small class="text-muted">/ {{ $workspace->name }}</small>
-                @endif
-            </h1>
-            <div class="d-flex flex-wrap gap-2 align-items-center">
+        {{-- Header with centered title and aligned actions (Bootstrap 4 + AdminLTE 3) --}}
+        <x-page-header :title="$report->name ?? __('reports.show.title_fallback')" icon="fas fa-chart-line">
+            <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
                 <button type="button"
                         id="reportFullscreenBtn"
-                        class="btn btn-sm btn-outline-primary"
+                        class="btn btn-outline-primary btn-sm header-btn"
                         data-label-enter="{{ __('reports.show.fullscreen_enter') }}"
                         data-label-exit="{{ __('reports.show.fullscreen_exit') }}"
                         title="{{ __('reports.show.fullscreen_enter') }}"
                         aria-label="{{ __('reports.show.fullscreen_enter') }}">
-                    <i class="fas fa-expand me-1" aria-hidden="true"></i> {{ __('reports.show.fullscreen_enter') }}
+                    <i class="fas fa-expand"></i>
+                    <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
-                <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> {{ __('common.back') }}
+                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>{{ __('common.back') }}</span>
                 </a>
             </div>
-        </div>
+        </x-page-header>
     @endif
 @stop
 
@@ -132,7 +192,7 @@
             </ul>
             <p class="mb-2">
                 {{ __('reports.show.missing_embed.hint') }}
-                <a href="{{ route('configuraciones.index') }}" class="alert-link">{{ __('reports.show.missing_embed.link') }}</a>.
+                <a href="{{ route('configurations.index') }}" class="alert-link">{{ __('reports.show.missing_embed.link') }}</a>.
             </p>
             <details>
                 <summary>{{ __('reports.show.missing_embed.summary') }}</summary>
@@ -269,7 +329,7 @@
     // [Minimalista] IDs de capacidad para warmup on-demand desde la vista
     const CAPACITY_DB_ID = @json($capacityModelId ?? null); // PK local para /api/capacities/{id}/ping
     const CAPACITY_UUID  = @json($capacityUuid ?? null);     // UUID informativo (no se usa en el ping)
-    // [Minimalista] Parámetros on-demand desde Configuraciones
+    // [Minimalista] Parámetros on-demand desde Configurationes
     const ON_DEMAND_ENABLE = @json($capacityOnDemandEnable ?? true);
     const START_TIMEOUT_MS = @json(($capacityStartTimeoutSec ?? 120) * 1000);
     const START_POLL_MS    = @json(($capacityStartPollSec ?? 5) * 1000);
@@ -336,7 +396,7 @@
 
     // [Minimalista] Warmup de capacidad on-demand antes de embeder
     async function waitForCapacityActive(timeoutMs = START_TIMEOUT_MS, intervalMs = START_POLL_MS) {
-        if (!ON_DEMAND_ENABLE) return true; // Desactivado en Configuraciones
+        if (!ON_DEMAND_ENABLE) return true; // Desactivado en Configurationes
         if (!CAPACITY_DB_ID) return true; // Nada que hacer si no hay capacidad asociada
         const start = Date.now();
         const url = `/api/capacities/${CAPACITY_DB_ID}/ping`;

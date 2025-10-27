@@ -204,6 +204,32 @@ return [
         'usage_drop'    => 'Queda de uso ≥30%: Últimos 7 dias (:current) vs anteriores (:previous) -> :delta%.',
         'high_error_rate' => 'Taxa de erros alta em 7 dias: :rate% (:errors erros / :views acessos).',
     ],
+    'admin' => [
+        'confirm_exact' => 'Voce deve digitar RESET exatamente para confirmar.',
+        'reset_success' => 'Todos os registros de auditoria foram excluidos e o contador de IDs foi reiniciado.',
+        'reset_error'   => 'Nao foi possivel reiniciar a auditoria: :message',
+    ],
+
+    'reset' => [
+        'title'          => 'Reiniciar auditoria',
+        'subtitle'       => 'Remove permanentemente o historico de auditoria.',
+        'back_to_usage'  => 'Metricas de uso',
+        'card_title'     => 'Confirmacao de exclusao total',
+        'description'    => 'Esta acao vai excluir todos os registros da tabela de auditoria e reiniciar o contador de IDs. Nao pode ser desfeita.',
+        'stats_current'  => 'Registros atuais',
+        'stats_first'    => 'Primeiro evento',
+        'stats_last'     => 'Ultimo evento',
+        'confirm_label'  => 'Digite RESET para confirmar',
+        'confirm_help'   => 'Voce deve digitar a palavra exatamente como mostrado.',
+        'submit'         => 'Excluir tudo',
+        'cancel'         => 'Cancelar',
+        'confirm_prompt' => 'Tem certeza de que deseja excluir tudo? Esta acao nao pode ser desfeita.',
+    ],
+
+    'api' => [
+        'store_failed' => 'Nao foi possivel registrar o evento de auditoria.',
+    ],
 ];
+
 
 

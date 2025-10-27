@@ -1,6 +1,3 @@
-{{-- Inyecta CSS propio si no está en el layout principal --}}
-<link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-
 <aside class="main-sidebar {{ config('adminlte.classes_sidebar', 'sidebar-dark-primary elevation-4') }}">
 
     {{-- Sidebar brand logo --}}

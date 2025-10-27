@@ -23,6 +23,7 @@ return [
         'description_placeholder' => 'Descreva o propósito do grupo.',
         'users_label' => 'Integrantes do grupo',
         'buttons' => [
+            'back' => 'Voltar',
             'save' => 'Salvar',
             'cancel' => 'Cancelar',
         ],

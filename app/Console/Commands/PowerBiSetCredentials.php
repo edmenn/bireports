@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Configuracion;
+use App\Models\Configuration;
 use Illuminate\Console\Command;
 
 class PowerBiSetCredentials extends Command
@@ -16,7 +16,7 @@ class PowerBiSetCredentials extends Command
         {--name= : Nombre de la instancia (opcional)}
         {--activate : Marcar esta fila como activa (desactiva las demás)}';
 
-    protected $description = 'Guarda las credenciales de Power BI/Fabric en la BD (tabla configuracions)';
+    protected $description = 'Guarda las credenciales de Power BI/Fabric en la BD (tabla configurations)';
 
     public function handle(): int
     {
@@ -44,10 +44,10 @@ class PowerBiSetCredentials extends Command
 
         // Si se indica --activate => desactivar las demás
         if ($activate) {
-            Configuracion::query()->update(['is_active' => false]);
+            Configuration::query()->update(['is_active' => false]);
         }
 
-        $row = Configuracion::query()->updateOrCreate(
+        $row = Configuration::query()->updateOrCreate(
             [
                 'tenant_id' => $tenant,
                 'client_id' => $client,
@@ -60,7 +60,7 @@ class PowerBiSetCredentials extends Command
         );
 
         // Si no había ninguna activa y no se pasó --activate, activamos esta por conveniencia
-        if (! $activate && ! Configuracion::query()->where('is_active', true)->exists()) {
+        if (! $activate && ! Configuration::query()->where('is_active', true)->exists()) {
             $row->is_active = true;
             $row->save();
         }

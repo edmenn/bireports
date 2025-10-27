@@ -21,16 +21,16 @@ class EnsureUserIsNotBlocked
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
             } catch (\Throwable $e) {
-                // ignorar fallos del manejador de sesion
+                // Ignore session handler failures
             }
 
             if ($request->expectsJson()) {
                 return response()->json([
-                    'message' => 'Tu cuenta esta bloqueada.',
+                    'message' => __('common.account_blocked_short'),
                 ], 403);
             }
 
-            return redirect()->route('login')->with('error', 'Tu cuenta esta bloqueada. Contacta al administrador.');
+            return redirect()->route('login')->with('error', __('common.account_blocked'));
         }
 
         return $next($request);

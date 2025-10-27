@@ -14,7 +14,7 @@ class Capacity extends Model
     protected $fillable = [
         'capacity_uuid',
         'display_name',
-        'arm_resource_name',           // ⬅️ NUEVO
+        'arm_resource_name',           // Newly added field placeholder
         'sku',
         'type',
         'region',
@@ -39,7 +39,7 @@ class Capacity extends Model
         'updated_at'                 => 'datetime',
     ];
 
-    /** Relaciones */
+    /** Relationships */
     public function schedules()
     {
         return $this->hasMany(CapacitySchedule::class);
@@ -50,10 +50,10 @@ class Capacity extends Model
         return $this->hasOne(CapacityActivity::class);
     }
 
-    /** Helpers */
+    /** Helper methods */
     public function isPausable(): bool
     {
-        // Regla general: si soporta pausa y no es PPU
+        // General rule: pause must be supported and type must not be PPU
         return $this->supports_pause === true && strtoupper((string) $this->type) !== 'PPU';
     }
 }

@@ -1,17 +1,22 @@
 @extends('adminlte::page')
 
+@include('portal.partials.report-card-styles')
+
 @section('title', __('reports.index.title'))
 
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div>
-            <h1 class="m-0">{{ __('reports.index.title') }}</h1>
-            <small class="text-muted">{{ __('reports.index.subtitle') }}</small>
+    {{-- Unified header with title, icon, and aligned actions --}}
+    <x-page-header :title="__('reports.index.title')" icon="fas fa-chart-bar">
+        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
+            <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-primary btn-sm header-btn">
+                <i class="fas fa-cloud-download-alt"></i>
+                <span>{{ __('reports.index.import_now') }}</span>
+            </a>
         </div>
-        <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-cloud-download-alt"></i> {{ __('reports.index.import_now') }}
-        </a>
-    </div>
+        <x-slot name="subtitle">
+            <small class="text-muted">{{ __('reports.index.subtitle') }}</small>
+        </x-slot>
+    </x-page-header>
 @stop
 
 @section('content')
@@ -33,102 +38,105 @@
     @endphp
 
     @if($total === 0)
-        <div class="card">
+        {{-- Empty state --}}
+        <div class="card shadow-sm border-0">
             <div class="card-body text-center py-5">
                 <div class="mb-3">
                     <i class="fas fa-inbox fa-3x text-muted" aria-hidden="true"></i>
                 </div>
-                <h5 class="mb-2">{{ __('reports.index.empty.title') }}</h5>
+                <h5 class="font-weight-bold mb-2">{{ __('reports.index.empty.title') }}</h5>
                 <p class="text-muted mb-4">{{ __('reports.index.empty.hint') }}</p>
-                <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary">
+                <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-sync"></i> {{ __('reports.index.empty.action') }}
                 </a>
             </div>
         </div>
     @else
 
-        {{-- Resumen superior --}}
+        {{-- Summary metrics --}}
         <div class="row">
-            <div class="col-md-4">
-                <div class="small-box bg-primary">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $total }}</h3>
-                        <p class="mb-0">{{ __('reports.index.metrics.total') }}</p>
+            <div class="col-md-4 mb-3">
+                <div class="info-box bg-primary text-white shadow-sm">
+                    <span class="info-box-icon"><i class="fas fa-chart-bar"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ __('reports.index.metrics.total') }}</span>
+                        <span class="info-box-number h3 mb-0">{{ $total }}</span>
                     </div>
-                    <div class="icon"><i class="fas fa-chart-bar" aria-hidden="true"></i></div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $conCover }}</h3>
-                        <p class="mb-0">{{ __('reports.index.metrics.with_cover') }}</p>
+            <div class="col-md-4 mb-3">
+                <div class="info-box bg-success text-white shadow-sm">
+                    <span class="info-box-icon"><i class="fas fa-image"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ __('reports.index.metrics.with_cover') }}</span>
+                        <span class="info-box-number h3 mb-0">{{ $conCover }}</span>
                     </div>
-                    <div class="icon"><i class="fas fa-image" aria-hidden="true"></i></div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="small-box bg-secondary">
-                    <div class="inner">
-                        <h3 class="mb-0">{{ $sinCover }}</h3>
-                        <p class="mb-0">{{ __('reports.index.metrics.without_cover') }}</p>
+            <div class="col-md-4 mb-3">
+                <div class="info-box bg-secondary text-white shadow-sm">
+                    <span class="info-box-icon"><i class="fas fa-image-slash"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ __('reports.index.metrics.without_cover') }}</span>
+                        <span class="info-box-number h3 mb-0">{{ $sinCover }}</span>
                     </div>
-                    <div class="icon"><i class="fas fa-image-slash" aria-hidden="true"></i></div>
                 </div>
             </div>
         </div>
 
-        {{-- Filtros / Orden --}}
-        <div class="card mb-3">
+        {{-- Filters --}}
+        <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-6">
-                        <label for="rpt-search" class="form-label mb-1">{{ __('reports.index.filters.search_label') }}</label>
-                        <input id="rpt-search" type="text" class="form-control" placeholder="{{ __('reports.index.filters.search_placeholder') }}">
+                <div class="row align-items-end">
+                    <div class="col-md-6 mb-3">
+                        <label for="rpt-search" class="font-weight-bold">{{ __('reports.index.filters.search_label') }}</label>
+                        <input id="rpt-search" type="text" class="form-control"
+                               placeholder="{{ __('reports.index.filters.search_placeholder') }}">
                     </div>
-                    <div class="col-md-3">
-                        <label for="rpt-workspace" class="form-label mb-1">{{ __('reports.index.filters.workspace_label') }}</label>
-                        <select id="rpt-workspace" class="form-control">
+                    <div class="col-md-3 mb-3">
+                        <label for="rpt-workspace" class="font-weight-bold">{{ __('reports.index.filters.workspace_label') }}</label>
+                        <select id="rpt-workspace" class="custom-select">
                             <option value="all" selected>{{ __('reports.index.filters.workspace_all') }}</option>
                             @foreach($wsSet as $ws)
                                 <option value="{{ $ws['key'] }}">{{ $ws['text'] }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label for="rpt-cover" class="form-label mb-1">{{ __('reports.index.filters.cover_label') }}</label>
-                        <select id="rpt-cover" class="form-control">
+                    <div class="col-md-3 mb-3">
+                        <label for="rpt-cover" class="font-weight-bold">{{ __('reports.index.filters.cover_label') }}</label>
+                        <select id="rpt-cover" class="custom-select">
                             <option value="all" selected>{{ __('reports.index.filters.cover_all') }}</option>
                             <option value="yes">{{ __('reports.index.filters.cover_yes') }}</option>
                             <option value="no">{{ __('reports.index.filters.cover_no') }}</option>
                         </select>
                     </div>
                 </div>
-
-                <div class="row g-2 align-items-end mt-2">
-                    <div class="col-md-3">
-                        <label for="rpt-order" class="form-label mb-1">{{ __('reports.index.filters.order_label') }}</label>
-                        <select id="rpt-order" class="form-control">
+                <div class="row align-items-end">
+                    <div class="col-md-3 mb-2">
+                        <label for="rpt-order" class="font-weight-bold">{{ __('reports.index.filters.order_label') }}</label>
+                        <select id="rpt-order" class="custom-select">
                             <option value="name_asc" selected>{{ __('reports.index.filters.order_options.name_asc') }}</option>
                             <option value="name_desc">{{ __('reports.index.filters.order_options.name_desc') }}</option>
                             <option value="ws_asc">{{ __('reports.index.filters.order_options.workspace_asc') }}</option>
                             <option value="ws_desc">{{ __('reports.index.filters.order_options.workspace_desc') }}</option>
                         </select>
                     </div>
-                    <div class="col-md-9 text-muted small">
-                        <i class="far fa-lightbulb me-1" aria-hidden="true"></i>
+                    <div class="col-md-9 small text-muted">
+                        <i class="far fa-lightbulb mr-1"></i>
                         {{ __('reports.index.filters.hint') }}
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- GRID DE TARJETAS --}}
+        {{-- Reports grid --}}
         <div class="report-grid" id="rpt-grid">
             @foreach($reports as $r)
                 @php
                     $title = (string)($r->name ?? '');
                     $cover = trim((string)($r->effective_cover_url ?? ''));
+                    $scaleX = max(0.5, min((float)($r->cover_scale_x ?? $r->cover_scale ?? 1.0), 1.5));
+                    $scaleY = max(0.5, min((float)($r->cover_scale_y ?? $r->cover_scale ?? 1.0), 1.5));
                     $wsName = $r->workspace->name ?? '';
                     $wsKey  = $wsName !== '' ? $wsName : (string)($r->workspace_id ?? '');
                     $datasetId = $r->dataset_id ?? '';
@@ -137,103 +145,83 @@
                     $searchBlob = \Illuminate\Support\Str::lower($title.' '.$rid.' '.$wsKey.' '.$datasetId);
                 @endphp
 
-                <div class="report-card shadow-sm"
+                <div class="report-card"
                      data-title="{{ \Illuminate\Support\Str::lower($title) }}"
                      data-ws="{{ \Illuminate\Support\Str::lower($wsKey) }}"
                      data-cover="{{ $hasCover }}"
                      data-search="{{ $searchBlob }}">
 
-                    {{-- Link clickeable (no tapa los botones gracias a z-index) --}}
-                    <a class="stretched-link text-decoration-none card-link"
-                       href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
-                       title="{{ __('reports.index.cards.open_title') }}"></a>
-
-                    {{-- COVER --}}
-                    <div class="report-cover" aria-label="{{ __('reports.index.cards.cover_aria') }}">
-                        @if($cover !== '')
-                            @php $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default'); @endphp
-                            <img src="{{ $cover }}"
-                                 alt="{{ __('reports.index.cards.cover_alt', ['name' => $r->name]) }}"
-                                 loading="lazy"
-                                 class="{{ $isDefault ? 'cover-default' : 'cover-full' }}">
-                        @else
-                            <svg class="bi-svg" viewBox="0 0 128 128" role="img" aria-label="{{ __('reports.index.cards.default_cover_aria') }}">
-                                <defs>
-                                    <linearGradient id="biYellow" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#FFD93D"/>
-                                        <stop offset="100%" stop-color="#FFC107"/>
-                                    </linearGradient>
-                                </defs>
-                                <rect x="8" y="28" width="112" height="80" rx="12" fill="url(#biYellow)"/>
-                                <rect x="8" y="28" width="112" height="80" rx="12" fill="#000" opacity=".05"/>
-                                <rect x="8" y="18" width="56" height="20" rx="6" fill="url(#biYellow)"/>
-                                <rect x="8" y="18" width="56" height="20" rx="6" fill="#000" opacity=".05"/>
-                                <g transform="translate(28,50)" fill="#fff">
-                                    <rect x="0"   y="30" width="12" height="28" rx="2"/>
-                                    <rect x="20"  y="18" width="12" height="40" rx="2"/>
-                                    <rect x="40"  y="10" width="12" height="48" rx="2"/>
-                                    <rect x="60"  y="4"  width="12" height="54" rx="2"/>
-                                </g>
-                            </svg>
-                        @endif
+                    {{-- Cover --}}
+                    <div class="report-cover">
+                        <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
+                           class="cover-link"
+                           title="{{ __('reports.index.cards.open_title') }}">
+                            @if($cover !== '')
+                                @php
+                                    $isDefault = \Illuminate\Support\Str::contains($cover, 'report-covers/default');
+                                    $scaleXFormatted = number_format($scaleX, 3, '.', '');
+                                    $scaleYFormatted = number_format($scaleY, 3, '.', '');
+                                @endphp
+                                <img src="{{ $cover }}" alt="{{ __('reports.index.cards.cover_alt', ['name' => $r->name]) }}"
+                                     class="cover-scale-target {{ $isDefault ? 'cover-default' : '' }}"
+                                     style="transform: scale({{ $scaleXFormatted }}, {{ $scaleYFormatted }});">
+                            @else
+                                <i class="fas fa-chart-bar fa-3x text-warning opacity-50"></i>
+                            @endif
+                        </a>
                     </div>
 
-                    {{-- Título + acciones (ancho fijo y separación) --}}
-                    <div class="px-3 pt-2">
-                        <div class="d-flex align-items-start justify-content-between">
-                            <h3 class="h6 fw-semibold text-truncate mb-1 pe-2" title="{{ $r->name }}" style="max-width: 65%;">
+                    {{-- Title --}}
+                    <div class="px-3 pt-3 pb-2 text-center">
+                        <h3 class="h6 font-weight-bold text-dark mb-2 text-truncate" title="{{ $r->name }}">
+                            <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
+                               class="text-dark text-decoration-none report-title-link">
                                 {{ $r->name }}
-                            </h3>
+                            </a>
+                        </h3>
 
-                            {{-- Grid de acciones: 2 columnas fijas con gap --}}
-                            
+                        {{-- Centered buttons --}}
+                        <div class="d-flex justify-content-center flex-wrap">
+                            <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
+                               class="btn btn-sm btn-primary mx-1"
+                               title="{{ __('reports.index.cards.open_title') }}">
+                                <i class="fas fa-chart-line mr-1"></i> {{ __('reports.index.actions.open') }}
+                            </a>
+                            @role('admin')
+                                <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
+                                   class="btn btn-sm btn-outline-warning mx-1"
+                                   title="{{ __('reports.index.cards.edit_title') }}">
+                                    <i class="fas fa-edit mr-1"></i> {{ __('reports.index.actions.edit') }}
+                                </a>
+                            @endrole
                         </div>
                     </div>
 
-                    {{-- Descripción opcional --}}
+                    {{-- Description --}}
                     @if(!empty($r->description))
-                        <div class="px-3 small text-muted description-clamp">
+                        <div class="px-3 pb-2 small text-muted description-clamp text-center">
                             {{ $r->description }}
                         </div>
                     @endif
-                    <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <div class="actions-grid position-relative" style="z-index:2">
-                                    <a href="{{ route('reports.show', [$r->workspace_id, $r->id]) }}"
-                                    class="btn btn-sm btn-primary w-100"
-                                    title="{{ __('reports.index.cards.open_title') }}"
-                                    onclick="event.stopPropagation();">
-                                        <i class="fas fa-chart-line me-1"></i> {{ __('reports.index.actions.open') }}
-                                    </a>
-                                    @role('admin')
-                                        <a href="{{ route('reports.edit', ['report' => $r->id]) }}"
-                                        class="btn btn-sm btn-outline-warning w-100"
-                                        title="{{ __('reports.index.cards.edit_title') }}"
-                                        onclick="event.stopPropagation();">
-                                            <i class="fas fa-edit me-1"></i> {{ __('reports.index.actions.edit') }}
-                                        </a>
-                                    @endrole
-                        </div>
-                    </div>
 
-                    {{-- Chips / metadatos --}}
-                    <div class="px-3 mt-2 mb-3">
-                        <div class="d-flex flex-wrap gap-2 align-items-center">
-                            <span class="badge bg-light text-dark border text-truncate"
-                                  style="max-width: 260px"
+                    {{-- Metadata --}}
+                    <div class="px-3 pb-3 text-center">
+                        <div class="d-flex flex-wrap justify-content-center align-items-center">
+                            <span class="badge badge-light border mr-2 mb-1 text-truncate" style="max-width:220px;"
                                   title="{{ $wsName !== '' ? $wsName : $r->workspace_id }}">
-                                <i class="fas fa-layer-group me-1" aria-hidden="true"></i>
+                                <i class="fas fa-layer-group mr-1"></i>
                                 {{ $wsName !== '' ? $wsName : __('reports.index.badges.workspace') }}
                             </span>
 
                             @if(!empty($r->dataset_id))
-                                <button type="button" class="badge bg-secondary border-0 copy-pill"
-                                        data-copy="{{ $r->dataset_id }}" title="{{ __('reports.index.copy.dataset_title') }}" aria-label="{{ __('reports.index.copy.dataset_title') }}">
+                                <button type="button" class="badge badge-secondary border-0 copy-pill mr-2 mb-1"
+                                        data-copy="{{ $r->dataset_id }}" title="{{ __('reports.index.copy.dataset_title') }}">
                                     {{ __('reports.index.copy.dataset_label') }}
                                 </button>
                             @endif
 
-                            <button type="button" class="badge bg-primary border-0 copy-pill"
-                                    data-copy="{{ $r->id }}" title="{{ __('reports.index.copy.report_title') }}" aria-label="{{ __('reports.index.copy.report_title') }}">
+                            <button type="button" class="badge badge-primary border-0 copy-pill mb-1"
+                                    data-copy="{{ $r->id }}" title="{{ __('reports.index.copy.report_title') }}">
                                 {{ __('reports.index.copy.report_label') }}
                             </button>
                         </div>
@@ -243,7 +231,7 @@
         </div>
 
         @if(method_exists($reports,'links'))
-            <div class="mt-3">
+            <div class="mt-4">
                 {{ $reports->links() }}
             </div>
         @endif
@@ -255,67 +243,25 @@
     :root{
         --card-radius: 14px;
         --card-border: rgba(0,0,0,.08);
-        --card-hover: rgba(25,118,210,.35);
-        --cover-height: 170px;
-        --cover-bg: #f5f6fa;
+        --card-hover: rgba(0,123,255,.4);
+        --cover-height: 190px;
+        --cover-bg: #f8f9fa;
     }
     .report-grid{
         display:grid;
         grid-template-columns: repeat(1, minmax(0,1fr));
-        gap:1rem;
+        gap:1.25rem;
     }
     @media (min-width:576px){ .report-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
     @media (min-width:992px){ .report-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
     @media (min-width:1400px){ .report-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
-
-    .report-card{
-        position:relative;
-        border:1px solid var(--card-border);
-        border-radius: var(--card-radius);
-        background:#fff;
-        overflow:hidden;
-        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
-    .report-card:hover{
-        transform: translateY(-2px);
-        box-shadow:0 .6rem 1.2rem rgba(0,0,0,.08)!important;
-        border-color: var(--card-hover);
-    }
-    .report-card .card-link::after{ z-index: 0; }
-
-    .report-cover{
-        height: var(--cover-height);
-        background: var(--cover-bg);
-        display:flex; align-items:center; justify-content:center;
-        border-bottom:1px solid rgba(0,0,0,.05);
-    }
-    .report-cover img.cover-full{ width:100%; height:100%; object-fit:cover; display:block; }
-    .report-cover img.cover-default{ max-width:70%; max-height:70%; object-fit:contain; display:block; margin:auto; }
-    .bi-svg{ width:60%; max-height:80%; height:auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,.12)); }
-
-    .description-clamp{
-        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-        overflow:hidden; min-height:2.4em;
-    }
-    .copy-pill{ cursor:pointer; user-select:none; }
-    .copy-pill.copied{ filter:brightness(1.05); outline:2px solid rgba(25,135,84,.6); outline-offset:2px; }
-
-    /* === Contenedor de acciones: 2 columnas fijas con separación consistente === */
-    .actions-grid{
-        display:grid;
-        grid-auto-rows: 1fr;                 /* misma altura */
-        grid-template-columns: 128px 128px;  /* ANCHO FIJO para ambos botones */
-        gap: .5rem;                          /* separación clara */
-        align-items: start;
-        justify-content: end;                /* pegado al borde derecho del header de la tarjeta */
-        margin-left: .5rem;                  /* respiro respecto del título */
-    }
-    @media (max-width: 480px){
-        .actions-grid{
-            grid-template-columns: 1fr;      /* en mobile, uno debajo del otro */
-            justify-content: stretch;
-        }
-    }
+    .report-title-link:hover{ text-decoration:underline; }
+    .description-clamp{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.4em; }
+    .copy-pill{ cursor:pointer; user-select:none; transition:all .15s ease; }
+    .copy-pill:hover{ filter:brightness(1.08); }
+    .copy-pill.copied{ outline:2px solid rgba(40,167,69,.6); outline-offset:2px; }
+    .info-box{ border-radius: var(--card-radius); padding:.75rem 1rem; display:flex; align-items:center; min-height:78px; }
+    .info-box-icon{ font-size:1.75rem; margin-right:.75rem; opacity:.95; }
 </style>
 @endpush
 
@@ -356,7 +302,7 @@
     function applyOrder(){
         if(!order) return;
         const val = order.value;
-        const [key, dir] = val.split('_'); // name|ws + asc|desc
+        const [key, dir] = val.split('_');
         const visible = cards.filter(c => c.style.display !== 'none');
         const parent  = grid;
 
@@ -371,20 +317,17 @@
         visible.forEach(el => parent.appendChild(el));
     }
 
-    // Debounce búsqueda
     let t=null;
     function debounceFilters(){
         if(t) clearTimeout(t);
         t = setTimeout(()=>{ applyFilters(); applyOrder(); }, 120);
     }
 
-    // Eventos
     search && search.addEventListener('input', debounceFilters);
     wsSel  && wsSel.addEventListener('change', ()=>{ applyFilters(); applyOrder(); });
     cover  && cover.addEventListener('change', ()=>{ applyFilters(); applyOrder(); });
     order  && order.addEventListener('change', applyOrder);
 
-    // Copiar IDs con feedback
     document.addEventListener('click', function (e) {
         const pill = e.target.closest('.copy-pill');
         if (!pill) return;
@@ -402,7 +345,6 @@
         }).catch(() => alert(copyError));
     }, {passive:true});
 
-    // Inicial
     applyFilters(); applyOrder();
 })();
 </script>
