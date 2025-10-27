@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class ConfigurationsController extends Controller
@@ -404,5 +406,91 @@ class ConfigurationsController extends Controller
         }
 
         return array_filter($themeConfig, fn($v) => $v !== null && $v !== '');
+    }
+
+    public function testMail(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'recipient' => ['required', 'email', 'max:255'],
+            'subject' => ['nullable', 'string', 'max:120'],
+            'message' => ['required', 'string', 'max:2000'],
+        ], [], [
+            'recipient' => __('settings.mail.test.recipient_label'),
+            'subject' => __('settings.mail.test.subject_label'),
+            'message' => __('settings.mail.test.message_label'),
+        ]);
+
+        $configuration = $this->loadSingletonConfig();
+
+        $driver = trim((string) ($configuration->mail_driver ?? ''));
+        if ($driver === '') {
+            $driver = (string) config('mail.default', 'smtp');
+        }
+
+        $mailers = (array) config('mail.mailers', []);
+        if (! array_key_exists($driver, $mailers)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => __('settings.mail.test.driver_missing'),
+            ], 422);
+        }
+
+        if ($driver === 'smtp') {
+            if (empty($configuration->mail_host) || empty($configuration->mail_port)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('settings.mail.test.smtp_missing'),
+                ], 422);
+            }
+
+            config([
+                'mail.mailers.smtp.transport' => 'smtp',
+                'mail.mailers.smtp.host' => $configuration->mail_host,
+                'mail.mailers.smtp.port' => (int) $configuration->mail_port,
+                'mail.mailers.smtp.username' => $configuration->mail_username ?: null,
+                'mail.mailers.smtp.password' => $configuration->mail_password ?: null,
+                'mail.mailers.smtp.encryption' => $configuration->mail_encryption === 'none' ? null : $configuration->mail_encryption,
+            ]);
+        }
+
+        config(['mail.default' => $driver]);
+
+        if (! empty($configuration->mail_from_address)) {
+            config(['mail.from.address' => $configuration->mail_from_address]);
+        }
+        if (! empty($configuration->mail_from_name)) {
+            config(['mail.from.name' => $configuration->mail_from_name]);
+        }
+
+        $recipient = $validated['recipient'];
+        $subject = trim((string) ($validated['subject'] ?? ''));
+        if ($subject === '') {
+            $subject = __('settings.mail.test.default_subject', ['app' => config('app.name')]);
+        }
+        $messageBody = $validated['message'];
+        $fromAddress = config('mail.from.address');
+        $fromName = config('mail.from.name');
+
+        try {
+            Mail::mailer($driver)->raw($messageBody, static function ($message) use ($recipient, $subject, $fromAddress, $fromName) {
+                $message->to($recipient);
+                if ($fromAddress) {
+                    $message->from($fromAddress, $fromName ?: null);
+                }
+                $message->subject($subject);
+            });
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => __('settings.mail.test.failed', ['error' => $e->getMessage()]),
+            ], 500);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'message' => __('settings.mail.test.success'),
+        ]);
     }
 }

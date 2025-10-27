@@ -71,9 +71,65 @@ return [
         ],
     ],
 
-    'prewarm' => [
-        'title' => 'Pré-aquecimento de capacidades',
-        'description' => 'Se estiver ativo, antes de uma atualização agendada retomamos (ligamos) a capacidade associada para evitar falhas por estar pausada. Desative se preferir controlar isso externamente.',
+    'mail' => [
+        'card_title' => 'Configuracao de envio de email',
+        'fields' => [
+            'driver' => [
+                'label' => 'Driver de email',
+                'placeholder' => 'Selecione o driver',
+                'help' => 'Exemplo: smtp, sendmail, log',
+            ],
+            'host' => [
+                'label' => 'Servidor SMTP',
+                'placeholder' => 'smtp.seudominio.com',
+                'help' => 'Nome do host do servidor de email',
+            ],
+            'port' => [
+                'label' => 'Porta',
+                'placeholder' => '587',
+                'help' => 'Portas comuns: 25, 465, 587',
+            ],
+            'encryption' => [
+                'label' => 'Criptografia',
+                'placeholder' => 'Selecione a criptografia',
+                'help' => 'Normalmente tls ou ssl',
+            ],
+            'username' => [
+                'label' => 'Usuario',
+                'placeholder' => 'usuario@empresa.com',
+            ],
+            'password' => [
+                'label' => 'Senha',
+                'placeholder' => '********',
+            ],
+            'from_address' => [
+                'label' => 'Endereco do remetente',
+                'placeholder' => 'noreply@dominio.com',
+            ],
+            'from_name' => [
+                'label' => 'Nome do remetente',
+                'placeholder' => 'Notificacoes do sistema',
+            ],
+        ],
+        'test' => [
+            'button' => 'Enviar email de teste',
+            'modal_title' => 'Enviar email de teste',
+            'description' => 'Use as configuracoes salvas para enviar uma mensagem de teste.',
+            'recipient_label' => 'Destinatario',
+            'recipient_placeholder' => 'usuario@empresa.com',
+            'subject_label' => 'Assunto',
+            'subject_placeholder' => 'Teste de configuracao',
+            'message_label' => 'Mensagem',
+            'message_placeholder' => 'Esta e uma mensagem de teste para verificar a configuracao de email.',
+            'send_button' => 'Enviar teste',
+            'sending' => 'Enviando...',
+            'success' => 'Email de teste enviado com sucesso.',
+            'failed' => 'Nao foi possivel enviar o email de teste: :error',
+            'driver_missing' => 'Configure um driver de email valido antes de enviar o teste.',
+            'smtp_missing' => 'Configure o host e a porta SMTP antes de enviar o teste.',
+            'default_subject' => 'Email de teste de :app',
+            'generic_error' => 'Nao foi possivel enviar o email de teste. Revise a configuracao e tente novamente.',
+        ],
     ],
 
     'login' => [
@@ -195,3 +251,5 @@ return [
         ],
     ],
 ];
+
+

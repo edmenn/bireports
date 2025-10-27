@@ -81,7 +81,7 @@ return [
         'fields' => [
             'driver' => [
                 'label' => 'Mail driver',
-                'placeholder' => 'smtp',
+                'placeholder' => 'Select driver',
                 'help' => 'Example: smtp, sendmail, log',
             ],
             'host' => [
@@ -96,7 +96,7 @@ return [
             ],
             'encryption' => [
                 'label' => 'Encryption',
-                'placeholder' => 'tls',
+                'placeholder' => 'Select encryption',
                 'help' => 'Usually tls or ssl',
             ],
             'username' => [
@@ -115,6 +115,25 @@ return [
                 'label' => 'From name',
                 'placeholder' => 'System Notifications',
             ],
+        ],
+        'test' => [
+            'button' => 'Send test email',
+            'modal_title' => 'Send test email',
+            'description' => 'Use the saved mail settings to send a quick test message.',
+            'recipient_label' => 'Recipient',
+            'recipient_placeholder' => 'user@example.com',
+            'subject_label' => 'Subject',
+            'subject_placeholder' => 'Configuration test',
+            'message_label' => 'Message',
+            'message_placeholder' => 'This is a test message to verify the mail configuration.',
+            'send_button' => 'Send test',
+            'sending' => 'Sending...',
+            'success' => 'Test email sent successfully.',
+            'failed' => 'Unable to send the test email: :error',
+            'driver_missing' => 'Configure a valid mail driver before sending a test.',
+            'smtp_missing' => 'Configure the SMTP host and port before sending a test.',
+            'default_subject' => 'Test email from :app',
+            'generic_error' => 'We could not send the test email. Please review the configuration and try again.',
         ],
     ],
 

@@ -81,7 +81,7 @@ return [
         'fields' => [
             'driver' => [
                 'label' => 'Driver de correo',
-                'placeholder' => 'smtp',
+                'placeholder' => 'Selecciona driver',
                 'help' => 'Ejemplo: smtp, sendmail, log',
             ],
             'host' => [
@@ -96,7 +96,7 @@ return [
             ],
             'encryption' => [
                 'label' => 'Encriptación',
-                'placeholder' => 'tls',
+                'placeholder' => 'Selecciona encriptación',
                 'help' => 'Usualmente tls o ssl',
             ],
             'username' => [
@@ -115,6 +115,25 @@ return [
                 'label' => 'Nombre remitente',
                 'placeholder' => 'Notificaciones del sistema',
             ],
+        ],
+        'test' => [
+            'button' => 'Enviar correo de prueba',
+            'modal_title' => 'Enviar correo de prueba',
+            'description' => 'Usa la configuración guardada para enviar un mensaje de prueba.',
+            'recipient_label' => 'Destinatario',
+            'recipient_placeholder' => 'usuario@empresa.com',
+            'subject_label' => 'Asunto',
+            'subject_placeholder' => 'Prueba de configuración',
+            'message_label' => 'Mensaje',
+            'message_placeholder' => 'Este es un mensaje de prueba para verificar la configuración de correo.',
+            'send_button' => 'Enviar prueba',
+            'sending' => 'Enviando...',
+            'success' => 'Correo de prueba enviado correctamente.',
+            'failed' => 'No se pudo enviar el correo de prueba: :error',
+            'driver_missing' => 'Configura un driver de correo válido antes de enviar la prueba.',
+            'smtp_missing' => 'Configura el host y el puerto SMTP antes de enviar la prueba.',
+            'default_subject' => 'Correo de prueba de :app',
+            'generic_error' => 'No se pudo enviar el correo de prueba. Revisa la configuración e intenta nuevamente.',
         ],
     ],
 

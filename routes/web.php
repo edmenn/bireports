@@ -332,6 +332,8 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
 
         Route::get('/configurations/login', [ConfigurationsController::class, 'login'])
             ->name('configurations.login');
+        Route::post('/configurations/mail/test', [ConfigurationsController::class, 'testMail'])
+            ->name('configurations.mail.test');
 
         Route::post('/configurations/theme/reset', function (Request $request) {
             $cfg = \App\Models\Configuration::firstOrCreate(['id' => 1]);
@@ -361,6 +363,7 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
             Route::post('/tema/presets', [ConfigurationsController::class, 'storeThemePreset'])->name('legacy.configurations.theme.presets.store');
             Route::delete('/tema/presets/{preset}', [ConfigurationsController::class, 'destroyThemePreset'])->name('legacy.configurations.theme.presets.destroy');
             Route::get('/login', [ConfigurationsController::class, 'login'])->name('legacy.configurations.login');
+            Route::post('/mail/prueba', [ConfigurationsController::class, 'testMail'])->name('legacy.configurations.mail.test');
             Route::post('/tema/reset', function (Request $request) {
                 $cfg = \App\Models\Configuration::firstOrCreate(['id' => 1]);
                 $cfg->forceFill([

@@ -206,6 +206,11 @@
             <div class="col-12 d-flex">
                 <x-adminlte-card title="{{ __('settings.mail.card_title') }}" icon="fas fa-envelope text-primary"
                                  theme="primary" theme-mode="outline" class="flex-grow-1">
+                    <x-slot name="toolsSlot">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#mailTestModal" data-bs-toggle="modal" data-bs-target="#mailTestModal">
+                            <i class="fas fa-paper-plane mr-1"></i>{{ __('settings.mail.test.button') }}
+                        </button>
+                    </x-slot>
                     <div class="row">
                         <div class="col-md-6">
                             <label for="mail_driver" class="form-label">{{ __('settings.mail.fields.driver.label') }}</label>
@@ -399,6 +404,43 @@
         </x-adminlte-card>
 
             </form>
+
+        <div class="modal fade" id="mailTestModal" tabindex="-1" role="dialog" aria-labelledby="mailTestModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <form class="modal-content" id="mail-test-form" method="POST" action="{{ route('configurations.mail.test') }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="mailTestModalLabel"><i class="fas fa-paper-plane mr-2"></i> {{ __('settings.mail.test.modal_title') }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="{{ __('settings.actions.cancel') }}">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">{{ __('settings.mail.test.description') }}</p>
+                        <div id="mail-test-feedback" class="alert d-none" role="alert"></div>
+                        <div class="form-group">
+                            <label for="mail-test-recipient" class="form-label">{{ __('settings.mail.test.recipient_label') }}</label>
+                            <input type="email" class="form-control" id="mail-test-recipient" name="recipient" placeholder="{{ __('settings.mail.test.recipient_placeholder') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="mail-test-subject" class="form-label">{{ __('settings.mail.test.subject_label') }}</label>
+                            <input type="text" class="form-control" id="mail-test-subject" name="subject" placeholder="{{ __('settings.mail.test.subject_placeholder') }}">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="mail-test-message" class="form-label">{{ __('settings.mail.test.message_label') }}</label>
+                            <textarea class="form-control" id="mail-test-message" name="message" rows="4" placeholder="{{ __('settings.mail.test.message_placeholder') }}" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">{{ __('settings.actions.cancel') }}</button>
+                        <button type="submit" class="btn btn-primary" id="mail-test-submit">
+                            <span class="default-text"><i class="fas fa-paper-plane mr-1"></i>{{ __('settings.mail.test.send_button') }}</span>
+                            <span class="loading-text d-none"><i class="fas fa-circle-notch fa-spin mr-1"></i>{{ __('settings.mail.test.sending') }}</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
         </div>
     </div>
 @stop
@@ -555,6 +597,138 @@
             });
         }
     } catch (_) { /* silencioso si no hay bootstrap */ }
+
+    const mailTestModal = document.getElementById('mailTestModal');
+    const mailTestForm = document.getElementById('mail-test-form');
+    if (mailTestModal && mailTestForm && window.fetch) {
+        const feedback = document.getElementById('mail-test-feedback');
+        const submitButton = document.getElementById('mail-test-submit');
+        const defaultText = submitButton ? submitButton.querySelector('.default-text') : null;
+        const loadingText = submitButton ? submitButton.querySelector('.loading-text') : null;
+        const successMessageFallback = @json(__('settings.mail.test.success'));
+        const genericErrorMessage = @json(__('settings.mail.test.generic_error'));
+        let bsModalInstance = null;
+
+        const toggleLoading = function (state) {
+            if (!submitButton) {
+                return;
+            }
+            submitButton.disabled = !!state;
+            if (defaultText && loadingText) {
+                if (state) {
+                    defaultText.classList.add('d-none');
+                    loadingText.classList.remove('d-none');
+                } else {
+                    defaultText.classList.remove('d-none');
+                    loadingText.classList.add('d-none');
+                }
+            }
+        };
+
+        const showFeedback = function (type, message) {
+            if (!feedback) {
+                return;
+            }
+            feedback.classList.remove('alert-success', 'alert-danger', 'alert-info');
+            feedback.classList.add('d-none');
+            if (!type) {
+                feedback.textContent = '';
+                return;
+            }
+            feedback.classList.add('alert-' + type);
+            feedback.textContent = message || '';
+            feedback.classList.remove('d-none');
+        };
+
+        const hideModal = function () {
+            if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+                bsModalInstance = window.bootstrap.Modal.getInstance(mailTestModal) || new window.bootstrap.Modal(mailTestModal);
+                bsModalInstance.hide();
+            } else if (window.$ && window.$.fn.modal) {
+                window.$(mailTestModal).modal('hide');
+            } else {
+                mailTestModal.classList.remove('show');
+            }
+        };
+
+        const resetForm = function () {
+            mailTestForm.reset();
+            showFeedback(null);
+            toggleLoading(false);
+        };
+
+        ['hidden.bs.modal', 'hide.bs.modal'].forEach(function (evt) {
+            mailTestModal.addEventListener(evt, function () {
+                resetForm();
+            });
+        });
+
+        ['shown.bs.modal', 'show.bs.modal'].forEach(function (evt) {
+            mailTestModal.addEventListener(evt, function () {
+                showFeedback(null);
+                const focusEl = document.getElementById('mail-test-recipient');
+                if (focusEl) {
+                    focusEl.focus();
+                }
+            });
+        });
+
+        mailTestForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            showFeedback(null);
+            toggleLoading(true);
+
+            const tokenInput = mailTestForm.querySelector('input[name="_token"]');
+            const csrfToken = tokenInput ? tokenInput.value : '';
+
+            const payload = {
+                recipient: (mailTestForm.recipient.value || '').trim(),
+                subject: (mailTestForm.subject.value || '').trim(),
+                message: (mailTestForm.message.value || '').trim(),
+            };
+
+            fetch(mailTestForm.action, {
+                method: 'POST',
+                headers: Object.assign({
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }, csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                body: JSON.stringify(payload),
+            }).then(function (response) {
+                return response.json().catch(function () {
+                    return {};
+                }).then(function (data) {
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    const message = data && typeof data.message === 'string' ? data.message : successMessageFallback;
+                    showFeedback('success', message);
+                    setTimeout(function () {
+                        hideModal();
+                        resetForm();
+                    }, 1200);
+                });
+            }).catch(function (error) {
+                let message = genericErrorMessage;
+                if (error) {
+                    if (typeof error.message === 'string' && error.message.trim() !== '') {
+                        message = error.message;
+                    } else if (error.errors && typeof error.errors === 'object') {
+                        const firstKey = Object.keys(error.errors)[0];
+                        if (firstKey) {
+                            const bucket = error.errors[firstKey];
+                            if (Array.isArray(bucket) && bucket.length > 0) {
+                                message = bucket[0];
+                            }
+                        }
+                    }
+                }
+                showFeedback('danger', message);
+            }).finally(function () {
+                toggleLoading(false);
+            });
+        });
+    }
 })();
 </script>
 @endpush
