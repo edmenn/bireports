@@ -31,7 +31,8 @@ RUN set -eux; \
     apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev ca-certificates libzip-dev freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev libxpm-dev; \
     docker-php-ext-configure intl; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm; \
-    docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql opcache zip; \
+    #docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql opcache zip; \
+    #docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql zip; \
     php -m | grep -qi gd; \
     php -m | grep -qi mbstring; \
     php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}';
