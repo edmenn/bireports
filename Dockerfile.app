@@ -26,18 +26,17 @@ RUN composer dump-autoload -o \
 # -------- Stage 2: runtime (PHP-FPM Alpine endurecido) --------
 FROM php:8.3-fpm-alpine
 
-# Extensiones necesarias (ajusta segun tu app)
+# Extensiones necesarias (ajusta según tu app)
 RUN set -eux; \
     apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev ca-certificates libzip-dev freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev libxpm-dev; \
     docker-php-ext-configure intl; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm; \
-    #docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql opcache zip; \
-    #docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql zip; \
+    docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql zip; \
     php -m | grep -qi gd; \
     php -m | grep -qi mbstring; \
     php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}';
 
-# Opcional: OPcache para prod
+# Opcional: OPcache para producción (ya viene incluido en la imagen)
 RUN { \
       echo 'opcache.enable=1'; \
       echo 'opcache.enable_cli=0'; \
@@ -54,7 +53,7 @@ USER app
 
 WORKDIR /var/www/html
 
-# Copiamos aplicacion y vendors desde el stage builder con permisos correctos
+# Copiamos aplicación y vendors desde el stage builder con permisos correctos
 COPY --from=vendor --chown=app:app /app /var/www/html
 
 # Aseguramos rutas de escritura (en runtime tu compose monta volumen para storage)
@@ -62,7 +61,6 @@ RUN mkdir -p bootstrap/cache storage/framework/{cache,views,sessions} \
  && chmod -R 775 bootstrap/cache storage
 
 # Copiar logos/recursos por idioma desde resources/lang/<locale> a public/lang/<locale>
-# para que sean servidos por Nginx sin pasos extra.
 RUN set -eux; \
     mkdir -p public/lang; \
     for d in resources/lang/*; do \
