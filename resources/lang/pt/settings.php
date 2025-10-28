@@ -97,10 +97,12 @@ return [
             'username' => [
                 'label' => 'Usuario',
                 'placeholder' => 'usuario@empresa.com',
+                'help' => 'Mailjet: use sua API Key.',
             ],
             'password' => [
                 'label' => 'Senha',
                 'placeholder' => '********',
+                'help' => 'Mailjet: use sua API Secret.',
             ],
             'from_address' => [
                 'label' => 'Endereco do remetente',
@@ -127,6 +129,7 @@ return [
             'failed' => 'Nao foi possivel enviar o email de teste: :error',
             'driver_missing' => 'Configure um driver de email valido antes de enviar o teste.',
             'smtp_missing' => 'Configure o host e a porta SMTP antes de enviar o teste.',
+            'mailjet_missing' => 'Mailjet requer API Key e API Secret antes de enviar o teste.',
             'default_subject' => 'Email de teste de :app',
             'generic_error' => 'Nao foi possivel enviar o email de teste. Revise a configuracao e tente novamente.',
         ],
@@ -251,5 +254,3 @@ return [
         ],
     ],
 ];
-
-

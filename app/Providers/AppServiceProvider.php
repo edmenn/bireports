@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\Support\ServiceProvider;
+use Symfony\Component\Mime\Address;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +25,29 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Mail::extend('mailjet', function (array $config = []) {
+            $apiKey = (string) ($config['api_key'] ?? '');
+            $apiSecret = (string) ($config['api_secret'] ?? '');
+            $endpoint = (string) ($config['endpoint'] ?? 'https://api.mailjet.com/v3.1/send');
+            $timeout = (float) ($config['timeout'] ?? 10);
+            $sandboxRaw = $config['sandbox'] ?? false;
+            $sandbox = filter_var($sandboxRaw, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            $sandbox = $sandbox === null ? false : $sandbox;
+
+            $defaultFromAddress = (string) config('mail.from.address', '');
+            $defaultFromName = (string) config('mail.from.name', '');
+            $defaultFrom = $defaultFromAddress !== '' ? new Address($defaultFromAddress, $defaultFromName) : null;
+
+            return new \App\Mail\MailjetTransport(
+                new Client(['timeout' => $timeout]),
+                $apiKey,
+                $apiSecret,
+                $endpoint,
+                $sandbox,
+                $defaultFrom
+            );
+        });
+
         // In production, enforce absolute URLs and HTTPS.
         if (app()->environment('production')) {
             try {
@@ -69,6 +95,16 @@ class AppServiceProvider extends ServiceProvider
             if (!empty($smtpOverrides)) {
                 $smtpOverrides['mail.mailers.smtp.transport'] = 'smtp';
             }
+            $mailjetOverrides = [];
+            if (!empty($cfg->mail_username)) {
+                $mailjetOverrides['mail.mailers.mailjet.api_key'] = $cfg->mail_username;
+            }
+            if (!empty($cfg->mail_password)) {
+                $mailjetOverrides['mail.mailers.mailjet.api_secret'] = $cfg->mail_password;
+            }
+            if (!empty($cfg->mail_host) && str_contains((string) $cfg->mail_host, '://')) {
+                $mailjetOverrides['mail.mailers.mailjet.endpoint'] = rtrim((string) $cfg->mail_host, '/');
+            }
             if (!empty($cfg->mail_from_address)) {
                 $mailOverrides['mail.from.address'] = $cfg->mail_from_address;
             }
@@ -80,6 +116,9 @@ class AppServiceProvider extends ServiceProvider
             }
             if (!empty($smtpOverrides)) {
                 config($smtpOverrides);
+            }
+            if (!empty($mailjetOverrides)) {
+                config($mailjetOverrides);
             }
 
             $isDark = (bool) session('adminlte_dark_mode', (bool) config('adminlte.layout_dark_mode', false));

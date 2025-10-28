@@ -221,7 +221,7 @@
                                 @endphp
                                 <select name="mail_driver" id="mail_driver" class="form-control" placeholder="{{ __('settings.mail.fields.driver.placeholder') }}">
                                     <option value="">{{ __('settings.mail.fields.driver.placeholder') }}</option>
-                                    @foreach (['smtp', 'sendmail', 'log'] as $driver)
+                                    @foreach (['smtp', 'sendmail', 'log', 'mailjet'] as $driver)
                                         <option value="{{ $driver }}" {{ $mailDriver === $driver ? 'selected' : '' }}>{{ strtoupper($driver) }}</option>
                                     @endforeach
                                 </select>
@@ -270,6 +270,9 @@
                                               placeholder="{{ __('settings.mail.fields.username.placeholder') }}"
                                               value="{{ old('mail_username', $config->mail_username) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-user"></i></div></x-slot>
+                                <x-slot name="bottom">
+                                    <small class="text-muted">{{ __('settings.mail.fields.username.help') }}</small>
+                                </x-slot>
                             </x-adminlte-input>
                         </div>
                         <div class="col-md-6">
@@ -278,6 +281,9 @@
                                               placeholder="{{ __('settings.mail.fields.password.placeholder') }}"
                                               value="{{ old('mail_password', $config->mail_password) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-key"></i></div></x-slot>
+                                <x-slot name="bottom">
+                                    <small class="text-muted">{{ __('settings.mail.fields.password.help') }}</small>
+                                </x-slot>
                             </x-adminlte-input>
                         </div>
                         <div class="col-md-6">
@@ -732,4 +738,3 @@
 })();
 </script>
 @endpush
-

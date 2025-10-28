@@ -19,7 +19,7 @@ class UpdateConfigurationRequest extends FormRequest
             'google_analytics_code'          => ['nullable','string','max:255'],
             'tipo_visualizacion'             => ['nullable','in:pastas,iconos,lista'],
             'email_locale'                   => ['nullable','in:es,pt,en,ru,tr'],
-            'mail_driver'                    => ['nullable','in:smtp,sendmail,log'],
+            'mail_driver'                    => ['nullable','in:smtp,sendmail,log,mailjet'],
             'mail_host'                      => ['nullable','string','max:255'],
             'mail_port'                      => ['nullable','integer','min:1','max:65535'],
             'mail_encryption'                => ['nullable','in:tls,ssl,none'],

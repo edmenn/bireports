@@ -452,6 +452,26 @@ class ConfigurationsController extends Controller
                 'mail.mailers.smtp.encryption' => $configuration->mail_encryption === 'none' ? null : $configuration->mail_encryption,
             ]);
         }
+        if ($driver === 'mailjet') {
+            if (empty($configuration->mail_username) || empty($configuration->mail_password)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => __('settings.mail.test.mailjet_missing'),
+                ], 422);
+            }
+
+            $mailjetConfig = [
+                'mail.mailers.mailjet.transport' => 'mailjet',
+                'mail.mailers.mailjet.api_key' => $configuration->mail_username,
+                'mail.mailers.mailjet.api_secret' => $configuration->mail_password,
+            ];
+
+            if (! empty($configuration->mail_host) && str_contains((string) $configuration->mail_host, '://')) {
+                $mailjetConfig['mail.mailers.mailjet.endpoint'] = rtrim((string) $configuration->mail_host, '/');
+            }
+
+            config($mailjetConfig);
+        }
 
         config(['mail.default' => $driver]);
 

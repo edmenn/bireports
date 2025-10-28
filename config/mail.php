@@ -30,7 +30,7 @@ return [
     | your mailers below. You may also add additional mailers if needed.
     |
     | Supported: "smtp", "sendmail", "mailgun", "ses", "ses-v2",
-    |            "postmark", "resend", "log", "array",
+    |            "postmark", "resend", "log", "array", "mailjet",
     |            "failover", "roundrobin"
     |
     */
@@ -47,6 +47,14 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+        'mailjet' => [
+            'transport' => 'mailjet',
+            'api_key' => env('MAILJET_API_KEY'),
+            'api_secret' => env('MAILJET_API_SECRET'),
+            'endpoint' => env('MAILJET_API_ENDPOINT', 'https://api.mailjet.com/v3.1/send'),
+            'sandbox' => env('MAILJET_SANDBOX', false),
+            'timeout' => env('MAILJET_TIMEOUT', 10),
         ],
 
         'ses' => [
