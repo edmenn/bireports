@@ -10,6 +10,8 @@ NODE_IMAGE="${NODE_IMAGE:-node:20}"
 NPM_MODE="${NPM_MODE:-dev}"
 SKIP_NODE="${SKIP_NODE:-no}"
 NODE_RUNNER="docker-run"
+SCHEDULER_SERVICE="${SCHEDULER_SERVICE:-scheduler}"
+QUEUE_SERVICE="${QUEUE_SERVICE:-queue_worker}"
 
 # ---------- Helpers ----------
 log()  { printf '\033[1;34m==> %s\033[0m\n' "$*"; }
@@ -362,18 +364,18 @@ bring_up_services() {
   fi
 
   if [[ "$recreate" == "yes" ]]; then
-    log "Levantando servicios (${DB_SERVICE}, ${APP_SERVICE}) con recreacion..."
-    compose up -d --force-recreate "$DB_SERVICE" "$APP_SERVICE"
+    log "Levantando servicios con recreacion (${DB_SERVICE}, ${APP_SERVICE}, ${SCHEDULER_SERVICE}, ${QUEUE_SERVICE})..."
+    compose up -d --force-recreate "$DB_SERVICE" "$APP_SERVICE" "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
   else
-    log "Levantando servicios (${DB_SERVICE}, ${APP_SERVICE})..."
-    compose up -d "$DB_SERVICE" "$APP_SERVICE"
+    log "Levantando servicios (${DB_SERVICE}, ${APP_SERVICE}, ${SCHEDULER_SERVICE}, ${QUEUE_SERVICE})..."
+    compose up -d "$DB_SERVICE" "$APP_SERVICE" "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
   fi
 }
 
 sync_flow() {
   log "[sync] Levantando servicios sin rebuild."
-  compose up -d "$DB_SERVICE" "$APP_SERVICE"
-  compose ps "$APP_SERVICE" || true
+  compose up -d "$DB_SERVICE" "$APP_SERVICE" "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
+  compose ps "$APP_SERVICE" "$SCHEDULER_SERVICE" "$QUEUE_SERVICE" || true
   wait_service "$DB_SERVICE" 120 || true
   wait_service "$APP_SERVICE" 120 || true
   ensure_zip_extension

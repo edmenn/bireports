@@ -55,7 +55,7 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
         if ($cap->force_shutdown_on_schedule) {
             if ($inWindow && ! $cap->is_active) {
                 try {
-                    $svc->resume($cap->capacity_uuid);
+                    $svc->resume($cap);
                     $cap->is_active = true;
                     $cap->last_state_change_at = Carbon::now();
                     $cap->outside_window_grace_until = null; // limpiar gracia
@@ -81,7 +81,7 @@ class EvaluateCapacitySchedulesJob implements ShouldQueue
                     return; // Allow the inactivity job to pause it later.
                 }
                 try {
-                    $svc->pause($cap->capacity_uuid);
+                    $svc->pause($cap);
                     $cap->is_active = false;
                     $cap->last_state_change_at = Carbon::now();
                     $cap->save();

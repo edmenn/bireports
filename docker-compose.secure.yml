@@ -69,6 +69,44 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+  scheduler:
+    image: birentable/php-app:prod
+    container_name: scheduler
+    restart: unless-stopped
+    networks: [backend]
+    depends_on: [app]
+    env_file:
+      - .env
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
+    volumes:
+      - app_code:/var/www/html:ro
+      - app_storage:/var/www/html/storage
+      - app_cache:/var/www/html/bootstrap/cache
+    tmpfs:
+      - /tmp
+      - /var/run
+    entrypoint: ["/bin/sh","-lc"]
+    command: "./scripts/run-scheduler.sh"
+  queue_worker:
+    image: birentable/php-app:prod
+    container_name: queue-worker
+    restart: unless-stopped
+    networks: [backend]
+    depends_on: [app]
+    env_file:
+      - .env
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
+    volumes:
+      - app_code:/var/www/html:ro
+      - app_storage:/var/www/html/storage
+      - app_cache:/var/www/html/bootstrap/cache
+    tmpfs:
+      - /tmp
+      - /var/run
+    entrypoint: ["/bin/sh","-lc"]
+    command: "./scripts/run-queue-worker.sh"
 
   # 4) PostgreSQL (red interna)
   pgsql:

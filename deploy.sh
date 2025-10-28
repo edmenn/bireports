@@ -5,6 +5,8 @@ set -Eeuo pipefail
 COMPOSE="docker compose -f docker-compose.secure.yml"
 APP_SERVICE="app"          # nombre del servicio (clave en compose)
 DB_SERVICE="pgsql"         # servicio de base de datos
+SCHEDULER_SERVICE="scheduler"
+QUEUE_SERVICE="queue_worker"
 DOMAIN="${DOMAIN:-portal.birentable.com}"
 
 # ---------- Helpers ----------
@@ -189,8 +191,8 @@ if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
   $COMPOSE run --rm code_sync
   ok "[sync] Código sincronizado."
 
-  log "[sync] Reiniciando contenedores app y web (sin rebuild)."
-  $COMPOSE up -d "$APP_SERVICE" web
+  log "[sync] Reiniciando contenedores app, web, ${SCHEDULER_SERVICE} y ${QUEUE_SERVICE} (sin rebuild)."
+  $COMPOSE up -d "$APP_SERVICE" web "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
   wait_healthy "$APP_SERVICE" 120 || true
   ensure_storage_dirs
   ensure_zip_extension
@@ -221,8 +223,8 @@ if [[ "$DO_REFRESH" == "yes" ]]; then
   log "[refresh] Repoblando volumen 'app_code' desde la imagen nueva."
   $COMPOSE run --rm code_init
 
-  log "[refresh] Recreando contenedores app y web."
-  $COMPOSE up -d "$APP_SERVICE" web
+  log "[refresh] Recreando contenedores app, web, ${SCHEDULER_SERVICE} y ${QUEUE_SERVICE}."
+  $COMPOSE up -d "$APP_SERVICE" web "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
 
   # Esperar a que app responda (healthcheck php -v)
   wait_healthy "$APP_SERVICE" 120 || true
@@ -238,8 +240,8 @@ fi
 
 # ---------- Refresh-no-build flow ----------
 if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
-  log "[refresh-nobuild] Recreando contenedores app y web (sin build)."
-  $COMPOSE up -d "$APP_SERVICE" web
+  log "[refresh-nobuild] Recreando contenedores app, web, ${SCHEDULER_SERVICE} y ${QUEUE_SERVICE} (sin build)."
+  $COMPOSE up -d "$APP_SERVICE" web "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
   wait_healthy "$APP_SERVICE" 120 || true
   ensure_storage_dirs
   ensure_zip_extension
@@ -279,8 +281,8 @@ $COMPOSE run --rm code_init
 ok "Volumen 'app_code' poblado."
 
 # ---------- Levantar servicios ----------
-log "Levantando servicios: ${DB_SERVICE}, ${APP_SERVICE}, web, caddy…"
-$COMPOSE up -d "$DB_SERVICE" "$APP_SERVICE" web caddy
+log "Levantando servicios: ${DB_SERVICE}, ${APP_SERVICE}, web, caddy, ${SCHEDULER_SERVICE}, ${QUEUE_SERVICE}."
+$COMPOSE up -d "$DB_SERVICE" "$APP_SERVICE" web caddy "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
 $COMPOSE ps
 
 # ---------- Esperar health de DB y APP ----------

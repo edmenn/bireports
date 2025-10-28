@@ -22,6 +22,15 @@
         {{-- Custom right links --}}
         @yield('content_top_nav_right')
 
+        {{-- Current date and time --}}
+        <li class="nav-item d-flex align-items-center">
+            <span
+                id="navbar-current-datetime"
+                class="nav-link d-flex align-items-center px-3 py-0 text-nowrap"
+                data-locale="{{ str_replace('_', '-', app()->getLocale()) }}"
+            ></span>
+        </li>
+
         {{-- Language switcher --}}
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
@@ -74,3 +83,32 @@
     </ul>
 
 </nav>
+
+@push('js')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const $target = document.getElementById('navbar-current-datetime');
+            if (!$target) {
+                return;
+            }
+
+            const locale = $target.dataset.locale || document.documentElement.lang || 'es';
+            const formatter = new Intl.DateTimeFormat(locale, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const updateDateTime = () => {
+                const value = formatter.format(new Date());
+                $target.textContent = value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
+            };
+
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+        });
+    </script>
+@endpush

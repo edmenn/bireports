@@ -24,6 +24,36 @@ services:
             - sail
         depends_on:
             - pgsql
+    scheduler:
+        image: 'sail-8.4/app'
+        depends_on:
+            - birentable
+        restart: unless-stopped
+        working_dir: /var/www/html
+        networks:
+            - sail
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        entrypoint: ["sh","-lc"]
+        command: "./scripts/run-scheduler.sh"
+    queue_worker:
+        image: 'sail-8.4/app'
+        depends_on:
+            - birentable
+        restart: unless-stopped
+        working_dir: /var/www/html
+        networks:
+            - sail
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - '.:/var/www/html'
+        entrypoint: ["sh","-lc"]
+        command: "./scripts/run-queue-worker.sh"
     pgsql:
         image: 'postgres:17'
         ports:

@@ -76,7 +76,7 @@ class AutoCapacityActivity
 
     private function resumeCapacity(Capacity $capacity, Carbon $when): void
     {
-        $this->svc->resume($capacity->capacity_uuid);
+        $this->svc->resume($capacity);
         $capacity->is_active = true;
         $capacity->last_state_change_at = $when;
         $capacity->save();

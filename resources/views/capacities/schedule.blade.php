@@ -22,14 +22,20 @@
 @section('content')
     {{-- Flash alerts --}}
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('common.done') }}" dismissable class="mb-2">
-            {{ session('success') }}
-        </x-adminlte-alert>
+        <div class="alert alert-success alert-dismissible fade show mb-2" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="close" data-bs-dismiss="alert" data-dismiss="alert" aria-label="{{ __('common.close') }}">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     @endif
     @if (session('error'))
-        <x-adminlte-alert theme="danger" title="{{ __('common.error') }}" dismissable class="mb-2">
-            {{ session('error') }}
-        </x-adminlte-alert>
+        <div class="alert alert-danger alert-dismissible fade show mb-2" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
+            <button type="button" class="close" data-bs-dismiss="alert" data-dismiss="alert" aria-label="{{ __('common.close') }}">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
     @endif
 
     {{-- ====================== ROW: Add Schedule + Options ====================== --}}
