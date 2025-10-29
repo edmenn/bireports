@@ -330,7 +330,9 @@ body.layout-navbar-fixed.text-sm .wrapper .main-header.text-sm ~ .content-wrappe
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 4px;
+  height: var(--app-navbar-h, 3.5rem);
+  margin-top: 0;
+  padding: 0 .75rem;
 }
 .brand-link {
   padding-left: 0 !important;
@@ -348,12 +350,32 @@ body.layout-navbar-fixed.text-sm .wrapper .main-header.text-sm ~ .content-wrappe
   margin: 0 !important;
   float: none !important;
   display: inline-block;
+  max-height: calc(var(--app-navbar-h, 3.5rem) - 12px);
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  min-width: 0;
+}
+.brand-link img,
+.navbar-brand img {
+  max-height: calc(var(--app-navbar-h, 3.5rem) - 12px);
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  min-width: 0;
 }
 /* Logo switch: center both variants */
 .logo-switch .logo-xs,
 .logo-switch .logo-xl {
   display: block !important;
   margin: 0 auto !important;
+  max-height: calc(var(--app-navbar-h, 3.5rem) - 12px);
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 /* Hide brand text next to the logo (if your design requires it) */
 .brand-text { display: none !important; }
