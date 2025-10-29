@@ -23,7 +23,7 @@
         @yield('content_top_nav_right')
 
         {{-- Current date and time --}}
-        <li class="nav-item d-flex align-items-center">
+        <li class="nav-item d-none d-md-flex align-items-center">
             <span
                 id="navbar-current-datetime"
                 class="nav-link d-flex align-items-center px-3 py-0 text-nowrap"
