@@ -152,6 +152,10 @@ return [
             'inactivity_help' => 'Minimum 5, increments of 5, maximum 120.',
             'inactivity_placeholder' => 'e.g. 30',
         ],
+        'validation' => [
+            'invalid_time' => 'Provide a valid time (24h or 12h with AM/PM).',
+            'end_before_start' => 'End time must be after the start time.',
+        ],
         'delete_confirm' => 'Delete schedule?',
     ],
 ];

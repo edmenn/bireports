@@ -152,6 +152,10 @@ return [
             'inactivity_help' => 'Mínimo 5, incrementos de 5, máximo 120.',
             'inactivity_placeholder' => 'Ej. 30',
         ],
+        'validation' => [
+            'invalid_time' => 'Indica una hora válida (formato 24h o 12h con AM/PM).',
+            'end_before_start' => 'La hora de fin debe ser posterior a la hora de inicio.',
+        ],
         'delete_confirm' => '¿Eliminar horario?',
     ],
 ];

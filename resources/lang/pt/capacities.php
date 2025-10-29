@@ -152,6 +152,10 @@ return [
             'inactivity_help' => 'Mínimo 5, em incrementos de 5, máximo 120.',
             'inactivity_placeholder' => 'Ex.: 30',
         ],
+        'validation' => [
+            'invalid_time' => 'Informe um horário válido (24h ou 12h com AM/PM).',
+            'end_before_start' => 'O horário de término deve ser posterior ao horário inicial.',
+        ],
         'delete_confirm' => 'Excluir agendamento?',
     ],
 ];

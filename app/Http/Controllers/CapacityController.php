@@ -10,6 +10,7 @@ use App\Models\Configuration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
@@ -216,20 +217,46 @@ class CapacityController extends Controller
 
     public function scheduleStore(Request $request, Capacity $capacity): RedirectResponse
     {
-        $validated = $request->validate([
+        $normalizedStart = null;
+        $normalizedEnd   = null;
+
+        $validator = Validator::make($request->all(), [
             'days'       => ['required','array','min:1'],
             'days.*'     => ['integer','between:0,6'],
-            'start_time' => ['required','date_format:H:i'],
-            'end_time'   => ['required','date_format:H:i','after:start_time'],
+            'start_time' => ['required'],
+            'end_time'   => ['required'],
         ]);
 
-        $start = $validated['start_time'] . ':00';
-        $end   = $validated['end_time']   . ':00';
+        $validator->after(function ($validator) use ($request, &$normalizedStart, &$normalizedEnd) {
+            $start = $this->parseScheduleTime($request->input('start_time'));
+            if (! $start) {
+                $validator->errors()->add('start_time', __('capacities.schedule.validation.invalid_time'));
+            }
+
+            $end = $this->parseScheduleTime($request->input('end_time'));
+            if (! $end) {
+                $validator->errors()->add('end_time', __('capacities.schedule.validation.invalid_time'));
+            }
+
+            if ($start && $end && $end['seconds'] <= $start['seconds']) {
+                $validator->errors()->add('end_time', __('capacities.schedule.validation.end_before_start'));
+            }
+
+            if ($start) {
+                $normalizedStart = $start['time'];
+            }
+            if ($end) {
+                $normalizedEnd = $end['time'];
+            }
+        });
+
+        $validated = $validator->validate();
+
         foreach (array_unique($validated['days']) as $wd) {
             $capacity->schedules()->create([
                 'weekday'    => (int)$wd,
-                'start_time' => $start,
-                'end_time'   => $end,
+                'start_time' => $normalizedStart,
+                'end_time'   => $normalizedEnd,
                 'enabled'    => true,
             ]);
         }
@@ -417,5 +444,67 @@ class CapacityController extends Controller
             Log::warning('Capacities auto-sync failed: '.$e->getMessage(), ['exception' => $e]);
             // Do not interrupt the view when the sync fails.
         }
+    }
+
+    /**
+     * Normalise time inputs coming from browsers (24h or 12h with AM/PM).
+     */
+    private function parseScheduleTime($value): ?array
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $normalized = trim((string) $value);
+        if ($normalized === '') {
+            return null;
+        }
+
+        $normalized = str_ireplace(
+            ['a. m.', 'p. m.', 'am.', 'pm.', 'a . m .', 'p . m .'],
+            ['am', 'pm', 'am', 'pm', 'am', 'pm'],
+            $normalized
+        );
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+        $normalized = $normalized !== null ? trim($normalized) : '';
+        if ($normalized === '') {
+            return null;
+        }
+
+        $formats = [
+            'H:i',
+            'H:i:s',
+            'G:i',
+            'G:i:s',
+            'g:i A',
+            'g:i a',
+            'g:iA',
+            'g:ia',
+            'g:i:s A',
+            'g:i:s a',
+            'h:i A',
+            'h:i a',
+            'h:iA',
+            'h:ia',
+            'h:i:s A',
+            'h:i:s a',
+        ];
+
+        foreach ($formats as $format) {
+            $dt = \DateTime::createFromFormat('!' . $format, $normalized);
+            if ($dt !== false) {
+                $hour    = (int) $dt->format('H');
+                $minute  = (int) $dt->format('i');
+                $second  = (int) $dt->format('s');
+                $seconds = ($hour * 3600) + ($minute * 60) + $second;
+
+                return [
+                    'time'    => $dt->format('H:i:s'),
+                    'seconds' => $seconds,
+                ];
+            }
+        }
+
+        return null;
     }
 }
