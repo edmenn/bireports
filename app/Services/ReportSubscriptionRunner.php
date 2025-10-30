@@ -66,7 +66,7 @@ class ReportSubscriptionRunner
         $scheduledMoment = $run->scheduled_time
             ? CarbonImmutable::make($run->scheduled_time)->setTimezone(config('app.timezone'))
             : CarbonImmutable::now(config('app.timezone'));
-        $nextReference = $scheduledMoment->addSecond();
+        $nextReference = $scheduledMoment->addMinute();
 
         if (! $subscription->inEffectAt($scheduledMoment)) {
             $run->forceFill([

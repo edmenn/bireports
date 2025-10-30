@@ -62,9 +62,13 @@ class ProcessReportSubscriptionRun implements ShouldQueue
         ]);
 
         if ($run->subscription) {
+            $reference = $run->scheduled_time
+                ? CarbonImmutable::make($run->scheduled_time)->setTimezone(config('app.timezone'))->addMinute()
+                : CarbonImmutable::now(config('app.timezone'));
+
             app(ReportSubscriptionScheduler::class)->scheduleNextRun(
                 $run->subscription,
-                CarbonImmutable::now(config('app.timezone'))
+                $reference
             );
         }
     }

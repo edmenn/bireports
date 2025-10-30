@@ -1,0 +1,15 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#6935
+    [34mall[39m: [
+      [34;4mApp\Models\ReportSubscriptionRun[39;24m {#6934
+        [34mid[39m: [35m9[39m,
+        [34mscheduled_time[39m: "[32m2025-10-30 18:49:17[39m",
+        [34mstatus[39m: "[32mfailed[39m",
+      },
+      [34;4mApp\Models\ReportSubscriptionRun[39;24m {#6933
+        [34mid[39m: [35m8[39m,
+        [34mscheduled_time[39m: "[32m2025-10-30 18:24:34[39m",
+        [34mstatus[39m: "[32mfailed[39m",
+      },
+    ],
+  }
+
