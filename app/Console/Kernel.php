@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console;
 
+use App\Console\Commands\DispatchReportSubscriptions;
 use App\Console\Commands\ProjectAuditCommand;
 use App\Console\Commands\ResetAudit;
 use App\Console\Commands\SyncEntraUsers;
@@ -19,6 +20,7 @@ final class Kernel extends ConsoleKernel
      */
     protected $commands = [
         ProjectAuditCommand::class,
+        DispatchReportSubscriptions::class,
         ResetAudit::class,
         SyncEntraUsers::class, // Entra sync command (if present in the installation)
         UiAudit::class,        // UI stack audit (AdminLTE/Bootstrap/jQuery/plugins)
@@ -64,6 +66,11 @@ final class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer();
 
+        $schedule->command('subscriptions:dispatch')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer();
+
         // Dataset pre-warm (only if enabled in Configurations)
         try {
             $cfg = \App\Models\Configuration::query()->first();
@@ -102,4 +109,3 @@ final class Kernel extends ConsoleKernel
         require \base_path('routes/console.php');
     }
 }
-

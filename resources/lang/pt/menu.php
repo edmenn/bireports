@@ -16,6 +16,7 @@ return array_merge($vendor, [
         'portal_applications' => 'Aplicativos',
         'power_bi' => 'Power BI',
         'reports' => 'Relatórios',
+        'reports_subscriptions' => 'Assinaturas de relatórios',
         'datasets' => 'Conjuntos de dados',
         'applications' => 'Aplicativos',
         'workspaces' => 'Espaços de trabalho',

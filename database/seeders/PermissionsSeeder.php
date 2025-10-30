@@ -31,7 +31,7 @@ class PermissionsSeeder extends Seeder
             'portal.view',
 
             // Reports
-            'reports.view', 'reports.create', 'reports.edit', 'reports.delete', 'reports.export',
+            'reports.view', 'reports.create', 'reports.edit', 'reports.delete', 'reports.export', 'report_subscriptions.manage',
 
             // Datasets
             'datasets.view', 'datasets.refresh', 'datasets.schedule.view', 'datasets.schedule.edit', 'datasets.export',
@@ -72,7 +72,7 @@ class PermissionsSeeder extends Seeder
         // Editor: operational access (no user/config management)
         $editorPerms = [
             'portal.view',
-            'reports.view', 'reports.create', 'reports.edit', 'reports.export',
+            'reports.view', 'reports.create', 'reports.edit', 'reports.export', 'report_subscriptions.manage',
             'datasets.view', 'datasets.refresh', 'datasets.schedule.view', 'datasets.schedule.edit', 'datasets.export',
             'workspaces.view',
             'applications.view',

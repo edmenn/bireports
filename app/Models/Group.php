@@ -25,4 +25,9 @@ class Group extends Model
     {
         return $this->belongsToMany(Application::class, 'application_group')->withTimestamps();
     }
+
+    public function folders()
+    {
+        return $this->belongsToMany(Folder::class, 'folder_group')->withTimestamps();
+    }
 }

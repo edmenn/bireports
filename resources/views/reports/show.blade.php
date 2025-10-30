@@ -53,6 +53,30 @@
         overflow: hidden !important;
     }
 
+    .fullscreen-gesture-hint {
+        position: absolute;
+        top: 1rem;
+        left: 50%;
+        transform: translate(-50%, -0.5rem);
+        padding: .5rem .9rem;
+        border-radius: .75rem;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        font-size: .875rem;
+        line-height: 1.2;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .2s ease, transform .2s ease;
+        z-index: 1060;
+        max-width: 90%;
+        text-align: center;
+    }
+
+    .fullscreen-gesture-hint.visible {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+
     #reportContainer {
         position: relative;
         width: 100%;
@@ -202,7 +226,7 @@
         @php return; @endphp
     @endif
 
-    <div class="pbi-wrapper">
+    <div class="pbi-wrapper" data-gesture-hint="{{ __('reports.show.fullscreen_triple_tap_hint') }}">
 
         <div id="reportContainer" aria-live="polite" aria-busy="true">
             <div id="reportLoading">
@@ -238,7 +262,56 @@
     if (wrapper && fullscreenBtn) {
         const labelEnter = fullscreenBtn.dataset.labelEnter || fullscreenBtn.getAttribute('title') || '';
         const labelExit  = fullscreenBtn.dataset.labelExit || labelEnter;
+        const gestureHint = wrapper.dataset.gestureHint || '';
         const getFsElement = () => document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+        const isWrapperActive = () => {
+            const fsEl = getFsElement();
+            return fsEl === wrapper || wrapper.classList.contains('fullscreen-active');
+        };
+        let gestureHintEl = null;
+        let gestureHintTimeout = null;
+        let gestureTapTimer = null;
+        let gestureTapCount = 0;
+        let gestureLastTap = 0;
+        let wasFullscreenActive = false;
+        const TRIPLE_TAP_WINDOW = 550;
+        const ensureGestureHintEl = () => {
+            if (!gestureHintEl) {
+                gestureHintEl = document.createElement('div');
+                gestureHintEl.className = 'fullscreen-gesture-hint';
+                gestureHintEl.setAttribute('role', 'status');
+                gestureHintEl.setAttribute('aria-live', 'polite');
+                wrapper.appendChild(gestureHintEl);
+            }
+            return gestureHintEl;
+        };
+        const hideGestureHint = () => {
+            if (gestureHintEl) {
+                gestureHintEl.classList.remove('visible');
+            }
+            if (gestureHintTimeout) {
+                clearTimeout(gestureHintTimeout);
+                gestureHintTimeout = null;
+            }
+        };
+        const showGestureHint = () => {
+            if (!gestureHint) return;
+            const el = ensureGestureHintEl();
+            el.textContent = gestureHint;
+            el.classList.add('visible');
+            if (gestureHintTimeout) clearTimeout(gestureHintTimeout);
+            gestureHintTimeout = setTimeout(() => {
+                hideGestureHint();
+            }, 3000);
+        };
+        const resetTapState = () => {
+            gestureTapCount = 0;
+            gestureLastTap = 0;
+            if (gestureTapTimer) {
+                clearTimeout(gestureTapTimer);
+                gestureTapTimer = null;
+            }
+        };
         const exitFs = () => {
             if (document.exitFullscreen) return document.exitFullscreen();
             if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
@@ -259,6 +332,15 @@
             fullscreenBtn.setAttribute('title', nextLabel);
             fullscreenBtn.setAttribute('aria-label', nextLabel);
             fullscreenBtn.classList.toggle('d-none', active);
+            if (active) {
+                if (!wasFullscreenActive) {
+                    showGestureHint();
+                }
+            } else {
+                hideGestureHint();
+                resetTapState();
+            }
+            wasFullscreenActive = active;
         };
         const enterFs = async () => {
             const request = wrapper.requestFullscreen || wrapper.webkitRequestFullscreen || wrapper.mozRequestFullScreen || wrapper.msRequestFullscreen;
@@ -283,6 +365,31 @@
             setFallback(false);
             syncFsState();
         };
+        const registerTap = () => {
+            if (!isWrapperActive()) return;
+            const now = Date.now();
+            if (now - gestureLastTap > TRIPLE_TAP_WINDOW) {
+                gestureTapCount = 0;
+            }
+            gestureTapCount += 1;
+            gestureLastTap = now;
+            if (gestureTapTimer) clearTimeout(gestureTapTimer);
+            gestureTapTimer = setTimeout(() => resetTapState(), TRIPLE_TAP_WINDOW);
+            if (gestureTapCount >= 3) {
+                resetTapState();
+                leaveFs();
+            }
+        };
+        if (window.PointerEvent) {
+            wrapper.addEventListener('pointerdown', (ev) => {
+                if (ev.pointerType !== 'touch') return;
+                registerTap();
+            });
+        } else {
+            wrapper.addEventListener('touchend', () => {
+                registerTap();
+            });
+        }
         fullscreenBtn.addEventListener('click', async () => {
             const fsEl = getFsElement();
             const isFallback = wrapper.classList.contains('fullscreen-active');

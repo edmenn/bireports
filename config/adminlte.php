@@ -240,6 +240,7 @@ return [
             'classes' => 'menu-open',
             'submenu' => [
                 [ 'text' => 'nav.reports',           'icon'=>'nav-icon fas fa-chart-bar fa-fw',       'route'=>'reports.index',     'can'=>'menu.reports_index' ],
+                [ 'text' => 'nav.reports_subscriptions', 'icon'=>'nav-icon fas fa-envelope-open-text fa-fw', 'route'=>'subscriptions.index', 'can'=>'report_subscriptions.manage' ],
                 [ 'text' => 'nav.datasets', 'icon'=>'nav-icon fas fa-database fa-fw',        'route'=>'datasets.index',    'can'=>'menu.reports_index' ],
                 [ 'text' => 'nav.workspaces','icon'=>'nav-icon fas fa-project-diagram fa-fw', 'route'=>'workspaces.index',  'can'=>'menu.workspaces'],
                 [ 'text' => 'nav.capacities',        'icon'=>'nav-icon fas fa-cogs fa-fw',            'route'=>'capacities.index',  'can'=>'menu.capacities'],

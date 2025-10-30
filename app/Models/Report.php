@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Report extends Model
@@ -59,6 +60,17 @@ class Report extends Model
         return $this->belongsToMany(Application::class, 'application_report')
             ->withPivot(['section_id', 'display_order'])
             ->withTimestamps();
+    }
+
+    public function folders(): BelongsToMany
+    {
+        return $this->belongsToMany(Folder::class, 'folder_report', 'report_id', 'folder_id')
+            ->withTimestamps();
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(ReportSubscription::class, 'report_id', 'id');
     }
 
     /**

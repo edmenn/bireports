@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Report;
 use App\Services\PowerBiService; // Existing service that handles AAD token retrieval
+use App\Services\ReportAccessService;
 use App\Models\Configuration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,7 +14,10 @@ use Illuminate\View\View;
 
 class ReportViewerController extends Controller
 {
-    public function __construct(private readonly PowerBiService $pbi)
+    public function __construct(
+        private readonly PowerBiService $pbi,
+        private readonly ReportAccessService $access
+    )
     {
         // Authentication is enforced at the route level (see web.php)
     }
@@ -37,6 +42,25 @@ class ReportViewerController extends Controller
         $workspaceUuid = (string) $v['workspace_uuid'];
         $datasetUuid   = $v['dataset_uuid'] ?? null;
         $rlsRole       = $v['rls_role'] ?? null;
+
+        $report = Report::query()->with('workspace')->findOrFail($reportUuid);
+
+        if ($report->workspace_id !== $workspaceUuid) {
+            abort(404);
+        }
+
+        $user = $request->user();
+        if (! $user) {
+            abort(403);
+        }
+
+        if (! $user->hasRole('admin') && ! $this->access->userCanAccessReport($user, $report)) {
+            abort(403);
+        }
+
+        if ($datasetUuid === null) {
+            $datasetUuid = $report->dataset_id;
+        }
 
         // When configuration is incomplete, render the view with empty data (avoid 500s)
         $hasConfig = Configuration::query()
@@ -67,8 +91,8 @@ class ReportViewerController extends Controller
         return view('reports.show', [
             'embed'         => $embed,
             'embedded'      => $request->boolean('embedded', true),
-            'report'        => (object) ['id' => $reportUuid, 'name' => __('reports.show.title_fallback')],
-            'workspace'     => (object) ['id' => $workspaceUuid, 'name' => null],
+            'report'        => (object) ['id' => $reportUuid, 'name' => $report->name ?? __('reports.show.title_fallback')],
+            'workspace'     => (object) ['id' => $workspaceUuid, 'name' => $report->workspace?->name],
             'error'         => null,
             'error_debug'   => null,
         ]);

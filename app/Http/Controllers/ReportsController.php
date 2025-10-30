@@ -8,6 +8,7 @@ use App\Models\Report;
 use App\Models\Capacity; // Minimal mapping between workspace.capacity_id (UUID) and the local PK
 use App\Models\Workspace;
 use App\Services\PowerBiService;
+use App\Services\ReportAccessService;
 use App\Models\Configuration;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,10 @@ use Throwable;
 
 class ReportsController extends Controller
 {
+    public function __construct(private readonly ReportAccessService $access)
+    {
+    }
+
     public function index(Request $request): View
     {
         $q = trim((string) $request->query('q', ''));
@@ -56,6 +61,11 @@ class ReportsController extends Controller
         $report = Report::where('id', $reportId)
             ->where('workspace_id', $workspace->id)
             ->firstOrFail();
+
+        $user = $request->user();
+        if ($user && ! $user->hasRole('admin') && ! $this->access->userCanAccessReport($user, $report)) {
+            abort(403);
+        }
 
         // Optional capacity mapping required for warm-up endpoints
         // - workspace.capacity_id stores the Power BI/Fabric UUID

@@ -27,6 +27,7 @@ use App\Http\Controllers\FoldersController;
 use App\Http\Controllers\ApplicationsController;
 use App\Http\Controllers\ApplicationSectionsController;
 use App\Http\Controllers\UserPortalController;
+use App\Http\Controllers\ReportSubscriptionController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\UsersSyncController; // importación desde Entra
 use App\Http\Middleware\EnsureUserIsNotBlocked;
@@ -389,6 +390,30 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
         ->name('capacities.ping');
 
     // ✅ Rutas de perfil (Breeze/propio).
+    Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+        Route::get('/', [ReportSubscriptionController::class, 'index'])->name('index');
+        Route::post('/', [ReportSubscriptionController::class, 'store'])->name('store');
+        Route::get('/{reportSubscription}', [ReportSubscriptionController::class, 'show'])
+            ->whereNumber('reportSubscription')
+            ->name('show');
+        Route::get('/{reportSubscription}/edit', [ReportSubscriptionController::class, 'edit'])
+            ->whereNumber('reportSubscription')
+            ->name('edit');
+        Route::put('/{reportSubscription}', [ReportSubscriptionController::class, 'update'])
+            ->whereNumber('reportSubscription')
+            ->name('update');
+        Route::delete('/{reportSubscription}', [ReportSubscriptionController::class, 'destroy'])
+            ->whereNumber('reportSubscription')
+            ->name('destroy');
+        Route::post('/{reportSubscription}/send-now', [ReportSubscriptionController::class, 'sendNow'])
+            ->whereNumber('reportSubscription')
+            ->name('send');
+    });
+
+    Route::get('/reports/{report}/subscriptions/metadata', [ReportSubscriptionController::class, 'metadata'])
+        ->whereUuid('report')
+        ->name('reports.subscriptions.metadata');
+
     Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->middleware(ForbidExternalPasswordChange::class)
@@ -487,7 +512,7 @@ Route::get('/locale/{locale}', function (Request $request, string $locale) {
 })->name('lang.switch');
 
 // Tema (light/dark) por sesión
-Route::post('/theme', function (Request $request) {
+    Route::post('/theme', function (Request $request) {
     $current   = optional($request->user())->theme ?? session('theme', 'light');
     $requested = $request->string('theme')->lower()->toString();
 
@@ -505,9 +530,6 @@ Route::post('/theme', function (Request $request) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
-
-
-
 
 
 

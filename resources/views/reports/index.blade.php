@@ -12,6 +12,12 @@
                 <i class="fas fa-cloud-download-alt"></i>
                 <span>{{ __('reports.index.import_now') }}</span>
             </a>
+            @can('report_subscriptions.manage')
+                <a href="{{ route('subscriptions.index') }}" class="btn btn-outline-secondary btn-sm header-btn ml-2">
+                    <i class="fas fa-list"></i>
+                    <span>{{ __('menu.nav.reports_subscriptions') }}</span>
+                </a>
+            @endcan
         </div>
         <x-slot name="subtitle">
             <small class="text-muted">{{ __('reports.index.subtitle') }}</small>
@@ -235,7 +241,7 @@
                 {{ $reports->links() }}
             </div>
         @endif
-    @endif
+@endif
 @stop
 
 @push('css')
@@ -347,5 +353,6 @@
 
     applyFilters(); applyOrder();
 })();
+
 </script>
 @endpush

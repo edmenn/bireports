@@ -173,14 +173,23 @@ class MailjetTransport extends AbstractTransport
         $inlineAttachments = [];
 
         foreach ($email->getAttachments() as $attachment) {
+            $headers = $attachment->getPreparedHeaders();
+            $disposition = null;
+            $dispositionHeader = $headers->get('Content-Disposition');
+            if ($dispositionHeader) {
+                $disposition = strtolower((string) $dispositionHeader->getValue());
+            }
+
             $payload = [
                 'ContentType' => $attachment->getContentType(),
-                'Filename' => $attachment->getPreparedHeaders()->getHeaderParameter('Content-Disposition', 'filename') ?? $attachment->getName(),
+                'Filename' => $headers->getHeaderParameter('Content-Disposition', 'filename') ?? $attachment->getName(),
                 'Base64Content' => base64_encode($attachment->getBody()),
             ];
 
-            if ($attachment instanceof DataPart && $attachment->isInline()) {
-                $payload['ContentID'] = $attachment->getContentId();
+            if ($disposition === 'inline') {
+                if ($attachment instanceof DataPart && $attachment->getContentId()) {
+                    $payload['ContentID'] = $attachment->getContentId();
+                }
                 $inlineAttachments[] = $payload;
             } else {
                 $regularAttachments[] = $payload;

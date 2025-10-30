@@ -53,6 +53,7 @@ return [
                 'reports.edit' => 'profiles.permissions.labels.reports.edit',
                 'reports.delete' => 'profiles.permissions.labels.reports.delete',
                 'reports.export' => 'profiles.permissions.labels.reports.export',
+                'report_subscriptions.manage' => 'profiles.permissions.labels.reports.subscriptions_manage',
             ],
         ],
         'datasets' => [

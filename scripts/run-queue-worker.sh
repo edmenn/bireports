@@ -3,6 +3,8 @@ set -eu
 
 cd /var/www/html
 
-echo "[queue-worker] Starting queue worker for capacities..."
+QUEUE_LIST=${QUEUE_LIST:-default,capacities}
 
-exec php artisan queue:work --queue=capacities --sleep=5 --tries=1 --no-interaction
+echo "[queue-worker] Starting queue worker for queues: ${QUEUE_LIST}"
+
+exec php artisan queue:work --queue="${QUEUE_LIST}" --sleep=5 --tries=1 --no-interaction

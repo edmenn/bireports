@@ -1,8 +1,8 @@
 <?php
 
 $vendorPath = function_exists('base_path')
-    ? base_path('vendor/jeroennoten/laravel-adminlte/resources/lang/en/menu.php')
-    : dirname(__DIR__, 3) . '/vendor/jeroennoten/laravel-adminlte/resources/lang/en/menu.php';
+    ? base_path('vendor/jeroennoten/laravel-adminlte/resources/lang/ru/menu.php')
+    : dirname(__DIR__, 3) . '/vendor/jeroennoten/laravel-adminlte/resources/lang/ru/menu.php';
 
 $vendor = file_exists($vendorPath) ? require $vendorPath : [];
 
@@ -12,14 +12,15 @@ return array_merge($vendor, [
         'portal' => 'Мое пространство',
         'portal_home' => 'Главная',
         'portal_favorites' => 'Избранное',
-        'portal_most_accessed' => 'Часто просматриваемые',
+        'portal_most_accessed' => 'Часто используемые',
         'portal_applications' => 'Приложения',
         'power_bi' => 'Power BI',
-        'reports' => 'Отчеты',
+        'reports' => 'Отчёты',
+        'reports_subscriptions' => 'Подписки на отчёты',
         'datasets' => 'Наборы данных',
         'applications' => 'Приложения',
         'workspaces' => 'Рабочие области',
-        'capacities' => 'Вместимости',
+        'capacities' => 'Вычислительные мощности',
         'organization' => 'Организация',
         'users' => 'Пользователи',
         'groups' => 'Группы',
@@ -35,6 +36,6 @@ return array_merge($vendor, [
     ],
     'user' => [
         'profile' => 'Профиль',
-        'logout' => 'Выйти',
+        'logout' => 'Выход',
     ],
 ]);

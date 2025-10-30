@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\ReportSubscription;
+use App\Policies\ReportSubscriptionPolicy;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
@@ -25,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(ReportSubscription::class, ReportSubscriptionPolicy::class);
+
         Mail::extend('mailjet', function (array $config = []) {
             $apiKey = (string) ($config['api_key'] ?? '');
             $apiSecret = (string) ($config['api_secret'] ?? '');

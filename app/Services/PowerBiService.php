@@ -422,6 +422,157 @@ class PowerBiService
 
         return $tok;
     }
+    /**
+     * Retrieve the visible pages for a report inside a workspace.
+     *
+     * @return array<int, array{name:string, displayName:?string, order:?int}>
+     */
+    public function listReportPages(string $workspaceId, string $reportId): array
+    {
+        $token = $this->getAccessToken();
+        try {
+            $resp = $this->http->get("{$this->base}/groups/{$workspaceId}/reports/{$reportId}/pages", [
+                'headers' => $this->authHeaders($token),
+            ]);
+            $data = json_decode((string) $resp->getBody(), true);
+            $value = $data['value'] ?? [];
+
+            return array_map(static function ($row): array {
+                return [
+                    'name' => (string) ($row['name'] ?? ''),
+                    'displayName' => $row['displayName'] ?? null,
+                    'order' => isset($row['order']) ? (int) $row['order'] : null,
+                ];
+            }, $value);
+        } catch (ClientException $e) {
+            $this->logHttpError('GET /groups/{workspaceId}/reports/{reportId}/pages', $e, [
+                'workspaceId' => $workspaceId,
+                'reportId'    => $reportId,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Export a report to a file and return the path to the generated attachment.
+     *
+     * @param array<int, string> $pages
+     * @param array<int, string> $rlsRoles
+     */
+    public function exportReportToFile(
+        string $workspaceId,
+        string $reportId,
+        array $pages,
+        string $format,
+        ?string $datasetId = null,
+        ?string $rlsUser = null,
+        array $rlsRoles = []
+    ): string {
+        $token = $this->getAccessToken();
+        $headers = $this->authHeaders($token);
+
+        $pagePayload = array_map(static function ($pageName): array {
+            return ['pageName' => $pageName];
+        }, $pages);
+
+        $body = [
+            'format' => strtoupper($format === 'ppt' ? 'PPTX' : $format),
+            'powerBIReportConfiguration' => [
+                'pages' => $pagePayload,
+            ],
+        ];
+
+        if ($datasetId && $rlsUser) {
+            $identity = [
+                'username' => $rlsUser,
+                'datasets' => [['id' => $datasetId]],
+            ];
+            if (! empty($rlsRoles)) {
+                $identity['roles'] = $rlsRoles;
+            }
+            $body['identities'] = [$identity];
+        }
+
+        try {
+            $response = $this->http->post("{$this->base}/groups/{$workspaceId}/reports/{$reportId}/ExportTo", [
+                'headers' => $headers,
+                'json' => $body,
+            ]);
+        } catch (ClientException $e) {
+            $this->logHttpError('POST ExportTo', $e, [
+                'workspaceId' => $workspaceId,
+                'reportId' => $reportId,
+            ]);
+            throw $e;
+        }
+
+        $data = json_decode((string) $response->getBody(), true);
+        $exportId = $data['id'] ?? null;
+        if (! $exportId) {
+            throw new \RuntimeException('Power BI export did not return an export ID.');
+        }
+
+        $status = $this->pollExportStatus($workspaceId, $reportId, $exportId, $headers);
+        if ($status !== 'Succeeded') {
+            throw new \RuntimeException("Power BI export failed with status {$status}.");
+        }
+
+        $extension = strtolower($format) === 'ppt' ? 'pptx' : strtolower($format);
+        $tempPath = tempnam(sys_get_temp_dir(), 'subscription_');
+        if (! $tempPath) {
+            throw new \RuntimeException('Could not create temporary file for export.');
+        }
+
+        $filePath = $tempPath . '.' . $extension;
+        @unlink($tempPath);
+
+        try {
+            $this->http->get("{$this->base}/groups/{$workspaceId}/reports/{$reportId}/exports/{$exportId}/file", [
+                'headers' => $headers,
+                'sink' => $filePath,
+            ]);
+        } catch (ClientException $e) {
+            $this->logHttpError('GET Export File', $e, [
+                'workspaceId' => $workspaceId,
+                'reportId' => $reportId,
+                'exportId' => $exportId,
+            ]);
+            throw $e;
+        }
+
+        return $filePath;
+    }
+
+    protected function pollExportStatus(string $workspaceId, string $reportId, string $exportId, array $headers): string
+    {
+        $attempts = 0;
+        while ($attempts < 30) {
+            $attempts++;
+            try {
+                $response = $this->http->get("{$this->base}/groups/{$workspaceId}/reports/{$reportId}/exports/{$exportId}", [
+                    'headers' => $headers,
+                ]);
+            } catch (ClientException $e) {
+                $this->logHttpError('GET Export Status', $e, [
+                    'workspaceId' => $workspaceId,
+                    'reportId' => $reportId,
+                    'exportId' => $exportId,
+                ]);
+                throw $e;
+            }
+
+            $data = json_decode((string) $response->getBody(), true);
+            $status = $data['status'] ?? null;
+            if (in_array($status, ['Succeeded', 'Failed', 'Cancelled'], true)) {
+                return $status;
+            }
+
+            sleep(2);
+        }
+
+        return 'Timeout';
+    }
+
     /* =========================================================
      * Helpers
      * ========================================================= */
@@ -436,4 +587,3 @@ class PowerBiService
         ], $extra));
     }
 }
-

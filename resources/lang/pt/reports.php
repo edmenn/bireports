@@ -65,6 +65,7 @@ return [
         'loading' => 'Carregando relatório...',
         'fullscreen_enter' => 'Ver em tela cheia',
         'fullscreen_exit' => 'Sair da tela cheia',
+        'fullscreen_triple_tap_hint' => 'Toque três vezes para sair da tela cheia.',
         'missing_embed' => [
             'title' => 'Não foi possível preparar o embed do relatório.',
             'hint' => 'Verifique as credenciais e as permissões do Power BI em Configurações.',

@@ -10,6 +10,7 @@ use App\Models\Report;
 use App\Models\Capacity;
 use App\Models\Configuration;
 use App\Services\PowerBiService;
+use App\Services\ReportAccessService;
 use Throwable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,10 @@ use Illuminate\Support\Facades\DB;
 
 class UserPortalController extends Controller
 {
+    public function __construct(private readonly ReportAccessService $access)
+    {
+    }
+
     public function index(Request $request): View
     {
         $user = Auth::user();
@@ -130,9 +135,12 @@ class UserPortalController extends Controller
 
         abort_unless($application->is_active, 404);
 
-        $canAccess = Application::accessibleFor($user)
-            ->whereKey($application->getKey())
-            ->exists();
+        $canAccess = $user && $user->hasRole('admin');
+        if (! $canAccess) {
+            $canAccess = Application::accessibleFor($user)
+                ->whereKey($application->getKey())
+                ->exists();
+        }
 
         if (! $canAccess) {
             abort(403);
@@ -148,6 +156,23 @@ class UserPortalController extends Controller
             ->orderBy('reports.name')
             ->get();
 
+        $filterReports = function ($collection) use ($user) {
+            if (! $user || $user->hasRole('admin')) {
+                return $collection;
+            }
+
+            return $collection
+                ->filter(fn (Report $report) => $this->access->userCanAccessReport($user, $report))
+                ->values();
+        };
+
+        $sections = $sections->map(function ($section) use ($filterReports) {
+            $section->setRelation('reports', $filterReports($section->reports));
+            return $section;
+        })->filter(fn ($section) => $section->reports->isNotEmpty())->values();
+
+        $looseReports = $filterReports($looseReports);
+
         $orderedReports = collect();
 
         foreach ($sections as $section) {
@@ -160,8 +185,16 @@ class UserPortalController extends Controller
             $orderedReports->push($report);
         }
 
+        if ($orderedReports->isEmpty()) {
+            abort(403);
+        }
+
         $currentReportId = (string) $request->query('report');
         $currentReport = $orderedReports->firstWhere('id', $currentReportId) ?? $orderedReports->first();
+
+        if (! $user->hasRole('admin') && $currentReport && ! $this->access->userCanAccessReport($user, $currentReport)) {
+            abort(403);
+        }
 
         $workspace               = null;
         $embed                   = [];
@@ -258,4 +291,3 @@ class UserPortalController extends Controller
         ]);
     }
 }
-

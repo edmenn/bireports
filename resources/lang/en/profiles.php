@@ -81,6 +81,7 @@ return [
                 'edit' => 'Edit reports',
                 'delete' => 'Delete reports',
                 'export' => 'Export reports',
+                'subscriptions_manage' => 'Manage report subscriptions',
             ],
             'datasets' => [
                 'view' => 'View datasets',

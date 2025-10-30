@@ -65,6 +65,7 @@ return [
         'loading' => 'Loading report...',
         'fullscreen_enter' => 'Enter full screen',
         'fullscreen_exit' => 'Exit full screen',
+        'fullscreen_triple_tap_hint' => 'Triple tap anywhere to exit full screen.',
         'missing_embed' => [
             'title' => 'We could not prepare the embedded report.',
             'hint' => 'Check the Power BI credentials and workspace permissions in Settings.',
