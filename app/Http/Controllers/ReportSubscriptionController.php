@@ -14,7 +14,9 @@ use App\Models\ReportSubscriptionNotification;
 use App\Models\ReportSubscriptionRun;
 use App\Models\User;
 use App\Services\PowerBiService;
+use App\Services\ReportSubscriptionScheduler;
 use App\Services\ReportAccessService;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
@@ -28,7 +30,8 @@ class ReportSubscriptionController extends Controller
 {
     public function __construct(
         private readonly ReportAccessService $access,
-        private readonly PowerBiService $powerBi
+        private readonly PowerBiService $powerBi,
+        private readonly ReportSubscriptionScheduler $scheduler
     ) {
         $this->middleware(['auth', \App\Http\Middleware\EnsureUserIsNotBlocked::class, 'permission:report_subscriptions.manage']);
     }
@@ -135,6 +138,8 @@ class ReportSubscriptionController extends Controller
             return $subscription;
         });
 
+        $this->scheduler->reschedule($subscription->fresh());
+
         if ($request->expectsJson()) {
             return response()->json([
                 'subscription' => $subscription->load('report'),
@@ -188,6 +193,9 @@ class ReportSubscriptionController extends Controller
             );
         });
 
+        $reportSubscription->refresh();
+        $this->scheduler->reschedule($reportSubscription);
+
         if ($request->expectsJson()) {
             return response()->json([
                 'subscription' => $reportSubscription->fresh('report'),
@@ -204,6 +212,9 @@ class ReportSubscriptionController extends Controller
     public function destroy(Request $request, ReportSubscription $reportSubscription): RedirectResponse|JsonResponse
     {
         $this->authorize('delete', $reportSubscription);
+
+        $this->scheduler->cancelPendingRuns($reportSubscription, CarbonImmutable::now(config('app.timezone')));
+
         $reportSubscription->delete();
 
         if ($request->expectsJson()) {

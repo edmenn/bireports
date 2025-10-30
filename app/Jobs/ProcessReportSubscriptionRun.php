@@ -6,6 +6,7 @@ namespace App\Jobs;
 
 use App\Models\ReportSubscriptionRun;
 use App\Services\ReportSubscriptionRunner;
+use App\Services\ReportSubscriptionScheduler;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,6 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Carbon\CarbonImmutable;
 
 class ProcessReportSubscriptionRun implements ShouldQueue
 {
@@ -20,6 +22,16 @@ class ProcessReportSubscriptionRun implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+
+    /**
+     * Allow up to 20 minutes for long Power BI exports before timing out.
+     */
+    public int $timeout = 1200;
+
+    /**
+     * Keep the job reserved slightly longer than the timeout.
+     */
+    public int $retryAfter = 1260;
 
     public function __construct(
         public int $runId
@@ -48,6 +60,12 @@ class ProcessReportSubscriptionRun implements ShouldQueue
             'run_id' => $this->runId,
             'exception' => $exception,
         ]);
+
+        if ($run->subscription) {
+            app(ReportSubscriptionScheduler::class)->scheduleNextRun(
+                $run->subscription,
+                CarbonImmutable::now(config('app.timezone'))
+            );
+        }
     }
 }
-

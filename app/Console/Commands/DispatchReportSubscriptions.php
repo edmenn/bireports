@@ -36,7 +36,7 @@ class DispatchReportSubscriptions extends Command
             DB::transaction(function () use ($subscription, $scheduledAt): void {
                 $run = ReportSubscriptionRun::query()->create([
                     'report_subscription_id' => $subscription->id,
-                    'scheduled_time' => $scheduledAt->setTimezone('UTC'),
+                    'scheduled_time' => $scheduledAt->setTimezone(config('app.timezone')),
                     'status' => ReportSubscriptionRun::STATUS_PENDING,
                 ]);
 
@@ -53,4 +53,3 @@ class DispatchReportSubscriptions extends Command
         return self::SUCCESS;
     }
 }
-

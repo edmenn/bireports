@@ -25,6 +25,7 @@ class ReportSubscriptionRunner
         private readonly ReportAccessService $accessService,
         private readonly PowerBiService $powerBiService,
         private readonly ReportAttachmentCompressor $compressor,
+        private readonly ReportSubscriptionScheduler $scheduler,
     ) {
     }
 
@@ -39,9 +40,42 @@ class ReportSubscriptionRunner
                 'subscription.notificationLinks.user',
                 'subscription.notificationLinks.group.users',
             ])
-            ->findOrFail($runId);
+            ->find($runId);
+
+        if (! $run || $run->status !== ReportSubscriptionRun::STATUS_PENDING) {
+            return;
+        }
 
         $subscription = $run->subscription;
+        if (! $subscription || (method_exists($subscription, 'trashed') && $subscription->trashed())) {
+            $run->forceFill([
+                'status' => ReportSubscriptionRun::STATUS_SKIPPED,
+                'finish_time' => now(),
+            ])->save();
+            return;
+        }
+
+        if (! $subscription->is_enabled) {
+            $run->forceFill([
+                'status' => ReportSubscriptionRun::STATUS_SKIPPED,
+                'finish_time' => now(),
+            ])->save();
+            return;
+        }
+
+        $scheduledMoment = $run->scheduled_time
+            ? CarbonImmutable::make($run->scheduled_time)->setTimezone(config('app.timezone'))
+            : CarbonImmutable::now(config('app.timezone'));
+        $nextReference = $scheduledMoment->addSecond();
+
+        if (! $subscription->inEffectAt($scheduledMoment)) {
+            $run->forceFill([
+                'status' => ReportSubscriptionRun::STATUS_SKIPPED,
+                'finish_time' => now(),
+            ])->save();
+            $this->scheduler->scheduleNextRun($subscription, $nextReference);
+            return;
+        }
 
         $run->forceFill([
             'status' => ReportSubscriptionRun::STATUS_RUNNING,
@@ -112,6 +146,8 @@ class ReportSubscriptionRunner
         if (! empty($errors)) {
             $this->notifyFailure($subscription, $run, implode("\n", $errors));
         }
+
+        $this->scheduler->scheduleNextRun($subscription, $nextReference);
     }
 
     protected function resolveRecipients(ReportSubscription $subscription): Collection
