@@ -83,17 +83,31 @@ class ReportSubscriptionScheduler
         $run = null;
 
         DB::transaction(function () use ($subscription, $scheduledLocal, $next, &$run): void {
-            $run = ReportSubscriptionRun::query()->firstOrCreate(
+            $existing = ReportSubscriptionRun::query()
+                ->where('report_subscription_id', $subscription->id)
+                ->where('scheduled_time', $scheduledLocal)
+                ->lockForUpdate()
+                ->first();
+
+            $alreadyPending = $existing?->status === ReportSubscriptionRun::STATUS_PENDING;
+
+            $run = ReportSubscriptionRun::query()->updateOrCreate(
                 [
                     'report_subscription_id' => $subscription->id,
                     'scheduled_time' => $scheduledLocal,
                 ],
                 [
                     'status' => ReportSubscriptionRun::STATUS_PENDING,
+                    'start_time' => null,
+                    'finish_time' => null,
+                    'error_message' => null,
+                    'recipients_total' => 0,
+                    'recipients_sent' => 0,
+                    'recipients_failed' => 0,
                 ]
             );
 
-            if ($run->wasRecentlyCreated) {
+            if (! $alreadyPending) {
                 ProcessReportSubscriptionRun::dispatch($run->id)
                     ->delay($scheduledLocal)
                     ->afterCommit();
