@@ -41,11 +41,11 @@
         border-radius: 3px;
     }
 
-    .subscription-email-toolbar {
-        border: 1px solid #ced4da;
-        border-bottom: none;
-        border-top-left-radius: .25rem;
-        border-top-right-radius: .25rem;
+.subscription-email-toolbar {
+    border: 1px solid #ced4da;
+    border-bottom: none;
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
         padding: .5rem;
         background-color: #f8f9fa;
     }
@@ -54,16 +54,74 @@
         padding: .25rem .5rem;
     }
 
-    .subscription-email-design {
-        border: 1px solid #ced4da;
-        border-top: none;
-        border-bottom-left-radius: .25rem;
-        border-bottom-right-radius: .25rem;
-        min-height: 260px;
-        padding: .75rem;
-        background-color: #fff;
-        overflow-y: auto;
-    }
+.subscription-email-design {
+    border: 1px solid #ced4da;
+    border-top: none;
+    border-bottom-left-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+    min-height: 260px;
+    padding: .75rem;
+    background-color: #fff;
+    overflow-y: auto;
+}
+
+#report-subscription-modal .modal-content {
+    border: 0;
+    border-radius: .75rem;
+    overflow: hidden;
+    box-shadow: 0 .85rem 2.2rem rgba(15, 34, 58, .18);
+}
+
+#report-subscription-modal .subscription-modal-header {
+    background: linear-gradient(180deg, #f6f9ff 0%, #eef3fb 100%);
+    border-bottom: 1px solid #dee6f5;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#report-subscription-modal .subscription-modal-title {
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2d3d;
+}
+
+#report-subscription-modal .subscription-modal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .75rem;
+    background-color: rgba(13, 110, 253, .12);
+    color: #0d6efd;
+    font-size: 1.1rem;
+}
+
+#report-subscription-modal .subscription-modal-close {
+    border: none;
+    background: #ffffff;
+    border-radius: 999px;
+    width: 2.1rem;
+    height: 2.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c7a91;
+    box-shadow: 0 .2rem .55rem rgba(15, 34, 58, .18);
+    transition: all .2s ease-in-out;
+}
+
+#report-subscription-modal .subscription-modal-close:hover,
+#report-subscription-modal .subscription-modal-close:focus {
+    color: #0d6efd;
+    outline: none;
+}
 </style>
 @endpush
 
@@ -71,12 +129,13 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <form id="report-subscription-form" method="post" action="{{ route('subscriptions.store') }}">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="report-subscription-modal-title">
-                        <i class="fas fa-envelope-open-text mr-2"></i> {{ __('subscriptions.create.title') }}
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="{{ __('subscriptions.actions.close') }}">
-                        <span aria-hidden="true">&times;</span>
+                <div class="modal-header subscription-modal-header">
+                    <div class="subscription-modal-title">
+                        <span class="subscription-modal-icon"><i class="fas fa-envelope-open-text"></i></span>
+                        <span class="subscription-modal-title-text" id="report-subscription-modal-title">{{ __('subscriptions.create.title') }}</span>
+                    </div>
+                    <button type="button" class="subscription-modal-close" data-dismiss="modal" aria-label="{{ __('subscriptions.actions.close') }}">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">

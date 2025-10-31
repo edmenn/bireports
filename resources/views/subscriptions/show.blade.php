@@ -2,6 +2,213 @@
 
 @section('title', __('subscriptions.show.title', ['name' => $subscription->name]))
 
+@section('css')
+    @include('portal.partials.base-styles')
+    @include('portal.partials.home-card-styles')
+    <style>
+        .portal-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .portal-summary-item {
+            border: 1px solid #e2e8f0;
+            border-radius: .75rem;
+            padding: 1rem 1.1rem;
+            background: #f8fafc;
+        }
+
+        .portal-summary-item .summary-label {
+            display: block;
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #6c7a91;
+            margin-bottom: .4rem;
+            font-weight: 600;
+        }
+
+        .portal-summary-item .summary-value {
+            font-weight: 600;
+            color: #1f2d3d;
+        }
+
+        .portal-summary-item .summary-value .text-muted {
+            font-weight: 400;
+        }
+
+        .portal-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.5rem;
+            padding: .35rem .75rem;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .badge-soft-primary {
+            background-color: rgba(13, 110, 253, .12);
+            color: #0d6efd;
+        }
+
+        .badge-soft-secondary {
+            background-color: rgba(73, 80, 87, .12);
+            color: #495057;
+        }
+
+        .badge-soft-success {
+            background-color: rgba(25, 135, 84, .12);
+            color: #198754;
+        }
+
+        .badge-soft-warning {
+            background-color: rgba(255, 193, 7, .18);
+            color: #b38300;
+        }
+
+        .badge-soft-danger {
+            background-color: rgba(220, 53, 69, .15);
+            color: #dc3545;
+        }
+
+        .badge-soft-muted {
+            background-color: rgba(108, 117, 125, .15);
+            color: #6c757d;
+        }
+
+        .portal-section-heading {
+            text-transform: uppercase;
+            font-size: .72rem;
+            letter-spacing: .08em;
+            font-weight: 600;
+            color: #6c7a91;
+            margin-bottom: .65rem;
+        }
+
+        .portal-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            border: 1px solid #e2e8f0;
+            border-radius: .75rem;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .portal-list li {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            padding: .65rem .85rem;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .portal-list li:last-child {
+            border-bottom: none;
+        }
+
+        .portal-list li.list-empty {
+            justify-content: center;
+            color: #6c7a91;
+            font-style: italic;
+        }
+
+        .portal-email-preview {
+            border: 1px solid #e4ebf5;
+            border-radius: .75rem;
+            background: #fbfdff;
+            padding: 1.1rem 1.25rem;
+            max-height: 320px;
+            overflow: auto;
+        }
+
+        .portal-table-wrapper {
+            border-radius: .75rem;
+            overflow: hidden;
+        }
+
+        .portal-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .portal-table thead th {
+            text-transform: uppercase;
+            font-size: .7rem;
+            letter-spacing: .05em;
+            font-weight: 600;
+            color: #6c757d;
+            background: #f3f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            padding: .85rem 1.1rem;
+        }
+
+        .portal-table tbody td {
+            padding: 1rem 1.1rem;
+            border-bottom: 1px solid #eef2f7;
+            background: #ffffff;
+            vertical-align: middle;
+        }
+
+        .portal-table tbody tr:hover td {
+            background-color: #f8fafd;
+        }
+
+        .portal-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .portal-empty-state {
+            text-align: center;
+            color: #6b7280;
+            padding: 3rem 1rem;
+        }
+
+        .portal-empty-state i {
+            display: block;
+            font-size: 2rem;
+            margin-bottom: .5rem;
+            opacity: .6;
+        }
+
+        @media (max-width: 768px) {
+            .portal-table thead {
+                display: none;
+            }
+
+            .portal-table tbody tr {
+                display: block;
+                margin-bottom: 1.25rem;
+                border-radius: .75rem;
+                box-shadow: 0 .65rem 1.6rem rgba(15, 34, 58, .08);
+                overflow: hidden;
+            }
+
+            .portal-table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: .85rem 1rem;
+                border-bottom: 1px solid #eef2f7;
+            }
+
+            .portal-table tbody td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #6b7280;
+                margin-right: .75rem;
+                text-transform: uppercase;
+                font-size: .7rem;
+                letter-spacing: .05em;
+            }
+        }
+    </style>
+@endsection
+
 @section('content_header')
     <x-page-header :title="$subscription->name" icon="fas fa-calendar-check">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
@@ -32,122 +239,119 @@
 @stop
 
 @section('content')
-    <div class="row">
-        <div class="col-xl-6 col-lg-6 mb-4 d-flex">
-            <div class="card border-0 shadow-sm w-100 h-100">
-                <div class="card-header bg-primary text-white">
-                    <strong>{{ __('subscriptions.show.overview') }}</strong>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.report_id') }}</dt>
-                        <dd class="col-sm-8">
-                            <span class="font-weight-semibold">{{ optional($subscription->report)->name ?? __('subscriptions.labels.deleted_report') }}</span>
-                            <div class="text-muted small">{{ $subscription->report_id }}</div>
-                        </dd>
+    @php
+        $reportName = optional($subscription->report)->name ?? __('subscriptions.labels.deleted_report');
+        $reportId = $subscription->report_id;
+        $formatLabel = strtoupper($subscription->format);
+        $recurrenceLabel = __('subscriptions.recurrence_labels.' . $subscription->recurrence);
+        $startWindow = optional($subscription->start_date)->toFormattedDateString();
+        $endWindow = $subscription->end_date ? $subscription->end_date->toFormattedDateString() : __('subscriptions.labels.no_end_date');
+        $timeLabel = ($subscription->recurrence !== 'cron' && $subscription->hour !== null && $subscription->minute !== null)
+            ? sprintf('%02d:%02d', $subscription->hour, $subscription->minute)
+            : null;
+        $timeCaption = $timeLabel ? __('subscriptions.labels.time_at', ['time' => $timeLabel]) : null;
+        $timezoneLabel = $subscription->timezone ?: config('app.timezone');
+        $attachmentLabel = $subscription->max_attachment_size_mb
+            ? $subscription->max_attachment_size_mb . ' MB'
+            : __('subscriptions.labels.no_limit');
+        $statusBadgeClass = $subscription->is_enabled ? 'badge-soft-success' : 'badge-soft-muted';
+        $statusLabel = $subscription->is_enabled ? __('subscriptions.status.enabled') : __('subscriptions.status.disabled');
+    @endphp
 
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.format') }}</dt>
-                        <dd class="col-sm-8 text-uppercase">{{ strtoupper($subscription->format) }}</dd>
-
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.recurrence') }}</dt>
-                        <dd class="col-sm-8">
-                            {{ __('subscriptions.recurrence_labels.' . $subscription->recurrence) }}
-                            @if($subscription->recurrence === 'cron' && $subscription->cron_expression)
-                                <div class="text-muted small">{{ $subscription->cron_expression }}</div>
-                            @endif
-                        </dd>
-
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.schedule_window') }}</dt>
-                        <dd class="col-sm-8">
-                            {{ optional($subscription->start_date)->toFormattedDateString() }}
-                            &mdash;
-                            {{ $subscription->end_date ? $subscription->end_date->toFormattedDateString() : __('subscriptions.labels.no_end_date') }}
-                            @if($subscription->recurrence !== 'cron')
-                                <div class="text-muted small">
-                                    {{ __('subscriptions.labels.time_at', ['time' => sprintf('%02d:%02d', $subscription->hour, $subscription->minute)]) }}
-                                    @if($subscription->timezone)
-                                        ({{ $subscription->timezone }})
-                                    @endif
-                                </div>
-                            @endif
-                        </dd>
-
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.max_attachment_size_mb') }}</dt>
-                        <dd class="col-sm-8">
-                            {{ $subscription->max_attachment_size_mb ?? __('subscriptions.labels.no_limit') }}
-                        </dd>
-
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.is_enabled') }}</dt>
-                        <dd class="col-sm-8">
-                            @if($subscription->is_enabled)
-                                <span class="badge badge-success">{{ __('subscriptions.status.enabled') }}</span>
-                            @else
-                                <span class="badge badge-secondary">{{ __('subscriptions.status.disabled') }}</span>
-                            @endif
-                        </dd>
-
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.created_by') }}</dt>
-                        <dd class="col-sm-8">
-                            <span>{{ optional($subscription->creator)->name ?? __('subscriptions.labels.unknown_user') }}</span>
-                            <div class="text-muted small">{{ optional($subscription->created_at)->diffForHumans() }}</div>
-                        </dd>
-
-                        <dt class="col-sm-4">{{ __('subscriptions.fields.updated_by') }}</dt>
-                        <dd class="col-sm-8">
-                            <span>{{ optional($subscription->updater)->name ?? __('subscriptions.labels.unknown_user') }}</span>
-                            <div class="text-muted small">{{ optional($subscription->updated_at)->diffForHumans() }}</div>
-                        </dd>
-                    </dl>
-                </div>
+    <div class="portal-card portal-subscription-summary mt-3">
+        <div class="card-header">
+            <span class="portal-icon"><i class="fas fa-clipboard-list"></i></span>
+            <div>
+                <h5>{{ __('subscriptions.show.overview') }}</h5>
+                <small class="text-muted">{{ __('subscriptions.show.subtitle', ['report' => $reportName]) }}</small>
             </div>
         </div>
-
-        <div class="col-xl-6 col-lg-6 mb-4 d-flex">
-            <div class="card border-0 shadow-sm w-100 h-100">
-                <div class="card-header bg-light">
-                    <strong>{{ __('subscriptions.sections.pages') }}</strong>
+        <div class="card-body">
+            <div class="portal-summary-grid">
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.report_id') }}</span>
+                    <div class="summary-value">
+                        <strong>{{ $reportName }}</strong>
+                        <div class="text-muted small">{{ $reportId }}</div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        @forelse($subscription->pages as $page)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ $page->display_name ?? $page->page_name }}</span>
-                                <span class="badge badge-light text-muted">{{ $page->page_name }}</span>
-                            </li>
-                        @empty
-                            <li class="list-group-item text-muted">{{ __('subscriptions.labels.no_pages') }}</li>
-                        @endforelse
-                    </ul>
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.format') }}</span>
+                    <div class="summary-value">
+                        <span class="portal-badge badge-soft-primary text-uppercase">{{ $formatLabel }}</span>
+                    </div>
+                </div>
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.recurrence') }}</span>
+                    <div class="summary-value">
+                        <span class="portal-badge badge-soft-secondary">{{ $recurrenceLabel }}</span>
+                        @if($subscription->recurrence === 'cron' && $subscription->cron_expression)
+                            <div class="text-muted small mt-1">{{ $subscription->cron_expression }}</div>
+                        @endif
+                    </div>
+                </div>
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.schedule_window') }}</span>
+                    <div class="summary-value">
+                        {{ $startWindow }} &mdash; {{ $endWindow }}
+                        @if($timeCaption)
+                            <div class="text-muted small">{{ $timeCaption }} ({{ $timezoneLabel }})</div>
+                        @elseif($subscription->timezone)
+                            <div class="text-muted small">{{ $timezoneLabel }}</div>
+                        @endif
+                    </div>
+                </div>
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.max_attachment_size_mb') }}</span>
+                    <div class="summary-value">{{ $attachmentLabel }}</div>
+                </div>
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.is_enabled') }}</span>
+                    <div class="summary-value">
+                        <span class="portal-badge {{ $statusBadgeClass }}">{{ $statusLabel }}</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>{{ __('subscriptions.sections.recipients') }}</strong>
+    <div class="row mt-3">
+        <div class="col-lg-6 mb-3 d-flex">
+            <div class="portal-card portal-subscription-recipients w-100">
+                <div class="card-header">
+                    <span class="portal-icon"><i class="fas fa-users"></i></span>
+                    <div>
+                        <h5>{{ __('subscriptions.sections.recipients') }}</h5>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-muted text-uppercase small">{{ __('subscriptions.fields.groups') }}</h6>
-                            <ul class="list-unstyled mb-0">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="portal-section-heading">{{ __('subscriptions.fields.groups') }}</h6>
+                            <ul class="portal-list">
                                 @forelse($subscription->recipientGroups as $group)
-                                    <li class="mb-1"><i class="fas fa-users text-muted mr-1"></i> {{ $group->name }}</li>
+                                    <li>
+                                        <i class="fas fa-users text-muted"></i>
+                                        <span>{{ $group->name }}</span>
+                                    </li>
                                 @empty
-                                    <li class="text-muted small">{{ __('subscriptions.labels.no_groups_selected') }}</li>
+                                    <li class="list-empty">{{ __('subscriptions.labels.no_groups_selected') }}</li>
                                 @endforelse
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="text-muted text-uppercase small">{{ __('subscriptions.fields.users') }}</h6>
-                            <ul class="list-unstyled mb-0">
+                            <h6 class="portal-section-heading">{{ __('subscriptions.fields.users') }}</h6>
+                            <ul class="portal-list">
                                 @forelse($subscription->recipientUsers as $userRecipient)
-                                    <li class="mb-1"><i class="fas fa-user text-muted mr-1"></i> {{ $userRecipient->name }} <span class="text-muted small">&lt;{{ $userRecipient->email }}&gt;</span></li>
+                                    <li>
+                                        <i class="fas fa-user text-muted"></i>
+                                        <div>
+                                            <div>{{ $userRecipient->name }}</div>
+                                            <div class="text-muted small">{{ $userRecipient->email }}</div>
+                                        </div>
+                                    </li>
                                 @empty
-                                    <li class="text-muted small">{{ __('subscriptions.labels.no_users_selected') }}</li>
+                                    <li class="list-empty">{{ __('subscriptions.labels.no_users_selected') }}</li>
                                 @endforelse
                             </ul>
                         </div>
@@ -155,68 +359,54 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>{{ __('subscriptions.sections.email') }}</strong>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2">
-                        <span class="font-weight-semibold">{{ __('subscriptions.fields.mail_subject') }}:</span>
-                        <span class="text-muted">{{ $subscription->mail_subject ?: __('subscriptions.labels.subject_default') }}</span>
-                    </p>
-                    <div class="border rounded p-3 bg-light overflow-auto" style="max-height: 320px;">
-                        {!! $subscription->mail_body ?: '<span class="text-muted">'.__('subscriptions.labels.body_default').'</span>' !!}
+        <div class="col-lg-6 mb-3 d-flex">
+            <div class="portal-card portal-subscription-notifications w-100">
+                <div class="card-header">
+                    <span class="portal-icon"><i class="fas fa-bell"></i></span>
+                    <div>
+                        <h5>{{ __('subscriptions.sections.notifications') }}</h5>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>{{ __('subscriptions.sections.notifications') }}</strong>
-                </div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-2">
-                        <li>
-                            <i class="fas fa-bell text-muted mr-1"></i>
-                            @if($subscription->notify_workspace_admins)
-                                <span class="badge badge-success">{{ __('subscriptions.labels.notify_workspace_admins_yes') }}</span>
-                            @else
-                                <span class="badge badge-secondary">{{ __('subscriptions.labels.notify_workspace_admins_no') }}</span>
-                            @endif
-                        </li>
-                    </ul>
+                    <div class="mb-3">
+                        <span class="portal-section-heading mb-2">{{ __('subscriptions.fields.notify_workspace_admins') }}</span>
+                        <span class="portal-badge {{ $subscription->notify_workspace_admins ? 'badge-soft-success' : 'badge-soft-muted' }}">
+                            {{ $subscription->notify_workspace_admins ? __('subscriptions.labels.notify_workspace_admins_yes') : __('subscriptions.labels.notify_workspace_admins_no') }}
+                        </span>
+                    </div>
                     <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-muted text-uppercase small">{{ __('subscriptions.fields.notification_users') }}</h6>
-                            <ul class="list-unstyled mb-0">
-                                @php
-                                    $notificationUsers = $subscription->notificationLinks->where('notifiable_type', \App\Models\ReportSubscriptionNotification::TYPE_USER);
-                                @endphp
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="portal-section-heading">{{ __('subscriptions.fields.notification_users') }}</h6>
+                            @php
+                                $notificationUsers = $subscription->notificationLinks->where('notifiable_type', \App\Models\ReportSubscriptionNotification::TYPE_USER);
+                            @endphp
+                            <ul class="portal-list">
                                 @forelse($notificationUsers as $link)
-                                    <li><i class="fas fa-user-shield text-muted mr-1"></i> {{ optional($link->user)->name }}</li>
+                                    <li>
+                                        <i class="fas fa-user-shield text-muted"></i>
+                                        <div>
+                                            <div>{{ optional($link->user)->name }}</div>
+                                            <div class="text-muted small">{{ optional($link->user)->email }}</div>
+                                        </div>
+                                    </li>
                                 @empty
-                                    <li class="text-muted small">{{ __('subscriptions.labels.no_notification_users') }}</li>
+                                    <li class="list-empty">{{ __('subscriptions.labels.no_notification_users') }}</li>
                                 @endforelse
                             </ul>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="text-muted text-uppercase small">{{ __('subscriptions.fields.notification_groups') }}</h6>
-                            <ul class="list-unstyled mb-0">
-                                @php
-                                    $notificationGroups = $subscription->notificationLinks->where('notifiable_type', \App\Models\ReportSubscriptionNotification::TYPE_GROUP);
-                                @endphp
+                            <h6 class="portal-section-heading">{{ __('subscriptions.fields.notification_groups') }}</h6>
+                            @php
+                                $notificationGroups = $subscription->notificationLinks->where('notifiable_type', \App\Models\ReportSubscriptionNotification::TYPE_GROUP);
+                            @endphp
+                            <ul class="portal-list">
                                 @forelse($notificationGroups as $link)
-                                    <li><i class="fas fa-users-cog text-muted mr-1"></i> {{ optional($link->group)->name }}</li>
+                                    <li>
+                                        <i class="fas fa-users-cog text-muted"></i>
+                                        <span>{{ optional($link->group)->name }}</span>
+                                    </li>
                                 @empty
-                                    <li class="text-muted small">{{ __('subscriptions.labels.no_notification_groups') }}</li>
+                                    <li class="list-empty">{{ __('subscriptions.labels.no_notification_groups') }}</li>
                                 @endforelse
                             </ul>
                         </div>
@@ -226,37 +416,65 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <strong>{{ __('subscriptions.sections.runs') }}</strong>
+    <div class="portal-card portal-subscription-email mb-3">
+        <div class="card-header">
+            <span class="portal-icon"><i class="fas fa-envelope"></i></span>
+            <div>
+                <h5>{{ __('subscriptions.sections.email') }}</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <span class="portal-section-heading mb-2">{{ __('subscriptions.fields.mail_subject') }}</span>
+                <div class="summary-value text-muted">
+                    {{ $subscription->mail_subject ?: __('subscriptions.labels.subject_default') }}
                 </div>
-                <div class="card-body p-0">
-                    <table class="table table-sm mb-0">
-                        <thead class="thead-light">
+            </div>
+            <div class="portal-email-preview">
+                {!! $subscription->mail_body ?: '<span class="text-muted">'.__('subscriptions.labels.body_default').'</span>' !!}
+            </div>
+        </div>
+    </div>
+
+    <div class="portal-card portal-subscription-runs mb-4">
+        <div class="card-header">
+            <span class="portal-icon"><i class="fas fa-history"></i></span>
+            <div>
+                <h5>{{ __('subscriptions.sections.runs') }}</h5>
+            </div>
+        </div>
+        @if(count($runs) === 0)
+            <div class="portal-empty-state">
+                <i class="fas fa-tasks"></i>
+                <span>{{ __('subscriptions.runs.empty') }}</span>
+            </div>
+        @else
+            <div class="portal-table-wrapper">
+                <div class="table-responsive">
+                    <table class="portal-table">
+                        <thead>
                             <tr>
                                 <th>{{ __('subscriptions.runs.scheduled_time') }}</th>
                                 <th>{{ __('subscriptions.runs.status') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($runs as $run)
+                            @foreach($runs as $run)
+                                @php
+                                    $statusBadge = match ($run->status) {
+                                        \App\Models\ReportSubscriptionRun::STATUS_SUCCESS => 'badge-soft-success',
+                                        \App\Models\ReportSubscriptionRun::STATUS_FAILED => 'badge-soft-danger',
+                                        \App\Models\ReportSubscriptionRun::STATUS_RUNNING => 'badge-soft-warning',
+                                        default => 'badge-soft-muted',
+                                    };
+                                @endphp
                                 <tr>
-                                    <td>
+                                    <td data-label="{{ __('subscriptions.runs.scheduled_time') }}">
                                         <div>{{ optional($run->scheduled_time)->format('Y-m-d H:i') ?? '-' }}</div>
                                         <div class="text-muted small">{{ optional($run->finish_time)->diffForHumans() }}</div>
                                     </td>
-                                    <td>
-                                        @php
-                                            $statusClass = match ($run->status) {
-                                                \App\Models\ReportSubscriptionRun::STATUS_SUCCESS => 'badge-success',
-                                                \App\Models\ReportSubscriptionRun::STATUS_FAILED => 'badge-danger',
-                                                \App\Models\ReportSubscriptionRun::STATUS_RUNNING => 'badge-warning',
-                                                default => 'badge-secondary',
-                                            };
-                                        @endphp
-                                        <span class="badge {{ $statusClass }}">
+                                    <td data-label="{{ __('subscriptions.runs.status') }}">
+                                        <span class="portal-badge {{ $statusBadge }}">
                                             {{ __('subscriptions.statuses.' . $run->status) }}
                                         </span>
                                         @if($run->error_message)
@@ -264,21 +482,17 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-3">{{ __('subscriptions.runs.empty') }}</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
-                @if($runs instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-                    <div class="card-footer">
-                        {{ $runs->withQueryString()->links() }}
-                    </div>
-                @endif
             </div>
-        </div>
+        @endif
+        @if($runs instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+            <div class="card-footer bg-white border-top-0">
+                {{ $runs->withQueryString()->links() }}
+            </div>
+        @endif
     </div>
 
     @can('report_subscriptions.manage')
