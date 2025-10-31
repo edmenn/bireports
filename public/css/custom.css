@@ -395,6 +395,19 @@ body.layout-navbar-fixed.text-sm .wrapper .main-header.text-sm ~ .content-wrappe
   color: #fff;
 }
 
+/* Collapsed sidebar: keep standalone icons aligned away from the edge */
+body.sidebar-mini.sidebar-collapse .main-sidebar .nav-sidebar > .nav-item > .nav-link {
+  justify-content: flex-start;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  text-align: left;
+}
+
+body.sidebar-mini.sidebar-collapse .main-sidebar .nav-sidebar > .nav-item > .nav-link .nav-icon {
+  margin: 0;
+  width: 1.65rem;
+}
+
 /* Sidebar search: button smaller than the input */
 .sidebar .btn-sidebar {
   padding: .25rem .5rem !important;
@@ -850,3 +863,8 @@ body.layout-navbar-fixed.text-sm .wrapper .main-header.text-sm ~ .content-wrappe
 
 /* Preloader: avoid oval distortion and honor the configured size */
 .preloader img { border-radius: 0 !important; clip-path: none !important; object-fit: contain; }
+
+/* === FIX REAL: mover submenús en sidebar colapsado más hacia la izquierda === */
+body.sidebar-mini.sidebar-collapse .os-content .nav-treeview {
+  margin-left: -15px !important; /* negativo = más a la izquierda */
+}

@@ -29,7 +29,7 @@ return array_merge($vendor, [
         'audit' => 'Auditoria',
         'audit_usage_metrics' => 'Métricas de uso',
         'audit_reset' => 'Reiniciar auditoria',
-        'audit_changes' => 'Alterações (sistema e configuração)',
+        'audit_changes' => 'Alterações',
         'settings' => 'Configurações',
         'settings_parameters' => 'Parâmetros',
         'settings_theme' => 'Tema',
