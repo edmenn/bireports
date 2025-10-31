@@ -16,7 +16,7 @@ return [
         'send_now' => 'Send now',
         'insert_snippet' => 'Insert snippet',
         'delete_confirm' => 'Are you sure you want to delete this subscription?',
-        'back' => 'Back to subscriptions',
+        'back' => 'Back',
     ],
 
     'tabs' => [

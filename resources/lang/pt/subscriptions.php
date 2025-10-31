@@ -16,7 +16,7 @@ return [
         'send_now' => 'Enviar agora',
         'insert_snippet' => 'Inserir fragmento',
         'delete_confirm' => 'Excluir esta assinatura?',
-        'back' => 'Voltar às assinaturas',
+        'back' => 'Voltar',
     ],
 
     'tabs' => [

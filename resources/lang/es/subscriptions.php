@@ -16,7 +16,7 @@ return [
         'send_now' => 'Enviar ahora',
         'insert_snippet' => 'Insertar fragmento',
         'delete_confirm' => '¿Eliminar esta suscripción?',
-        'back' => 'Volver a las suscripciones',
+        'back' => 'Volver',
     ],
 
     'tabs' => [
