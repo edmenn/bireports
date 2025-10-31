@@ -71,13 +71,11 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         $admin  = Role::findOrCreate('admin', 'web');
-        $editor = Role::findOrCreate('editor', 'web');
         $viewer = Role::findOrCreate('viewer', 'web');
 
         // Default badge colors (configurable from the UI)
         try {
             $admin->forceFill(['badge_bg' => '#fee2e2', 'badge_text' => '#b91c1c'])->save();
-            $editor->forceFill(['badge_bg' => '#fef9c3', 'badge_text' => '#a16207'])->save();
             $viewer->forceFill(['badge_bg' => '#dcfce7', 'badge_text' => '#166534'])->save();
         } catch (\Throwable $e) {
             // Older installations might not have the badge columns; ignore errors.
@@ -94,9 +92,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'menu.roles'
             ]);
         }
-        $editor->givePermissionTo([
-            'reports.view', 'menu.reports_index', 'menu.workspaces', 'menu.capacities'
-        ]);
         $viewer->givePermissionTo([
             'reports.view', 'menu.portal'
         ]);
@@ -108,4 +103,3 @@ class RolesAndPermissionsSeeder extends Seeder
         }
     }
 }
-

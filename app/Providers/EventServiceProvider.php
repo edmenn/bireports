@@ -23,20 +23,23 @@ final class EventServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Observers de auditoría para entidades clave
-        \App\Models\User::observe(\App\Observers\EntityObserver::class);
-        if (class_exists(\App\Models\Group::class)) {
-            \App\Models\Group::observe(\App\Observers\EntityObserver::class);
-        }
-        if (class_exists(\App\Models\Folder::class)) {
-            \App\Models\Folder::observe(\App\Observers\EntityObserver::class);
-        }
-        // Modelos de Spatie Permission
-        if (class_exists(\Spatie\Permission\Models\Role::class)) {
-            \Spatie\Permission\Models\Role::observe(\App\Observers\EntityObserver::class);
-        }
-        if (class_exists(\Spatie\Permission\Models\Permission::class)) {
-            \Spatie\Permission\Models\Permission::observe(\App\Observers\EntityObserver::class);
+        $observer = \App\Observers\EntityObserver::class;
+        $models = array_unique(array_filter(config('audit.entities', []), 'is_string'));
+
+        foreach ($models as $modelClass) {
+            if (!class_exists($modelClass)) {
+                continue;
+            }
+
+            if (!is_subclass_of($modelClass, \Illuminate\Database\Eloquent\Model::class)) {
+                continue;
+            }
+
+            try {
+                $modelClass::observe($observer);
+            } catch (\Throwable $e) {
+                // Evita que una clase problemática bloquee el arranque del proveedor.
+            }
         }
     }
 

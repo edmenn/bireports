@@ -29,6 +29,7 @@ class PermissionsSeeder extends Seeder
         $perms = [
             // Portal
             'portal.view',
+            'menu.portal',
 
             // Reports
             'reports.view', 'reports.create', 'reports.edit', 'reports.delete', 'reports.export', 'report_subscriptions.manage',
@@ -63,27 +64,15 @@ class PermissionsSeeder extends Seeder
 
         // Role permission assignments
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $editor = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'web']);
         $viewer = Role::firstOrCreate(['name' => 'viewer', 'guard_name' => 'web']);
 
         // Admin: full access
         $admin->syncPermissions(Permission::all());
 
-        // Editor: operational access (no user/config management)
-        $editorPerms = [
-            'portal.view',
-            'reports.view', 'reports.create', 'reports.edit', 'reports.export', 'report_subscriptions.manage',
-            'datasets.view', 'datasets.refresh', 'datasets.schedule.view', 'datasets.schedule.edit', 'datasets.export',
-            'workspaces.view',
-            'applications.view',
-            'capacities.view', 'capacities.pause', 'capacities.resume', 'capacities.schedule.view', 'capacities.schedule.edit', 'capacities.audit.view',
-            'audit.view', 'audit.export',
-        ];
-        $editor->syncPermissions($editorPerms);
-
         // Viewer: portal consumption only
         $viewerPerms = [
             'portal.view',
+            'menu.portal',
             'reports.view',
             'datasets.view',
             'workspaces.view',

@@ -45,7 +45,7 @@ class UsersController extends Controller
 
     public function create(): View
     {
-        $roles = ['admin','editor','viewer'];
+        $roles = ['admin','viewer'];
         return view('users.create', compact('roles'));
     }
 
@@ -55,7 +55,7 @@ class UsersController extends Controller
             'name'     => ['required','string','max:255'],
             'email'    => ['required','email','max:255','unique:users,email'],
             'password' => ['required','string','min:8','max:255'],
-            'role'     => ['required','in:admin,editor,viewer'],
+            'role'     => ['required','in:admin,viewer'],
         ]);
 
         $user = User::create([
@@ -70,7 +70,7 @@ class UsersController extends Controller
 
     public function edit(User $user): View
     {
-        $roles = ['admin','editor','viewer'];
+        $roles = ['admin','viewer'];
         return view('users.edit', compact('user','roles'));
     }
 
@@ -80,7 +80,7 @@ class UsersController extends Controller
             'name'     => ['required','string','max:255'],
             'email'    => ['required','email','max:255','unique:users,email,'.$user->id],
             'password' => ['nullable','string','min:8','max:255'],
-            'role'     => ['required','in:admin,editor,viewer'],
+            'role'     => ['required','in:admin,viewer'],
             'is_blocked' => ['nullable','boolean'],
         ]);
 
@@ -152,7 +152,7 @@ class UsersController extends Controller
             $error = $e->getMessage();
             Log::warning('Import users (Graph) error: ' . $error);
         }
-        $roles = ['admin','editor','viewer'];
+        $roles = ['admin','viewer'];
         return view('users.import', compact('items','q','nextLink','error','roles'));
     }
 
@@ -161,7 +161,7 @@ class UsersController extends Controller
         $data = $request->validate([
             'selected' => ['required','array','min:1'],
             'selected.*' => ['required','string'], // formato: email|name
-            'role' => ['required','in:viewer,editor,admin'],
+            'role' => ['required','in:viewer,admin'],
         ]);
 
         $created = 0;
