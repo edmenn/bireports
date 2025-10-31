@@ -87,7 +87,6 @@ class ReportSubscriptionController extends Controller
             'recipientGroups',
             'recipientUsers',
             'pages' => fn ($q) => $q->orderBy('page_name'),
-            'runs' => fn ($q) => $q->latest()->limit(50),
             'notificationLinks.user',
             'notificationLinks.group',
         ]);
@@ -106,9 +105,23 @@ class ReportSubscriptionController extends Controller
             }
         }
 
+        $perPageOptions = [10, 50, 100];
+        $perPage = (int) $request->input('per_page', 10);
+        if (! in_array($perPage, $perPageOptions, true)) {
+            $perPage = 10;
+        }
+
+        $runs = $reportSubscription->runs()
+            ->orderByDesc('scheduled_time')
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
+
         return view('subscriptions.show', [
             'subscription' => $reportSubscription,
-            'runs' => $reportSubscription->runs()->latest()->paginate(20)->withQueryString(),
+            'runs' => $runs,
+            'perPage' => $perPage,
+            'perPageOptions' => $perPageOptions,
             'reports' => $reportsQuery->get(['id', 'name', 'workspace_id']),
             'subscriptionSnippetOptions' => $this->snippetOptions($user),
         ]);
@@ -238,6 +251,7 @@ class ReportSubscriptionController extends Controller
         ]);
 
         ProcessReportSubscriptionRun::dispatch($run->id);
+        $this->scheduler->pruneRuns($reportSubscription);
 
         if ($request->expectsJson()) {
             return response()->json([

@@ -83,26 +83,28 @@
             align-items: center;
             justify-content: flex-end;
             flex-wrap: wrap;
-            gap: .45rem;
+            gap: 0.5rem;
         }
 
         .portal-action-group form {
-            margin: 0;
+            margin: 0 !important;
         }
 
         .portal-action-btn {
             border-radius: .65rem;
-            padding: .35rem .75rem;
+            padding: .45rem .85rem;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: .35rem;
             transition: all .2s ease-in-out;
             background-color: #ffffff;
+            min-height: 2.2rem;
+            margin: 0 !important;
         }
 
         .portal-action-btn i {
-            margin-right: .35rem;
             font-size: .85rem;
         }
 
@@ -114,6 +116,45 @@
 
         .portal-empty-state i {
             font-size: 2.5rem;
+        }
+
+        .portal-pagination {
+            display: flex;
+            justify-content: center;
+        }
+
+        .portal-pagination .pagination {
+            margin-bottom: 0;
+            gap: .35rem;
+        }
+
+        .portal-pagination .page-link {
+            border-radius: .65rem;
+            border: 1px solid #d0d7e2;
+            padding: .35rem .65rem;
+            min-width: 2.25rem;
+            min-height: 2.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 500;
+            box-shadow: none;
+        }
+
+        .portal-pagination .page-item.active .page-link {
+            background-color: rgba(13, 110, 253, .12);
+            color: #0d6efd;
+            border-color: rgba(13, 110, 253, .35);
+        }
+
+        .portal-pagination .page-link:hover {
+            color: #0d6efd;
+            border-color: rgba(13, 110, 253, .35);
+        }
+
+        .portal-pagination .page-link:focus {
+            box-shadow: none;
         }
 
         @media (max-width: 768px) {
@@ -132,7 +173,6 @@
             .portal-table tbody td {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
                 padding: .85rem 1rem;
                 border-bottom: 1px solid #eef2f7;
             }
@@ -274,7 +314,7 @@
         </div>
 
         @if($isPaginator)
-            <div class="card-footer bg-white border-top-0">
+            <div class="card-footer bg-white border-top-0 portal-pagination">
                 {{ $subscriptions->withQueryString()->links() }}
             </div>
         @endif
@@ -291,3 +331,12 @@
 @include('subscriptions.partials.script', [
     'subscriptionSnippetOptions' => $subscriptionSnippetOptions ?? [],
 ])
+
+
+
+
+
+
+
+
+

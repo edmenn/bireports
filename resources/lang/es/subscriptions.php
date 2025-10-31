@@ -9,7 +9,7 @@ return [
         'create' => 'Crear suscripción',
         'close' => 'Cerrar',
         'cancel' => 'Cancelar',
-        'save' => 'Guardar suscripción',
+        'save' => 'Guardar',
         'view' => 'Ver',
         'edit' => 'Editar',
         'delete' => 'Eliminar',
@@ -137,6 +137,7 @@ return [
         'scheduled_time' => 'Hora programada',
         'status' => 'Estado',
         'empty' => 'Aún no hay ejecuciones registradas.',
+        'per_page' => 'Registros por página',
     ],
 
     'index' => [

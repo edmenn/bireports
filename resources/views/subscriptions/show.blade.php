@@ -175,6 +175,69 @@
             opacity: .6;
         }
 
+        .portal-per-page-form {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .portal-per-page-form label {
+            margin: 0;
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #6c7a91;
+            font-weight: 600;
+        }
+
+        .portal-per-page-form select {
+            border-radius: .65rem;
+            border: 1px solid #d0d7e2;
+            padding: .3rem .75rem;
+            font-size: .85rem;
+            min-height: 2.2rem;
+        }
+
+        .portal-pagination {
+            display: flex;
+            justify-content: center;
+        }
+
+        .portal-pagination .pagination {
+            margin-bottom: 0;
+            gap: .35rem;
+        }
+
+        .portal-pagination .page-link {
+            border-radius: .65rem;
+            border: 1px solid #d0d7e2;
+            padding: .35rem .65rem;
+            min-width: 2.25rem;
+            min-height: 2.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 500;
+            box-shadow: none;
+        }
+
+        .portal-pagination .page-item.active .page-link {
+            background-color: rgba(13, 110, 253, .12);
+            color: #0d6efd;
+            border-color: rgba(13, 110, 253, .35);
+        }
+
+        .portal-pagination .page-link:hover {
+            color: #0d6efd;
+            border-color: rgba(13, 110, 253, .35);
+        }
+
+        .portal-pagination .page-link:focus {
+            box-shadow: none;
+        }
+
         @media (max-width: 768px) {
             .portal-table thead {
                 display: none;
@@ -204,6 +267,14 @@
                 text-transform: uppercase;
                 font-size: .7rem;
                 letter-spacing: .05em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .portal-per-page-form {
+                width: 100%;
+                margin-top: .75rem;
+                justify-content: flex-start;
             }
         }
     </style>
@@ -437,11 +508,31 @@
     </div>
 
     <div class="portal-card portal-subscription-runs mb-4">
+        @php
+            $queryParams = request()->except(['per_page', 'page']);
+        @endphp
         <div class="card-header">
             <span class="portal-icon"><i class="fas fa-history"></i></span>
             <div>
                 <h5>{{ __('subscriptions.sections.runs') }}</h5>
             </div>
+            <form method="GET" class="portal-per-page-form">
+                @foreach($queryParams as $key => $value)
+                    @if(is_array($value))
+                        @foreach($value as $item)
+                            <input type="hidden" name="{{ $key }}[]" value="{{ $item }}">
+                        @endforeach
+                    @else
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endif
+                @endforeach
+                <label for="runs-per-page">{{ __('subscriptions.runs.per_page') }}</label>
+                <select id="runs-per-page" name="per_page" class="custom-select custom-select-sm" onchange="this.form.submit()">
+                    @foreach($perPageOptions as $option)
+                        <option value="{{ $option }}" @selected($perPage === $option)>{{ $option }}</option>
+                    @endforeach
+                </select>
+            </form>
         </div>
         @if(count($runs) === 0)
             <div class="portal-empty-state">
@@ -488,11 +579,48 @@
                 </div>
             </div>
         @endif
-        @if($runs instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
-            <div class="card-footer bg-white border-top-0">
-                {{ $runs->withQueryString()->links() }}
-            </div>
-        @endif
+        
+
+     @if($runs instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator)
+        <div class="card-footer bg-white border-top-0 portal-pagination">
+            <nav aria-label="Paginación de ejecuciones">
+                <ul class="pagination justify-content-center mb-0">
+                    {{-- Botón Anterior --}}
+                    @if ($runs->onFirstPage())
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-hidden="true">&laquo;</span>
+                        </li>
+                    @else
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $runs->previousPageUrl() }}" rel="prev" aria-label="Anterior">&laquo;</a>
+                        </li>
+                    @endif
+
+                    {{-- Números de página --}}
+                    @foreach ($runs->links()->elements[0] ?? [] as $page => $url)
+                        @if ($page == $runs->currentPage())
+                            <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
+                        @else
+                            <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
+                        @endif
+                    @endforeach
+
+                    {{-- Botón Siguiente --}}
+                    @if ($runs->hasMorePages())
+                        <li class="page-item">
+                            <a class="page-link" href="{{ $runs->nextPageUrl() }}" rel="next" aria-label="Siguiente">&raquo;</a>
+                        </li>
+                    @else
+                        <li class="page-item disabled">
+                            <span class="page-link" aria-hidden="true">&raquo;</span>
+                        </li>
+                    @endif
+                </ul>
+            </nav>
+        </div>
+    @endif
+
+
     </div>
 
     @can('report_subscriptions.manage')

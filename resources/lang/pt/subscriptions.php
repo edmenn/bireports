@@ -9,7 +9,7 @@ return [
         'create' => 'Criar assinatura',
         'close' => 'Fechar',
         'cancel' => 'Cancelar',
-        'save' => 'Salvar assinatura',
+        'save' => 'Salvar',
         'view' => 'Ver',
         'edit' => 'Editar',
         'delete' => 'Excluir',
@@ -137,6 +137,7 @@ return [
         'scheduled_time' => 'Horário programado',
         'status' => 'Status',
         'empty' => 'Ainda não há execuções registradas.',
+        'per_page' => 'Registros por página',
     ],
 
     'index' => [

@@ -114,6 +114,10 @@ class ReportSubscriptionScheduler
             }
         });
 
+        if ($run && $run->wasRecentlyCreated) {
+            $this->pruneRuns($subscription);
+        }
+
         return $run;
     }
 
@@ -375,6 +379,24 @@ class ReportSubscriptionScheduler
     {
         $reference ??= CarbonImmutable::now(config('app.timezone'));
         $this->cancelFutureRuns($subscription, $reference);
+    }
+
+    public function pruneRuns(ReportSubscription $subscription): void
+    {
+        $ids = ReportSubscriptionRun::query()
+            ->where('report_subscription_id', $subscription->id)
+            ->orderByDesc('scheduled_time')
+            ->orderByDesc('id')
+            ->skip(100)
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        ReportSubscriptionRun::query()
+            ->whereIn('id', $ids)
+            ->forceDelete();
     }
 
     /**

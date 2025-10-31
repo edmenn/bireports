@@ -9,7 +9,7 @@ return [
         'create' => 'Create Subscription',
         'close' => 'Close',
         'cancel' => 'Cancel',
-        'save' => 'Save Subscription',
+        'save' => 'Save',
         'view' => 'View',
         'edit' => 'Edit',
         'delete' => 'Delete',
@@ -137,6 +137,7 @@ return [
         'scheduled_time' => 'Scheduled time',
         'status' => 'Status',
         'empty' => 'No executions recorded yet.',
+        'per_page' => 'Entries per page',
     ],
 
     'index' => [
