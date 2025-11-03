@@ -25,13 +25,14 @@ ensure_zip_extension() {
 }
 
 usage() {
-  echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild]"
+  echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild] [--cleanup]"
   echo "  --sync           = Sincroniza solo archivos (rsync) + reinicia app/web + migraciones"
   echo "  (sin argumentos) = modo interactivo"
   echo "  --fresh           = php artisan migrate:fresh --seed --force (BORRA datos)"
   echo "  --seed            = php artisan db:seed --force"
   echo "  --refresh         = Reconstruye imagen, repuebla app_code, recrea contenedores y limpia cachés"
   echo "  --refresh-nobuild = Reinicia contenedores existentes y limpia cachés (rápido)"
+  echo "  --cleanup         = Limpieza segura de Docker (sin riesgo)"
 }
 
 # ---------- Flags ----------
@@ -40,6 +41,7 @@ DO_SEED="no"
 DO_REFRESH="no"
 DO_REFRESH_NOBUILD="no"
 DO_SYNC_ONLY="no"
+DO_CLEANUP="no"
 
 for arg in "$@"; do
   case "$arg" in
@@ -48,6 +50,7 @@ for arg in "$@"; do
     --refresh) DO_REFRESH="yes" ;;
     --refresh-nobuild) DO_REFRESH_NOBUILD="yes" ;;
     --sync) DO_SYNC_ONLY="yes" ;;
+    --cleanup) DO_CLEANUP="yes" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
@@ -69,8 +72,9 @@ if [[ $# -eq 0 && -t 0 ]]; then
   echo "  4) Fresh (migrate:fresh --seed --force)"
   echo "  5) Solo seed (db:seed --force)"
   echo "  6) Sync rápido (solo archivos + migrar)"
+  echo "  7) Limpieza segura de Docker (sin riesgo)"
   echo "  0) Salir"
-  read -r -p "Opción [1/2/3/4/5/6/0]: " opt
+  read -r -p "Opción [1/2/3/4/5/6/7/0]: " opt
   case "$opt" in
     1|"") ;;
     2) DO_REFRESH="yes" ;;
@@ -78,6 +82,7 @@ if [[ $# -eq 0 && -t 0 ]]; then
     4) DO_FRESH="yes" ;;
     5) DO_SEED="yes" ;;
     6) DO_SYNC_ONLY="yes" ;;
+    7) DO_CLEANUP="yes" ;;
     0) exit 0 ;;
     *) echo "Opción inválida"; exit 2 ;;
   esac
@@ -156,17 +161,32 @@ require_file ".env"
 check_env_permissions
 ensure_app_key
 
-# ---------- Opción 3: Refresh rápido ----------
+# ---------- Limpieza segura de Docker ----------
+if [[ "$DO_CLEANUP" == "yes" ]]; then
+  log "[cleanup] Verificando contenedores activos..."
+  RUNNING=$($COMPOSE ps -q | wc -l)
+  if [[ "$RUNNING" -eq 0 ]]; then
+    warn "No hay contenedores activos. Levantando servicios antes de limpiar..."
+    $COMPOSE up -d
+    sleep 5
+  fi
+
+  log "[cleanup] Ejecutando limpieza segura de Docker (sin borrar volúmenes ni imágenes activas)..."
+  BEFORE=$(docker system df | grep "Total space" || true)
+  docker system prune -f
+  log "[cleanup] Estado del sistema tras limpieza:"
+  docker system df
+  ok "Limpieza completada con éxito. Docker sin elementos huérfanos."
+  exit 0
+fi
+
+# ---------- Refresh rápido ----------
 if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
   log "[refresh-nobuild] Reiniciando contenedores (sin build)..."
   $COMPOSE up -d "$APP_SERVICE" web "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
-
-  log "[refresh-nobuild] Esperando a que la app esté healthy..."
   wait_healthy "$APP_SERVICE" 120 || true
-
   ensure_storage_dirs
   ensure_zip_extension
-
   log "[refresh-nobuild] Limpiando caches de Laravel y OPcache..."
   $COMPOSE exec -T "$APP_SERVICE" sh -lc '
     php artisan optimize:clear || true;
@@ -174,56 +194,46 @@ if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
     php -r "opcache_reset();" || true;
     php artisan optimize
   '
-  ok "Refresh rápido completado (sin rebuild)."
+  ok "Refresh rápido completado."
   exit 0
 fi
 
-# ---------- Opción 2: Refresh completo ----------
+# ---------- Refresh completo ----------
 if [[ "$DO_REFRESH" == "yes" ]]; then
   log "[refresh] Reconstruyendo imagen (BuildKit habilitado)..."
   DOCKER_BUILDKIT=1 $COMPOSE build --no-cache app
-
   log "[refresh] Repoblando volumen 'app_code'..."
   $COMPOSE run --rm code_init
-
   log "[refresh] Levantando contenedores..."
   $COMPOSE up -d "$APP_SERVICE" web "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
   wait_healthy "$APP_SERVICE" 120 || true
-
   ensure_storage_dirs
   ensure_zip_extension
-
   log "[refresh] Limpiando caches..."
   $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
   ok "Refresh completo terminado."
   exit 0
 fi
 
-# ---------- Flujo normal ----------
+# ---------- Deploy normal ----------
 log "Construyendo imagen de la app..."
 DOCKER_BUILDKIT=1 $COMPOSE build app
 ok "Imagen construida."
-
 log "Poblando volumen 'app_code'..."
 $COMPOSE run --rm code_init
-ok "Volumen poblado."
-
+ok "Volumen 'app_code' poblado."
 log "Levantando servicios..."
 $COMPOSE up -d "$DB_SERVICE" "$APP_SERVICE" web caddy "$SCHEDULER_SERVICE" "$QUEUE_SERVICE"
 $COMPOSE ps
-
 wait_healthy "$DB_SERVICE" 120
 wait_healthy "$APP_SERVICE" 120
 ensure_storage_dirs
 ensure_zip_extension
-
 log "Ejecutando migraciones..."
 $COMPOSE exec "$APP_SERVICE" php artisan migrate --force
 ok "Migraciones OK."
-
 log "Limpieza final y optimización..."
 $COMPOSE exec "$APP_SERVICE" php artisan optimize
 ok "Optimización OK."
-
 echo
 ok "Deploy completado. Revisa https://${DOMAIN}"
