@@ -218,7 +218,7 @@ fi
 # ---------- Refresh-only flow ----------
 if [[ "$DO_REFRESH" == "yes" ]]; then
   log "[refresh] Construyendo imagen de la app (sin cache si se desea con DOCKER_BUILDKIT=1)."
-  $COMPOSE build --rm app
+  DOCKER_BUILDKIT=1 $COMPOSE build --no-cache app
 
   log "[refresh] Repoblando volumen 'app_code' desde la imagen nueva."
   $COMPOSE run --rm code_init
@@ -272,7 +272,7 @@ fi
 
 # ---------- Build imagen app ----------
 log "Construyendo imagen de la app…"
-$COMPOSE build --rm app
+DOCKER_BUILDKIT=1 $COMPOSE build app
 ok "Imagen construida."
 
 # ---------- Poblar volumen de código desde imagen ----------
