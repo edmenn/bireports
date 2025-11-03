@@ -198,7 +198,7 @@ class ReportSubscriptionRunner
         $exportPath = $this->powerBiService->exportReportToFile(
             workspaceId: $report->workspace_id,
             reportId: $report->id,
-            pages: $pageNames,
+            pages: array_reverse($pageNames),
             format: $subscription->format,
             datasetId: $report->dataset_id,
             rlsUser: $recipient->email,
@@ -459,36 +459,35 @@ class ReportSubscriptionRunner
             return $pages;
         }
 
-        $cacheKey = $report->workspace_id . '|' . $report->id;
-
         $metadata = $this->reportPageMetadata($subscription, $report);
-        $labels = [];
+        $orderMap = [];
 
-        foreach ($metadata as $row) {
+        foreach ($metadata as $index => $row) {
             $name = (string) ($row['name'] ?? '');
             if ($name === '') {
                 continue;
             }
 
-            $label = $row['displayName'] ?? $name;
-            $labels[$name] = (string) $label;
+            // Guardar el índice de orden tal como lo entrega Power BI
+            $orderMap[$name] = $index;
         }
 
-        $indexMap = [];
+        $selectionIndex = [];
         foreach ($pages as $idx => $name) {
-            $indexMap[$name] = $idx;
+            $selectionIndex[$name] = $idx;
         }
 
-        usort($pages, function (string $left, string $right) use ($labels, $indexMap): int {
-            $leftLabel = $labels[$left] ?? $left;
-            $rightLabel = $labels[$right] ?? $right;
+        // 👇 Comparador corregido: respeta el orden visual de Power BI
+        usort($pages, function (string $left, string $right) use ($orderMap, $selectionIndex): int {
+            $leftOrder = $orderMap[$left] ?? (1000 + ($selectionIndex[$left] ?? 0));
+            $rightOrder = $orderMap[$right] ?? (1000 + ($selectionIndex[$right] ?? 0));
 
-            $comparison = strnatcasecmp($leftLabel, $rightLabel);
-            if ($comparison !== 0) {
-                return $comparison;
+            if ($leftOrder === $rightOrder) {
+                return ($selectionIndex[$left] ?? 0) <=> ($selectionIndex[$right] ?? 0);
             }
 
-            return ($indexMap[$left] ?? 0) <=> ($indexMap[$right] ?? 0);
+            // Invertido para mantener el orden visual natural
+            return $rightOrder <=> $leftOrder;
         });
 
         return $pages;
