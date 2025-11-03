@@ -83,8 +83,12 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         notifUsersSelect: document.getElementById('subscription-notification-users'),
         notifGroupsSelect: document.getElementById('subscription-notification-groups'),
         recurrenceSelect: document.getElementById('subscription-recurrence'),
-        cronWrapper: document.getElementById('cron-expression-wrapper'),
-        cronInput: document.getElementById('subscription-cron'),
+        weeklyOptions: document.getElementById('subscription-weekly-options'),
+        weeklyIntervalInput: document.getElementById('subscription-weekly-interval'),
+        monthlyOptions: document.getElementById('subscription-monthly-options'),
+        monthlyDayInput: document.getElementById('subscription-monthly-day'),
+        monthlyModeDay: document.getElementById('subscription-monthly-mode-day'),
+        monthlyModeLast: document.getElementById('subscription-monthly-mode-last'),
         timeInput: document.getElementById('subscription-time'),
         startInput: document.getElementById('subscription-start-date'),
         endInput: document.getElementById('subscription-end-date'),
@@ -93,6 +97,7 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         maxSizeInput: document.getElementById('subscription-max-size'),
         timezoneInput: document.getElementById('subscription-timezone'),
         enabledSwitch: document.getElementById('subscription-enabled'),
+        capacitySwitch: document.getElementById('subscription-capacity-warmup'),
         subjectInput: document.getElementById('subscription-mail-subject'),
         bodyInput: document.getElementById('subscription-mail-body'),
         notifyAdminsCheckbox: document.getElementById('subscription-notify-admins'),
@@ -107,6 +112,14 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
     };
 
     const recurrenceFields = Array.from(document.querySelectorAll('.recurrence-dependent'));
+    const weeklyDayCheckboxes = Array.from(document.querySelectorAll('.subscription-weekday'));
+    if (elements.monthlyModeDay) {
+        elements.monthlyModeDay.addEventListener('change', syncMonthlyMode);
+    }
+    if (elements.monthlyModeLast) {
+        elements.monthlyModeLast.addEventListener('change', syncMonthlyMode);
+    }
+    syncMonthlyMode();
     const metadataCache = new Map();
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     let activeInput = elements.bodyInput || elements.subjectInput || null;
@@ -573,14 +586,22 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
 
     function updateRecurrenceView() {
         const value = elements.recurrenceSelect?.value || 'daily';
-        const isCron = value === 'cron';
-        recurrenceFields.forEach((field) => {
-            if (!field) return;
-            field.classList.toggle('d-none', isCron);
-        });
-        if (elements.cronWrapper) {
-            elements.cronWrapper.classList.toggle('d-none', !isCron);
+        const showWeekly = value === 'weekly';
+        const showMonthly = value === 'monthly';
+
+        if (elements.weeklyOptions) {
+            elements.weeklyOptions.classList.toggle('d-none', !showWeekly);
         }
+
+        if (elements.monthlyOptions) {
+            elements.monthlyOptions.classList.toggle('d-none', !showMonthly);
+        }
+
+        if (showWeekly && gatherWeeklyDays().length === 0 && weeklyDayCheckboxes.length) {
+            weeklyDayCheckboxes[0].checked = true;
+        }
+
+        syncMonthlyMode();
     }
 
     function gatherPages() {
@@ -590,23 +611,96 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         }));
     }
 
+    function gatherWeeklyDays() {
+        return weeklyDayCheckboxes
+            .filter((cb) => cb.checked)
+            .map((cb) => cb.getAttribute('data-day') || '')
+            .filter((value) => value !== '');
+    }
+
+    function setWeeklyDays(days) {
+        const normalized = Array.isArray(days)
+            ? days.map((day) => String(day).toLowerCase())
+            : [];
+
+        weeklyDayCheckboxes.forEach((cb) => {
+            const day = (cb.getAttribute('data-day') || '').toLowerCase();
+            cb.checked = normalized.includes(day);
+        });
+
+        if (gatherWeeklyDays().length === 0 && weeklyDayCheckboxes.length) {
+            weeklyDayCheckboxes[0].checked = true;
+        }
+    }
+
+    function isMonthlyDayMode() {
+        if (!elements.monthlyModeLast) {
+            return true;
+        }
+
+        return !elements.monthlyModeLast.checked;
+    }
+
+    function setMonthlyMode(mode, dayValue = 1) {
+        if (elements.monthlyModeDay && elements.monthlyModeLast) {
+            if (mode === 'last') {
+                elements.monthlyModeLast.checked = true;
+            } else {
+                elements.monthlyModeDay.checked = true;
+            }
+        }
+
+        if (elements.monthlyDayInput && dayValue !== undefined && dayValue !== null) {
+            elements.monthlyDayInput.value = dayValue;
+        }
+
+        syncMonthlyMode();
+    }
+
+    function syncMonthlyMode() {
+        if (!elements.monthlyDayInput) {
+            return;
+        }
+
+        const disabled = elements.monthlyModeLast ? !!elements.monthlyModeLast.checked : false;
+        elements.monthlyDayInput.disabled = disabled;
+    }
+
+    function parseWeeklyDaysInput(value) {
+        if (Array.isArray(value)) {
+            return value.map((item) => String(item).toLowerCase());
+        }
+
+        if (typeof value === 'string') {
+            return value
+                .split(',')
+                .map((item) => item.trim().toLowerCase())
+                .filter((item) => item !== '');
+        }
+
+        return [];
+    }
+
     function collectPayload() {
         const recurrence = elements.recurrenceSelect?.value || 'daily';
-        const isCron = recurrence === 'cron';
         const timeValue = elements.timeInput?.value ?? '';
         const timeParts = parseTimeInput(timeValue);
         const maxSizeValue = elements.maxSizeInput?.value ?? '';
+        const weeklyDays = recurrence === 'weekly' ? gatherWeeklyDays() : [];
+        const weeklyIntervalValue = elements.weeklyIntervalInput ? Number(elements.weeklyIntervalInput.value || 1) : 1;
+        const monthlyDayValue = elements.monthlyDayInput ? Number(elements.monthlyDayInput.value || 1) : 1;
+        const useLastDay = recurrence === 'monthly' ? !!elements.monthlyModeLast?.checked : false;
 
         return {
             name: elements.nameInput?.value?.trim() || '',
             is_enabled: elements.enabledSwitch ? !!elements.enabledSwitch.checked : true,
             format: elements.formatSelect?.value || 'pdf',
             recurrence,
-            cron_expression: isCron ? (elements.cronInput?.value?.trim() || '') : null,
+            cron_expression: null,
             start_date: elements.startInput?.value || '',
             end_date: elements.endInput?.value || null,
-            hour: !isCron ? timeParts.hour : null,
-            minute: !isCron ? timeParts.minute : null,
+            hour: timeParts.hour,
+            minute: timeParts.minute,
             timezone: elements.timezoneInput?.value?.trim() || '',
             report_id: elements.reportSelect?.value || '',
             pages: gatherPages(),
@@ -616,6 +710,11 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
             mail_body: elements.bodyInput?.value || '',
             max_attachment_size_mb: maxSizeValue !== '' ? Number(maxSizeValue) : null,
             notify_workspace_admins: elements.notifyAdminsCheckbox ? !!elements.notifyAdminsCheckbox.checked : false,
+            ensure_capacity_active: elements.capacitySwitch ? !!elements.capacitySwitch.checked : false,
+            weekly_days: recurrence === 'weekly' ? weeklyDays : [],
+            weekly_interval: recurrence === 'weekly' ? Math.max(1, weeklyIntervalValue) : 1,
+            monthly_day: recurrence === 'monthly' && isMonthlyDayMode() ? Math.max(1, Math.min(31, monthlyDayValue || 1)) : null,
+            monthly_use_last_day: recurrence === 'monthly' ? useLastDay : false,
             notification_users: gatherSelectedIds(elements.notifUsersSelect),
             notification_groups: gatherSelectedIds(elements.notifGroupsSelect),
         };
@@ -705,6 +804,7 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         if (elements.subjectInput) elements.subjectInput.value = config.default_subject || '';
         if (elements.bodyInput) elements.bodyInput.value = config.default_body || '';
         if (elements.notifyAdminsCheckbox) elements.notifyAdminsCheckbox.checked = false;
+        if (elements.capacitySwitch) elements.capacitySwitch.checked = false;
         if (elements.startInput) elements.startInput.value = todayString();
         if (elements.endInput) elements.endInput.value = '';
         if (elements.timeInput) {
@@ -717,6 +817,10 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         if (elements.pagesList) elements.pagesList.innerHTML = '';
         if (elements.pagesCard) elements.pagesCard.classList.add('d-none');
         if (elements.reportSelect) elements.reportSelect.selectedIndex = 0;
+        if (elements.recurrenceSelect) elements.recurrenceSelect.value = 'daily';
+        setWeeklyDays(['mon']);
+        if (elements.weeklyIntervalInput) elements.weeklyIntervalInput.value = '1';
+        setMonthlyMode('day', 1);
         window.$('#report-subscription-tabs a:first').tab('show');
         updateRecurrenceView();
     }
@@ -745,15 +849,36 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         if (elements.nameInput) elements.nameInput.value = subscription.name || '';
         if (elements.enabledSwitch) elements.enabledSwitch.checked = !!subscription.is_enabled;
         if (elements.formatSelect && subscription.format) elements.formatSelect.value = subscription.format;
-        if (elements.recurrenceSelect && subscription.recurrence) elements.recurrenceSelect.value = subscription.recurrence;
+        const supportedRecurrences = ['once', 'daily', 'weekly', 'monthly'];
+        const recurrence = supportedRecurrences.includes(subscription.recurrence)
+            ? subscription.recurrence
+            : 'daily';
+        if (elements.recurrenceSelect) elements.recurrenceSelect.value = recurrence;
         updateRecurrenceView();
 
-        if (subscription.recurrence === 'cron') {
-            if (elements.cronInput) elements.cronInput.value = subscription.cron_expression || '';
-            if (elements.timeInput) elements.timeInput.value = '';
+        if (elements.timeInput) elements.timeInput.value = formatTimeInput(subscription.hour, subscription.minute);
+
+        if (recurrence === 'weekly') {
+            const weeklyDays = parseWeeklyDaysInput(subscription.weekly_days);
+            setWeeklyDays(weeklyDays);
+            if (elements.weeklyIntervalInput) {
+                const interval = Number(subscription.weekly_interval || 1);
+                elements.weeklyIntervalInput.value = Number.isFinite(interval) && interval > 0 ? interval : 1;
+            }
         } else {
-            if (elements.cronInput) elements.cronInput.value = '';
-            if (elements.timeInput) elements.timeInput.value = formatTimeInput(subscription.hour, subscription.minute);
+            setWeeklyDays(['mon']);
+            if (elements.weeklyIntervalInput) elements.weeklyIntervalInput.value = '1';
+        }
+
+        if (recurrence === 'monthly') {
+            if (subscription.monthly_use_last_day) {
+                setMonthlyMode('last');
+            } else {
+                const monthlyDay = subscription.monthly_day ?? 1;
+                setMonthlyMode('day', monthlyDay || 1);
+            }
+        } else {
+            setMonthlyMode('day', elements.monthlyDayInput?.value || 1);
         }
 
         if (elements.startInput && subscription.start_date) {
@@ -769,6 +894,7 @@ window.reportSubscriptionConfig = @json($subscriptionConfig);
         updatePreview();
         if (elements.maxSizeInput) elements.maxSizeInput.value = subscription.max_attachment_size_mb ?? '';
         if (elements.notifyAdminsCheckbox) elements.notifyAdminsCheckbox.checked = !!subscription.notify_workspace_admins;
+        if (elements.capacitySwitch) elements.capacitySwitch.checked = !!subscription.ensure_capacity_active;
         if (elements.reportSelect && subscription.report_id) elements.reportSelect.value = subscription.report_id;
 
         const selectedPageNames = new Set((subscription.pages || []).map((page) => page.page_name || page.name));

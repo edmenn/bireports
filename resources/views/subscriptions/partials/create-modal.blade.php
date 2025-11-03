@@ -207,10 +207,10 @@
                                 <div class="form-group col-md-4">
                                     <label for="subscription-recurrence">{{ __('subscriptions.fields.recurrence') }}</label>
                                     <select class="custom-select" id="subscription-recurrence" name="recurrence">
+                                        <option value="once">{{ __('subscriptions.recurrence.once') }}</option>
                                         <option value="daily">{{ __('subscriptions.recurrence.daily') }}</option>
                                         <option value="weekly">{{ __('subscriptions.recurrence.weekly') }}</option>
                                         <option value="monthly">{{ __('subscriptions.recurrence.monthly') }}</option>
-                                        <option value="cron">{{ __('subscriptions.recurrence.custom') }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -236,16 +236,62 @@
                                 </div>
                             </div>
 
-                            <div class="form-group d-none" id="cron-expression-wrapper">
-                                <label for="subscription-cron">{{ __('subscriptions.fields.cron_expression') }}</label>
-                                <input type="text" class="form-control" id="subscription-cron" name="cron_expression" placeholder="0 30 8 * * ?">
-                                <small class="form-text text-muted">{{ __('subscriptions.hints.cron_expression') }}</small>
+                            <div id="subscription-weekly-options" class="schedule-options d-none">
+                                <label class="d-block font-weight-semibold">{{ __('subscriptions.schedule.weekly.label') }}</label>
+                                <div class="form-row">
+                                    <div class="form-group col-md-8">
+                                        <span class="d-block mb-2">{{ __('subscriptions.schedule.weekly.days') }}</span>
+                                        <div class="d-flex flex-wrap">
+                                            @foreach(['mon','tue','wed','thu','fri','sat','sun'] as $weekday)
+                                                <div class="custom-control custom-checkbox mr-3 mb-2">
+                                                    <input type="checkbox" class="custom-control-input subscription-weekday" id="subscription-weekday-{{ $weekday }}" data-day="{{ $weekday }}">
+                                                    <label class="custom-control-label" for="subscription-weekday-{{ $weekday }}">{{ __('subscriptions.schedule.weekly.day_labels.' . $weekday) }}</label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label for="subscription-weekly-interval">{{ __('subscriptions.schedule.weekly.interval') }}</label>
+                                        <input type="number" class="form-control" id="subscription-weekly-interval" min="1" max="6" value="1">
+                                        <small class="form-text text-muted">{{ __('subscriptions.schedule.weekly.interval_hint') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="subscription-monthly-options" class="schedule-options d-none">
+                                <label class="d-block font-weight-semibold">{{ __('subscriptions.schedule.monthly.label') }}</label>
+                                <div class="custom-control custom-radio mb-2">
+                                    <input type="radio" class="custom-control-input" name="subscription-monthly-mode" id="subscription-monthly-mode-day" value="day" checked>
+                                    <label class="custom-control-label" for="subscription-monthly-mode-day">
+                                        {{ __('subscriptions.schedule.monthly.on_day') }}
+                                    </label>
+                                    <div class="mt-2 ml-4">
+                                        <input type="number" class="form-control w-auto d-inline-block" id="subscription-monthly-day" min="1" max="31" value="1">
+                                        <small class="form-text text-muted">{{ __('subscriptions.schedule.monthly.day_hint') }}</small>
+                                    </div>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" class="custom-control-input" name="subscription-monthly-mode" id="subscription-monthly-mode-last" value="last">
+                                    <label class="custom-control-label" for="subscription-monthly-mode-last">
+                                        {{ __('subscriptions.schedule.monthly.on_last_day') }}
+                                    </label>
+                                </div>
                             </div>
 
                             <div class="form-group col-md-4 px-0">
                                 <label for="subscription-max-size">{{ __('subscriptions.fields.max_attachment_size_mb') }}</label>
                                 <input type="number" class="form-control" id="subscription-max-size" name="max_attachment_size_mb" min="1" max="100" step="1" placeholder="10">
                                 <small class="form-text text-muted">{{ __('subscriptions.hints.max_attachment_size_mb') }}</small>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="subscription-capacity-warmup" name="ensure_capacity_active" value="1">
+                                    <label class="custom-control-label" for="subscription-capacity-warmup">
+                                        {{ __('subscriptions.fields.ensure_capacity_active') }}
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">{{ __('subscriptions.hints.ensure_capacity_active') }}</small>
                             </div>
                         </div>
 

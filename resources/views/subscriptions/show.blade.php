@@ -325,6 +325,23 @@
         $attachmentLabel = $subscription->max_attachment_size_mb
             ? $subscription->max_attachment_size_mb . ' MB'
             : __('subscriptions.labels.no_limit');
+        $capacityWarmupLabel = $subscription->ensure_capacity_active
+            ? __('subscriptions.labels.ensure_capacity_active_yes')
+            : __('subscriptions.labels.ensure_capacity_active_no');
+        $weeklyDaysSummary = collect(explode(',', (string) $subscription->weekly_days))
+            ->filter()
+            ->map(fn ($day) => __('subscriptions.schedule.weekly.day_labels.' . strtolower($day)))
+            ->implode(', ');
+        $weeklyInterval = max(1, (int) ($subscription->weekly_interval ?? 1));
+        $weeklySummary = __('subscriptions.schedule.weekly.summary', [
+            'interval' => $weeklyInterval,
+            'days' => $weeklyDaysSummary !== '' ? $weeklyDaysSummary : __('subscriptions.schedule.weekly.default_day'),
+        ]);
+        $monthlySummary = $subscription->monthly_use_last_day
+            ? __('subscriptions.schedule.monthly.summary_last')
+            : __('subscriptions.schedule.monthly.summary_day', [
+                'day' => $subscription->monthly_day ?? optional($subscription->start_date)->day ?? 1,
+            ]);
         $statusBadgeClass = $subscription->is_enabled ? 'badge-soft-success' : 'badge-soft-muted';
         $statusLabel = $subscription->is_enabled ? __('subscriptions.status.enabled') : __('subscriptions.status.disabled');
     @endphp
@@ -356,7 +373,13 @@
                     <span class="summary-label">{{ __('subscriptions.fields.recurrence') }}</span>
                     <div class="summary-value">
                         <span class="portal-badge badge-soft-secondary">{{ $recurrenceLabel }}</span>
-                        @if($subscription->recurrence === 'cron' && $subscription->cron_expression)
+                        @if($subscription->recurrence === \App\Models\ReportSubscription::RECURRENCE_WEEKLY)
+                            <div class="text-muted small mt-1">{{ $weeklySummary }}</div>
+                        @endif
+                        @if($subscription->recurrence === \App\Models\ReportSubscription::RECURRENCE_MONTHLY)
+                            <div class="text-muted small mt-1">{{ $monthlySummary }}</div>
+                        @endif
+                        @if($subscription->recurrence === \App\Models\ReportSubscription::RECURRENCE_CRON && $subscription->cron_expression)
                             <div class="text-muted small mt-1">{{ $subscription->cron_expression }}</div>
                         @endif
                     </div>
@@ -375,6 +398,10 @@
                 <div class="portal-summary-item">
                     <span class="summary-label">{{ __('subscriptions.fields.max_attachment_size_mb') }}</span>
                     <div class="summary-value">{{ $attachmentLabel }}</div>
+                </div>
+                <div class="portal-summary-item">
+                    <span class="summary-label">{{ __('subscriptions.fields.ensure_capacity_active') }}</span>
+                    <div class="summary-value">{{ $capacityWarmupLabel }}</div>
                 </div>
                 <div class="portal-summary-item">
                     <span class="summary-label">{{ __('subscriptions.fields.is_enabled') }}</span>
@@ -634,3 +661,4 @@
 @include('subscriptions.partials.script', [
     'subscriptionSnippetOptions' => $subscriptionSnippetOptions ?? [],
 ])
+

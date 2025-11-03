@@ -47,6 +47,7 @@ return [
         'mail_subject' => 'Тема письма',
         'mail_body' => 'Текст письма',
         'notify_workspace_admins' => 'Уведомлять администраторов рабочего пространства',
+        'ensure_capacity_active' => 'Включать емкость перед выполнением',
         'notification_users' => 'Уведомлять пользователей',
         'notification_groups' => 'Уведомлять группы',
         'schedule_window' => 'Окно запуска',
@@ -55,6 +56,7 @@ return [
     ],
 
     'recurrence' => [
+        'once' => 'Однократно',
         'daily' => 'Ежедневно',
         'weekly' => 'Еженедельно',
         'monthly' => 'Ежемесячно',
@@ -62,6 +64,7 @@ return [
     ],
 
     'recurrence_labels' => [
+        'once' => 'Однократно',
         'daily' => 'Ежедневно',
         'weekly' => 'Еженедельно',
         'monthly' => 'Ежемесячно',
@@ -80,6 +83,7 @@ return [
         'mail_subject' => 'Поддерживаются плейсхолдеры {{report_name}} и {{date}}.',
         'mail_body' => 'Допустим HTML. Плейсхолдеры {{report_name}} и {{datetime}} поддерживаются.',
         'notify_workspace_admins' => 'Добавляет администраторов рабочего пространства в уведомления об ошибках.',
+        'ensure_capacity_active' => 'Если включено, перед запуском подписки емкость возобновляется. После выполнения она не отключается автоматически.',
         'notification_users' => 'Дополнительные пользователи для уведомлений о сбоях.',
         'notification_groups' => 'Члены этих групп будут уведомлены при сбоях.',
     ],
@@ -110,6 +114,8 @@ return [
         'no_limit' => 'Без ограничения',
         'notify_workspace_admins_yes' => 'Администраторы рабочего пространства будут уведомлены',
         'notify_workspace_admins_no' => 'Администраторы рабочего пространства не уведомляются',
+        'ensure_capacity_active_yes' => 'Емкость возобновляется перед запуском',
+        'ensure_capacity_active_no' => 'Возобновление емкости отключено',
         'no_groups_selected' => 'Группы не выбраны',
         'no_users_selected' => 'Пользователи не выбраны',
         'subject_default' => 'Запланированный отчёт',
@@ -205,6 +211,34 @@ return [
         'preview_empty' => 'Контент пока отсутствует. Добавьте HTML на вкладке кода, чтобы увидеть результат.',
         'design_toolbar' => 'Панель форматирования',
         'font_size' => 'Размер шрифта',
+    ],
+
+    'schedule' => [
+        'weekly' => [
+            'label' => 'Ezhenedelnyi grafik',
+            'days' => 'Zapusk po etim dnyam',
+            'interval' => 'Povtorjat kazhdyе (nedeli)',
+            'interval_hint' => 'Primer: 1 - kazhduju nedelju, 2 - cherez nedelju.',
+            'day_labels' => [
+                'mon' => 'Pon',
+                'tue' => 'Vtor',
+                'wed' => 'Sre',
+                'thu' => 'Chet',
+                'fri' => 'Pjat',
+                'sat' => 'Sub',
+                'sun' => 'Vos',
+            ],
+            'summary' => 'Kazhdyе :interval nedeli po dnyam :days',
+            'default_day' => 'den nachala',
+        ],
+        'monthly' => [
+            'label' => 'Ezhemesjachnyi grafik',
+            'on_day' => 'Zapusk v ukazannyi den kazhdogo mesjaca',
+            'day_hint' => 'Esli v mesiace net etogo chisla, ispolzuetsja poslednij dostupnyj den.',
+            'on_last_day' => 'Zapusk v poslednij den mesjaca',
+            'summary_day' => 'V den :day kazhdogo mesjaca',
+            'summary_last' => 'V poslednij den kazhdogo mesjaca',
+        ],
     ],
 
     'notifications' => [

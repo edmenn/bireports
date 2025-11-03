@@ -47,6 +47,7 @@ return [
         'mail_subject' => 'Asunto',
         'mail_body' => 'Contenido del correo',
         'notify_workspace_admins' => 'Notificar administradores del espacio de trabajo',
+        'ensure_capacity_active' => 'Activar capacidad antes de ejecutar',
         'notification_users' => 'Notificar usuarios',
         'notification_groups' => 'Notificar grupos',
         'schedule_window' => 'Ventana de programación',
@@ -55,6 +56,7 @@ return [
     ],
 
     'recurrence' => [
+        'once' => 'Única vez',
         'daily' => 'Diaria',
         'weekly' => 'Semanal',
         'monthly' => 'Mensual',
@@ -62,6 +64,7 @@ return [
     ],
 
     'recurrence_labels' => [
+        'once' => 'Única vez',
         'daily' => 'Diaria',
         'weekly' => 'Semanal',
         'monthly' => 'Mensual',
@@ -80,6 +83,7 @@ return [
         'mail_subject' => 'Se admiten variables como {{report_name}} y {{date}}.',
         'mail_body' => 'Se admite HTML. Se admiten variables como {{report_name}} y {{datetime}}.',
         'notify_workspace_admins' => 'Incluye administradores del workspace en las notificaciones de error.',
+        'ensure_capacity_active' => 'Si está habilitado, reanudamos la capacidad asociada antes de exportar. No se pausa al finalizar.',
         'notification_users' => 'Usuarios adicionales a notificar ante fallas.',
         'notification_groups' => 'Miembros de estos grupos recibirán notificación de fallas.',
     ],
@@ -110,6 +114,8 @@ return [
         'no_limit' => 'Sin límite',
         'notify_workspace_admins_yes' => 'Se notificará a los administradores del workspace',
         'notify_workspace_admins_no' => 'No se notificará a los administradores del workspace',
+        'ensure_capacity_active_yes' => 'Se reanudará la capacidad antes de ejecutar',
+        'ensure_capacity_active_no' => 'No se reanudará la capacidad automáticamente',
         'no_groups_selected' => 'No se seleccionaron grupos',
         'no_users_selected' => 'No se seleccionaron usuarios',
         'subject_default' => 'Reporte programado',
@@ -176,6 +182,8 @@ return [
         'notification_user_forbidden' => 'Algún usuario de notificación no tiene acceso al reporte.',
         'notification_group_forbidden' => 'Algún grupo de notificación no tiene acceso al reporte.',
         'errors_title' => 'Revisa los siguientes errores:',
+        'weekly_required' => 'Selecciona al menos un día de la semana.',
+        'monthly_required' => 'Selecciona un día específico o usa la opción de último día.',
     ],
 
     'errors' => [
@@ -205,6 +213,34 @@ return [
         'preview_empty' => 'Aún no hay contenido. Agrega HTML en la pestaña de código para generar la vista previa.',
         'design_toolbar' => 'Herramientas de formato',
         'font_size' => 'Tamaño de fuente',
+    ],
+
+    'schedule' => [
+        'weekly' => [
+            'label' => 'Frecuencia semanal',
+            'days' => 'Ejecutar en estos días',
+            'interval' => 'Repetir cada (semanas)',
+            'interval_hint' => 'Ejemplo: 1 ejecuta cada semana, 2 ejecuta cada dos semanas.',
+            'day_labels' => [
+                'mon' => 'Lun',
+                'tue' => 'Mar',
+                'wed' => 'Mie',
+                'thu' => 'Jue',
+                'fri' => 'Vie',
+                'sat' => 'Sab',
+                'sun' => 'Dom',
+            ],
+            'summary' => 'Cada :interval semana(s) los :days',
+            'default_day' => 'día inicial',
+        ],
+        'monthly' => [
+            'label' => 'Frecuencia mensual',
+            'on_day' => 'Ejecutar este día de cada mes',
+            'day_hint' => 'Si el mes tiene menos días, se usa el último día disponible.',
+            'on_last_day' => 'Ejecutar el último día de cada mes',
+            'summary_day' => 'El día :day de cada mes',
+            'summary_last' => 'El último día de cada mes',
+        ],
     ],
 
     'notifications' => [

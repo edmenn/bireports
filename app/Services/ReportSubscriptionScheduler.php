@@ -133,6 +133,7 @@ class ReportSubscriptionScheduler
         }
 
         return match ($subscription->recurrence) {
+            ReportSubscription::RECURRENCE_ONCE => $this->resolveOneTime($subscription, $current, $startDate),
             ReportSubscription::RECURRENCE_DAILY => $this->resolveDaily($subscription, $current),
             ReportSubscription::RECURRENCE_WEEKLY => $this->resolveWeekly($subscription, $current, $startDate),
             ReportSubscription::RECURRENCE_MONTHLY => $this->resolveMonthly($subscription, $current, $startDate),
@@ -149,40 +150,56 @@ class ReportSubscriptionScheduler
 
     protected function resolveWeekly(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate): ?CarbonImmutable
     {
-        $target = $current->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
-        if (! $this->isCurrentMinute($current, $target)) {
+        if ($subscription->hour === null || $subscription->minute === null) {
             return null;
         }
 
-        if ($target->dayOfWeek !== $startDate->dayOfWeek) {
+        $candidate = $current->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
+        if (! $this->isCurrentMinute($current, $candidate)) {
             return null;
         }
 
-        $weeksSinceStart = (int) floor($startDate->startOfDay()->diffInDays($target->startOfDay()) / 7);
-        if ($weeksSinceStart < 0) {
+        if ($candidate->lt($startDate)) {
             return null;
         }
 
-        return $target;
+        $days = $this->weeklyDays($subscription);
+        if (! in_array($candidate->dayOfWeek, $days, true)) {
+            return null;
+        }
+
+        $interval = max(1, (int) ($subscription->weekly_interval ?? 1));
+        $anchorWeek = $startDate->startOfWeek(CarbonInterface::MONDAY);
+        $candidateWeek = $candidate->startOfWeek(CarbonInterface::MONDAY);
+
+        if ($candidateWeek->lt($anchorWeek)) {
+            return null;
+        }
+
+        $weeksDiff = $anchorWeek->diffInWeeks($candidateWeek);
+        if ($weeksDiff % $interval !== 0) {
+            return null;
+        }
+
+        return $candidate;
     }
 
     protected function resolveMonthly(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate): ?CarbonImmutable
     {
-        $target = $current->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
-        if (! $this->isCurrentMinute($current, $target)) {
+        if ($subscription->hour === null || $subscription->minute === null) {
             return null;
         }
 
-        $day = min($startDate->day, $target->endOfMonth()->day);
-        if ($target->day !== $day) {
+        $candidate = $this->monthlyCandidateFor($subscription, $current, (int) $subscription->hour, (int) $subscription->minute);
+        if (! $this->isCurrentMinute($current, $candidate)) {
             return null;
         }
 
-        if ($target < $startDate) {
+        if ($candidate->lt($startDate)) {
             return null;
         }
 
-        return $target;
+        return $candidate;
     }
 
     protected function resolveCron(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate, ?CarbonImmutable $endDate): ?CarbonImmutable
@@ -213,6 +230,16 @@ class ReportSubscriptionScheduler
         return $current;
     }
 
+    protected function resolveOneTime(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate): ?CarbonImmutable
+    {
+        if ($subscription->hour === null || $subscription->minute === null) {
+            return null;
+        }
+
+        $target = $startDate->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
+        return $this->isCurrentMinute($current, $target) ? $target : null;
+    }
+
     protected function isCurrentMinute(CarbonInterface $current, CarbonInterface $target): bool
     {
         return $current->format('Y-m-d H:i') === $target->format('Y-m-d H:i');
@@ -240,6 +267,7 @@ class ReportSubscriptionScheduler
         }
 
         return match ($subscription->recurrence) {
+            ReportSubscription::RECURRENCE_ONCE => $this->nextOneTime($subscription, $current, $startDate, $endDate),
             ReportSubscription::RECURRENCE_DAILY => $this->nextDaily($subscription, $current, $startDate, $endDate),
             ReportSubscription::RECURRENCE_WEEKLY => $this->nextWeekly($subscription, $current, $startDate, $endDate),
             ReportSubscription::RECURRENCE_MONTHLY => $this->nextMonthly($subscription, $current, $startDate, $endDate),
@@ -278,17 +306,47 @@ class ReportSubscriptionScheduler
             return null;
         }
 
-        $target = $startDate->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
+        $interval = max(1, (int) ($subscription->weekly_interval ?? 1));
+        $days = $this->weeklyDays($subscription);
 
-        while ($target->lt($current)) {
-            $target = $target->addWeek();
+        $hour = (int) $subscription->hour;
+        $minute = (int) $subscription->minute;
+
+        $anchorWeek = $startDate->startOfWeek(CarbonInterface::MONDAY);
+        $weekCursor = $current->startOfWeek(CarbonInterface::MONDAY);
+        if ($weekCursor->lt($anchorWeek)) {
+            $weekCursor = $anchorWeek;
         }
 
-        if ($endDate && $target->greaterThan($endDate)) {
-            return null;
+        for ($iterations = 0; $iterations < 104; $iterations++) {
+            $weeksDiff = $anchorWeek->diffInWeeks($weekCursor);
+            $matchesInterval = ($weeksDiff % $interval) === 0;
+
+            if ($matchesInterval) {
+                foreach ($days as $dayOfWeek) {
+                    $offset = ($dayOfWeek - $weekCursor->dayOfWeek + 7) % 7;
+                    $candidate = $weekCursor->addDays($offset)->setTime($hour, $minute, 0);
+
+                    if ($candidate->lt($startDate)) {
+                        continue;
+                    }
+
+                    if ($candidate->lt($current)) {
+                        continue;
+                    }
+
+                    if ($endDate && $candidate->greaterThan($endDate)) {
+                        return null;
+                    }
+
+                    return $candidate;
+                }
+            }
+
+            $weekCursor = $weekCursor->addWeek();
         }
 
-        return $target;
+        return null;
     }
 
     protected function nextMonthly(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate, ?CarbonImmutable $endDate): ?CarbonImmutable
@@ -297,20 +355,37 @@ class ReportSubscriptionScheduler
             return null;
         }
 
-        $day = $startDate->day;
-        $target = $startDate->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
+        $hour = (int) $subscription->hour;
+        $minute = (int) $subscription->minute;
 
-        while ($target->lt($current)) {
-            $candidate = $target->addMonth();
-            $dayForMonth = min($day, $candidate->endOfMonth()->day);
-            $target = $candidate->setDay($dayForMonth);
+        $cursor = $startDate;
+        if ($cursor->lt($current)) {
+            $cursor = $current;
         }
 
-        if ($endDate && $target->greaterThan($endDate)) {
-            return null;
+        $cursor = $cursor->startOfMonth();
+
+        for ($iterations = 0; $iterations < 60; $iterations++) {
+            $candidate = $this->monthlyCandidateFor($subscription, $cursor, $hour, $minute);
+
+            if ($candidate->lt($startDate)) {
+                $cursor = $cursor->addMonth();
+                continue;
+            }
+
+            if ($candidate->lt($current)) {
+                $cursor = $cursor->addMonth();
+                continue;
+            }
+
+            if ($endDate && $candidate->greaterThan($endDate)) {
+                return null;
+            }
+
+            return $candidate;
         }
 
-        return $target;
+        return null;
     }
 
     protected function nextCron(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate, ?CarbonImmutable $endDate): ?CarbonImmutable
@@ -345,6 +420,25 @@ class ReportSubscriptionScheduler
         }
 
         return $next;
+    }
+
+    protected function nextOneTime(ReportSubscription $subscription, CarbonImmutable $current, CarbonImmutable $startDate, ?CarbonImmutable $endDate): ?CarbonImmutable
+    {
+        if ($subscription->hour === null || $subscription->minute === null) {
+            return null;
+        }
+
+        $target = $startDate->setTime((int) $subscription->hour, (int) $subscription->minute, 0);
+
+        if ($current->gt($target)) {
+            return null;
+        }
+
+        if ($endDate && $target->greaterThan($endDate)) {
+            return null;
+        }
+
+        return $target;
     }
 
     protected function cancelFutureRuns(ReportSubscription $subscription, CarbonImmutable $reference): void
@@ -397,6 +491,66 @@ class ReportSubscriptionScheduler
         ReportSubscriptionRun::query()
             ->whereIn('id', $ids)
             ->forceDelete();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function weeklyDays(ReportSubscription $subscription): array
+    {
+        $map = [
+            'mon' => CarbonInterface::MONDAY,
+            'tue' => CarbonInterface::TUESDAY,
+            'wed' => CarbonInterface::WEDNESDAY,
+            'thu' => CarbonInterface::THURSDAY,
+            'fri' => CarbonInterface::FRIDAY,
+            'sat' => CarbonInterface::SATURDAY,
+            'sun' => CarbonInterface::SUNDAY,
+        ];
+
+        $raw = $subscription->weekly_days;
+        $days = [];
+
+        if (is_string($raw) && trim($raw) !== '') {
+            foreach (explode(',', $raw) as $value) {
+                $key = strtolower(trim($value));
+                if (isset($map[$key])) {
+                    $days[] = $map[$key];
+                }
+            }
+        }
+
+        if (empty($days) && $subscription->start_date) {
+            $days[] = $subscription->start_date->dayOfWeek ?? CarbonInterface::MONDAY;
+        }
+
+        if (empty($days)) {
+            $days[] = CarbonInterface::MONDAY;
+        }
+
+        $days = array_values(array_unique($days));
+        sort($days);
+
+        return $days;
+    }
+
+    protected function monthlyCandidateFor(ReportSubscription $subscription, CarbonImmutable $reference, int $hour, int $minute): CarbonImmutable
+    {
+        $monthStart = $reference->startOfMonth();
+
+        if ($subscription->monthly_use_last_day) {
+            return $monthStart->endOfMonth()->setTime($hour, $minute, 0);
+        }
+
+        $day = $subscription->monthly_day;
+        if (! is_int($day) || $day < 1 || $day > 31) {
+            $day = $subscription->start_date?->day ?? 1;
+        }
+
+        $day = max(1, min(31, (int) $day));
+        $day = min($day, $monthStart->endOfMonth()->day);
+
+        return $monthStart->setDay($day)->setTime($hour, $minute, 0);
     }
 
     /**

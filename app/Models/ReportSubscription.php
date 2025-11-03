@@ -22,6 +22,10 @@ class ReportSubscription extends Model
         'is_enabled',
         'format',
         'recurrence',
+        'weekly_days',
+        'weekly_interval',
+        'monthly_day',
+        'monthly_use_last_day',
         'cron_expression',
         'start_date',
         'end_date',
@@ -33,6 +37,7 @@ class ReportSubscription extends Model
         'mail_body',
         'max_attachment_size_mb',
         'notify_workspace_admins',
+        'ensure_capacity_active',
         'created_by',
         'updated_by',
     ];
@@ -43,8 +48,11 @@ class ReportSubscription extends Model
         'end_date'                => 'date',
         'mail_body'               => 'string',
         'notify_workspace_admins' => 'boolean',
+        'ensure_capacity_active'  => 'boolean',
+        'monthly_use_last_day'    => 'boolean',
     ];
 
+    public const RECURRENCE_ONCE    = 'once';
     public const FORMAT_PDF = 'pdf';
     public const FORMAT_PPT = 'ppt';
 
@@ -128,4 +136,3 @@ class ReportSubscription extends Model
         return true;
     }
 }
-

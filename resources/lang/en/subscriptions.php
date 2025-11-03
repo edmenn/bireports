@@ -47,6 +47,7 @@ return [
         'mail_subject' => 'Subject',
         'mail_body' => 'Email body',
         'notify_workspace_admins' => 'Notify workspace administrators',
+        'ensure_capacity_active' => 'Start capacity before execution',
         'notification_users' => 'Notify users',
         'notification_groups' => 'Notify groups',
         'schedule_window' => 'Schedule window',
@@ -55,6 +56,7 @@ return [
     ],
 
     'recurrence' => [
+        'once' => 'One time',
         'daily' => 'Daily',
         'weekly' => 'Weekly',
         'monthly' => 'Monthly',
@@ -62,6 +64,7 @@ return [
     ],
 
     'recurrence_labels' => [
+        'once' => 'One time',
         'daily' => 'Daily',
         'weekly' => 'Weekly',
         'monthly' => 'Monthly',
@@ -80,6 +83,7 @@ return [
         'mail_subject' => 'Placeholders like {{report_name}} and {{date}} are supported.',
         'mail_body' => 'HTML content allowed. Placeholders like {{report_name}} and {{datetime}} are supported.',
         'notify_workspace_admins' => 'Adds workspace administrators to the failure notifications.',
+        'ensure_capacity_active' => 'If enabled, the capacity is resumed before the task runs. It is not paused afterwards.',
         'notification_users' => 'Additional users to notify when a run fails.',
         'notification_groups' => 'Members of these groups are notified when a run fails.',
     ],
@@ -110,6 +114,8 @@ return [
         'no_limit' => 'No limit',
         'notify_workspace_admins_yes' => 'Workspace administrators will be notified',
         'notify_workspace_admins_no' => 'Workspace administrators are not notified',
+        'ensure_capacity_active_yes' => 'Capacity will be resumed before execution',
+        'ensure_capacity_active_no' => 'Capacity warm-up is disabled',
         'no_groups_selected' => 'No groups selected',
         'no_users_selected' => 'No users selected',
         'subject_default' => 'Scheduled report',
@@ -176,6 +182,8 @@ return [
         'notification_user_forbidden' => 'One or more notification users cannot access the report.',
         'notification_group_forbidden' => 'One or more notification groups cannot access the report.',
         'errors_title' => 'Please review the errors:',
+        'weekly_required' => 'Select at least one day of the week.',
+        'monthly_required' => 'Choose a specific day or use the last day option.',
     ],
 
     'errors' => [
@@ -205,6 +213,34 @@ return [
         'preview_empty' => 'No content yet. Add HTML on the source tab to generate a preview.',
         'design_toolbar' => 'Formatting tools',
         'font_size' => 'Font size',
+    ],
+
+    'schedule' => [
+        'weekly' => [
+            'label' => 'Weekly schedule',
+            'days' => 'Run on these days',
+            'interval' => 'Repeat every (weeks)',
+            'interval_hint' => 'For example: 1 runs every week, 2 runs every two weeks.',
+            'day_labels' => [
+                'mon' => 'Mon',
+                'tue' => 'Tue',
+                'wed' => 'Wed',
+                'thu' => 'Thu',
+                'fri' => 'Fri',
+                'sat' => 'Sat',
+                'sun' => 'Sun',
+            ],
+            'summary' => 'Every :interval week(s) on :days',
+            'default_day' => 'the start day',
+        ],
+        'monthly' => [
+            'label' => 'Monthly schedule',
+            'on_day' => 'Run on this day of each month',
+            'day_hint' => 'If a month has fewer days, the run occurs on the last available day.',
+            'on_last_day' => 'Run on the last day of each month',
+            'summary_day' => 'On day :day of each month',
+            'summary_last' => 'On the last day of each month',
+        ],
     ],
 
     'notifications' => [

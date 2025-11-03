@@ -471,9 +471,13 @@ class PowerBiService
         $token = $this->getAccessToken();
         $headers = $this->authHeaders($token);
 
-        $pagePayload = array_map(static function ($pageName): array {
-            return ['pageName' => $pageName];
-        }, $pages);
+        $pagePayload = [];
+        foreach (array_values($pages) as $index => $pageName) {
+            $pagePayload[] = [
+                'pageName' => $pageName,
+                'order' => $index,
+            ];
+        }
 
         $body = [
             'format' => strtoupper($format === 'ppt' ? 'PPTX' : $format),

@@ -6,7 +6,9 @@ namespace App\Services;
 
 use App\Exceptions\AttachmentTooLargeException;
 use App\Mail\SubscriptionDeliveryMail;
+use App\Models\Capacity;
 use App\Models\Configuration;
+use App\Models\Report;
 use App\Models\ReportSubscription;
 use App\Models\ReportSubscriptionNotification;
 use App\Models\ReportSubscriptionRun;
@@ -21,11 +23,19 @@ use Throwable;
 
 class ReportSubscriptionRunner
 {
+    /**
+     * Cache of report page metadata indexed by "workspace|report" keys.
+     *
+     * @var array<string, array<int, array{name:string, displayName:?string}>>
+     */
+    private array $pageMetadataCache = [];
+
     public function __construct(
         private readonly ReportAccessService $accessService,
         private readonly PowerBiService $powerBiService,
         private readonly ReportAttachmentCompressor $compressor,
         private readonly ReportSubscriptionScheduler $scheduler,
+        private readonly PowerBiCapacityService $capacityService,
     ) {
     }
 
@@ -33,7 +43,7 @@ class ReportSubscriptionRunner
     {
         $run = ReportSubscriptionRun::query()
             ->with([
-                'subscription.report',
+                'subscription.report.workspace',
                 'subscription.pages',
                 'subscription.recipientGroups.users',
                 'subscription.recipientUsers',
@@ -103,11 +113,16 @@ class ReportSubscriptionRunner
             return;
         }
 
+        if ($subscription->ensure_capacity_active && $subscription->report) {
+            $this->ensureCapacityReady($subscription, $subscription->report);
+        }
+
+        $orderedPageNames = $this->orderedPageNames($subscription);
         $errors = [];
 
         foreach ($recipients as $recipient) {
             try {
-                $this->deliverToRecipient($run, $subscription, $recipient);
+                $this->deliverToRecipient($run, $subscription, $recipient, $orderedPageNames);
                 $run->increment('recipients_sent');
             } catch (AttachmentTooLargeException $e) {
                 $run->increment('recipients_failed');
@@ -166,22 +181,24 @@ class ReportSubscriptionRunner
             ->values();
     }
 
-    protected function deliverToRecipient(ReportSubscriptionRun $run, ReportSubscription $subscription, User $recipient): void
+    /**
+     * @param array<int, string> $pageNames
+     */
+    protected function deliverToRecipient(ReportSubscriptionRun $run, ReportSubscription $subscription, User $recipient, array $pageNames): void
     {
         $report = $subscription->report;
         if (! $report) {
             throw new \RuntimeException('Report not found for subscription.');
         }
 
-        $pages = $subscription->pages->pluck('page_name')->filter()->values()->all();
-        if (empty($pages)) {
+        if (empty($pageNames)) {
             throw new \RuntimeException('No report pages selected.');
         }
 
         $exportPath = $this->powerBiService->exportReportToFile(
             workspaceId: $report->workspace_id,
             reportId: $report->id,
-            pages: $pages,
+            pages: $pageNames,
             format: $subscription->format,
             datasetId: $report->dataset_id,
             rlsUser: $recipient->email,
@@ -208,6 +225,64 @@ class ReportSubscriptionRunner
             if ($attachmentPath !== $exportPath && is_file($exportPath)) {
                 @unlink($exportPath);
             }
+        }
+    }
+
+    protected function ensureCapacityReady(ReportSubscription $subscription, Report $report): void
+    {
+        $workspace = $report->workspace ?? $report->loadMissing('workspace')->workspace;
+        if (! $workspace || blank($workspace->capacity_id)) {
+            return;
+        }
+
+        $capacity = Capacity::query()
+            ->where('capacity_uuid', $workspace->capacity_id)
+            ->first();
+
+        if (! $capacity) {
+            Log::warning('Report subscription capacity not found', [
+                'subscription_id' => $subscription->id,
+                'workspace_id' => $workspace->id,
+                'capacity_uuid' => $workspace->capacity_id,
+            ]);
+            return;
+        }
+
+        try {
+            $isActive = $this->capacityService->isCapacityActive($capacity);
+        } catch (Throwable $e) {
+            Log::warning('Unable to determine capacity state before subscription run', [
+                'subscription_id' => $subscription->id,
+                'capacity_uuid' => $capacity->capacity_uuid,
+                'error' => $e->getMessage(),
+            ]);
+            $isActive = null;
+        }
+
+        if ($isActive === true) {
+            return;
+        }
+
+        if ($isActive === null) {
+            Log::info('Capacity state undetermined before subscription run, attempting resume', [
+                'subscription_id' => $subscription->id,
+                'capacity_uuid' => $capacity->capacity_uuid,
+            ]);
+        }
+
+        try {
+            $this->capacityService->resume($capacity);
+            Log::info('Capacity resume requested for subscription', [
+                'subscription_id' => $subscription->id,
+                'capacity_uuid' => $capacity->capacity_uuid,
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Failed to resume capacity before subscription run', [
+                'subscription_id' => $subscription->id,
+                'capacity_uuid' => $capacity->capacity_uuid,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
         }
     }
 
@@ -367,6 +442,84 @@ class ReportSubscriptionRunner
             ->filter(fn (User $user) => filled($user->email))
             ->unique('id')
             ->values();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function orderedPageNames(ReportSubscription $subscription): array
+    {
+        $pages = $subscription->pages->pluck('page_name')->filter()->values()->all();
+        if (empty($pages)) {
+            return [];
+        }
+
+        $report = $subscription->report;
+        if (! $report) {
+            return $pages;
+        }
+
+        $cacheKey = $report->workspace_id . '|' . $report->id;
+
+        $metadata = $this->reportPageMetadata($subscription, $report);
+        $labels = [];
+
+        foreach ($metadata as $row) {
+            $name = (string) ($row['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $label = $row['displayName'] ?? $name;
+            $labels[$name] = (string) $label;
+        }
+
+        $indexMap = [];
+        foreach ($pages as $idx => $name) {
+            $indexMap[$name] = $idx;
+        }
+
+        usort($pages, function (string $left, string $right) use ($labels, $indexMap): int {
+            $leftLabel = $labels[$left] ?? $left;
+            $rightLabel = $labels[$right] ?? $right;
+
+            $comparison = strnatcasecmp($leftLabel, $rightLabel);
+            if ($comparison !== 0) {
+                return $comparison;
+            }
+
+            return ($indexMap[$left] ?? 0) <=> ($indexMap[$right] ?? 0);
+        });
+
+        return $pages;
+    }
+
+    /**
+     * @return array<int, array{name:string, displayName:?string}>
+     */
+    protected function reportPageMetadata(ReportSubscription $subscription, \App\Models\Report $report): array
+    {
+        $cacheKey = $report->workspace_id . '|' . $report->id;
+
+        if (array_key_exists($cacheKey, $this->pageMetadataCache)) {
+            return $this->pageMetadataCache[$cacheKey];
+        }
+
+        try {
+            $metadata = $this->powerBiService->listReportPages($report->workspace_id, $report->id);
+        } catch (Throwable $e) {
+            Log::warning('Unable to fetch report page metadata for ordering', [
+                'subscription_id' => $subscription->id,
+                'report_id' => $report->id,
+                'workspace_id' => $report->workspace_id,
+                'error' => $e->getMessage(),
+            ]);
+            $metadata = [];
+        }
+
+        $this->pageMetadataCache[$cacheKey] = $metadata;
+
+        return $metadata;
     }
 
     protected function workspaceAdministrators(ReportSubscription $subscription): Collection
