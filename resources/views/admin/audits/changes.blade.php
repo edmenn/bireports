@@ -38,6 +38,28 @@
     </x-adminlte-card>
 
     <x-adminlte-card title="{{ __('changes.cards.events.title') }}" icon="fas fa-list text-lightblue" theme="primary" theme-mode="outline" body-class="p-0">
+        @php $queryParams = request()->except(['per_page', 'page']); @endphp
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-end px-3 pt-3 pb-2">
+            <form method="GET" class="form-inline justify-content-md-end">
+                @foreach($queryParams as $key => $value)
+                    @if(is_array($value))
+                        @foreach($value as $item)
+                            <input type="hidden" name="{{ $key }}[]" value="{{ $item }}">
+                        @endforeach
+                    @else
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endif
+                @endforeach
+                <div class="form-group mb-2 mb-md-0">
+                    <label for="changes-per-page" class="mb-0 mr-2 text-muted small">{{ __('subscriptions.runs.per_page') }}</label>
+                    <select id="changes-per-page" name="per_page" class="custom-select custom-select-sm" style="min-width: 5rem; text-align-last: center;" onchange="this.form.submit()">
+                        @foreach($perPageOptions as $option)
+                            <option value="{{ $option }}" @selected($perPage === $option)>{{ $option }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </form>
+        </div>
         <div class="table-responsive">
             <table class="table table-sm table-hover mb-0">
                 <thead class="thead-light">
@@ -119,7 +141,59 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-3">{{ $rows->links() }}</div>
+        @if($rows instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $rows->hasPages())
+            @php
+                $window = \Illuminate\Pagination\UrlWindow::make($rows);
+                $elements = array_filter([
+                    $window['first'],
+                    is_array($window['slider']) ? '...' : null,
+                    $window['slider'],
+                    is_array($window['last']) ? '...' : null,
+                    $window['last'],
+                ]);
+            @endphp
+            <div class="card-footer bg-white border-top-0">
+                <nav aria-label="Paginacion de cambios">
+                    <ul class="pagination justify-content-center mb-0">
+                        @if ($rows->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&laquo;</span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $rows->previousPageUrl() }}" rel="prev" aria-label="Anterior">&laquo;</a>
+                            </li>
+                        @endif
+
+                        @foreach ($elements as $element)
+                            @if (is_string($element))
+                                <li class="page-item disabled"><span class="page-link">{{ $element }}</span></li>
+                            @endif
+
+                            @if (is_array($element))
+                                @foreach ($element as $page => $url)
+                                    @if ($page == $rows->currentPage())
+                                        <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
+                                    @else
+                                        <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
+                                    @endif
+                                @endforeach
+                            @endif
+                        @endforeach
+
+                        @if ($rows->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $rows->nextPageUrl() }}" rel="next" aria-label="Siguiente">&raquo;</a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&raquo;</span>
+                            </li>
+                        @endif
+                    </ul>
+                </nav>
+            </div>
+        @endif
     </x-adminlte-card>
 @endsection
 

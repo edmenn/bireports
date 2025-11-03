@@ -17,11 +17,15 @@ final class AuditChangesController extends Controller
 {
     public function index(Request $request): View
     {
-        $qAction = trim((string) $request->query('action', ''));
-        $qModel  = trim((string) $request->query('model', ''));
-        $qUser   = (int) $request->query('user', 0);
-        $page    = max(1, (int) $request->query('page', 1));
-        $perPage = 25;
+        $qAction        = trim((string) $request->query('action', ''));
+        $qModel         = trim((string) $request->query('model', ''));
+        $qUser          = (int) $request->query('user', 0);
+        $page           = max(1, (int) $request->query('page', 1));
+        $perPageOptions = [10, 25, 50, 100];
+        $perPage        = (int) $request->query('per_page', 25);
+        if (! in_array($perPage, $perPageOptions, true)) {
+            $perPage = 25;
+        }
 
         // Fetch recent from both sources with basic filters
         $entities = EntityAudit::query()
@@ -105,6 +109,8 @@ final class AuditChangesController extends Controller
             'qAction' => $qAction,
             'qModel' => $qModel,
             'qUser' => $qUser,
+            'perPage' => $perPage,
+            'perPageOptions' => $perPageOptions,
         ]);
     }
 
