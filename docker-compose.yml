@@ -1,87 +1,132 @@
-services:
-    birentable:
-        build:
-            context: './vendor/laravel/sail/runtimes/8.4'
-            dockerfile: Dockerfile
-            args:
-                WWWGROUP: ${WWWGROUP:-1000}
-                WWWUSER: ${WWWUSER:-1000}
-        image: 'sail-8.4/app'
-        extra_hosts:
-            - 'host.docker.internal:host-gateway'
-        ports:
-            - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
-        environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
-            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
-            IGNITION_LOCAL_SITES_PATH: '${PWD}'
-        volumes:
-            - '.:/var/www/html'
-        networks:
-            - sail
-        depends_on:
-            - pgsql
-    scheduler:
-        image: 'sail-8.4/app'
-        depends_on:
-            - birentable
-        restart: unless-stopped
-        working_dir: /var/www/html
-        networks:
-            - sail
-        environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-        volumes:
-            - '.:/var/www/html'
-        entrypoint: ["sh","-lc"]
-        command: "./scripts/run-scheduler.sh"
-    queue_worker:
-        image: 'sail-8.4/app'
-        depends_on:
-            - birentable
-        restart: unless-stopped
-        working_dir: /var/www/html
-        networks:
-            - sail
-        environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-        volumes:
-            - '.:/var/www/html'
-        entrypoint: ["sh","-lc"]
-        command: "./scripts/run-queue-worker.sh"
-    pgsql:
-        image: 'postgres:17'
-        ports:
-            - '${FORWARD_DB_PORT:-5432}:5432'
-        environment:
-            PGPASSWORD: '${DB_PASSWORD:-secret}'
-            POSTGRES_DB: '${DB_DATABASE}'
-            POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
-        volumes:
-            - 'sail-pgsql:/var/lib/postgresql/data'
-            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
-        networks:
-            - sail
-        healthcheck:
-            test:
-                - CMD
-                - pg_isready
-                - '-q'
-                - '-d'
-                - '${DB_DATABASE}'
-                - '-U'
-                - '${DB_USERNAME}'
-            retries: 3
-            timeout: 5s
+version: "3.9"
+
 networks:
-    sail:
-        driver: bridge
+  sail:
+    driver: bridge
+    name: sail_network   # fixed name (no random prefix)
+
 volumes:
-    sail-pgsql:
-        driver: local
+  sail-pgsql:
+    driver: local
+
+services:
+  # ─────────────────────────────
+  # 1️⃣ Laravel application
+  # ─────────────────────────────
+  birentable:
+    build:
+      context: ./vendor/laravel/sail/runtimes/8.4
+      dockerfile: Dockerfile
+      args:
+        WWWGROUP: ${WWWGROUP:-1000}
+        WWWUSER: ${WWWUSER:-1000}
+    image: sail-8.4/app
+    container_name: birentable
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${APP_PORT:-80}:80"
+      - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
+      WWWUSER: ${WWWUSER}
+      LARAVEL_SAIL: 1
+      XDEBUG_MODE: ${SAIL_XDEBUG_MODE:-off}
+      XDEBUG_CONFIG: ${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}
+      IGNITION_LOCAL_SITES_PATH: ${PWD}
+    volumes:
+      - .:/var/www/html
+    networks:
+      - sail
+    depends_on:
+      - pgsql
+    deploy:
+      resources:
+        limits:
+          memory: 512M   # app container cap (adjust later)
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────
+  # 2️⃣ Laravel Scheduler
+  # ─────────────────────────────
+  scheduler:
+    image: sail-8.4/app
+    container_name: scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    depends_on:
+      - birentable
+    networks:
+      - sail
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
+      WWWUSER: ${WWWUSER}
+      LARAVEL_SAIL: 1
+    volumes:
+      - .:/var/www/html
+    entrypoint: ["sh", "-lc"]
+    command: "./scripts/run-scheduler.sh"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  # ─────────────────────────────
+  # 3️⃣ Laravel Queue Worker
+  # ─────────────────────────────
+  queue_worker:
+    image: sail-8.4/app
+    container_name: queue-worker
+    restart: unless-stopped
+    working_dir: /var/www/html
+    depends_on:
+      - birentable
+    networks:
+      - sail
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
+      WWWUSER: ${WWWUSER}
+      LARAVEL_SAIL: 1
+    volumes:
+      - .:/var/www/html
+    entrypoint: ["sh", "-lc"]
+    command: "./scripts/run-queue-worker.sh"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  # ─────────────────────────────
+  # 4️⃣ PostgreSQL Database
+  # ─────────────────────────────
+  pgsql:
+    image: postgres:17
+    container_name: pgsql
+    restart: unless-stopped
+    ports:
+      - "${FORWARD_DB_PORT:-5432}:5432"
+    environment:
+      TZ: ${APP_TIMEZONE:-UTC}
+      PGPASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - sail-pgsql:/var/lib/postgresql/data
+      - ./vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql
+    networks:
+      - sail
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 768M

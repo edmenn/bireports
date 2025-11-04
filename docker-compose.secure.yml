@@ -1,9 +1,13 @@
+version: "3.9"
+
 networks:
   backend:
     driver: bridge
+    name: birentable_backend   # explicit name so it stays consistent
 
 services:
-  # 1) Terminador TLS + proxy exterior (expuesto a Internet)
+
+  # 1) Reverse proxy / TLS terminator
   caddy:
     image: caddy:2.8
     container_name: caddy
@@ -21,8 +25,12 @@ services:
     tmpfs: [ /tmp ]
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
-  # 2) Servidor web interno (solo red backend)
+  # 2) Internal Nginx (proxy to PHP)
   web:
     image: nginx:1.27-alpine
     container_name: nginx
@@ -40,8 +48,12 @@ services:
       - /tmp
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
-  # 3) PHP-FPM (Laravel) — contenedor de tu app
+  # 3) Laravel app (PHP-FPM)
   app:
     build:
       context: .
@@ -50,7 +62,6 @@ services:
     container_name: birentable
     restart: unless-stopped
     networks: [backend]
-    # INYECTA TODAS LAS VARIABLES DESDE .env (sin hardcode)
     env_file:
       - .env
     environment:
@@ -58,8 +69,8 @@ services:
     depends_on: [pgsql]
     volumes:
       - app_code:/var/www/html:ro
-      - app_storage:/var/www/html/storage         # escritura para storage/
-      - app_cache:/var/www/html/bootstrap/cache   # escritura para cache
+      - app_storage:/var/www/html/storage
+      - app_cache:/var/www/html/bootstrap/cache
     read_only: true
     tmpfs:
       - /tmp
@@ -69,6 +80,12 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # 4) Laravel scheduler
   scheduler:
     image: birentable/php-app:prod
     container_name: scheduler
@@ -88,6 +105,12 @@ services:
       - /var/run
     entrypoint: ["/bin/sh","-lc"]
     command: "./scripts/run-scheduler.sh"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+
+  # 5) Laravel queue worker
   queue_worker:
     image: birentable/php-app:prod
     container_name: queue-worker
@@ -107,14 +130,17 @@ services:
       - /var/run
     entrypoint: ["/bin/sh","-lc"]
     command: "./scripts/run-queue-worker.sh"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-  # 4) PostgreSQL (red interna)
+  # 6) PostgreSQL
   pgsql:
     image: postgres:17
     container_name: pgsql
     restart: unless-stopped
     networks: [backend]
-    # Postgres espera POSTGRES_* -> los tomamos desde tus DB_* del .env
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
@@ -127,18 +153,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 768M
 
-  # 5) One-shot para poblar el volumen app_code con el código de la imagen
+  # 7) One-shot for populating app_code
   code_init:
     image: birentable/php-app:prod
-    user: "0:0"   # root para escribir en el volumen
+    user: "0:0"
     networks: [backend]
     entrypoint: sh
     command: -c "mkdir -p /mnt/app_code && cp -a /var/www/html/. /mnt/app_code/ && chown -R 1000:1000 /mnt/app_code"
     volumes:
       - app_code:/mnt/app_code
 
-  # 6) Sincronizador incremental de código (rsync)
+  # 8) Rsync sync helper
   code_sync:
     image: alpine:3.20
     working_dir: /src
@@ -156,9 +186,7 @@ services:
           --exclude='vendor/' \
           --exclude='storage/' \
           --exclude='bootstrap/cache/' \
-          --exclude='.env' \
-          --exclude='.env.example' \
-          --exclude='.env.local' \
+          --exclude='.env*' \
           --exclude='docker-compose*.yml' \
           /src/ /dest/
     volumes:
