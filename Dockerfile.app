@@ -105,16 +105,8 @@ COPY --from=vendor --chown=app:app /app /var/www/html
 RUN mkdir -p bootstrap/cache storage/framework/{cache,views,sessions} \
  && chmod -R 775 bootstrap/cache storage
 
-# Copiar recursos de idiomas a public/lang/<locale>
-RUN set -eux; \
-    mkdir -p public/lang; \
-    for d in resources/lang/*; do \
-      if [ -d "$d" ]; then \
-        loc="$(basename "$d")"; \
-        mkdir -p "public/lang/$loc"; \
-        find "$d" -maxdepth 1 -type f -exec cp -a {} "public/lang/$loc/" \; \
-      fi; \
-    done
+# (Simplificado) Creamos la carpeta de idiomas pública
+RUN mkdir -p public/lang
 
 EXPOSE 9000
 CMD ["php-fpm", "-F"]
