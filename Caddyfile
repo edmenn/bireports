@@ -1,9 +1,9 @@
 {
-  email admin@birentable.com
+  email it@sarcom.com.py
   admin off
 }
 
-portal.birentable.com {
+biportal.sarcom.com.py {
   encode zstd gzip
 
   header {
