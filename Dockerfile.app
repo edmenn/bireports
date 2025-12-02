@@ -1,41 +1,79 @@
-# -------- Stage 1: builder (Composer + vendors) --------
-# Usamos el mismo mayor de PHP que en runtime para evitar conflictos de plataforma
-FROM composer:2-php8.3 AS vendor
+# -------- Stage 1: builder (PHP 8.3 + Composer + vendors) --------
+# Usamos PHP 8.3 CLI Alpine para que coincida con el runtime
+FROM php:8.3-cli-alpine AS vendor
 WORKDIR /app
 
-# 1) Copiamos solo composer.* para cachear mejor
-COPY composer.json composer.lock ./
-
-# 2) Instalamos extensiones necesarias para Composer (GD requerido por phpspreadsheet)
+# 0) Paquetes necesarios para extensiones y para Composer
 RUN set -eux; \
-    apk add --no-cache freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev libxpm-dev; \
+    apk add --no-cache \
+      git \
+      unzip \
+      freetype-dev \
+      libjpeg-turbo-dev \
+      libpng-dev \
+      libwebp-dev \
+      libxpm-dev
+
+# 1) Instalamos extensión GD (requerida por phpspreadsheet)
+RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm; \
     docker-php-ext-install -j"$(nproc)" gd; \
     php -m | grep -qi gd
 
-# 3) Instalamos vendors sin scripts (aun no existe artisan)
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
+# 2) Instalamos Composer de forma global
+RUN set -eux; \
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"; \
+    php composer-setup.php --install-dir=/usr/local/bin --filename=composer; \
+    rm composer-setup.php; \
+    composer --version
 
-# 4) Ahora si copiamos el codigo fuente completo
+# 3) Copiamos solo composer.* para cachear mejor
+COPY composer.json composer.lock ./
+
+# 4) Instalamos vendors sin scripts (aún no existe artisan)
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --no-interaction \
+    --no-progress \
+    --no-scripts
+
+# 5) Ahora sí copiamos el código fuente completo
 COPY . .
 
-# 5) Generamos autoload optimizado y ejecutamos scripts (artisan ya existe)
+# 6) Generamos autoload optimizado y ejecutamos scripts (artisan ya existe)
 #    package:discover puede fallar en algunos entornos; no consideres fatal ese caso
 RUN composer dump-autoload -o \
  && php artisan package:discover --ansi || true
+
 
 # -------- Stage 2: runtime (PHP-FPM Alpine endurecido) --------
 FROM php:8.3-fpm-alpine
 
 # Extensiones necesarias (ajusta según tu app)
 RUN set -eux; \
-    apk add --no-cache bash fcgi file icu-dev tzdata libpq-dev oniguruma oniguruma-dev ca-certificates libzip-dev freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev libxpm-dev; \
+    apk add --no-cache \
+      bash \
+      fcgi \
+      file \
+      icu-dev \
+      tzdata \
+      libpq-dev \
+      oniguruma \
+      oniguruma-dev \
+      ca-certificates \
+      libzip-dev \
+      freetype-dev \
+      libjpeg-turbo-dev \
+      libpng-dev \
+      libwebp-dev \
+      libxpm-dev; \
     docker-php-ext-configure intl; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm; \
     docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql zip; \
     php -m | grep -qi gd; \
     php -m | grep -qi mbstring; \
-    php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}';
+    php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}'
 
 # Opcional: OPcache para producción (ya viene incluido en la imagen)
 RUN { \
@@ -69,7 +107,7 @@ RUN set -eux; \
         loc="$(basename "$d")"; \
         mkdir -p "public/lang/$loc"; \
         find "$d" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.svg' -o -iname '*.webp' \) -exec cp -a {} "public/lang/$loc/" \; \
-      ; fi; \
+      fi; \
     done
 
 EXPOSE 9000
