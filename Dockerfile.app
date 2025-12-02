@@ -8,17 +8,19 @@ RUN set -eux; \
     apk add --no-cache \
       git \
       unzip \
+      libzip-dev \
       freetype-dev \
       libjpeg-turbo-dev \
       libpng-dev \
       libwebp-dev \
       libxpm-dev
 
-# 1) Instalamos extensión GD (requerida por phpspreadsheet)
+# 1) Instalamos extensiones requeridas por la app (GD y ZIP para phpspreadsheet)
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm; \
-    docker-php-ext-install -j"$(nproc)" gd; \
-    php -m | grep -qi gd
+    docker-php-ext-install -j"$(nproc)" gd zip; \
+    php -m | grep -qi gd; \
+    php -m | grep -qi zip
 
 # 2) Instalamos Composer de forma global
 RUN set -eux; \
@@ -73,6 +75,7 @@ RUN set -eux; \
     docker-php-ext-install -j"$(nproc)" gd intl mbstring pdo pdo_pgsql zip; \
     php -m | grep -qi gd; \
     php -m | grep -qi mbstring; \
+    php -m | grep -qi zip; \
     php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}'
 
 # Opcional: OPcache para producción (ya viene incluido en la imagen)
