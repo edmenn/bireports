@@ -1,5 +1,6 @@
 # -------- Stage 1: builder (Composer + vendors) --------
-FROM composer:2 AS vendor
+# Usamos el mismo mayor de PHP que en runtime para evitar conflictos de plataforma
+FROM composer:2-php8.3 AS vendor
 WORKDIR /app
 
 # 1) Copiamos solo composer.* para cachear mejor
