@@ -73,6 +73,7 @@ services:
     tmpfs:
       - /tmp
       - /var/run
+      - /usr/local/var/run
     healthcheck:
       test: ["CMD", "php", "-v"]
       interval: 30s
