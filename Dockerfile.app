@@ -1,9 +1,10 @@
-# -------- Stage 1: builder (PHP 8.3 + Composer + vendors) --------
-# Usamos PHP 8.3 CLI Alpine para que coincida con el runtime
+# -----------------------------------------------------------
+#  Stage 1: builder (PHP 8.3 CLI + Composer + vendors)
+# -----------------------------------------------------------
 FROM php:8.3-cli-alpine AS vendor
 WORKDIR /app
 
-# 0) Paquetes necesarios para extensiones y para Composer
+# Paquetes necesarios para extensiones y Composer
 RUN set -eux; \
     apk add --no-cache \
       git \
@@ -15,24 +16,24 @@ RUN set -eux; \
       libwebp-dev \
       libxpm-dev
 
-# 1) Instalamos extensiones requeridas por la app (GD y ZIP para phpspreadsheet)
+# Extensiones requeridas (GD + ZIP)
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm; \
     docker-php-ext-install -j"$(nproc)" gd zip; \
     php -m | grep -qi gd; \
     php -m | grep -qi zip
 
-# 2) Instalamos Composer de forma global
+# Instalar Composer
 RUN set -eux; \
     php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"; \
     php composer-setup.php --install-dir=/usr/local/bin --filename=composer; \
     rm composer-setup.php; \
     composer --version
 
-# 3) Copiamos solo composer.* para cachear mejor
+# Copiamos composer.* primero para usar cache
 COPY composer.json composer.lock ./
 
-# 4) Instalamos vendors sin scripts (aún no existe artisan)
+# Instalar dependencias sin scripts
 RUN composer install \
     --no-dev \
     --prefer-dist \
@@ -40,19 +41,21 @@ RUN composer install \
     --no-progress \
     --no-scripts
 
-# 5) Ahora sí copiamos el código fuente completo
+# Copiar el código fuente completo
 COPY . .
 
-# 6) Generamos autoload optimizado y ejecutamos scripts (artisan ya existe)
-#    package:discover puede fallar en algunos entornos; no consideres fatal ese caso
+# Dump autoload + discover (no fatal si falla)
 RUN composer dump-autoload -o \
  && php artisan package:discover --ansi || true
 
 
-# -------- Stage 2: runtime (PHP-FPM Alpine endurecido) --------
+
+# -----------------------------------------------------------
+#  Stage 2: runtime (PHP 8.3 FPM Alpine)
+# -----------------------------------------------------------
 FROM php:8.3-fpm-alpine
 
-# Extensiones necesarias (ajusta según tu app)
+# Extensiones necesarias
 RUN set -eux; \
     apk add --no-cache \
       bash \
@@ -78,7 +81,7 @@ RUN set -eux; \
     php -m | grep -qi zip; \
     php -r 'if(!function_exists("mb_split")){fwrite(STDERR, "mb_split missing\n"); exit(1);}'
 
-# Opcional: OPcache para producción (ya viene incluido en la imagen)
+# OPcache optimizado para producción
 RUN { \
       echo 'opcache.enable=1'; \
       echo 'opcache.enable_cli=0'; \
@@ -95,21 +98,21 @@ USER app
 
 WORKDIR /var/www/html
 
-# Copiamos aplicación y vendors desde el stage builder con permisos correctos
+# Copiar aplicación + vendors desde el build
 COPY --from=vendor --chown=app:app /app /var/www/html
 
-# Aseguramos rutas de escritura (en runtime tu compose monta volumen para storage)
+# Permisos de runtime
 RUN mkdir -p bootstrap/cache storage/framework/{cache,views,sessions} \
  && chmod -R 775 bootstrap/cache storage
 
-# Copiar logos/recursos por idioma desde resources/lang/<locale> a public/lang/<locale>
+# Copiar recursos de idiomas a public/lang/<locale>
 RUN set -eux; \
     mkdir -p public/lang; \
     for d in resources/lang/*; do \
       if [ -d "$d" ]; then \
         loc="$(basename "$d")"; \
         mkdir -p "public/lang/$loc"; \
-        find "$d" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.svg' -o -iname '*.webp' \) -exec cp -a {} "public/lang/$loc/" \; \
+        find "$d" -maxdepth 1 -type f -exec cp -a {} "public/lang/$loc/" \; \
       fi; \
     done
 
