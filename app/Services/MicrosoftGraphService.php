@@ -74,9 +74,11 @@ class MicrosoftGraphService
      * @param string|null $query      Prefijo para startsWith(displayName|userPrincipalName)
      * @param string|null $next       @odata.nextLink (URL completa) para paginar
      * @param bool        $onlyActive Filtra accountEnabled eq true
+     * @param string|null $orderBy    Campo(s) para $orderby (ej: "displayName asc")
+     * @param int         $pageSize   Cantidad por página (solo se usa cuando $next es null)
      * @return array{items: list<array<string,mixed>>, next: string|null}
      */
-    public function listUsers(?string $query = null, ?string $next = null, bool $onlyActive = false): array
+    public function listUsers(?string $query = null, ?string $next = null, bool $onlyActive = false, ?string $orderBy = null, int $pageSize = 25): array
     {
         $token = $this->getAccessToken();
         $headers = [
@@ -91,8 +93,8 @@ class MicrosoftGraphService
             $base = 'https://graph.microsoft.com/v1.0/users';
             $params = [
                 // Traemos alias para detectar duplicados/alias
-                '$select' => 'id,displayName,mail,userPrincipalName,givenName,surname,accountEnabled,otherMails,proxyAddresses',
-                '$top'    => '25',
+                '$select' => 'id,displayName,mail,userPrincipalName,givenName,surname,jobTitle,accountEnabled,otherMails,proxyAddresses',
+                '$top'    => (string) max(1, min($pageSize, 200)),
             ];
 
             $filters = [];
@@ -105,6 +107,9 @@ class MicrosoftGraphService
             }
             if ($filters) {
                 $params['$filter'] = implode(' and ', $filters);
+            }
+            if ($orderBy) {
+                $params['$orderby'] = $orderBy;
             }
 
             $url = $base . '?' . http_build_query($params);
@@ -144,7 +149,7 @@ class MicrosoftGraphService
         $params = [
             '$top'    => '1',
             // Incluir givenName y surname para poder construir el nombre compuesto
-            '$select' => 'id,displayName,givenName,surname,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled',
+            '$select' => 'id,displayName,givenName,surname,jobTitle,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled',
             '$filter' => $filter,
         ];
 
@@ -182,7 +187,7 @@ class MicrosoftGraphService
 
         $token = $this->getAccessToken();
 
-        $select = 'id,displayName,givenName,surname,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled';
+        $select = 'id,displayName,givenName,surname,jobTitle,mail,userPrincipalName,otherMails,proxyAddresses,accountEnabled';
         $url = 'https://graph.microsoft.com/v1.0/users/' . rawurlencode($id) . '?$select=' . rawurlencode($select);
 
         $resp = $this->http->get($url, [

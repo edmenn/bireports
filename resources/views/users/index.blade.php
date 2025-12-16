@@ -282,13 +282,15 @@
              FOOTER (pagination + counter)
              ========================= --}}
         <x-slot name="footerSlot">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <small class="text-muted mb-0">
+            <div class="d-flex flex-column align-items-center w-100 text-center">
+                <small class="text-muted mb-2">
                     @if($users->total() > 0)
                         {{ __('users.index.messages.showing', ['from' => $users->firstItem(), 'to' => $users->lastItem(), 'total' => $users->total()]) }}
                     @endif
                 </small>
-                <div class="mb-0">{{ $users->appends(request()->except('page'))->links() }}</div>
+                <div class="mb-0 d-flex justify-content-center w-100">
+                    {{ $users->appends(request()->except('page'))->links('vendor.pagination.bootstrap-4') }}
+                </div>
             </div>
         </x-slot>
     </x-adminlte-card>
@@ -342,12 +344,18 @@
                                     <th class="text-center" style="width:42px;">
                                         <input type="checkbox" id="entraChkAll" aria-label="{{ __('users.index.entra.select_all') }}">
                                     </th>
-                                    <th class="table-col-lg">{{ __('users.index.table.name') }}</th>
+                                    <th class="table-col-lg">
+                                        <button type="button" id="entraSortName" class="btn btn-link p-0 sort-toggle" aria-label="{{ __('users.index.entra.sort_name_asc') }}">
+                                            {{ __('users.index.table.name') }}
+                                            <i id="entraSortIcon" class="fas fa-sort-alpha-down ml-1"></i>
+                                        </button>
+                                    </th>
+                                    <th class="table-col-lg">{{ __('users.index.table.position') }}</th>
                                     <th class="table-col-lg">{{ __('users.index.table.email') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="entraTbody">
-                                <tr><td colspan="3" class="text-center text-muted py-3">{{ __('users.index.messages.entra_use_search') }}</td></tr>
+                                <tr><td colspan="4" class="text-center text-muted py-3">{{ __('users.index.messages.entra_use_search') }}</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -451,6 +459,9 @@ table th, table td{ vertical-align:middle !important; }
 }
 .table .btn-icon i{ margin:0 !important; font-size:.8rem !important; }
 .table .btn-icon:hover{ transform:scale(1.1); transition:all .15s ease-in-out; }
+.sort-toggle{ color:inherit; font-weight:700; text-decoration:none; }
+.sort-toggle:hover, .sort-toggle:focus{ text-decoration:none; color:inherit; }
+.sort-toggle i{ font-size:.9rem; }
 </style>
 @endpush
 
@@ -592,34 +603,62 @@ const usersI18n = {
     var inpQuery = document.getElementById('entraQuery');
     var inpDomain = document.getElementById('entraDomain');
     var chkOnlyActive = document.getElementById('entraOnlyActive');
+    var btnSortName = document.getElementById('entraSortName');
+    var sortIcon = document.getElementById('entraSortIcon');
+    var sortState = 'name_asc';
     var selAssignRole = document.getElementById('entraAssignRole');
 
     var previewUrl = @json(route('users.sync-entra.preview'));
     var importUrl  = @json(route('users.sync-entra.selected'));
     var csrfToken  = @json(csrf_token());
+    var pageSize   = 50;
 
     var nextLink = null;
     var selected = new Map(); // email -> {email,name,aliases}
 
     function updateImportBtn(){ if (btnImport) btnImport.disabled = (selected.size === 0); }
 
+    function sortRows(){
+        if (!tbody) return;
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr.js-entra-row'));
+        if (rows.length === 0) return;
+        rows.sort(function(a,b){
+            var na = (a.getAttribute('data-sort-name') || '').toLowerCase();
+            var nb = (b.getAttribute('data-sort-name') || '').toLowerCase();
+            if (na === nb) return 0;
+            var cmp = na < nb ? -1 : 1;
+            return sortState === 'name_desc' ? -cmp : cmp;
+        });
+        rows.forEach(function(r){ tbody.appendChild(r); });
+        syncChkAllState();
+    }
+
     function setLoading(loading, msg){
         if (statusEl) statusEl.textContent = msg || (loading ? usersI18n.loading : '');
         if (btnMore) btnMore.disabled = loading || !nextLink;
+    }
+
+    function applySelection(chk, checked){
+        var email = chk.getAttribute('data-email') || '';
+        var name  = chk.getAttribute('data-name') || email;
+        var aliasesStr = chk.getAttribute('data-aliases') || '';
+        var aliases = aliasesStr.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        chk.checked = checked;
+        if (email && checked){
+            selected.set(email, {email:email, name:name, aliases:aliases});
+        } else if (email && !checked){
+            selected.delete(email);
+        }
     }
 
     function attachRowHandlers(scope){
         var chks = (scope || document).querySelectorAll('.js-entra-row-chk');
         Array.prototype.forEach.call(chks, function(chk){
             var email = chk.getAttribute('data-email') || '';
-            var name  = chk.getAttribute('data-name') || email;
-            var aliasesStr = chk.getAttribute('data-aliases') || '';
-            var aliases = aliasesStr.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
             if (email && selected.has(email)) chk.checked = true;
             chk.addEventListener('change', function(){
                 if (!email) return;
-                if (chk.checked) selected.set(email, {email:email, name:name, aliases:aliases});
-                else selected.delete(email);
+                applySelection(chk, chk.checked);
                 updateImportBtn();
                 syncChkAllState();
             }, {passive:true});
@@ -628,13 +667,16 @@ const usersI18n = {
 
     function syncChkAllState(){
         var chks = Array.prototype.slice.call(tbody.querySelectorAll('.js-entra-row-chk'));
-        var enabled = chks.filter(function(c){ return !c.disabled; });
+        var enabled = chks.filter(function(c){
+            var row = c.closest('tr');
+            return !c.disabled && row && !row.classList.contains('d-none');
+        });
         if (chkAll) chkAll.checked = (enabled.length > 0 && enabled.every(function(c){ return c.checked; }));
     }
 
     async function load(reset){
         if (reset){
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">' + usersI18n.loading + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.loading + '</td></tr>';
             nextLink = null;
         }
         setLoading(true);
@@ -644,6 +686,8 @@ const usersI18n = {
             var dom = (inpDomain && inpDomain.value ? inpDomain.value : '').trim();
             if (q) params.set('query', q);
             if (dom) params.set('domain', dom);
+            if (sortState) params.set('sort', sortState);
+            params.set('page_size', pageSize);
             if (chkOnlyActive && chkOnlyActive.checked) params.set('only_active', '1');
             if (nextLink) params.set('next', nextLink);
 
@@ -656,7 +700,7 @@ const usersI18n = {
             var temp = document.createElement('tbody');
             temp.innerHTML = data.rows || '';
             if (!temp.children.length){
-                if (reset) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">' + usersI18n.noResults + '</td></tr>';
+                if (reset) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.noResults + '</td></tr>';
             }else{
                 Array.prototype.forEach.call(temp.children, function(tr){ tbody.appendChild(tr); });
             }
@@ -666,6 +710,7 @@ const usersI18n = {
 
             attachRowHandlers(tbody);
             syncChkAllState();
+            sortRows();
             updateImportBtn();
             var count = (typeof data.count === 'number') ? data.count : 0;
             if (!temp.children.length){
@@ -686,8 +731,13 @@ const usersI18n = {
         chkAll.addEventListener('change', function(){
             var chks = tbody.querySelectorAll('.js-entra-row-chk');
             Array.prototype.forEach.call(chks, function(c){
-                if (!c.disabled){ c.checked = chkAll.checked; c.dispatchEvent(new Event('change')); }
+                var row = c.closest('tr');
+                if (!c.disabled && row && !row.classList.contains('d-none')){
+                    applySelection(c, chkAll.checked);
+                }
             });
+            updateImportBtn();
+            syncChkAllState();
         });
     }
     if (btnMore) btnMore.addEventListener('click', function(){ load(false); });
@@ -723,10 +773,12 @@ const usersI18n = {
 
     ['shown.bs.modal', 'show.bs.modal'].forEach(function(evt){
         modal.addEventListener(evt, function(){
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">' + usersI18n.loading + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.loading + '</td></tr>';
             if (inpQuery) inpQuery.value = '';
             if (inpDomain) inpDomain.value = '';
             if (chkOnlyActive) chkOnlyActive.checked = false;
+            sortState = 'name_asc';
+            if (sortIcon) sortIcon.className = 'fas fa-sort-alpha-down ml-1';
             if (chkAll) chkAll.checked = false;
             selected.clear();
             updateImportBtn();
@@ -734,6 +786,18 @@ const usersI18n = {
             load(true);
         });
     });
+
+    if (btnSortName){
+        btnSortName.addEventListener('click', function(){
+            sortState = sortState === 'name_desc' ? 'name_asc' : 'name_desc';
+            if (sortIcon){
+                sortIcon.className = sortState === 'name_desc'
+                    ? 'fas fa-sort-alpha-up ml-1'
+                    : 'fas fa-sort-alpha-down ml-1';
+            }
+            sortRows();
+        });
+    }
 })();
 
 /* ===== Generic confirmation modal (works with BS4 or BS5) ===== */

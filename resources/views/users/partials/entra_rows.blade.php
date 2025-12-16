@@ -13,6 +13,7 @@
         $mail    = trim((string)($u['mail'] ?? ''));
         $upn     = trim((string)($u['userPrincipalName'] ?? ''));
         $active  = (bool)($u['accountEnabled'] ?? false);
+        $job     = trim((string)($u['jobTitle'] ?? ''));
 
         $aliases = [];
         foreach ((array)($u['otherMails'] ?? []) as $alt) {
@@ -30,7 +31,10 @@
         $preferred = $mail !== '' ? $mail : ($upn !== '' ? $upn : ($aliases[0] ?? ''));
         $initial   = $display !== '' ? mb_strtoupper(mb_substr($display, 0, 1)) : 'U';
     @endphp
-    <tr>
+    @php
+        $sortKey = mb_strtolower($display ?: ($preferred ?: ''));
+    @endphp
+    <tr class="js-entra-row" data-sort-name="{{ e($sortKey) }}">
         <td style="width:36px" class="text-center">
             @php
                 // Construir lista completa de candidatos (preferido + upn + mail + aliases)
@@ -62,6 +66,13 @@
             </div>
         </td>
         <td>
+            @if($job !== '')
+                <span class="text-truncate d-inline-block" style="max-width: 260px;" title="{{ $job }}">{{ $job }}</span>
+            @else
+                <span class="text-muted">{{ __('users.index.badges.no_position') }}</span>
+            @endif
+        </td>
+        <td>
             @if($preferred !== '')
                 <div class="cell-ellipsis">
                     <code>{{ $preferred }}</code>
@@ -77,6 +88,6 @@
     </tr>
 @empty
     <tr>
-        <td colspan="3" class="text-center text-muted py-3">{{ __('users.index.messages.entra_no_results') }}</td>
+        <td colspan="4" class="text-center text-muted py-3">{{ __('users.index.messages.entra_no_results') }}</td>
     </tr>
 @endforelse

@@ -53,6 +53,7 @@ return [
             'name_description' => 'Name & description',
             'name' => 'Name',
             'email' => 'Email',
+            'position' => 'Position',
             'status' => 'Status',
             'role' => 'Role',
             'actions' => 'Actions',
@@ -65,6 +66,7 @@ return [
             'no_email' => 'No email',
             'no_name' => 'No name',
             'inactive' => 'Inactive',
+            'no_position' => 'No position',
         ],
         'messages' => [
             'empty' => 'No users found.',
@@ -107,6 +109,9 @@ return [
             'only_active' => 'Only active users',
             'assign_role' => 'Assign role',
             'select_all' => 'Select all',
+            'sort_label' => 'Sort',
+            'sort_name_asc' => 'Name (A-Z)',
+            'sort_name_desc' => 'Name (Z-A)',
         ],
     ],
 

@@ -53,6 +53,7 @@ return [
             'name_description' => 'Nome e descrição',
             'name' => 'Nome',
             'email' => 'Email',
+            'position' => 'Cargo',
             'status' => 'Status',
             'role' => 'Perfil',
             'actions' => 'Ações',
@@ -64,6 +65,7 @@ return [
             'exists' => 'Já existe',
             'no_email' => 'Sem email',
             'no_name' => 'Sem nome',
+            'no_position' => 'Sem cargo',
             'inactive' => 'Inativo',
         ],
         'messages' => [
@@ -107,6 +109,9 @@ return [
             'only_active' => 'Somente ativos',
             'assign_role' => 'Atribuir perfil',
             'select_all' => 'Selecionar todos',
+            'sort_label' => 'Ordenar',
+            'sort_name_asc' => 'Nome (A-Z)',
+            'sort_name_desc' => 'Nome (Z-A)',
         ],
     ],
 
