@@ -25,8 +25,9 @@ ensure_zip_extension() {
 }
 
 usage() {
-  echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild] [--cleanup]"
-  echo "  --sync           = Sincroniza solo archivos (rsync) + reinicia app/web + migraciones"
+  echo "Uso: $0 [--fresh] [--seed] [--refresh] [--refresh-nobuild] [--sync] [--sync-migrate] [--cleanup]"
+  echo "  --sync           = Sincroniza solo archivos (rsync) + limpia caches/opcache"
+  echo "  --sync-migrate   = Sincroniza archivos + migraciones + limpia caches/opcache"
   echo "  (sin argumentos) = modo interactivo"
   echo "  --fresh           = php artisan migrate:fresh --seed --force (BORRA datos)"
   echo "  --seed            = php artisan db:seed --force"
@@ -41,6 +42,7 @@ DO_SEED="no"
 DO_REFRESH="no"
 DO_REFRESH_NOBUILD="no"
 DO_SYNC_ONLY="no"
+DO_SYNC_MIGRATE="no"
 DO_CLEANUP="no"
 
 for arg in "$@"; do
@@ -50,15 +52,21 @@ for arg in "$@"; do
     --refresh) DO_REFRESH="yes" ;;
     --refresh-nobuild) DO_REFRESH_NOBUILD="yes" ;;
     --sync) DO_SYNC_ONLY="yes" ;;
+    --sync-migrate) DO_SYNC_MIGRATE="yes" ;;
     --cleanup) DO_CLEANUP="yes" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
 done
 
-if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
+if [[ "$DO_SYNC_ONLY" == "yes" && "$DO_SYNC_MIGRATE" == "yes" ]]; then
+  err "--sync y --sync-migrate no se pueden combinar"
+  exit 2
+fi
+
+if [[ "$DO_SYNC_ONLY" == "yes" || "$DO_SYNC_MIGRATE" == "yes" ]]; then
   if [[ "$DO_REFRESH" == "yes" || "$DO_REFRESH_NOBUILD" == "yes" || "$DO_FRESH" == "yes" ]]; then
-    err "--sync no se puede combinar con --refresh/--refresh-nobuild/--fresh"
+    err "--sync/--sync-migrate no se puede combinar con --refresh/--refresh-nobuild/--fresh"
     exit 2
   fi
 fi
@@ -71,10 +79,11 @@ if [[ $# -eq 0 && -t 0 ]]; then
   echo "  3) Refresh rápido (sin build, limpiar caches/opcache)"
   echo "  4) Fresh (migrate:fresh --seed --force)"
   echo "  5) Solo seed (db:seed --force)"
-  echo "  6) Sync rápido (solo archivos + migrar)"
-  echo "  7) Limpieza segura de Docker (sin riesgo)"
+  echo "  6) Sync rapido (solo archivos + limpiar caches)"
+  echo "  7) Sync rapido + migraciones (solo archivos + migrar + limpiar caches)"
+  echo "  8) Limpieza segura de Docker (sin riesgo)"
   echo "  0) Salir"
-  read -r -p "Opción [1/2/3/4/5/6/7/0]: " opt
+  read -r -p "Opción [1/2/3/4/5/6/7/8/0]: " opt
   case "$opt" in
     1|"") ;;
     2) DO_REFRESH="yes" ;;
@@ -82,7 +91,8 @@ if [[ $# -eq 0 && -t 0 ]]; then
     4) DO_FRESH="yes" ;;
     5) DO_SEED="yes" ;;
     6) DO_SYNC_ONLY="yes" ;;
-    7) DO_CLEANUP="yes" ;;
+    7) DO_SYNC_MIGRATE="yes" ;;
+    8) DO_CLEANUP="yes" ;;
     0) exit 0 ;;
     *) echo "Opción inválida"; exit 2 ;;
   esac
@@ -177,6 +187,36 @@ if [[ "$DO_CLEANUP" == "yes" ]]; then
   log "[cleanup] Estado del sistema tras limpieza:"
   docker system df
   ok "Limpieza completada con éxito. Docker sin elementos huérfanos."
+  exit 0
+fi
+
+# ---------- Sync rapido ----------
+if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
+  log "[sync] Sincronizando archivos al volumen de produccion..."
+  $COMPOSE run --rm code_sync
+  log "[sync] Limpiando caches y reiniciando OPcache..."
+  $COMPOSE exec -T "$APP_SERVICE" sh -lc '
+    php artisan view:clear || true;
+    php -r "opcache_reset();" || true;
+    php artisan optimize
+  '
+  ok "Sincronizacion rapida completada."
+  exit 0
+fi
+
+# ---------- Sync rapido + migraciones ----------
+if [[ "$DO_SYNC_MIGRATE" == "yes" ]]; then
+  log "[sync-migrate] Sincronizando archivos al volumen de produccion..."
+  $COMPOSE run --rm code_sync
+  log "[sync-migrate] Ejecutando migraciones..."
+  $COMPOSE exec -T "$APP_SERVICE" php artisan migrate --force
+  log "[sync-migrate] Limpiando caches y reiniciando OPcache..."
+  $COMPOSE exec -T "$APP_SERVICE" sh -lc '
+    php artisan view:clear || true;
+    php -r "opcache_reset();" || true;
+    php artisan optimize
+  '
+  ok "Sincronizacion rapida con migraciones completada."
   exit 0
 fi
 
