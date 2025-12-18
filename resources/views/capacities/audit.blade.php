@@ -8,11 +8,11 @@
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
             <form action="{{ route('capacities.audit.refresh', $capacity) }}" method="POST" onsubmit="return confirm('{{ __('capacities.audit.refresh_confirm') }}');">
                 @csrf
-                <button type="submit" class="btn btn-outline-primary btn-sm">
+                <button type="submit" class="btn btn-primary btn-sm">
                     <i class="fas fa-sync-alt"></i> {{ __('common.refresh') }}
                 </button>
             </form>
-            <a href="{{ route('capacities.index') }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route('capacities.index') }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-arrow-left"></i> {{ __('common.back') }}
             </a>
         </div>

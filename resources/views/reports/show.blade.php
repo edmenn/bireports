@@ -157,7 +157,7 @@
             <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
                 <button type="button"
                         id="reportFullscreenBtn"
-                        class="btn btn-outline-primary btn-sm header-btn"
+                        class="btn btn-primary btn-sm header-btn"
                         data-label-enter="{{ __('reports.show.fullscreen_enter') }}"
                         data-label-exit="{{ __('reports.show.fullscreen_exit') }}"
                         title="{{ __('reports.show.fullscreen_enter') }}"
@@ -165,7 +165,7 @@
                     <i class="fas fa-expand"></i>
                     <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
-                <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm header-btn">
+                <a href="{{ url()->previous() }}" class="btn btn-primary btn-sm header-btn">
                     <i class="fas fa-arrow-left"></i>
                     <span>{{ __('common.back') }}</span>
                 </a>

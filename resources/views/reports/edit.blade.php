@@ -8,7 +8,7 @@
     {{-- Unified header with title, icon, and aligned actions --}}
     <x-page-header :title="__('reports.edit.title')" icon="fas fa-edit">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('reports.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-arrow-left"></i>
                 <span>{{ __('common.back') }}</span>
             </a>
@@ -200,7 +200,7 @@
                            class="@error('cover_file') is-invalid @enderror sr-only"
                            accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
                     <button type="button" id="cover_file_trigger"
-                            class="btn btn-outline-secondary mr-2 mb-2 mb-md-0">
+                            class="btn btn-secondary mr-2 mb-2 mb-md-0">
                         <i class="fas fa-folder-open mr-1"></i>{{ __('reports.edit.form.upload.button') }}
                     </button>
                     <span id="cover_file_status"
@@ -272,7 +272,7 @@
                 <button type="submit" class="btn btn-primary btn-eq">
                     <i class="fas fa-save mr-1"></i>{{ __('reports.edit.buttons.save') }}
                 </button>
-                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-eq">
+                <a href="{{ route('reports.index') }}" class="btn btn-secondary btn-eq">
                     <i class="fas fa-times mr-1"></i>{{ __('reports.edit.buttons.cancel') }}
                 </a>
             </div>

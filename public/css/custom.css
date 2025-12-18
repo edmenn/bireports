@@ -101,7 +101,8 @@ body {
   z-index: 1030; /* sobre contenido y sidebar */
   min-height: var(--app-navbar-h);
   border-radius: 0 0 1rem 0;
-  margin-right: 5px;
+  margin-right: 0;
+  padding-right: 5px;
 }
 
 /* Adjust the content offset according to the real navbar height */

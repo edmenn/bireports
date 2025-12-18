@@ -51,9 +51,51 @@
     body:not(.dark-mode) .sidebar .nav-link.active, body:not(.dark-mode) .sidebar .nav-link:hover{ background-color: var(--app-hi-bg) !important; color: var(--app-hi-text) !important; }
     body:not(.dark-mode) .card{ background-color: var(--app-card-bg); color: var(--app-card-text); }
     body:not(.dark-mode) .card .card-header{ background-color: var(--app-card-alt-bg); }
-    body:not(.dark-mode) .btn-primary, body:not(.dark-mode) .btn-default, body:not(.dark-mode) .btn{ background-color: var(--app-btn-bg); color: var(--app-btn-text); border-color: var(--app-btn_bg, var(--app-btn-bg)); }
-    body:not(.dark-mode) .btn:hover{ background-color: var(--app-btn-hover); color: var(--app-btn-text); }
-    body:not(.dark-mode) .btn:active, body:not(.dark-mode) .btn.active{ background-color: var(--app-btn-active); color: var(--app-btn-text); }
+    body:not(.dark-mode) .btn-primary,
+    body:not(.dark-mode) .btn-default,
+    body:not(.dark-mode) .btn,
+    body:not(.dark-mode) .btn-secondary{
+        background-color: var(--app-btn-bg);
+        color: var(--app-btn-text);
+        border-color: var(--app-btn_bg, var(--app-btn-bg));
+    }
+    body:not(.dark-mode) .btn:hover,
+    body:not(.dark-mode) .btn-secondary:hover{
+        background-color: var(--app-btn-hover);
+        color: var(--app-btn-text);
+    }
+    body:not(.dark-mode) .btn:active,
+    body:not(.dark-mode) .btn.active,
+    body:not(.dark-mode) .btn-secondary:active,
+    body:not(.dark-mode) .btn-secondary.active{
+        background-color: var(--app-btn-active);
+        color: var(--app-btn-text);
+    }
+    /* Outline buttons adapt to theme colors */
+    body:not(.dark-mode) .btn-outline-primary{
+        color: var(--app-btn-bg);
+        border-color: var(--app-btn-bg);
+        background-color: transparent;
+    }
+    body:not(.dark-mode) .btn-outline-primary:hover,
+    body:not(.dark-mode) .btn-outline-primary:focus,
+    body:not(.dark-mode) .btn-outline-primary:active{
+        color: var(--app-btn-text);
+        background-color: var(--app-btn-bg);
+        border-color: var(--app-btn-bg);
+    }
+    body:not(.dark-mode) .btn-outline-secondary{
+        color: var(--app-main-text);
+        border-color: var(--app-main-text);
+        background-color: transparent;
+    }
+    body:not(.dark-mode) .btn-outline-secondary:hover,
+    body:not(.dark-mode) .btn-outline-secondary:focus,
+    body:not(.dark-mode) .btn-outline-secondary:active{
+        color: var(--app-btn-text);
+        background-color: var(--app-btn-bg);
+        border-color: var(--app-btn-bg);
+    }
 
     /* Footer corporativo integrado (solo en claro; en oscuro hereda AdminLTE) */
     body:not(.dark-mode) .main-footer{ background: var(--app-navbar-bg) !important; color: var(--app-navbar-text) !important; text-align:center; }
@@ -63,4 +105,6 @@
     body.dark-mode .main-header.navbar .nav-link{ color: #c2c7d0 !important; }
     body.dark-mode .main-footer{ background-color: #1f2d3d !important; color: #c2c7d0 !important; text-align:center; }
     .main-footer a{ color: inherit; }
+
+
 </style>

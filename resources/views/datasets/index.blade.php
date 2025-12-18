@@ -3,20 +3,20 @@
 @section('title', __('datasets.page.title'))
 
 {{-- =========================
-     HEADER
+      HEADER
      ========================= --}}
 @section('content_header')
     <x-page-header :title="__('datasets.page.title')" :subtitle="__('datasets.page.subtitle')" icon="fas fa-database">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('datasets.schedules.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.schedules.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-clock"></i>
                 <span>{{ __('datasets.actions.view_all_schedules') }}</span>
             </a>
-            <a href="{{ url()->current() }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ url()->current() }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-sync"></i>
                 <span>{{ __('datasets.actions.reload_list') }}</span>
             </a>
-            <a href="{{ route('powerbi.import.datasets') }}" class="btn btn-outline-primary btn-sm header-btn">
+            <a href="{{ route('powerbi.import.datasets') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-cloud-download-alt"></i>
                 <span>{{ __('datasets.actions.import_metadata') }}</span>
             </a>
@@ -25,7 +25,7 @@
 @stop
 
 {{-- =========================
-     CONTENT
+      CONTENT
      ========================= --}}
 @section('content')
     {{-- Flash alerts --}}
@@ -55,7 +55,11 @@
         </x-adminlte-card>
     @else
         {{-- Dataset list --}}
-        <x-adminlte-card theme="primary" theme-mode="outline" class="shadow-sm">
+        <x-adminlte-card theme="primary" theme-mode="outline" class="shadow-sm datasets-card-wrap">
+            
+            {{-- 
+               SOLUCIÓN: 'datasets-table-wrap' controlará el overflow mediante CSS
+            --}}
             <div class="table-responsive datasets-table-wrap">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -80,12 +84,19 @@
                                 <td>{{ $d->workspace?->name ?: $d->workspace_id }}</td>
                                 <td class="text-monospace small">{{ $d->id }}</td>
                                 <td class="text-end">
-                                    <div class="dropdown">
+                                    {{-- Agregamos position-static para ayudar al posicionamiento relativo --}}
+                                    <div class="dropdown position-static">
                                         <button class="btn btn-sm btn-primary dropdown-toggle" type="button"
-                                                data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
+                                                id="dd-{{ $dsId }}"
+                                                data-toggle="dropdown"
+                                                aria-haspopup="true"
+                                                aria-expanded="false"
+                                                {{-- Usamos boundary window como respaldo --}}
+                                                data-boundary="window">
                                             {{ __('datasets.index.table.actions') }}
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-right">
+                                        
+                                        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dd-{{ $dsId }}">
                                             {{-- Refresh --}}
                                             <li>
                                                 <form action="{{ route('datasets.refresh', [$wsId, $dsId]) }}" method="POST"
@@ -139,7 +150,7 @@
 @stop
 
 {{-- =========================
-     STYLES
+      STYLES
      ========================= --}}
 @push('css')
 <style>
@@ -155,8 +166,32 @@
 .text-monospace {
     font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
 }
-.datasets-table-wrap {overflow:visible!important;}
-.table thead th {font-weight:600;}
-.dropdown-menu a, .dropdown-menu button {font-size:.875rem;}
+
+/* === CORRECCIÓN DEFINITIVA DE DROPDOWN === */
+
+/* 1. Z-Index alto para asegurar que flote sobre todo */
+.dropdown-menu { z-index: 9999 !important; }
+
+/* 1.b Evitar recorte por card/tabla */
+.datasets-card-wrap { overflow: visible; }
+.datasets-card-wrap .card-body { overflow: visible; }
+.datasets-card-wrap .dropdown,
+.datasets-card-wrap .btn-group { position: static; }
+
+/* 2. En pantallas de escritorio (min-width: 992px), permitimos que la tabla
+      desborde su contenedor. Esto hace que el menú NO se corte. */
+@media (min-width: 992px) {
+    .datasets-table-wrap {
+        overflow: visible !important;
+    }
+}
+
+/* 3. En móviles, mantenemos el scroll para no romper el diseño, 
+      aunque el menú podría cortarse si es muy largo, es preferible a romper la tabla */
+@media (max-width: 991.98px) {
+    .datasets-table-wrap {
+        overflow-x: auto !important;
+    }
+}
 </style>
 @endpush

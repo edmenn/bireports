@@ -4,20 +4,19 @@
 @section('title', __('capacities.page.title'))
 
 @section('content_header')
-    {{-- Unified header with title, icon, and aligned actions --}}
     <x-page-header :title="__('capacities.page.title')" icon="fas fa-server">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
             @if(!empty($hasConfig) && $hasConfig)
                 <form action="{{ route('capacities.refresh') }}" method="POST" class="m-0">
                     @csrf
-                    <button class="btn btn-outline-primary btn-sm header-btn">
+                    <button class="btn btn-primary btn-sm header-btn">
                         <i class="fas fa-sync-alt"></i>
                         <span>{{ __('capacities.buttons.refresh') }}</span>
                     </button>
                 </form>
             @else
                 <a href="{{ route('configurations.index') }}"
-                   class="btn btn-outline-secondary btn-sm header-btn"
+                   class="btn btn-primary btn-sm header-btn"
                    title="{{ __('capacities.page.configure_hint') }}">
                     <i class="fas fa-cogs"></i>
                     <span>{{ __('capacities.buttons.configure') }}</span>
@@ -27,13 +26,12 @@
     </x-page-header>
 @stop
 
-
 @section('content')
     {{-- Alerts --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="close" data-bs-dismiss="alert" data-dismiss="alert" aria-label="{{ __('common.close') }}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('common.close') }}">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
@@ -41,7 +39,7 @@
     @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-            <button type="button" class="close" data-bs-dismiss="alert" data-dismiss="alert" aria-label="{{ __('common.close') }}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('common.close') }}">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
@@ -50,7 +48,7 @@
     @if(empty($hasConfig) || !$hasConfig)
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle me-2"></i>{!! __('capacities.alerts.no_config_html', ['url' => route('configurations.index')]) !!}
-            <button type="button" class="close" data-bs-dismiss="alert" data-dismiss="alert" aria-label="{{ __('common.close') }}">
+            <button type="button" class="close" data-dismiss="alert" aria-label="{{ __('common.close') }}">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
@@ -60,7 +58,6 @@
         $total    = $caps->count();
         $activos  = $caps->where('is_active', true)->count();
         $pausados = $total - $activos;
-
         $regiones = $caps->pluck('region')->filter()->unique()->sort()->values();
         $skus     = $caps->pluck('sku')->filter()->unique()->sort()->values();
     @endphp
@@ -79,14 +76,14 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('configurations.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                    <a href="{{ route('configurations.index') }}" class="btn btn-primary rounded-pill px-3">
                         <i class="fas fa-cogs me-1"></i> {{ __('capacities.buttons.configure') }}
                     </a>
                 @endif
             </div>
         </div>
     @else
-        {{-- KPIs modernas --}}
+        {{-- KPIs --}}
         <div class="row kpi-row">
             <div class="col-md-4 mb-3">
                 <div class="kpi-card kpi-primary">
@@ -117,7 +114,7 @@
             </div>
         </div>
 
-        {{-- Filtros rápidos --}}
+        {{-- Filtros --}}
         <div class="card mb-3 shadow-sm border-0">
             <div class="card-body">
                 <div class="row g-2 align-items-end">
@@ -160,8 +157,8 @@
             </div>
         </div>
 
-        {{-- Tabla moderna --}}
-        <div class="card shadow-sm border-0">
+        {{-- Tabla --}}
+        <div class="card shadow-sm border-0 cap-table-wrap">
             <div class="table-responsive">
                 <table id="cap-table" class="table cap-table mb-0">
                     <thead class="sticky-thead">
@@ -199,8 +196,8 @@
                             <td class="align-middle">
                                 @if($guid)
                                     <code class="me-2">{{ \Illuminate\Support\Str::limit($guid, 22) }}</code>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary rounded-pill js-copy"
-                                            data-copy="{{ $guid }}" title="{{ __('capacities.actions.copy_guid') }}" aria-label="{{ __('capacities.actions.copy_guid') }}">
+                                    <button type="button" class="btn btn-xs btn-primary rounded-pill js-copy"
+                                            data-copy="{{ $guid }}" title="{{ __('capacities.actions.copy_guid') }}">
                                         <i class="far fa-copy"></i>
                                     </button>
                                 @else
@@ -224,28 +221,35 @@
                                 @endif
                             </td>
                             <td class="align-middle text-end">
-                                <div class="btn-group" role="group" aria-label="{{ __('capacities.actions.dropdown') }}">
+                                <div class="btn-group" role="group">
                                     @if ($isActive)
                                         <form action="{{ route('capacities.pause', $c) }}" method="POST" onsubmit="return confirm('{{ __('capacities.actions.pause_confirm') }}');" class="d-inline">
                                             @csrf
-                                            <button class="btn btn-sm btn-outline-warning rounded-pill px-3">
+                                            <button class="btn btn-sm btn-warning rounded-pill px-3 text-dark">
                                                 <i class="fas fa-pause me-1"></i> {{ __('capacities.actions.pause') }}
                                             </button>
                                         </form>
                                     @else
                                         <form action="{{ route('capacities.resume', $c) }}" method="POST" onsubmit="return confirm('{{ __('capacities.actions.resume_confirm') }}');" class="d-inline">
                                             @csrf
-                                            <button class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                            <button class="btn btn-sm btn-success rounded-pill px-3">
                                                 <i class="fas fa-play me-1"></i> {{ __('capacities.actions.resume') }}
                                             </button>
                                         </form>
                                     @endif
                                 </div>
                                 <div class="dropdown d-inline-block ms-2">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown" data-toggle="dropdown" aria-expanded="false">
+                                    {{-- ATENCIÓN: Se eliminó data-bs-* y se usa data-container="body" con data-boundary="window" --}}
+                                    <button class="btn btn-sm btn-primary dropdown-toggle rounded-pill px-3"
+                                            type="button"
+                                            data-toggle="dropdown"
+                                            data-container="body"
+                                            data-boundary="window"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">
                                         {{ __('capacities.actions.dropdown') }}
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-right">
+                                    <ul class="dropdown-menu dropdown-menu-right">
                                         <li><a class="dropdown-item" href="{{ route('capacities.schedule', $c) }}"><i class="fas fa-clock me-2"></i> {{ __('capacities.actions.schedule') }}</a></li>
                                         <li><a class="dropdown-item" href="{{ route('capacities.audit', $c) }}"><i class="fas fa-list me-2"></i> {{ __('capacities.actions.audit') }}</a></li>
                                     </ul>
@@ -268,12 +272,8 @@
 
 @push('css')
 <style>
-/* ===== KPIs modernas ===== */
-.kpi-card{
-    display:flex; align-items:center; justify-content:space-between;
-    border-radius:16px; padding:1rem 1.25rem; color:#fff;
-    box-shadow:0 .6rem 1.2rem rgba(0,0,0,.08);
-}
+/* KPIs */
+.kpi-card{ display:flex; align-items:center; justify-content:space-between; border-radius:16px; padding:1rem 1.25rem; color:#fff; box-shadow:0 .6rem 1.2rem rgba(0,0,0,.08); }
 .kpi-label{ font-size:.95rem; opacity:.9; margin-bottom:.25rem; }
 .kpi-value{ font-size:2rem; font-weight:800; line-height:1; }
 .kpi-icon{ font-size:2rem; opacity:.9; }
@@ -281,30 +281,21 @@
 .kpi-success{ background:linear-gradient(135deg,#10b981,#34d399); }
 .kpi-warning{ background:linear-gradient(135deg,#f59e0b,#f97316); }
 
-/* ===== Tabla moderna ===== */
+/* Tabla */
 .cap-table{ font-size:1rem; }
-.cap-table thead th{
-    position: sticky; top: 0; z-index: 2;
-    background: #f8fafc; border-bottom: 1px solid rgba(0,0,0,.06);
-    font-weight:700; color:#334155; padding: .85rem .75rem;
-}
+.cap-table thead th{ position: sticky; top: 0; z-index: 2; background: #f8fafc; border-bottom: 1px solid rgba(0,0,0,.06); font-weight:700; color:#334155; padding: .85rem .75rem; }
 .cap-table tbody td, .cap-table tbody th{ padding: .9rem .75rem; vertical-align: middle; }
-.cap-table tbody tr{ transition: background-color .12s ease, transform .06s ease; }
 .cap-table tbody tr:hover{ background: #fbfdff; }
 .cap-table code{ font-size:.9rem; }
-
-/* Badges (forma pastilla) */
 .badge.rounded-pill{ border-radius: 999px; }
-
-/* Botones redondos */
 .btn{ border-radius: .75rem; }
 .btn-xs{ padding: .15rem .45rem; border-radius: 999px; }
-
-/* Ordenamiento */
 .sortable{ cursor:pointer; user-select:none; }
 .sortable .fa-sort{ opacity:.6; }
 
-/* Ajustes responsive */
+/* FIX CRÍTICO: Dropdown Z-Index */
+.dropdown-menu { z-index: 9999 !important; }
+
 @media (max-width: 768px){
     .cap-table{ font-size:.95rem; }
     .kpi-value{ font-size:1.6rem; }
@@ -315,6 +306,16 @@
 @push('js')
 <script>
 (function(){
+    // 1. JS MANUAL PARA ASEGURAR EL CONTAINER BODY
+    // Esto sobreescribe cualquier conflicto con AdminLTE
+    $(document).ready(function() {
+        $('.cap-table .dropdown-toggle').each(function() {
+            // Forzamos la opción container: 'body' a nivel de datos de jQuery
+            $(this).data('container', 'body');
+            $(this).data('boundary', 'window');
+        });
+    });
+
     const copyFailMsg = @json(__('capacities.messages.copy_fail'));
     const visiblesLabel = @json(__('capacities.counters.visible'));
     const table  = document.getElementById('cap-table');
@@ -334,7 +335,7 @@
 
     function applyFilters(){
         const q  = norm(search?.value || '');
-        const st = state?.value || 'all';   // all|active|paused
+        const st = state?.value || 'all';
         const sk = norm(sku?.value || 'all');
         const rg = norm(region?.value || 'all');
 
@@ -372,7 +373,6 @@
         if(!sortKey) return;
         const tbody = table.querySelector('tbody');
         const visible = rows.filter(tr => tr.style.display !== 'none');
-
         visible.sort((a,b)=>{
             const va = getKey(a, sortKey);
             const vb = getKey(b, sortKey);
@@ -380,32 +380,26 @@
             if(va > vb) return sortDir === 'asc' ? 1 : -1;
             return 0;
         });
-
         visible.forEach(tr => tbody.appendChild(tr));
     }
 
-    // Eventos filtros
     [search, state, sku, region].forEach(el=>{
         if(!el) return;
         const evt = el.tagName === 'INPUT' ? 'input' : 'change';
         el.addEventListener(evt, ()=>{ applyFilters(); applySort(); });
     });
 
-    // Orden por columnas
     table.querySelectorAll('thead th.sortable').forEach(th=>{
         th.addEventListener('click', ()=>{
             const key = th.dataset.sort;
             if(sortKey === key){ sortDir = (sortDir === 'asc' ? 'desc' : 'asc'); }
             else { sortKey = key; sortDir = 'asc'; }
-
             table.querySelectorAll('thead th.sortable i').forEach(i=> i.className = 'fas fa-sort text-muted ms-1');
             th.querySelector('i').className = (sortDir === 'asc' ? 'fas fa-sort-up ms-1' : 'fas fa-sort-down ms-1');
-
             applySort();
         });
     });
 
-    // Copiar GUID
     table.addEventListener('click', (e)=>{
         const btn = e.target.closest('.js-copy');
         if(!btn) return;
@@ -418,7 +412,6 @@
         }).catch(()=> alert(copyFailMsg));
     });
 
-    // Inicial
     applyFilters();
 })();
 </script>

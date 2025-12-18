@@ -90,7 +90,7 @@
                                     <td class="text-right">
                                         <div class="actions-group">
                                             @if(!empty($i['workspace_id']))
-                                                <a href="{{ route('reports.show', [$i['workspace_id'], $i['id']]) }}" class="btn btn-outline-primary btn-sm">
+                                                <a href="{{ route('reports.show', [$i['workspace_id'], $i['id']]) }}" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-external-link-alt"></i>
                                                     <span>{{ __('portal.most_accessed.actions.open') }}</span>
                                                 </a>

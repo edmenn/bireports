@@ -10,7 +10,7 @@
                    :subtitle="__('datasets.history.subtitle', ['workspace' => $workspace->name ?? $workspace->id, 'dataset' => $datasetId])" 
                    icon="fas fa-history">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('datasets.index') }}" class="btn btn-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-arrow-left"></i>
                 <span>{{ __('datasets.history.back') }}</span>
             </a>

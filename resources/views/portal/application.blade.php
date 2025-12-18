@@ -172,7 +172,7 @@
             @if($currentReport)
                 <button type="button"
                         id="reportFullscreenBtn"
-                        class="btn btn-outline-primary btn-sm header-btn"
+                        class="btn btn-primary btn-sm header-btn"
                         data-label-enter="{{ __('reports.show.fullscreen_enter') }}"
                         data-label-exit="{{ __('reports.show.fullscreen_exit') }}"
                         title="{{ __('reports.show.fullscreen_enter') }}"
@@ -181,7 +181,7 @@
                     <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
             @endif
-            <a href="{{ route('portal.apps') }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('portal.apps') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-arrow-left"></i>
                 <span>{{ __('applications.actions.exit_application') }}</span>
             </a>

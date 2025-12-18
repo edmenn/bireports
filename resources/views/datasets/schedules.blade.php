@@ -8,19 +8,19 @@
             <small class="text-muted">{{ __('datasets.schedules.subtitle') }}</small>
         </x-slot>
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('datasets.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-arrow-left"></i>
                 <span>{{ __('datasets.schedules.back') }}</span>
             </a>
-            <a href="{{ route('datasets.schedules.index', array_merge(request()->query(), ['type'=>'local'])) }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.schedules.index', array_merge(request()->query(), ['type'=>'local'])) }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-filter"></i>
                 <span>{{ __('datasets.schedules.show_only_local') }}</span>
             </a>
-            <a href="{{ route('datasets.schedules.index', array_merge(request()->query(), ['type'=>'all'])) }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.schedules.index', array_merge(request()->query(), ['type'=>'all'])) }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-database"></i>
                 <span>{{ __('datasets.schedules.load_fabric') }}</span>
             </a>
-            <a href="{{ route('datasets.schedules.export', request()->query()) }}" class="btn btn-outline-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.schedules.export', request()->query()) }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-file-excel"></i>
                 <span>{{ __('datasets.schedules.export_excel') }}</span>
             </a>
@@ -88,7 +88,7 @@
                 <button class="btn btn-primary">
                     <i class="fas fa-filter me-1"></i>{{ __('datasets.schedules.filters.apply') }}
                 </button>
-                <a href="{{ route('datasets.schedules.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('datasets.schedules.index') }}" class="btn btn-primary">
                     <i class="fas fa-times me-1"></i>{{ __('datasets.schedules.filters.clear') }}
                 </a>
             </div>
@@ -156,7 +156,7 @@
                                           class="d-inline"
                                           onsubmit="return confirm('{{ __('datasets.schedules.refresh_confirm') }}')">
                                         @csrf
-                                        <button class="btn btn-outline-primary btn-icon"
+                                        <button class="btn btn-primary btn-icon"
                                                 title="{{ __('datasets.schedules.refresh_now') }}">
                                             <i class="fas fa-sync"></i>
                                         </button>

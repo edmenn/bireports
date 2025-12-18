@@ -7,7 +7,7 @@
                    :subtitle="__('datasets.schedule.subtitle', ['workspace' => $workspace->name ?? $workspace->id, 'dataset' => $datasetId])"
                    icon="fas fa-clock">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('datasets.index') }}" class="btn btn-secondary btn-sm header-btn">
+            <a href="{{ route('datasets.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-arrow-left"></i>
                 <span>{{ __('datasets.schedule.back') }}</span>
             </a>
@@ -173,7 +173,7 @@
                                     <div class="actions-group">
                                         <form method="POST" action="{{ route('datasets.local.toggle', [$workspace->id, $datasetId, $s->id]) }}" class="d-inline">
                                             @csrf
-                                            <button class="btn btn-outline-info btn-icon"
+                                            <button class="btn btn-primary btn-icon"
                                                     title="{{ $s->enabled ? __('datasets.schedule.local.deactivate') : __('datasets.schedule.local.activate') }}">
                                                 <i class="fas {{ $s->enabled ? 'fa-ban' : 'fa-play' }}"></i>
                                             </button>
@@ -181,7 +181,7 @@
                                         <form method="POST" action="{{ route('datasets.local.delete', [$workspace->id, $datasetId, $s->id]) }}" class="d-inline"
                                               onsubmit="return confirm('{{ __('datasets.schedule.local.delete_confirm') }}')">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-outline-danger btn-icon" title="{{ __('datasets.schedule.local.delete') }}">
+                                            <button class="btn btn-danger btn-icon" title="{{ __('datasets.schedule.local.delete') }}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

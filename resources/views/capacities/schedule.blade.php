@@ -6,7 +6,7 @@
 @section('content_header')
     <x-page-header :title="__('capacities.schedule.title', ['name' => $capacity->display_name])" icon="fas fa-clock">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('capacities.index') }}" class="btn btn-secondary btn-sm header-btn">
+            <a href="{{ route('capacities.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-arrow-left"></i>
                 <span>{{ __('common.back') }}</span>
             </a>
@@ -167,14 +167,14 @@
                                     <div class="actions-group">
                                         <form method="POST" action="{{ route('capacities.schedule.toggle', [$capacity->id, $s->id]) }}" class="d-inline">
                                             @csrf
-                                            <button class="btn btn-outline-info btn-icon" title="{{ $s->enabled ? __('capacities.schedule.actions.deactivate') : __('capacities.schedule.actions.activate') }}">
+                                            <button class="btn btn-primary btn-icon" title="{{ $s->enabled ? __('capacities.schedule.actions.deactivate') : __('capacities.schedule.actions.activate') }}">
                                                 <i class="fas {{ $s->enabled ? 'fa-ban' : 'fa-play' }}"></i>
                                             </button>
                                         </form>
                                         <form method="POST" action="{{ route('capacities.schedule.delete', [$capacity->id, $s->id]) }}" class="d-inline"
                                               onsubmit="return confirm('{{ __('capacities.schedule.delete_confirm') }}')">
                                             @csrf @method('DELETE')
-                                            <button class="btn btn-outline-danger btn-icon" title="{{ __('capacities.schedule.actions.delete') }}">
+                                            <button class="btn btn-danger btn-icon" title="{{ __('capacities.schedule.actions.delete') }}">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

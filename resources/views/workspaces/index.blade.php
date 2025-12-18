@@ -7,7 +7,7 @@
     {{-- Unified header with title, icon, and aligned actions (same style as capacities) --}}
     <x-page-header :title="__('folders.workspaces.page.title')" icon="fas fa-briefcase">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-primary btn-sm header-btn">
+            <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-cloud-download-alt"></i>
                 <span>{{ __('folders.workspaces.actions.import_now') }}</span>
             </a>

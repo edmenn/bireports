@@ -8,12 +8,12 @@
     {{-- Unified header with title, icon, and aligned actions --}}
     <x-page-header :title="__('reports.index.title')" icon="fas fa-chart-bar">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('powerbi.import.run') }}" class="btn btn-outline-primary btn-sm header-btn">
+            <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-cloud-download-alt"></i>
                 <span>{{ __('reports.index.import_now') }}</span>
             </a>
             @can('report_subscriptions.manage')
-                <a href="{{ route('subscriptions.index') }}" class="btn btn-outline-secondary btn-sm header-btn ml-2">
+                <a href="{{ route('subscriptions.index') }}" class="btn btn-primary btn-sm header-btn ml-2">
                     <i class="fas fa-list"></i>
                     <span>{{ __('menu.nav.reports_subscriptions') }}</span>
                 </a>
