@@ -11,7 +11,7 @@
 @section('content_header')
     <x-page-header :title="__('portal.favorites.title')" icon="fas fa-star">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('portal.index') }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ route('portal.index') }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-home"></i>
                 <span>{{ __('applications.actions.go_home') }}</span>
             </a>
