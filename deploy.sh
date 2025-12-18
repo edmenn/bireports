@@ -10,6 +10,14 @@ QUEUE_SERVICE="queue_worker"
 DOMAIN="${DOMAIN:-portal.birentable.com}"
 
 # ---------- Helpers ----------
+safe_exit() {
+  local code=${1:-0}
+  if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+    return "$code"
+  fi
+  exit "$code"
+}
+
 log()  { printf '\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()   { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$*"; }
@@ -19,7 +27,7 @@ ensure_zip_extension() {
   log "Verificando extensión ZipArchive..."
   if ! $COMPOSE exec -T "$APP_SERVICE" php -r "exit(extension_loaded('zip') ? 0 : 1);"; then
     err "ZipArchive no está habilitada en la imagen. Revisa Dockerfile.app."
-    exit 1
+    safe_exit 1
   fi
   ok "ZipArchive disponible."
 }
@@ -54,20 +62,20 @@ for arg in "$@"; do
     --sync) DO_SYNC_ONLY="yes" ;;
     --sync-migrate) DO_SYNC_MIGRATE="yes" ;;
     --cleanup) DO_CLEANUP="yes" ;;
-    -h|--help) usage; exit 0 ;;
-    *) usage; exit 2 ;;
+    -h|--help) usage; safe_exit 0 ;;
+    *) usage; safe_exit 2 ;;
   esac
 done
 
 if [[ "$DO_SYNC_ONLY" == "yes" && "$DO_SYNC_MIGRATE" == "yes" ]]; then
   err "--sync y --sync-migrate no se pueden combinar"
-  exit 2
+  safe_exit 2
 fi
 
 if [[ "$DO_SYNC_ONLY" == "yes" || "$DO_SYNC_MIGRATE" == "yes" ]]; then
   if [[ "$DO_REFRESH" == "yes" || "$DO_REFRESH_NOBUILD" == "yes" || "$DO_FRESH" == "yes" ]]; then
     err "--sync/--sync-migrate no se puede combinar con --refresh/--refresh-nobuild/--fresh"
-    exit 2
+    safe_exit 2
   fi
 fi
 
@@ -93,13 +101,13 @@ if [[ $# -eq 0 && -t 0 ]]; then
     6) DO_SYNC_ONLY="yes" ;;
     7) DO_SYNC_MIGRATE="yes" ;;
     8) DO_CLEANUP="yes" ;;
-    0) exit 0 ;;
-    *) echo "Opción inválida"; exit 2 ;;
+    0) safe_exit 0 ;;
+    *) echo "Opción inválida"; safe_exit 2 ;;
   esac
 fi
 
 # ---------- Funciones auxiliares ----------
-require_file() { [[ -f "$1" ]] || { err "Falta $1"; exit 1; }; }
+require_file() { [[ -f "$1" ]] || { err "Falta $1"; safe_exit 1; }; }
 
 check_env_permissions() {
   local perm
@@ -134,7 +142,7 @@ wait_healthy() {
     if (( now - start > timeout )); then
       $COMPOSE ps "$svc" || true
       err "Timeout esperando health de '$svc'. Revisa logs."
-      exit 1
+      safe_exit 1
     fi
     sleep 2
   done
@@ -165,7 +173,7 @@ ensure_app_key() {
 }
 
 # ---------- Prechequeos ----------
-command -v docker >/dev/null || { err "Docker no está instalado/en PATH"; exit 1; }
+command -v docker >/dev/null || { err "Docker no está instalado/en PATH"; safe_exit 1; }
 require_file "docker-compose.secure.yml"
 require_file ".env"
 check_env_permissions
@@ -187,7 +195,7 @@ if [[ "$DO_CLEANUP" == "yes" ]]; then
   log "[cleanup] Estado del sistema tras limpieza:"
   docker system df
   ok "Limpieza completada con éxito. Docker sin elementos huérfanos."
-  exit 0
+  safe_exit 0
 fi
 
 # ---------- Sync rapido ----------
@@ -201,7 +209,7 @@ if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
     php artisan optimize
   '
   ok "Sincronizacion rapida completada."
-  exit 0
+  safe_exit 0
 fi
 
 # ---------- Sync rapido + migraciones ----------
@@ -217,7 +225,7 @@ if [[ "$DO_SYNC_MIGRATE" == "yes" ]]; then
     php artisan optimize
   '
   ok "Sincronizacion rapida con migraciones completada."
-  exit 0
+  safe_exit 0
 fi
 
 # ---------- Refresh rápido ----------
@@ -235,7 +243,7 @@ if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
     php artisan optimize
   '
   ok "Refresh rápido completado."
-  exit 0
+  safe_exit 0
 fi
 
 # ---------- Refresh completo ----------
@@ -252,7 +260,7 @@ if [[ "$DO_REFRESH" == "yes" ]]; then
   log "[refresh] Limpiando caches..."
   $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
   ok "Refresh completo terminado."
-  exit 0
+  safe_exit 0
 fi
 
 # ---------- Deploy normal ----------
