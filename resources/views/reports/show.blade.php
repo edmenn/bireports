@@ -165,7 +165,7 @@
                     <i class="fas fa-expand"></i>
                     <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
-                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm header-btn">
+                <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm header-btn">
                     <i class="fas fa-arrow-left"></i>
                     <span>{{ __('common.back') }}</span>
                 </a>

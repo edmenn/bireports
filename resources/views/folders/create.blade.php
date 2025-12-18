@@ -53,11 +53,25 @@
 
                 {{-- Users --}}
                 <div class="col-md-4 d-flex flex-column">
-                    <label class="fw-semibold mb-2">{{ __('folders.form.users_label') }}</label>
+                    {{-- HEADER CORREGIDO: pl-3 para alinear con lista, d-flex para centrar check/titulo --}}
+                    <div class="assignments-header mb-2 py-2 pl-3 bg-light border rounded d-flex align-items-center">
+                        <div class="custom-control custom-checkbox m-0">
+                            <input type="checkbox" class="custom-control-input js-check-all" id="chk_all_folder_users"
+                                   data-target-class="assign-folder-users"
+                                   aria-label="{{ __('folders.form.select_all_users') }}">
+                            <label class="custom-control-label selectall-label" for="chk_all_folder_users"></label>
+                        </div>
+                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_users_btn">
+                            <span class="fw-bold">{{ __('folders.form.users_label') }}</span>
+                            <i class="fas fa-sort-alpha-down ml-2" id="sort_users_icon"></i>
+                        </button>
+                    </div>
+
+                    @php($usersSorted = $users->sortBy(fn($u) => mb_strtolower($u->name ?? '')))
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
-                        @forelse($users as $user)
-                            <div class="custom-control custom-checkbox mb-2">
-                                <input type="checkbox" class="custom-control-input" name="users[]"
+                        @forelse($usersSorted as $user)
+                            <div class="custom-control custom-checkbox mb-2 js-sort-item sort-folder-users" data-sort-name="{{ mb_strtolower($user->name ?? '') }}">
+                                <input type="checkbox" class="custom-control-input assign-folder-users" name="users[]"
                                        value="{{ $user->id }}" id="user_{{ $user->id }}"
                                        @checked(in_array($user->id, old('users', [])))>
                                 <label class="custom-control-label" for="user_{{ $user->id }}">
@@ -72,11 +86,25 @@
 
                 {{-- Groups --}}
                 <div class="col-md-4 d-flex flex-column">
-                    <label class="fw-semibold mb-2">{{ __('folders.form.groups_label') }}</label>
+                    {{-- HEADER CORREGIDO --}}
+                    <div class="assignments-header mb-2 py-2 pl-3 bg-light border rounded d-flex align-items-center">
+                        <div class="custom-control custom-checkbox m-0">
+                            <input type="checkbox" class="custom-control-input js-check-all" id="chk_all_folder_groups"
+                                   data-target-class="assign-folder-groups"
+                                   aria-label="{{ __('folders.form.select_all_groups') }}">
+                            <label class="custom-control-label selectall-label" for="chk_all_folder_groups"></label>
+                        </div>
+                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_groups_btn">
+                            <span class="fw-bold">{{ __('folders.form.groups_label') }}</span>
+                            <i class="fas fa-sort-alpha-down ml-2" id="sort_groups_icon"></i>
+                        </button>
+                    </div>
+
+                    @php($groupsSorted = $groups->sortBy(fn($g) => mb_strtolower($g->name ?? '')))
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
-                        @forelse($groups as $group)
-                            <div class="custom-control custom-checkbox mb-2">
-                                <input type="checkbox" class="custom-control-input" name="groups[]"
+                        @forelse($groupsSorted as $group)
+                            <div class="custom-control custom-checkbox mb-2 js-sort-item sort-folder-groups" data-sort-name="{{ mb_strtolower($group->name ?? '') }}">
+                                <input type="checkbox" class="custom-control-input assign-folder-groups" name="groups[]"
                                        value="{{ $group->id }}" id="group_{{ $group->id }}"
                                        @checked(in_array($group->id, old('groups', [])))>
                                 <label class="custom-control-label" for="group_{{ $group->id }}">
@@ -91,11 +119,25 @@
 
                 {{-- Reports --}}
                 <div class="col-md-4 d-flex flex-column">
-                    <label class="fw-semibold mb-2">{{ __('folders.form.reports_label') }}</label>
+                    {{-- HEADER CORREGIDO --}}
+                    <div class="assignments-header mb-2 py-2 pl-3 bg-light border rounded d-flex align-items-center">
+                        <div class="custom-control custom-checkbox m-0">
+                            <input type="checkbox" class="custom-control-input js-check-all" id="chk_all_folder_reports"
+                                   data-target-class="assign-folder-reports"
+                                   aria-label="{{ __('folders.form.select_all_reports') }}">
+                            <label class="custom-control-label selectall-label" for="chk_all_folder_reports"></label>
+                        </div>
+                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_reports_btn">
+                            <span class="fw-bold">{{ __('folders.form.reports_label') }}</span>
+                            <i class="fas fa-sort-alpha-down ml-2" id="sort_reports_icon"></i>
+                        </button>
+                    </div>
+
+                    @php($reportsSorted = $reports->sortBy(fn($r) => mb_strtolower($r->name ?? '')))
                     <div class="checkbox-list-container p-3 border rounded flex-grow-1">
-                        @forelse($reports as $report)
-                            <div class="custom-control custom-checkbox mb-2">
-                                <input type="checkbox" class="custom-control-input" name="reports[]"
+                        @forelse($reportsSorted as $report)
+                            <div class="custom-control custom-checkbox mb-2 js-sort-item sort-folder-reports" data-sort-name="{{ mb_strtolower($report->name ?? '') }}">
+                                <input type="checkbox" class="custom-control-input assign-folder-reports" name="reports[]"
                                        value="{{ $report->id }}" id="report_{{ $report->id }}"
                                        @checked(in_array($report->id, old('reports', [])))>
                                 <label class="custom-control-label" for="report_{{ $report->id }}">
@@ -152,15 +194,42 @@
 .checkbox-list-container {
     max-height: 300px;
     overflow-y: auto;
-    background-color: #f8f9fa;
+    background-color: var(--app-card-alt-bg, #f8f9fa);
 }
-.custom-control { margin-bottom: 0.4rem; }
+
+/* === AJUSTES DE ALINEACIÓN DE HEADER === */
+
+/* 1. Ajuste fino para bajar el dibujito del check y centrarlo con el texto */
+.assignments-header .custom-control-label::before,
+.assignments-header .custom-control-label::after {
+    top: 0.2rem; /* Baja el check ligeramente */
+}
+
+/* 2. Reseteo de márgenes del control */
+.assignments-header .custom-control {
+    min-height: auto;
+    padding-left: 1.5rem; /* Espacio para el icono */
+}
+.assignments-header .custom-control-label {
+    cursor: pointer;
+}
+
+/* 3. Estilo del botón de título */
+.assignments-header .sort-toggle {
+    line-height: 1.2;
+}
+.assignments-header .sort-toggle:hover {
+    color: inherit;
+}
+/* ======================================= */
+
 .custom-control-label { font-size: 0.9rem; }
+.selectall-label{padding:0; margin:0; width:100%; height:1rem; display:inline-block;}
 
 /* Inputs and textarea same height */
 input.form-control,
 textarea.form-control {
-    border: 1px solid #ced4da !important;
+    border: 1px solid var(--app-input-border, #ced4da) !important;
     border-radius: .375rem !important;
     padding: .5rem .75rem !important;
     box-shadow: none !important;
@@ -174,7 +243,7 @@ textarea:invalid,
 input:required,
 textarea:required {
     box-shadow: none !important;
-    border-color: #ced4da !important;
+    border-color: var(--app-input-border, #ced4da) !important;
     outline: none !important;
 }
 ::-webkit-validation-bubble,
@@ -190,8 +259,75 @@ textarea:required {
 /* Focus style */
 input:focus,
 textarea:focus {
-    border-color: #007bff !important;
+    border-color: var(--app-btn-bg, #007bff) !important;
     box-shadow: 0 0 0 0.1rem rgba(0,123,255,.25) !important;
+    box-shadow: 0 0 0 0.1rem color-mix(in srgb, var(--app-btn-bg, #007bff) 25%, transparent) !important;
 }
 </style>
+@endpush
+
+@push('js')
+<script>
+(function(){
+    var masters = document.querySelectorAll('.js-check-all');
+    masters.forEach(function(master){
+        var cls = master.getAttribute('data-target-class');
+        if (!cls) return;
+        var boxes = Array.prototype.slice.call(document.querySelectorAll('input.'+cls));
+        function refresh(){
+            var enabled = boxes.filter(function(b){ return !b.disabled; });
+            if (!enabled.length){ master.checked = false; master.indeterminate = false; return; }
+            var allChecked = enabled.every(function(b){ return b.checked; });
+            var someChecked = enabled.some(function(b){ return b.checked; });
+            master.checked = allChecked;
+            master.indeterminate = (!allChecked && someChecked);
+        }
+        master.addEventListener('change', function(){
+            boxes.forEach(function(b){ if (!b.disabled) b.checked = master.checked; });
+            refresh();
+        });
+        boxes.forEach(function(b){ b.addEventListener('change', refresh, {passive:true}); });
+        refresh();
+    });
+})();
+
+(function(){
+    var sortStates = {
+        users: 'asc',
+        groups: 'asc',
+        reports: 'asc'
+    };
+    function sortList(listClass, stateKey, iconId){
+        var items = Array.prototype.slice.call(document.querySelectorAll('.js-sort-item.'+listClass));
+        if (!items.length) return;
+        var container = items[0].parentElement;
+        items.sort(function(a,b){
+            var ta = (a.getAttribute('data-sort-name') || '').toLowerCase();
+            var tb = (b.getAttribute('data-sort-name') || '').toLowerCase();
+            if (ta === tb) return 0;
+            var cmp = ta < tb ? -1 : 1;
+            return sortStates[stateKey] === 'desc' ? -cmp : cmp;
+        });
+        items.forEach(function(it){ container.appendChild(it); });
+        var icon = document.getElementById(iconId);
+        if (icon){
+            icon.className = sortStates[stateKey] === 'desc'
+                ? 'fas fa-sort-alpha-up ml-2'
+                : 'fas fa-sort-alpha-down ml-2';
+        }
+    }
+
+    function attach(btnId, listClass, stateKey, iconId){
+        var btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.addEventListener('click', function(){
+            sortStates[stateKey] = sortStates[stateKey] === 'desc' ? 'asc' : 'desc';
+            sortList(listClass, stateKey, iconId);
+        });
+    }
+    attach('sort_users_btn', 'sort-folder-users', 'users', 'sort_users_icon');
+    attach('sort_groups_btn', 'sort-folder-groups', 'groups', 'sort_groups_icon');
+    attach('sort_reports_btn', 'sort-folder-reports', 'reports', 'sort_reports_icon');
+})();
+</script>
 @endpush

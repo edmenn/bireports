@@ -22,8 +22,12 @@ return [
         'description_label' => 'Description',
         'description_placeholder' => 'Optional description',
         'users_label' => 'Users',
+        'select_all_users' => 'Select all',
         'groups_label' => 'Groups',
+        'select_all_groups' => 'Select all',
         'reports_label' => 'Reports',
+        'select_all_reports' => 'Select all',
+        'sort_alpha' => 'Sort A-Z',
         'buttons' => [
             'back' => 'Back',
             'save' => 'Save',

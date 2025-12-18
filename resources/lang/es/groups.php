@@ -22,6 +22,8 @@ return [
         'description_label' => 'Descripción (opcional)',
         'description_placeholder' => 'Describe el propósito del grupo.',
         'users_label' => 'Usuarios del grupo',
+        'select_all_users' => 'Seleccionar todos',
+        'sort_alpha' => 'Ordenar A-Z',
         'buttons' => [
             'back' => 'Volver',
             'save' => 'Guardar',
