@@ -34,20 +34,19 @@
     @php
         $sortKey = mb_strtolower($display ?: ($preferred ?: ''));
         $sortPosition = $job !== '' ? mb_strtolower($job) : '{';
+
+        // Construir lista completa de candidatos (preferido + upn + mail + aliases)
+        $cands = [];
+        if ($preferred !== '') $cands[] = strtolower($preferred);
+        if ($upn !== '')       $cands[] = strtolower($upn);
+        if ($mail !== '')      $cands[] = strtolower($mail);
+        foreach ($aliases as $a) { $cands[] = strtolower($a); }
+        $cands = array_values(array_unique($cands));
+        $aliasesAttr = e(implode(',', $cands));
+        $exists = \App\Models\User::query()->whereIn('email', $cands)->exists();
     @endphp
-    <tr class="js-entra-row" data-sort-name="{{ e($sortKey) }}" data-sort-position="{{ e($sortPosition) }}">
+    <tr class="js-entra-row" data-sort-name="{{ e($sortKey) }}" data-sort-position="{{ e($sortPosition) }}" data-exists="{{ $exists ? '1' : '0' }}">
         <td style="width:36px" class="text-center">
-            @php
-                // Construir lista completa de candidatos (preferido + upn + mail + aliases)
-                $cands = [];
-                if ($preferred !== '') $cands[] = strtolower($preferred);
-                if ($upn !== '')       $cands[] = strtolower($upn);
-                if ($mail !== '')      $cands[] = strtolower($mail);
-                foreach ($aliases as $a) { $cands[] = strtolower($a); }
-                $cands = array_values(array_unique($cands));
-                $aliasesAttr = e(implode(',', $cands));
-                $exists = \App\Models\User::query()->whereIn('email', $cands)->exists();
-            @endphp
             <input type="checkbox" class="js-entra-row-chk"
                    data-email="{{ e($preferred) }}"
                    data-name="{{ e($display ?: $preferred) }}"

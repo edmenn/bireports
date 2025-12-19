@@ -323,6 +323,10 @@
                         </div>
                         <div class="col-md-2 mb-2">
                             <div class="form-check mt-4 pt-1">
+                                <input class="form-check-input" type="checkbox" id="entraOnlyNew">
+                                <label class="form-check-label" for="entraOnlyNew">{{ __('users.index.entra.only_new') }}</label>
+                            </div>
+                            <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" id="entraOnlyActive">
                                 <label class="form-check-label" for="entraOnlyActive">{{ __('users.index.entra.only_active') }}</label>
                             </div>
@@ -373,8 +377,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal" data-bs-dismiss="modal">{{ __('users.index.buttons.close') }}</button>
-                    <button type="button" id="entraBtnImport" class="btn btn-primary btn-sm" disabled>
+                    <button type="button" class="btn btn-secondary btn-sm entra-footer-btn" data-dismiss="modal" data-bs-dismiss="modal">{{ __('users.index.buttons.close') }}</button>
+                    <button type="button" id="entraBtnImport" class="btn btn-primary btn-sm entra-footer-btn" disabled>
                         <i class="fas fa-file-import mr-1"></i> {{ __('users.index.buttons.import_selected') }}
                     </button>
                 </div>
@@ -476,6 +480,14 @@ table th, table td{ vertical-align:middle !important; }
 }
 .sort-toggle:hover, .sort-toggle:focus{ text-decoration:none; color:inherit; }
 .sort-toggle i{ font-size:.9rem; }
+.entra-footer-btn{
+    min-width: 160px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
 </style>
 @endpush
 
@@ -617,6 +629,7 @@ const usersI18n = {
     var inpQuery = document.getElementById('entraQuery');
     var inpDomain = document.getElementById('entraDomain');
     var chkOnlyActive = document.getElementById('entraOnlyActive');
+    var chkOnlyNew = document.getElementById('entraOnlyNew');
     var btnSortName = document.getElementById('entraSortName');
     var sortIcon = document.getElementById('entraSortIcon');
     var btnSortPosition = document.getElementById('entraSortPosition');
@@ -633,6 +646,20 @@ const usersI18n = {
     var selected = new Map(); // email -> {email,name,aliases}
 
     function updateImportBtn(){ if (btnImport) btnImport.disabled = (selected.size === 0); }
+
+    function applyRowFilters(){
+        var onlyNew = !!(chkOnlyNew && chkOnlyNew.checked);
+        var rows = tbody.querySelectorAll('tr.js-entra-row');
+        Array.prototype.forEach.call(rows, function(row){
+            if (!onlyNew){
+                row.classList.remove('d-none');
+                return;
+            }
+            var exists = row.getAttribute('data-exists') === '1';
+            if (exists) row.classList.add('d-none'); else row.classList.remove('d-none');
+        });
+        syncChkAllState();
+    }
 
     function sortRows(){
         if (!tbody) return;
@@ -725,10 +752,11 @@ const usersI18n = {
             nextLink = data.next || null;
             if (btnMore) btnMore.disabled = !nextLink;
 
-            attachRowHandlers(tbody);
-            syncChkAllState();
-            sortRows();
-            updateImportBtn();
+        attachRowHandlers(tbody);
+        applyRowFilters();
+        syncChkAllState();
+        sortRows();
+        updateImportBtn();
             var count = (typeof data.count === 'number') ? data.count : 0;
             if (!temp.children.length){
                 if (statusEl) statusEl.textContent = usersI18n.noResults;
@@ -763,6 +791,7 @@ const usersI18n = {
     if (inpQuery) inpQuery.addEventListener('input', triggerReload);
     if (inpDomain) inpDomain.addEventListener('change', triggerReload);
     if (chkOnlyActive) chkOnlyActive.addEventListener('change', triggerReload);
+    if (chkOnlyNew) chkOnlyNew.addEventListener('change', applyRowFilters);
 
     if (btnImport){
         btnImport.addEventListener('click', function(){
@@ -794,6 +823,7 @@ const usersI18n = {
             if (inpQuery) inpQuery.value = '';
             if (inpDomain) inpDomain.value = '';
             if (chkOnlyActive) chkOnlyActive.checked = false;
+            if (chkOnlyNew) chkOnlyNew.checked = false;
             sortState = 'name_asc';
             if (sortIcon) sortIcon.className = 'fas fa-sort-alpha-down ml-1';
             if (sortPositionIcon) sortPositionIcon.className = 'fas fa-sort-alpha-down ml-1';

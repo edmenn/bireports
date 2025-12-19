@@ -106,6 +106,7 @@ return [
             'search_placeholder' => 'Ex: John or john@company.com',
             'domain_label' => 'Domain only',
             'domain_placeholder' => 'company.com',
+            'only_new' => 'Only not imported',
             'only_active' => 'Only active users',
             'assign_role' => 'Assign role',
             'select_all' => 'Select all',

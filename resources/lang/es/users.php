@@ -106,6 +106,7 @@ return [
             'search_placeholder' => 'Ej: Juan o juan@empresa.com',
             'domain_label' => 'Solo dominio',
             'domain_placeholder' => 'empresa.com',
+            'only_new' => 'Solo no agregados',
             'only_active' => 'Solo activos',
             'assign_role' => 'Asignar rol',
             'select_all' => 'Seleccionar todos',
