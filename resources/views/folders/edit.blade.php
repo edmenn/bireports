@@ -62,7 +62,7 @@
                                    aria-label="{{ __('folders.form.select_all_users') }}">
                             <label class="custom-control-label selectall-label" for="chk_all_folder_users"></label>
                         </div>
-                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_users_btn">
+                        <button type="button" class="sort-toggle ml-2 d-flex align-items-center text-dark text-decoration-none" id="sort_users_btn">
                             <span class="fw-bold">{{ __('folders.form.users_label') }}</span>
                             <i class="fas fa-sort-alpha-down ml-2" id="sort_users_icon"></i>
                         </button>
@@ -95,7 +95,7 @@
                                    aria-label="{{ __('folders.form.select_all_groups') }}">
                             <label class="custom-control-label selectall-label" for="chk_all_folder_groups"></label>
                         </div>
-                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_groups_btn">
+                        <button type="button" class="sort-toggle ml-2 d-flex align-items-center text-dark text-decoration-none" id="sort_groups_btn">
                             <span class="fw-bold">{{ __('folders.form.groups_label') }}</span>
                             <i class="fas fa-sort-alpha-down ml-2" id="sort_groups_icon"></i>
                         </button>
@@ -128,7 +128,7 @@
                                    aria-label="{{ __('folders.form.select_all_reports') }}">
                             <label class="custom-control-label selectall-label" for="chk_all_folder_reports"></label>
                         </div>
-                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_reports_btn">
+                        <button type="button" class="sort-toggle ml-2 d-flex align-items-center text-dark text-decoration-none" id="sort_reports_btn">
                             <span class="fw-bold">{{ __('folders.form.reports_label') }}</span>
                             <i class="fas fa-sort-alpha-down ml-2" id="sort_reports_icon"></i>
                         </button>
@@ -244,8 +244,14 @@ textarea.no-validation::-webkit-validation-bubble-arrow {
 }
 /* 3. Estilo del título (Sin color rojo) */
 .assignments-header .sort-toggle {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    appearance: none;
     line-height: 1.2;
     color: inherit;
+    font-weight: 600;
+    cursor: pointer;
 }
 .assignments-header .sort-toggle:hover {
     color: inherit;

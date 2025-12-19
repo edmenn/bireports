@@ -58,7 +58,7 @@
                                    data-target-class="assign-users" aria-label="{{ __('groups.form.select_all_users') }}">
                             <label class="custom-control-label selectall-label" for="chk_all_users"></label>
                         </div>
-                        <button type="button" class="btn btn-link p-0 ml-2 sort-toggle d-flex align-items-center text-dark text-decoration-none" id="sort_group_users_btn" data-sort-class="sort-group-users" aria-label="{{ __('groups.form.sort_alpha') }}">
+                        <button type="button" class="sort-toggle ml-2 d-flex align-items-center text-dark text-decoration-none" id="sort_group_users_btn" data-sort-class="sort-group-users" aria-label="{{ __('groups.form.sort_alpha') }}">
                             <span class="fw-bold">{{ __('groups.form.users_label') }}</span>
                             <i class="fas fa-sort-alpha-down ml-2" id="sort_group_users_icon"></i>
                         </button>
@@ -150,8 +150,14 @@
 }
 /* 3. Estilo del título */
 .assignments-header .sort-toggle {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    appearance: none;
     line-height: 1.2;
     color: inherit;
+    font-weight: 600;
+    cursor: pointer;
 }
 .assignments-header .sort-toggle:hover {
     color: inherit;
