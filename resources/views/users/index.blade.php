@@ -345,12 +345,17 @@
                                         <input type="checkbox" id="entraChkAll" aria-label="{{ __('users.index.entra.select_all') }}">
                                     </th>
                                     <th class="table-col-lg">
-                                        <button type="button" id="entraSortName" class="btn btn-link p-0 sort-toggle" aria-label="{{ __('users.index.entra.sort_name_asc') }}">
+                                        <button type="button" id="entraSortName" class="sort-toggle" aria-label="{{ __('users.index.entra.sort_name_asc') }}">
                                             {{ __('users.index.table.name') }}
                                             <i id="entraSortIcon" class="fas fa-sort-alpha-down ml-1"></i>
                                         </button>
                                     </th>
-                                    <th class="table-col-lg">{{ __('users.index.table.position') }}</th>
+                                    <th class="table-col-lg">
+                                        <button type="button" id="entraSortPosition" class="sort-toggle" aria-label="{{ __('users.index.entra.sort_position_asc') }}">
+                                            {{ __('users.index.table.position') }}
+                                            <i id="entraSortPositionIcon" class="fas fa-sort-alpha-down ml-1"></i>
+                                        </button>
+                                    </th>
                                     <th class="table-col-lg">{{ __('users.index.table.email') }}</th>
                                 </tr>
                             </thead>
@@ -459,7 +464,16 @@ table th, table td{ vertical-align:middle !important; }
 }
 .table .btn-icon i{ margin:0 !important; font-size:.8rem !important; }
 .table .btn-icon:hover{ transform:scale(1.1); transition:all .15s ease-in-out; }
-.sort-toggle{ color:inherit; font-weight:700; text-decoration:none; }
+.sort-toggle{
+    background: transparent;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
 .sort-toggle:hover, .sort-toggle:focus{ text-decoration:none; color:inherit; }
 .sort-toggle i{ font-size:.9rem; }
 </style>
@@ -605,6 +619,8 @@ const usersI18n = {
     var chkOnlyActive = document.getElementById('entraOnlyActive');
     var btnSortName = document.getElementById('entraSortName');
     var sortIcon = document.getElementById('entraSortIcon');
+    var btnSortPosition = document.getElementById('entraSortPosition');
+    var sortPositionIcon = document.getElementById('entraSortPositionIcon');
     var sortState = 'name_asc';
     var selAssignRole = document.getElementById('entraAssignRole');
 
@@ -623,11 +639,12 @@ const usersI18n = {
         var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr.js-entra-row'));
         if (rows.length === 0) return;
         rows.sort(function(a,b){
-            var na = (a.getAttribute('data-sort-name') || '').toLowerCase();
-            var nb = (b.getAttribute('data-sort-name') || '').toLowerCase();
+            var keyAttr = (sortState.indexOf('position_') === 0) ? 'data-sort-position' : 'data-sort-name';
+            var na = (a.getAttribute(keyAttr) || '').toLowerCase();
+            var nb = (b.getAttribute(keyAttr) || '').toLowerCase();
             if (na === nb) return 0;
             var cmp = na < nb ? -1 : 1;
-            return sortState === 'name_desc' ? -cmp : cmp;
+            return (sortState.indexOf('_desc') !== -1) ? -cmp : cmp;
         });
         rows.forEach(function(r){ tbody.appendChild(r); });
         syncChkAllState();
@@ -779,6 +796,7 @@ const usersI18n = {
             if (chkOnlyActive) chkOnlyActive.checked = false;
             sortState = 'name_asc';
             if (sortIcon) sortIcon.className = 'fas fa-sort-alpha-down ml-1';
+            if (sortPositionIcon) sortPositionIcon.className = 'fas fa-sort-alpha-down ml-1';
             if (chkAll) chkAll.checked = false;
             selected.clear();
             updateImportBtn();
@@ -792,6 +810,18 @@ const usersI18n = {
             sortState = sortState === 'name_desc' ? 'name_asc' : 'name_desc';
             if (sortIcon){
                 sortIcon.className = sortState === 'name_desc'
+                    ? 'fas fa-sort-alpha-up ml-1'
+                    : 'fas fa-sort-alpha-down ml-1';
+            }
+            sortRows();
+        });
+    }
+
+    if (btnSortPosition){
+        btnSortPosition.addEventListener('click', function(){
+            sortState = sortState === 'position_desc' ? 'position_asc' : 'position_desc';
+            if (sortPositionIcon){
+                sortPositionIcon.className = sortState === 'position_desc'
                     ? 'fas fa-sort-alpha-up ml-1'
                     : 'fas fa-sort-alpha-down ml-1';
             }

@@ -112,6 +112,8 @@ return [
             'sort_label' => 'Ordenar',
             'sort_name_asc' => 'Nome (A-Z)',
             'sort_name_desc' => 'Nome (Z-A)',
+            'sort_position_asc' => 'Cargo (A-Z)',
+            'sort_position_desc' => 'Cargo (Z-A)',
         ],
     ],
 

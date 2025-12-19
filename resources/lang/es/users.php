@@ -112,6 +112,8 @@ return [
             'sort_label' => 'Ordenar',
             'sort_name_asc' => 'Nombre (A-Z)',
             'sort_name_desc' => 'Nombre (Z-A)',
+            'sort_position_asc' => 'Puesto (A-Z)',
+            'sort_position_desc' => 'Puesto (Z-A)',
         ],
     ],
 

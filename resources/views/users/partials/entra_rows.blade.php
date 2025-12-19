@@ -33,8 +33,9 @@
     @endphp
     @php
         $sortKey = mb_strtolower($display ?: ($preferred ?: ''));
+        $sortPosition = $job !== '' ? mb_strtolower($job) : '{';
     @endphp
-    <tr class="js-entra-row" data-sort-name="{{ e($sortKey) }}">
+    <tr class="js-entra-row" data-sort-name="{{ e($sortKey) }}" data-sort-position="{{ e($sortPosition) }}">
         <td style="width:36px" class="text-center">
             @php
                 // Construir lista completa de candidatos (preferido + upn + mail + aliases)
