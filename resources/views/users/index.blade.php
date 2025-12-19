@@ -370,7 +370,10 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mt-2">
-                        <small id="entraStatus" class="text-muted"></small>
+                        <div class="d-flex align-items-center">
+                            <small id="entraStatus" class="text-muted"></small>
+                            <small id="entraListCount" class="text-muted ml-3"></small>
+                        </div>
                         <button type="button" id="entraBtnMore" class="btn btn-outline-secondary btn-sm" disabled>
                             {{ __('users.index.buttons.load_more') }}
                         </button>
@@ -379,7 +382,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm entra-footer-btn" data-dismiss="modal" data-bs-dismiss="modal">{{ __('users.index.buttons.close') }}</button>
                     <button type="button" id="entraBtnImport" class="btn btn-primary btn-sm entra-footer-btn" disabled>
-                        <i class="fas fa-file-import mr-1"></i> {{ __('users.index.buttons.import_selected') }}
+                        <i class="fas fa-file-import mr-1"></i> <span id="entraImportLabel">{{ __('users.index.buttons.import_selected') }}</span><span id="entraImportCount"></span>
                     </button>
                 </div>
             </div>
@@ -505,6 +508,9 @@ const usersI18n = {
     error: @json(__('users.index.messages.entra_status_error')),
     loaded: @json(__('users.index.messages.entra_status_loaded')),
     loadedMore: @json(__('users.index.messages.entra_status_loaded_more')),
+    loadedAll: @json(__('users.index.messages.entra_status_loaded_all')),
+    truncated: @json(__('users.index.messages.entra_status_truncated')),
+    listCount: @json(__('users.index.messages.entra_list_count')),
     useSearch: @json(__('users.index.messages.entra_use_search')),
     noResults: @json(__('users.index.messages.entra_no_results')),
     generalConfirm: @json(__('users.index.confirm.general'))
@@ -624,7 +630,10 @@ const usersI18n = {
     var chkAll = document.getElementById('entraChkAll');
     var btnMore = document.getElementById('entraBtnMore');
     var btnImport = document.getElementById('entraBtnImport');
+    var importLabel = document.getElementById('entraImportLabel');
+    var importCount = document.getElementById('entraImportCount');
     var statusEl = document.getElementById('entraStatus');
+    var listCountEl = document.getElementById('entraListCount');
 
     var inpQuery = document.getElementById('entraQuery');
     var inpDomain = document.getElementById('entraDomain');
@@ -640,12 +649,23 @@ const usersI18n = {
     var previewUrl = @json(route('users.sync-entra.preview'));
     var importUrl  = @json(route('users.sync-entra.selected'));
     var csrfToken  = @json(csrf_token());
-    var pageSize   = 50;
+    var pageSize   = 999;
 
     var nextLink = null;
     var selected = new Map(); // email -> {email,name,aliases}
 
-    function updateImportBtn(){ if (btnImport) btnImport.disabled = (selected.size === 0); }
+    function updateImportBtn(){
+        var count = selected.size;
+        if (btnImport) btnImport.disabled = (count === 0);
+        if (importCount) importCount.textContent = count ? (' (' + count + ')') : '';
+        if (!importLabel && btnImport && count) btnImport.textContent = btnImport.textContent.replace(/\s*\(\d+\)\s*$/, '') + ' (' + count + ')';
+    }
+
+    function updateListCount(){
+        if (!listCountEl || !tbody) return;
+        var visible = tbody.querySelectorAll('tr.js-entra-row:not(.d-none)').length;
+        listCountEl.textContent = usersI18n.listCount.replace(':count', visible);
+    }
 
     function applyRowFilters(){
         var onlyNew = !!(chkOnlyNew && chkOnlyNew.checked);
@@ -659,6 +679,7 @@ const usersI18n = {
             if (exists) row.classList.add('d-none'); else row.classList.remove('d-none');
         });
         syncChkAllState();
+        updateListCount();
     }
 
     function sortRows(){
@@ -740,28 +761,41 @@ const usersI18n = {
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             var data = await resp.json();
 
-            if (reset) tbody.innerHTML = '';
+            var isOnlyActiveAll = (!q && chkOnlyActive && chkOnlyActive.checked);
+            if (reset || isOnlyActiveAll) tbody.innerHTML = '';
             var temp = document.createElement('tbody');
             temp.innerHTML = data.rows || '';
             if (!temp.children.length){
-                if (reset) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.noResults + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.noResults + '</td></tr>';
             }else{
-                Array.prototype.forEach.call(temp.children, function(tr){ tbody.appendChild(tr); });
+                if (isOnlyActiveAll){
+                    tbody.innerHTML = data.rows || '';
+                } else {
+                    Array.prototype.forEach.call(temp.children, function(tr){ tbody.appendChild(tr); });
+                }
             }
 
             nextLink = data.next || null;
-            if (btnMore) btnMore.disabled = !nextLink;
+            var hasMore = (typeof data.has_more === 'boolean') ? data.has_more : !!nextLink;
+            if (isOnlyActiveAll) hasMore = false;
+            if (btnMore) btnMore.disabled = !hasMore;
 
         attachRowHandlers(tbody);
         applyRowFilters();
         syncChkAllState();
         sortRows();
         updateImportBtn();
+        updateListCount();
             var count = (typeof data.count === 'number') ? data.count : 0;
             if (!temp.children.length){
                 if (statusEl) statusEl.textContent = usersI18n.noResults;
             }else{
-                if (statusEl) statusEl.textContent = (nextLink ? usersI18n.loadedMore : usersI18n.loaded).replace(':count', count);
+                if (data && data.truncated){
+                    if (statusEl) statusEl.textContent = usersI18n.truncated.replace(':count', count);
+                } else {
+                    var msg = hasMore ? usersI18n.loadedMore : usersI18n.loadedAll;
+                    if (statusEl) statusEl.textContent = msg.replace(':count', count);
+                }
             }
         }catch(e){
             if (statusEl) statusEl.textContent = usersI18n.error;

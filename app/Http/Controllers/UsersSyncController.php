@@ -45,26 +45,47 @@ final class UsersSyncController extends Controller
         $sort       = $request->string('sort')->toString();
         $pageSize   = (int) $request->input('page_size', 50);
         if ($pageSize < 10) { $pageSize = 10; }
-        if ($pageSize > 200) { $pageSize = 200; }
+        if ($pageSize > 999) { $pageSize = 999; }
+        if ($onlyActive && $query === '') { $pageSize = 999; }
 
         try {
+            Log::info('Entra preview request', [
+                'only_active' => $onlyActive,
+                'query' => $query,
+                'domain' => $domain,
+                'page_size' => $pageSize,
+                'next' => $next ? 'yes' : 'no',
+            ]);
             $items = [];
             $nextLink = $next;
             $domainLower = $domain !== '' ? strtolower(ltrim($domain, '@')) : null;
+            $fetchAll = ($onlyActive && $query === '');
+            $maxTotal = 20000;
+            $maxLoops = 200;
+            $truncated = false;
 
             // Acumular suficientes elementos respetando filtros locales (dominio)
             $loops = 0;
+            $orderBy = ($query === '' && !$fetchAll) ? 'displayName' : null;
+            $graphOnlyActive = ($onlyActive && $query !== '' && !$fetchAll);
             do {
                 $page   = $this->graph->listUsers(
                     $query !== '' ? $query : null,
                     $nextLink,
-                    $onlyActive,
-                    null,
+                    $graphOnlyActive,
+                    $orderBy,
                     $pageSize
                 );
                 $pageItems = (array) ($page['items'] ?? []);
                 $prevNext  = $nextLink;
                 $nextLink  = $page['next'] ?? null;
+
+                if ($onlyActive) {
+                    $pageItems = array_values(array_filter($pageItems, function (array $u): bool {
+                        // Treat null as active to avoid dropping guests or incomplete records.
+                        return ($u['accountEnabled'] ?? true) !== false;
+                    }));
+                }
 
                 if ($domainLower !== null) {
                     $pageItems = array_values(array_filter($pageItems, function (array $u) use ($domainLower): bool {
@@ -100,14 +121,29 @@ final class UsersSyncController extends Controller
 
                 $items = array_merge($items, $pageItems);
                 $loops++;
-                // Cortar si Graph devuelve el mismo next (posible bucle) o demasiados ciclos
+                // Cortar si Graph devuelve el mismo next (posible bucle)
                 if ($nextLink !== null && $nextLink === $prevNext) {
                     $nextLink = null;
                 }
-            } while (count($items) < $pageSize && $nextLink !== null && $loops < 10);
+                if ($fetchAll && count($items) >= $maxTotal) {
+                    $truncated = true;
+                    $nextLink = null;
+                }
+            } while (
+                $fetchAll
+                    ? ($nextLink !== null && $loops < $maxLoops)
+                    : (count($items) < $pageSize && $nextLink !== null && $loops < 10)
+            );
 
-            // Limitar al tamaño solicitado y exponer el cursor para continuar
-            $items = array_slice($items, 0, $pageSize);
+            if ($fetchAll && $loops >= $maxLoops && $nextLink !== null) {
+                $truncated = true;
+                $nextLink = null;
+            }
+
+            // Limitar al tama¤o solicitado y exponer el cursor para continuar
+            if (!$fetchAll) {
+                $items = array_slice($items, 0, $pageSize);
+            }
 
             $displayName = static function (array $u): string {
                 $given   = trim((string)($u['givenName'] ?? ''));
@@ -129,15 +165,23 @@ final class UsersSyncController extends Controller
                     $cmp = strcmp(mb_strtolower($displayName($a)), mb_strtolower($displayName($b)));
                     return $sort === 'name_desc' ? -$cmp : $cmp;
                 });
+            } elseif ($fetchAll && $query === '') {
+                usort($items, function (array $a, array $b) use ($displayName): int {
+                    return strcmp(mb_strtolower($displayName($a)), mb_strtolower($displayName($b)));
+                });
             }
 
             // Render Blade partial rows
             $rows = view('users.partials.entra_rows', ['items' => $items])->render();
 
+            $hasMore = (!$truncated && $nextLink !== null);
+
             return response()->json([
-                'rows'  => $rows,
-                'next'  => $nextLink,
-                'count' => count($items),
+                'rows'      => $rows,
+                'next'      => $nextLink,
+                'count'     => count($items),
+                'has_more'  => $hasMore,
+                'truncated' => $truncated,
             ]);
         } catch (Throwable $e) {
             Log::error('Preview Entra error', ['exception' => $e]);

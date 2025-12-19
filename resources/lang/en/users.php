@@ -79,6 +79,9 @@ return [
             'entra_status_error' => 'Error querying Microsoft Graph',
             'entra_status_loaded' => ':count users loaded',
             'entra_status_loaded_more' => ':count users loaded (more available)',
+            'entra_status_loaded_all' => ':count users loaded (all)',
+            'entra_status_truncated' => ':count users loaded (limit reached)',
+            'entra_list_count' => 'In list: :count',
         ],
         'buttons' => [
             'edit' => 'Edit',

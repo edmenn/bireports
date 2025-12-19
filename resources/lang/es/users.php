@@ -79,6 +79,9 @@ return [
             'entra_status_error' => 'Error al consultar Microsoft Graph',
             'entra_status_loaded' => ':count usuarios cargados',
             'entra_status_loaded_more' => ':count usuarios cargados (hay más)',
+            'entra_status_loaded_all' => ':count usuarios cargados (todos)',
+            'entra_status_truncated' => ':count usuarios cargados (limite alcanzado)',
+            'entra_list_count' => 'En lista: :count',
         ],
         'buttons' => [
             'edit' => 'Editar',
