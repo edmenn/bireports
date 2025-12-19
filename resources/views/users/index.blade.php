@@ -314,13 +314,6 @@
                             <label for="entraQuery" class="mb-1 small">{{ __('users.index.entra.search_label') }}</label>
                             <input type="text" id="entraQuery" class="form-control" placeholder="{{ __('users.index.entra.search_placeholder') }}" autocomplete="off">
                         </div>
-                        <div class="col-md-3 mb-2">
-                            <label for="entraDomain" class="mb-1 small">{{ __('users.index.entra.domain_label') }}</label>
-                            <div class="input-group">
-                                <span class="input-group-text">@</span>
-                                <input type="text" id="entraDomain" class="form-control" placeholder="{{ __('users.index.entra.domain_placeholder') }}" autocomplete="off">
-                            </div>
-                        </div>
                         <div class="col-md-2 mb-2">
                             <div class="form-check mt-4 pt-1">
                                 <input class="form-check-input" type="checkbox" id="entraOnlyNew">
@@ -361,6 +354,21 @@
                                         </button>
                                     </th>
                                     <th class="table-col-lg">{{ __('users.index.table.email') }}</th>
+                                </tr>
+                                <tr id="entraFilterRow" class="d-none">
+                                    <th></th>
+                                    <th>
+                                        <input type="text" id="entraFilterName" class="form-control form-control-sm"
+                                               placeholder="{{ __('users.index.entra.filter_name') }}" autocomplete="off">
+                                    </th>
+                                    <th>
+                                        <input type="text" id="entraFilterPosition" class="form-control form-control-sm"
+                                               placeholder="{{ __('users.index.entra.filter_position') }}" autocomplete="off">
+                                    </th>
+                                    <th>
+                                        <input type="text" id="entraFilterEmail" class="form-control form-control-sm"
+                                               placeholder="{{ __('users.index.entra.filter_email') }}" autocomplete="off">
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="entraTbody">
@@ -636,9 +644,12 @@ const usersI18n = {
     var listCountEl = document.getElementById('entraListCount');
 
     var inpQuery = document.getElementById('entraQuery');
-    var inpDomain = document.getElementById('entraDomain');
     var chkOnlyActive = document.getElementById('entraOnlyActive');
     var chkOnlyNew = document.getElementById('entraOnlyNew');
+    var filterRow = document.getElementById('entraFilterRow');
+    var filterName = document.getElementById('entraFilterName');
+    var filterPosition = document.getElementById('entraFilterPosition');
+    var filterEmail = document.getElementById('entraFilterEmail');
     var btnSortName = document.getElementById('entraSortName');
     var sortIcon = document.getElementById('entraSortIcon');
     var btnSortPosition = document.getElementById('entraSortPosition');
@@ -669,14 +680,28 @@ const usersI18n = {
 
     function applyRowFilters(){
         var onlyNew = !!(chkOnlyNew && chkOnlyNew.checked);
+        var nameFilter = (filterName && filterName.value ? filterName.value : '').trim().toLowerCase();
+        var positionFilter = (filterPosition && filterPosition.value ? filterPosition.value : '').trim().toLowerCase();
+        var emailFilter = (filterEmail && filterEmail.value ? filterEmail.value : '').trim().toLowerCase();
         var rows = tbody.querySelectorAll('tr.js-entra-row');
         Array.prototype.forEach.call(rows, function(row){
             if (!onlyNew){
                 row.classList.remove('d-none');
-                return;
+            } else {
+                var exists = row.getAttribute('data-exists') === '1';
+                if (exists) row.classList.add('d-none'); else row.classList.remove('d-none');
             }
-            var exists = row.getAttribute('data-exists') === '1';
-            if (exists) row.classList.add('d-none'); else row.classList.remove('d-none');
+
+            if (!row.classList.contains('d-none')){
+                var rowName = (row.getAttribute('data-sort-name') || '').toLowerCase();
+                var rowPos = (row.getAttribute('data-sort-position') || '').toLowerCase();
+                var emailEl = row.querySelector('.js-entra-row-chk');
+                var rowEmail = (emailEl && emailEl.getAttribute('data-email') ? emailEl.getAttribute('data-email') : '').toLowerCase();
+
+                if (nameFilter && rowName.indexOf(nameFilter) === -1) row.classList.add('d-none');
+                if (!row.classList.contains('d-none') && positionFilter && rowPos.indexOf(positionFilter) === -1) row.classList.add('d-none');
+                if (!row.classList.contains('d-none') && emailFilter && rowEmail.indexOf(emailFilter) === -1) row.classList.add('d-none');
+            }
         });
         syncChkAllState();
         updateListCount();
@@ -748,9 +773,7 @@ const usersI18n = {
         try{
             var params = new URLSearchParams();
             var q = (inpQuery && inpQuery.value ? inpQuery.value : '').trim();
-            var dom = (inpDomain && inpDomain.value ? inpDomain.value : '').trim();
             if (q) params.set('query', q);
-            if (dom) params.set('domain', dom);
             if (sortState) params.set('sort', sortState);
             params.set('page_size', pageSize);
             if (chkOnlyActive && chkOnlyActive.checked) params.set('only_active', '1');
@@ -767,12 +790,14 @@ const usersI18n = {
             temp.innerHTML = data.rows || '';
             if (!temp.children.length){
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.noResults + '</td></tr>';
+                if (filterRow) filterRow.classList.add('d-none');
             }else{
                 if (isOnlyActiveAll){
                     tbody.innerHTML = data.rows || '';
                 } else {
                     Array.prototype.forEach.call(temp.children, function(tr){ tbody.appendChild(tr); });
                 }
+                if (filterRow) filterRow.classList.remove('d-none');
             }
 
             nextLink = data.next || null;
@@ -823,9 +848,11 @@ const usersI18n = {
 
     var triggerReload = debounce(function(){ load(true); }, 400);
     if (inpQuery) inpQuery.addEventListener('input', triggerReload);
-    if (inpDomain) inpDomain.addEventListener('change', triggerReload);
     if (chkOnlyActive) chkOnlyActive.addEventListener('change', triggerReload);
     if (chkOnlyNew) chkOnlyNew.addEventListener('change', applyRowFilters);
+    if (filterName) filterName.addEventListener('input', applyRowFilters, {passive:true});
+    if (filterPosition) filterPosition.addEventListener('input', applyRowFilters, {passive:true});
+    if (filterEmail) filterEmail.addEventListener('input', applyRowFilters, {passive:true});
 
     if (btnImport){
         btnImport.addEventListener('click', function(){
@@ -855,9 +882,12 @@ const usersI18n = {
         modal.addEventListener(evt, function(){
             tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">' + usersI18n.loading + '</td></tr>';
             if (inpQuery) inpQuery.value = '';
-            if (inpDomain) inpDomain.value = '';
             if (chkOnlyActive) chkOnlyActive.checked = false;
             if (chkOnlyNew) chkOnlyNew.checked = false;
+            if (filterName) filterName.value = '';
+            if (filterPosition) filterPosition.value = '';
+            if (filterEmail) filterEmail.value = '';
+            if (filterRow) filterRow.classList.add('d-none');
             sortState = 'name_asc';
             if (sortIcon) sortIcon.className = 'fas fa-sort-alpha-down ml-1';
             if (sortPositionIcon) sortPositionIcon.className = 'fas fa-sort-alpha-down ml-1';

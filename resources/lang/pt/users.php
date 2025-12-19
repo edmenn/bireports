@@ -118,6 +118,9 @@ return [
             'sort_name_desc' => 'Nome (Z-A)',
             'sort_position_asc' => 'Cargo (A-Z)',
             'sort_position_desc' => 'Cargo (Z-A)',
+            'filter_name' => 'Filtrar nome',
+            'filter_position' => 'Filtrar cargo',
+            'filter_email' => 'Filtrar email',
         ],
     ],
 

@@ -118,6 +118,9 @@ return [
             'sort_name_desc' => 'Name (Z-A)',
             'sort_position_asc' => 'Position (A-Z)',
             'sort_position_desc' => 'Position (Z-A)',
+            'filter_name' => 'Filter name',
+            'filter_position' => 'Filter position',
+            'filter_email' => 'Filter email',
         ],
     ],
 

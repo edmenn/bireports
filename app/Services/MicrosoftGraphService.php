@@ -100,7 +100,7 @@ class MicrosoftGraphService
             $filters = [];
             if ($query) {
                 $safe = addslashes($query);
-                $filters[] = "(startsWith(displayName,'{$safe}') or startsWith(userPrincipalName,'{$safe}'))";
+                $filters[] = "(startsWith(displayName,'{$safe}') or startsWith(givenName,'{$safe}') or startsWith(surname,'{$safe}') or startsWith(mail,'{$safe}') or startsWith(userPrincipalName,'{$safe}'))";
             }
             if ($onlyActive) {
                 $filters[] = '(accountEnabled eq true)';

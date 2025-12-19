@@ -14,7 +14,6 @@ use Throwable;
 
 // Import native functions from the global namespace (avoid Intelephense P1010)
 use function trim;
-use function ltrim;
 use function strtolower;
 use function explode;
 use function is_array;
@@ -39,7 +38,6 @@ final class UsersSyncController extends Controller
     public function preview(Request $request): JsonResponse
     {
         $query      = trim($request->input('query', ''));
-        $domain     = trim($request->input('domain', ''));
         $onlyActive = (bool) $request->input('only_active', false);
         $next       = $request->string('next')->toString() ?: null;
         $sort       = $request->string('sort')->toString();
@@ -49,16 +47,8 @@ final class UsersSyncController extends Controller
         if ($onlyActive && $query === '') { $pageSize = 999; }
 
         try {
-            Log::info('Entra preview request', [
-                'only_active' => $onlyActive,
-                'query' => $query,
-                'domain' => $domain,
-                'page_size' => $pageSize,
-                'next' => $next ? 'yes' : 'no',
-            ]);
             $items = [];
             $nextLink = $next;
-            $domainLower = $domain !== '' ? strtolower(ltrim($domain, '@')) : null;
             $fetchAll = ($onlyActive && $query === '');
             $maxTotal = 20000;
             $maxLoops = 200;
@@ -84,38 +74,6 @@ final class UsersSyncController extends Controller
                     $pageItems = array_values(array_filter($pageItems, function (array $u): bool {
                         // Treat null as active to avoid dropping guests or incomplete records.
                         return ($u['accountEnabled'] ?? true) !== false;
-                    }));
-                }
-
-                if ($domainLower !== null) {
-                    $pageItems = array_values(array_filter($pageItems, function (array $u) use ($domainLower): bool {
-                        $candidates = [];
-
-                        $upn  = strtolower(trim((string)($u['userPrincipalName'] ?? '')));
-                        $mail = strtolower(trim((string)($u['mail'] ?? '')));
-
-                        if ($upn !== '')  { $candidates[] = $upn; }
-                        if ($mail !== '') { $candidates[] = $mail; }
-
-                        foreach ((array)($u['otherMails'] ?? []) as $alt) {
-                            $alt = strtolower(trim((string)$alt));
-                            if ($alt !== '') { $candidates[] = $alt; }
-                        }
-                        foreach ((array)($u['proxyAddresses'] ?? []) as $p) {
-                            $p = trim((string)$p);
-                            if ($p === '') { continue; }
-                            // proxyAddresses: "smtp:alias@domain" or "SMTP:primary@domain"
-                            $parts = explode(':', $p, 2);
-                            $addr  = isset($parts[1]) ? strtolower($parts[1]) : strtolower($parts[0]);
-                            if ($addr !== '') { $candidates[] = $addr; }
-                        }
-
-                        foreach ($candidates as $cand) {
-                            if (str_ends_with($cand, '@' . $domainLower)) {
-                                return true;
-                            }
-                        }
-                        return false;
                     }));
                 }
 
