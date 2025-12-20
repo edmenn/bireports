@@ -201,6 +201,8 @@ if [[ "$DO_SYNC_ONLY" == "yes" ]]; then
     php -r "opcache_reset();" || true;
     php artisan optimize
   '
+  log "[sync] Reiniciando PHP-FPM para limpiar OPcache..."
+  $COMPOSE restart "$APP_SERVICE"
   ok "Sincronizacion rapida completada."
   return 0
 fi
@@ -217,6 +219,8 @@ if [[ "$DO_SYNC_MIGRATE" == "yes" ]]; then
     php -r "opcache_reset();" || true;
     php artisan optimize
   '
+  log "[sync-migrate] Reiniciando PHP-FPM para limpiar OPcache..."
+  $COMPOSE restart "$APP_SERVICE"
   ok "Sincronizacion rapida con migraciones completada."
   return 0
 fi
@@ -235,6 +239,8 @@ if [[ "$DO_REFRESH_NOBUILD" == "yes" ]]; then
     php -r "opcache_reset();" || true;
     php artisan optimize
   '
+  log "[refresh-nobuild] Reiniciando PHP-FPM para limpiar OPcache..."
+  $COMPOSE restart "$APP_SERVICE"
   ok "Refresh rápido completado."
   return 0
 fi
@@ -252,6 +258,8 @@ if [[ "$DO_REFRESH" == "yes" ]]; then
   ensure_zip_extension || return 1
   log "[refresh] Limpiando caches..."
   $COMPOSE exec -T "$APP_SERVICE" sh -lc 'php artisan optimize:clear || true; php artisan view:clear || true; php -r "opcache_reset();" || true'
+  log "[refresh] Reiniciando PHP-FPM para limpiar OPcache..."
+  $COMPOSE restart "$APP_SERVICE"
   ok "Refresh completo terminado."
   return 0
 fi
@@ -275,6 +283,8 @@ $COMPOSE exec "$APP_SERVICE" php artisan migrate --force
 ok "Migraciones OK."
 log "Limpieza final y optimización..."
 $COMPOSE exec "$APP_SERVICE" php artisan optimize
+log "Reiniciando PHP-FPM para limpiar OPcache..."
+$COMPOSE restart "$APP_SERVICE"
 ok "Optimización OK."
 echo
 ok "Deploy completado. Revisa https://${DOMAIN}"
