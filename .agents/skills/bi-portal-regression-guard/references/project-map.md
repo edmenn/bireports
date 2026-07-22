@@ -25,7 +25,7 @@
 - Sidebar and page wrapper remain in one non-wrapping flex row: the sidebar is sticky and the wrapper width is `100% - --app-sidebar-width`, so their shared edge stays exact in both desktop states and on pages with vertical scrollbars.
 - Sidebar has no right border or inset shadow. Page wrapper has no border, radius, shadow, padding-bottom, or flex gap. Footer has zero margin and no border/radius.
 - Header and footer use the same `--app-navbar-bg` and `--app-navbar-text` values.
-- Footer is 56 px high, follows content without a spacer (`.page-body` has zero bottom margin/padding), and sits at the viewport bottom on short pages.
+- Footer is 56 px high and stays pinned to the viewport bottom with `position: sticky; bottom: 0` on short and long pages. `.page-body` keeps zero bottom margin/padding and the final content must remain reachable.
 - In every rendered view, `.main-footer` must remain a direct child of `.page-wrapper`; a footer moved under `<body>` indicates malformed view markup and invalidates geometry checks.
 - Full logo is visible expanded; compact logo is visible at 40x40 reduced. Desktop toggle switches icon-only vs icon-and-text navigation and persists locally.
 - Mobile has no reserved sidebar strip and no horizontal overflow.
@@ -41,6 +41,7 @@
 - `538ac6e`: remove the Tabler sidebar seam.
 - `7074dd4`: route menu and non-destructive button states through theme variables; unify theme defaults.
 - 2026-07-22: repair stray closing containers in the theme view; keep sidebar and wrapper in one desktop flex row so long pages and scrollbar gutters cannot separate header/footer from the menu.
+- 2026-07-22: restore the footer as a sticky bottom bar on both short and long pages without changing sidebar/header geometry.
 
 ## Required visual matrix
 

@@ -23,7 +23,7 @@ body.app-shell { overflow-x: hidden; }
 .page-wrapper { display: flex; flex-direction: column; gap: 0; background: var(--app-main-bg, var(--tblr-body-bg)); color: var(--app-main-text, var(--tblr-body-color)); min-width: 0; min-height: 100vh; padding-bottom: 0; border: 0; border-radius: 0; box-shadow: none; }
 .page-body { flex: 1 0 auto; margin-bottom: 0; padding: 0; }
 .content-header { padding: 1rem 0 .5rem; }
-.main-footer { position: static; flex: 0 0 var(--app-navbar-h, 56px); margin: 0; background: var(--app-navbar-bg, #374151); color: var(--app-navbar-text, #fff); border: 0; border-radius: 0; min-height: var(--app-navbar-h, 56px); display: flex; align-items: center; }
+.main-footer { position: sticky; bottom: 0; z-index: 1020; flex: 0 0 var(--app-navbar-h, 56px); margin: 0; background: var(--app-navbar-bg, #374151); color: var(--app-navbar-text, #fff); border: 0; border-radius: 0; min-height: var(--app-navbar-h, 56px); display: flex; align-items: center; }
 .card { background: var(--app-card-bg, var(--tblr-bg-surface)); color: var(--app-card-text, var(--tblr-body-color)); border-color: var(--pbd-card-border, var(--tblr-border-color)); }
 .card-header, .card-footer { background: var(--app-card-alt-bg, transparent); color: inherit; }
 .btn-primary { --tblr-btn-bg: var(--app-btn-bg, var(--tblr-primary)); --tblr-btn-border-color: var(--app-btn-bg, var(--tblr-primary)); --tblr-btn-hover-bg: var(--app-btn-hover, var(--tblr-primary-darken)); }
