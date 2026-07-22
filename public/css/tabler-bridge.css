@@ -5,6 +5,7 @@
 html, body, .page { min-height: 100%; }
 body.app-shell { overflow-x: hidden; }
 .app-sidebar { top: 0; height: 100vh; background: var(--app-menu-bg, #182433); color: var(--app-menu-text, #dce1e7); }
+.app-sidebar.navbar-vertical { border-right: 0 !important; box-shadow: none !important; }
 .app-sidebar .navbar-brand { display: flex !important; min-height: var(--app-navbar-h, 56px); justify-content: center; gap: .75rem; padding: .375rem 1rem !important; }
 .app-sidebar .navbar-brand-image { display: block; width: auto; max-width: calc(100% - 2rem); max-height: calc(var(--app-navbar-h, 56px) - .75rem); margin: 0; object-fit: contain; }
 .app-sidebar .brand-logo-full,
