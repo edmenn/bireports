@@ -61,6 +61,7 @@ body.dark-mode .text-muted { color: #9ca3af !important; }
   .app-sidebar.navbar-vertical.navbar-expand-lg ~ .page-wrapper { margin-left: var(--app-sidebar-width) !important; }
   .app-header { left: 0 !important; }
   body.sidebar-compact .app-sidebar .brand-logo-full { display: none; }
+  body.sidebar-compact .app-sidebar .navbar-brand { width: 100%; padding-inline: 0 !important; }
   body.sidebar-compact .app-sidebar .brand-logo-compact { display: block; width: var(--brand-width) !important; height: var(--brand-height) !important; max-width: var(--brand-width) !important; max-height: var(--brand-height) !important; }
   body.sidebar-compact .app-sidebar .nav-link-title,
   body.sidebar-compact .app-sidebar .nav-link-toggle { display: none; }
