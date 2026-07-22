@@ -23,6 +23,7 @@ description: Preserve BI Portal architecture, UI decisions, theme behavior, depl
 
 - Header, sidebar, page wrapper, and footer touch with no border, shadow, gap, radius, or blank strip at their shared edges.
 - Expanded sidebar is 256 px; compact sidebar is 72 px. Header and footer left edges must equal the sidebar right edge in both states.
+- On desktop, only `.page-wrapper` may scroll; `body`, `.page`, and the sidebar stay viewport-locked. Scrolling content must never move the sidebar.
 - Footer remains pinned to the viewport bottom with `position: sticky; bottom: 0`, including long pages, without changing sidebar/header widths or covering the final content.
 - Theme configuration is the single color source. Menu active/hover and non-destructive buttons use its variables in light and dark modes.
 - Destructive actions remain red; semantic status badges may retain status colors.

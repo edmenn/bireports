@@ -55,12 +55,13 @@ body.dark-mode .form-select,
 body.dark-mode .input-group-text { background-color: #111827; color: #e5e7eb; border-color: #4b5563; }
 body.dark-mode .text-muted { color: #9ca3af !important; }
 @media (min-width: 992px) {
+  body.app-shell { height: 100vh; overflow: hidden; }
   body.sidebar-compact { --app-sidebar-width: 4.5rem; }
-  .page { flex-direction: row; flex-wrap: nowrap; }
+  .page { height: 100vh; overflow: hidden; flex-direction: row; flex-wrap: nowrap; }
   .app-sidebar.navbar-vertical.navbar-expand-lg { position: sticky; flex: 0 0 var(--app-sidebar-width); width: var(--app-sidebar-width) !important; }
   .app-sidebar > .container-fluid > .navbar-collapse,
   .app-sidebar > .container-fluid > .navbar-collapse * { visibility: visible; }
-  .app-sidebar.navbar-vertical.navbar-expand-lg ~ .page-wrapper { flex: 0 0 calc(100% - var(--app-sidebar-width)); width: calc(100% - var(--app-sidebar-width)); margin-left: 0 !important; }
+  .app-sidebar.navbar-vertical.navbar-expand-lg ~ .page-wrapper { flex: 0 0 calc(100% - var(--app-sidebar-width)); width: calc(100% - var(--app-sidebar-width)); height: 100vh; min-height: 0; margin-left: 0 !important; overflow-y: auto; }
   .app-header { left: 0 !important; }
   body.sidebar-compact .app-sidebar .brand-logo-full { display: none; }
   body.sidebar-compact .app-sidebar .navbar-brand { width: 100%; padding-inline: 0 !important; }

@@ -23,6 +23,7 @@
 
 - Sidebar widths: expanded `16rem` (256 px), compact `4.5rem` (72 px).
 - Sidebar and page wrapper remain in one non-wrapping flex row: the sidebar is sticky and the wrapper width is `100% - --app-sidebar-width`, so their shared edge stays exact in both desktop states and on pages with vertical scrollbars.
+- Desktop scrolling belongs exclusively to the 100vh `.page-wrapper`; `body.app-shell` and `.page` are overflow-locked so the sidebar never moves. Mobile retains normal document scrolling.
 - Sidebar has no right border or inset shadow. Page wrapper has no border, radius, shadow, padding-bottom, or flex gap. Footer has zero margin and no border/radius.
 - Header and footer use the same `--app-navbar-bg` and `--app-navbar-text` values.
 - Footer reproduces the compact AdminLTE metrics: no forced minimum height, `.875em` text, `line-height: 1.1`, and `.25rem` vertical padding. It stays pinned with `position: sticky; bottom: 0` on short and long pages.
@@ -43,6 +44,7 @@
 - 2026-07-22: repair stray closing containers in the theme view; keep sidebar and wrapper in one desktop flex row so long pages and scrollbar gutters cannot separate header/footer from the menu.
 - 2026-07-22: restore the footer as a sticky bottom bar on both short and long pages without changing sidebar/header geometry.
 - 2026-07-22: restore the compact pre-Tabler footer sizing instead of forcing the Tabler 56 px navbar height.
+- 2026-07-22: isolate desktop scrolling in `.page-wrapper` so the sidebar remains immobile without changing mobile document scrolling.
 
 ## Required visual matrix
 
