@@ -13,6 +13,7 @@ description: Preserve BI Portal architecture, UI decisions, theme behavior, depl
 4. Make the smallest root-cause change. Do not add per-view overrides when a shared rule exists.
 5. Run `bash .agents/skills/bi-portal-regression-guard/scripts/check-invariants.sh`.
 6. For visual changes, verify desktop expanded, desktop compact, mobile, light, and dark. Check the touched view plus `/portal`, `/users`, `/audit`, and `/configurations/theme` when theme or layout is involved.
+   On every checked route, assert that `.main-footer.parentElement` is `.page-wrapper`; CSS measurements are invalid if the browser repaired malformed HTML and moved layout elements.
 7. Rebuild and restart the real Docker environment and preview; health-check both.
 8. Update `references/project-map.md` in the same commit whenever an invariant, architecture decision, route, dependency, runtime, credential procedure, or deployment command changes.
 

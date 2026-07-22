@@ -349,8 +349,6 @@
                 </div>
             </div>
         </x-ui-card>
-            </div>
-        </div>
     </form>
     <div class="modal fade" id="presetSaveModal" tabindex="-1" role="dialog" aria-labelledby="presetSaveModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">

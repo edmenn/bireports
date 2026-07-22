@@ -20,10 +20,11 @@
 ## Locked visual invariants
 
 - Sidebar widths: expanded `16rem` (256 px), compact `4.5rem` (72 px).
-- Sidebar right edge equals header/footer left edge in both desktop states.
+- Sidebar and page wrapper remain in one non-wrapping flex row: the sidebar is sticky and the wrapper width is `100% - --app-sidebar-width`, so their shared edge stays exact in both desktop states and on pages with vertical scrollbars.
 - Sidebar has no right border or inset shadow. Page wrapper has no border, radius, shadow, padding-bottom, or flex gap. Footer has zero margin and no border/radius.
 - Header and footer use the same `--app-navbar-bg` and `--app-navbar-text` values.
 - Footer is 56 px high, follows content without a spacer (`.page-body` has zero bottom margin/padding), and sits at the viewport bottom on short pages.
+- In every rendered view, `.main-footer` must remain a direct child of `.page-wrapper`; a footer moved under `<body>` indicates malformed view markup and invalidates geometry checks.
 - Full logo is visible expanded; compact logo is visible at 40x40 reduced. Desktop toggle switches icon-only vs icon-and-text navigation and persists locally.
 - Mobile has no reserved sidebar strip and no horizontal overflow.
 - Active/hover menu states use `--app-hi-bg` / `--app-hi-text`.
@@ -37,6 +38,7 @@
 - `4ff45b2`: correct compact logo sizing.
 - `538ac6e`: remove the Tabler sidebar seam.
 - `7074dd4`: route menu and non-destructive button states through theme variables; unify theme defaults.
+- 2026-07-22: repair stray closing containers in the theme view; keep sidebar and wrapper in one desktop flex row so long pages and scrollbar gutters cannot separate header/footer from the menu.
 
 ## Required visual matrix
 
