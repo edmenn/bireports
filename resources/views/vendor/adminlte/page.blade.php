@@ -11,7 +11,7 @@
 @php($computedBody = $layoutHelper->makeBodyClasses())
 @php($userDark = optional(Auth::user())->theme === 'dark')
 @php($sessionDark = session('theme') === 'dark')
-@section('classes_body', trim($computedBody . (($userDark || $sessionDark) ? ' dark-mode' : '')))
+@section('classes_body', collect(preg_split('/\s+/', trim($computedBody . (($userDark || $sessionDark) ? ' dark-mode' : ''))))->filter()->unique()->implode(' '))
 
 @section('body_data', $layoutHelper->makeBodyData())
 

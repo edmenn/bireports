@@ -107,10 +107,12 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
         ->name('workspaces.index');
 
     Route::get('/workspaces/{workspace}', [WorkspacesController::class, 'show'])
+        ->middleware('role:admin|editor')
         ->whereUuid('workspace')
         ->name('workspaces.show');
 
     Route::get('/workspaces/{workspace}/reports/{report}', [ReportsController::class, 'show'])
+        ->middleware('role:admin|editor')
         ->whereUuid('workspace')
         ->whereUuid('report')
         ->name('reports.show');
@@ -310,9 +312,11 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
 
     // Auditoría (analítica y export)
     Route::get('/audit', [AuditAnalyticsController::class, 'index'])
+        ->middleware('permission:menu.audit')
         ->name('audit.index');
 
     Route::get('/audit/export', [AuditAnalyticsController::class, 'export'])
+        ->middleware('permission:menu.audit')
         ->name('audit.export');
 
     // Configurationes (solo admin)
@@ -383,10 +387,12 @@ Route::middleware(['auth', EnsureUserIsNotBlocked::class])->group(function () {
 
     // ✅ Endpoint de auditoría llamado desde Blade → route('api.audit.store')
     Route::post('/api/audits', [AuditController::class, 'store'])
+        ->middleware('throttle:120,1')
         ->name('api.audit.store');
 
     // Ping de capacidad (viewer)
     Route::post('/api/capacities/{capacity}/ping', [\App\Http\Controllers\CapacityActivityController::class, 'ping'])
+        ->middleware('throttle:30,1')
         ->name('capacities.ping');
 
     // ✅ Rutas de perfil (Breeze/propio).
@@ -530,8 +536,6 @@ Route::get('/locale/{locale}', function (Request $request, string $locale) {
 
 // Auth (Breeze u otro starter)
 require __DIR__ . '/auth.php';
-
-
 
 
 

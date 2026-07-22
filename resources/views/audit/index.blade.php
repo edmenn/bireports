@@ -10,7 +10,7 @@
 @section('content_header')
     <x-page-header :title="__('audit.title')" icon="fas fa-chart-area">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a class="btn btn-success btn-sm" href="{{ route('audit.export', request()->query()) }}">
+            <a class="btn btn-primary btn-sm" href="{{ route('audit.export', request()->query()) }}">
                 <i class="fas fa-file-export me-1" aria-hidden="true"></i>
                 <span>{{ __('audit.actions.export') }}</span>
             </a>
@@ -102,13 +102,15 @@
                 </select>
                 <small class="text-muted">{{ __('audit.filters.hint') }}</small>
             </div>
-            <div class="col-12 d-flex flex-wrap gap-2">
-                <button class="btn btn-primary btn-sm" type="submit">
+            <div class="col-12">
+                <div class="nav portal-theme-tabs portal-filter-actions border-0" aria-label="{{ __('audit.filters.apply') }} / {{ __('audit.filters.clear') }}">
+                <button class="nav-link active" type="submit">
                     <i class="fas fa-filter me-1" aria-hidden="true"></i> {{ __('audit.filters.apply') }}
                 </button>
-                <a href="{{ route('audit.index', ['tab'=>'user-profile']) }}" class="btn btn-outline-secondary btn-sm">
+                <a href="{{ route('audit.index', ['tab'=>'user-profile']) }}" class="nav-link">
                     <i class="fas fa-eraser me-1" aria-hidden="true"></i> {{ __('audit.filters.clear') }}
                 </a>
+                </div>
             </div>
         </div>
     </div>
@@ -144,6 +146,9 @@
 @push('css')
 <style>
 .portal-tabs-wrapper{
+    width:100%;
+    max-width:100%;
+    min-width:0;
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     padding-bottom:.25rem;
@@ -154,7 +159,8 @@
     list-style:none;
     padding:0;
     margin:0;
-    min-width:fit-content;
+    width:max-content;
+    min-width:100%;
 }
 .portal-tabs li a{
     display:inline-flex;
@@ -162,8 +168,8 @@
     gap:.45rem;
     padding:.55rem 1rem;
     border-radius:.65rem;
-    background:#edf2f8;
-    color:#334155;
+    background:var(--app-card-alt-bg);
+    color:var(--app-card-text);
     font-weight:600;
     border:1px solid transparent;
     transition:all .15s ease-in-out;
@@ -172,13 +178,13 @@
 }
 .portal-tabs li a i{font-size:.9rem;}
 .portal-tabs li a:hover{
-    background:rgba(13,110,253,.12);
-    color:#0d6efd;
+    background:var(--app-card-alt-bg);
+    color:var(--app-card-text);
 }
 .portal-tabs li a.active{
-    background:#0d6efd;
-    color:#fff;
-    border-color:#0d6efd;
+    background:var(--app-highlight-bg);
+    color:var(--app-highlight-text);
+    border-color:var(--app-highlight-bg);
     box-shadow:0 .9rem 1.6rem rgba(13,110,253,.18);
 }
 
@@ -189,22 +195,22 @@
 }
 .portal-filter-form label.form-label{
     font-weight:600;
-    color:#1f2d3d;
+    color:var(--app-card-text);
 }
 
 .portal-table thead th{
-    background:#eef2f7;
+    background:var(--app-card-alt-bg);
     font-weight:600;
     font-size:.9rem;
-    color:#1f2d3d;
+    color:var(--app-card-text);
     border-bottom:none;
 }
 .portal-table tbody td{
-    border-top:1px solid rgba(15,34,58,.08);
+    border-top:1px solid var(--app-card-alt-bg);
     font-size:.9rem;
 }
 .portal-table tbody tr:hover{
-    background:rgba(13,110,253,.04);
+    background:var(--app-card-alt-bg);
 }
 
 .portal-audit-card .card-header{
@@ -215,27 +221,29 @@
     padding:1rem 1.25rem;
 }
 .portal-audit-card .card-header small{
-    color:#6c757d;
+    color:var(--app-card-text);
+    opacity:.72;
     font-weight:500;
 }
 
-.portal-icon.icon-indigo{background:rgba(79,70,229,.12);color:#4f46e5;}
-.portal-icon.icon-sky{background:rgba(14,165,233,.12);color:#0ea5e9;}
-.portal-icon.icon-emerald{background:rgba(16,185,129,.12);color:#10b981;}
-.portal-icon.icon-amber{background:rgba(249,115,22,.12);color:#f97316;}
+.portal-icon.icon-indigo,
+.portal-icon.icon-sky,
+.portal-icon.icon-emerald,
+.portal-icon.icon-amber{background:var(--app-icon-bg);color:var(--app-icon-text);}
 
 .portal-dashboard-card .card-header{
-    border-bottom:1px solid rgba(15,34,58,.08);
+    border-bottom:1px solid var(--app-card-alt-bg);
     padding:1rem 1.25rem;
 }
 .portal-dashboard-card .card-header h5{
     margin:0;
     font-size:1rem;
     font-weight:600;
-    color:#1f2d3d;
+    color:var(--app-card-text);
 }
 .portal-dashboard-card .card-header small{
-    color:#6c757d;
+    color:var(--app-card-text);
+    opacity:.72;
 }
 
 /* Charts */
@@ -271,5 +279,3 @@
 .badge-fail{background:#ef4444}
 </style>
 @endpush
-
-

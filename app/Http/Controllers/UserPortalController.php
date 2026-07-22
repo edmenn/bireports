@@ -258,14 +258,22 @@ class UserPortalController extends Controller
                         $embed['workspaceId'] = $embed['workspaceId'] ?? $workspace->id;
                     } catch (Throwable $e) {
                         $errorShort = __('reports.show.errors.embed_failure');
-                        $errorDetail = __('reports.show.errors.debug_template', [
+                        \Log::error('Portal report embed failed', [
                             'exception' => get_class($e),
-                            'message' => $e->getMessage(),
-                            'code' => (string) ($e->getCode() ?? '0'),
-                            'file' => $e->getFile(),
-                            'line' => $e->getLine(),
-                            'trace' => $e->getTraceAsString(),
+                            'report_id' => $currentReport->id,
+                            'workspace_id' => $workspace->id,
+                            'user_id' => $request->user()?->id,
                         ]);
+                        if (config('app.debug') && $request->user()?->hasRole('admin')) {
+                            $errorDetail = __('reports.show.errors.debug_template', [
+                                'exception' => get_class($e),
+                                'message' => $e->getMessage(),
+                                'code' => (string) ($e->getCode() ?? '0'),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine(),
+                                'trace' => $e->getTraceAsString(),
+                            ]);
+                        }
                         $embed = [];
                     }
                 }

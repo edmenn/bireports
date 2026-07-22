@@ -108,9 +108,10 @@ return [
             'height_label' => 'Altura',
             'width_display' => 'Largura: :value %',
             'height_display' => 'Altura: :value %',
-            'lock_label' => 'Bloquear propor�ao',
+            'lock_label' => 'Bloquear proporção',
         ],
         'alerts' => [
+            'success_title' => 'Sucesso',
             'errors_title' => 'Revise os erros:',
             'close' => 'Fechar',
         ],
@@ -127,10 +128,15 @@ return [
             'upload' => [
                 'label' => 'Enviar imagem (opcional)',
                 'hint' => 'Formatos permitidos: JPG, PNG, WEBP, GIF ou SVG. Máximo de 2 MB.',
+                'button' => 'Selecionar imagem',
+                'status' => [
+                    'empty' => 'Nenhum arquivo selecionado',
+                    'selected' => 'Arquivo selecionado: :name',
+                ],
             ],
             'remove_cover' => [
                 'label' => 'Remover imagem atual',
-                'hint' => 'Retorna � capa padr�o ou ao �cone padr�o.',
+                'hint' => 'Retorna à capa padrão ou ao ícone padrão.',
             ],
             'make_default' => [
                 'label' => 'Usar esta imagem como capa padrão para relatórios sem capa',

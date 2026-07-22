@@ -84,14 +84,14 @@
                             </x-adminlte-input>
                         </div>
                         {{-- Redirect URI y Scope removidos de la UI (scope via .env) --}}
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <x-adminlte-input name="powerbi_token_refresh_minutes" type="number" min="0" step="1" label="{{ __('settings.service_principal.fields.refresh_minutes.label') }}" placeholder="{{ __('settings.service_principal.fields.refresh_minutes.placeholder') }}" value="{{ old('powerbi_token_refresh_minutes', $config->powerbi_token_refresh_minutes ?? 0) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
                                 {{-- Tooltip: política de refresco del token --}}
                                 <x-slot name="bottom"><small class="text-muted">{{ __('settings.service_principal.fields.refresh_minutes.help') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.service_principal.fields.refresh_minutes.tooltip') }}"></i></small></x-slot>
                             </x-adminlte-input>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <label class="form-label">{{ __('settings.service_principal.fields.timezone.label') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.service_principal.fields.timezone.tooltip') }}"></i></label>
                             @php
                                 $tzList = \DateTimeZone::listIdentifiers();
@@ -311,8 +311,8 @@
         {{-- ========================================================== --}}
         <div class="row mt-3">
             <div class="col-12 d-flex">
-                <x-adminlte-card title="Capacidad on‑demand (Viewer)" icon="fas fa-bolt text-warning"
-                                 theme="warning" theme-mode="outline" class="flex-grow-1">
+                <x-adminlte-card title="{{ __('settings.viewer.card_title') }}" icon="fas fa-bolt text-lightblue"
+                                 theme="primary" theme-mode="outline" class="flex-grow-1">
                     {{-- [Minimalista] Estos parámetros controlan el comportamiento del viewer cuando la capacidad está en pausa.
                          - Encendido on‑demand: si está en true, el viewer intenta encender la capacidad automáticamente
                            cuando un usuario abre un reporte fuera de horario o con la capacidad pausada.
@@ -462,10 +462,10 @@
         padding: .375rem .75rem !important;
         line-height: 1.5 !important;
         font-size: .875rem !important;
-        color: #212529 !important;
-        background-color: #fff !important;
-        border: 1px solid #ced4da !important;
-        border-radius: .25rem !important;
+        color: var(--app-card-text) !important;
+        background-color: var(--app-card-bg) !important;
+        border: 1px solid var(--bs-border-color) !important;
+        border-radius: .75rem !important;
         box-shadow: none !important;
         transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
     }
@@ -476,9 +476,9 @@
     }
 
     .form-control:focus {
-        color: #212529;
-        background-color: #fff;
-        border-color: #80bdff;
+        color: var(--app-card-text);
+        background-color: var(--app-card-bg);
+        border-color: var(--app-highlight-bg);
         outline: 0;
         box-shadow: 0 0 0 .15rem rgba(0,123,255,.25);
     }
@@ -490,15 +490,15 @@
     }
 
     .input-group-text {
-        background-color: #f8f9fa;
-        border: 1px solid #ced4da;
+        background-color: var(--app-card-alt-bg);
+        border: 1px solid var(--bs-border-color);
         border-right: 0;
         height: calc(2.25rem + 2px);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: .875rem;
-        color: #6c757d;
+        color: var(--app-card-text);
     }
 
     .input-group > .form-control {

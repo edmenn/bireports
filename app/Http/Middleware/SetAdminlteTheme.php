@@ -21,7 +21,7 @@ class SetAdminlteTheme
         if ($theme === 'dark') {
             config([
                 'adminlte.classes_sidebar' => 'sidebar-dark-primary elevation-4',
-                'adminlte.classes_topnav' => 'navbar-dark navbar-primary',
+                'adminlte.classes_topnav' => 'navbar-dark',
                 'adminlte.classes_footer' => 'bg-dark text-light border-0 text-sm',
                 'adminlte.classes_body' => 'dark-mode',
                 'adminlte.layout_dark_mode' => true,

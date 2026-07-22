@@ -320,7 +320,7 @@
 
 /* Preview */
 .report-preview-card {
-    background: #fff;
+    background: var(--app-card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);
@@ -333,8 +333,8 @@
     padding: 1.25rem 1rem .75rem;
     border-bottom: 1px solid rgba(0,0,0,.05);
 }
-.report-preview-icon { color: #007bff; font-size: 1.25rem; line-height: 1; }
-.report-preview-title { font-weight: 600; color: #1f2d3d; font-size: 1.05rem; }
+.report-preview-icon { color: var(--app-icon-text); font-size: 1.25rem; line-height: 1; }
+.report-preview-title { font-weight: 600; color: var(--app-card-text); font-size: 1.05rem; }
 .report-preview-body {
     padding: 1.5rem;
     display: flex;
@@ -353,7 +353,7 @@
     margin: 0 auto;
     border: 1px solid var(--card-border);
     border-radius: var(--card-radius);
-    background: #fff;
+    background: var(--app-card-bg);
     box-shadow: 0 .25rem .5rem rgba(0,0,0,.05) !important;
     overflow: hidden;
 }
@@ -384,7 +384,7 @@
 .preview-range { height: 1.1rem; }
 .report-preview-controls small { font-size: .8rem; }
 .preview-control-card {
-    background: #fff;
+    background: var(--app-card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--card-radius);
     box-shadow: 0 .25rem .5rem rgba(0,0,0,.05);

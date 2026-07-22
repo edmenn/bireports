@@ -14,6 +14,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -79,8 +80,11 @@ class ReportsController extends Controller
         }
 
         // 3) Optional RLS parameters from the query string
-        $rlsUser  = $request->query('rls_user');
-        $rlsRoles = array_values(array_filter(array_map('trim', explode(',', (string) $request->query('rls_roles', '')))));
+        $mayOverrideRls = $request->user()?->hasRole('admin') ?? false;
+        $rlsUser  = $mayOverrideRls ? $request->query('rls_user') : null;
+        $rlsRoles = $mayOverrideRls
+            ? array_values(array_filter(array_map('trim', explode(',', (string) $request->query('rls_roles', '')))))
+            : [];
 
         $embedArr  = [];
         $errShort  = null;
@@ -123,15 +127,22 @@ class ReportsController extends Controller
             } catch (Throwable $e) {
                 // 5) Fail fast without redirecting to an error page; render a banner instead
                 $errShort  = __('reports.show.errors.embed_failure');
-                // Provide a safe diagnostic payload (no secrets exposed; include class, message, stack)
-                $errDetail = __('reports.show.errors.debug_template', [
+                Log::error('Power BI report embed failed', [
                     'exception' => get_class($e),
-                    'message'   => $e->getMessage(),
-                    'code'      => (string) ($e->getCode() ?? '0'),
-                    'file'      => $e->getFile(),
-                    'line'      => $e->getLine(),
-                    'trace'     => $e->getTraceAsString(),
+                    'report_id' => $report->id,
+                    'workspace_id' => $workspace->id,
+                    'user_id' => $request->user()?->id,
                 ]);
+                if (config('app.debug') && $request->user()?->hasRole('admin')) {
+                    $errDetail = __('reports.show.errors.debug_template', [
+                        'exception' => get_class($e),
+                        'message'   => $e->getMessage(),
+                        'code'      => (string) ($e->getCode() ?? '0'),
+                        'file'      => $e->getFile(),
+                        'line'      => $e->getLine(),
+                        'trace'     => $e->getTraceAsString(),
+                    ]);
+                }
                 // Return with an empty embed array so the view renders diagnostics without breaking
                 $embedArr = [];
             }
@@ -177,7 +188,7 @@ class ReportsController extends Controller
         $validated = $request->validate([
             'description'  => ['nullable', 'string', 'max:2000'],
             'cover_url'    => ['nullable', 'url', 'max:2048'],
-            'cover_file'   => ['nullable','file','max:2048','mimetypes:image/jpeg,image/png,image/webp,image/gif,image/svg+xml'],
+            'cover_file'   => ['nullable','image','max:2048','mimes:jpg,jpeg,png,webp,gif'],
             'cover_scale'  => ['nullable','numeric','between:0.5,1.5'],
             'cover_scale_x'=> ['nullable','numeric','between:0.5,1.5'],
             'cover_scale_y'=> ['nullable','numeric','between:0.5,1.5'],

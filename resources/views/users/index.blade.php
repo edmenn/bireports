@@ -28,7 +28,7 @@
             <form action="{{ route('users.sync-entra.refresh-existing') }}" method="POST" class="d-inline header-form">
                 @csrf
                 <button type="submit"
-                        class="btn btn-outline-success btn-sm header-btn"
+                        class="btn btn-outline-primary btn-sm header-btn"
                         title="{{ __('users.header.refresh_title') }}"
                         onclick="return confirm('{{ __('users.header.refresh_confirm') }}');">
                     <i class="fas fa-sync-alt"></i>
@@ -93,7 +93,7 @@
         <div class="p-3">
             {{-- Compact, Bootstrap 4-friendly controls --}}
             <form id="usersFilterForm" method="GET" class="row align-items-end mb-3" role="search" aria-label="{{ __('users.index.filters.search') }}">
-                <div class="col-12 col-lg-5 mb-2">
+                <div class="col-12 col-lg-4 mb-2">
                     <label for="filter_q" class="form-label mb-1">{{ __('users.index.filters.search_label') }}</label>
                     <input type="text"
                            name="q"
@@ -104,7 +104,7 @@
                            autocomplete="off">
                 </div>
 
-                <div class="col-12 col-sm-6 col-lg-3 mb-2">
+                <div class="col-12 col-sm-6 col-lg-2 mb-2">
                     <label for="filter_role" class="form-label mb-1">{{ __('users.index.filters.role_label') }}</label>
                     <select name="role" id="filter_role" class="custom-select">
                         <option value="">{{ __('users.index.filters.role_all') }}</option>
@@ -114,7 +114,7 @@
                     </select>
                 </div>
 
-                <div class="col-12 col-sm-6 col-lg-3 mb-2">
+                <div class="col-12 col-sm-6 col-lg-2 mb-2">
                     <label for="filter_status" class="form-label mb-1">{{ __('users.index.filters.status_label') }}</label>
                     <select name="status" id="filter_status" class="custom-select">
                         <option value="">{{ __('users.index.filters.status_all') }}</option>
@@ -124,7 +124,7 @@
                 </div>
 
                 {{-- Equal-sized Search/Clear buttons --}}
-                <div class="col-12 col-lg-3 mb-2" id="usersFilterBtns">
+                <div class="col-12 col-lg-4 mb-2" id="usersFilterBtns">
                     <div class="filter-actions">
                         <button class="btn btn-primary filter-btn" type="submit">
                             <i class="fas fa-search mr-1"></i> {{ __('users.index.filters.search') }}
@@ -141,7 +141,7 @@
                 <small class="text-muted mb-2 mb-sm-0">
                     {{ __('users.index.bulk.selected_prefix') }} <span id="selCountUsers">0</span>
                 </small>
-                <div class="btn-group" role="group" aria-label="{{ __('users.index.bulk.actions_aria') }}">
+                <div class="btn-group bulk-actions" role="group" aria-label="{{ __('users.index.bulk.actions_aria') }}">
                     <button id="btnBulkBlock" type="button" class="btn btn-sm btn-outline-warning" disabled>
                         <i class="fas fa-user-lock"></i> {{ __('users.index.bulk.block') }}
                     </button>
@@ -426,37 +426,16 @@
      ========================= --}}
 @push('css')
 <style>
-/* Header actions: aligned and consistent */
-.header-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.5rem; }
-.header-actions form { display:flex; align-items:center; margin:0; padding:0; }
-.header-actions a.btn,
-.header-actions button.btn,
-.header-actions form button.btn {
-    display:inline-flex !important; align-items:center !important; justify-content:center !important;
-    height:38px !important; line-height:1 !important; padding:0 .9rem !important; font-size:.875rem !important;
-}
-.header-actions i { font-size:.9rem; margin-right:.4rem; }
-
-/* Unify top-right buttons (optional visual touch) */
-.header-btn{ display:inline-flex !important; align-items:center !important; justify-content:center !important;
-    height:36px !important; min-width:120px; padding:0 .75rem; font-size:.85rem; line-height:1.1 !important; white-space:nowrap; }
-.header-btn i{ font-size:.9rem; margin-right:.35rem; }
-@media (max-width: 992px){ .header-actions{ justify-content:center !important; } .header-btn{ min-width:110px; height:34px !important; font-size:.8rem; padding:0 .6rem; } }
-
 /* Filters: compact inputs and equal buttons */
-#usersFilterForm .form-control, #usersFilterForm .custom-select{ height:calc(1.9rem + 2px); padding:.25rem .5rem; font-size:.875rem; }
+#usersFilterForm .form-control, #usersFilterForm .custom-select{ min-height:38px; padding:.375rem .75rem; font-size:.875rem; }
 #usersFilterForm .form-label{ font-weight:600; font-size:.85rem; }
-.filter-actions{ display:flex; flex-direction:column; }
-@media (min-width:992px){ .filter-actions{ flex-direction:row; } }
 .filter-actions .filter-btn{
-    height:38px; min-width:120px; font-size:.875rem; font-weight:600;
-    display:inline-flex; align-items:center; justify-content:center; margin-bottom:.5rem;
+    flex:1 1 9rem; font-size:.875rem; font-weight:600;
 }
 .filter-actions .filter-btn i{ font-size:.9rem; }
-@media (min-width:992px){ .filter-actions .filter-btn{ margin-bottom:0; } .filter-actions .filter-btn + .filter-btn{ margin-left:.5rem; } }
 
 /* Avatars and role badges */
-.avatar-initial{ width:36px; height:36px; border-radius:50%; background:#f0f2f5; color:#555; display:flex; align-items:center; justify-content:center; font-weight:600; }
+.avatar-initial{ width:36px; height:36px; border-radius:50%; background:var(--app-icon-bg); color:var(--app-icon-text); display:flex; align-items:center; justify-content:center; font-weight:600; }
 .u-badge-fixed{ font-size:.75rem; padding:.35rem .55rem; border-radius:8px; font-weight:600; }
 .badge-admin{ background:#dc3545; color:#fff; }
 .badge-editor{ background:#17a2b8; color:#fff; }
@@ -472,13 +451,13 @@ table th, table td{ vertical-align:middle !important; }
 /* Icon-only compact buttons inside tables.
    Override global .btn min-width (from your theme) to avoid huge buttons. */
 .table .btn-icon{
-    min-width:auto !important; width:28px !important; height:28px !important;
-    border-radius:4px !important; padding:0 !important;
+    width:30px !important; height:30px !important;
+    border-radius:.5rem !important; padding:0 !important;
     display:inline-flex !important; align-items:center; justify-content:center;
     line-height:1 !important; font-size:.8rem !important;
 }
 .table .btn-icon i{ margin:0 !important; font-size:.8rem !important; }
-.table .btn-icon:hover{ transform:scale(1.1); transition:all .15s ease-in-out; }
+.table .btn-icon:hover{ filter:brightness(.94); }
 .sort-toggle{
     background: transparent;
     border: 0;
@@ -492,8 +471,7 @@ table th, table td{ vertical-align:middle !important; }
 .sort-toggle:hover, .sort-toggle:focus{ text-decoration:none; color:inherit; }
 .sort-toggle i{ font-size:.9rem; }
 .entra-footer-btn{
-    min-width: 160px;
-    height: 34px;
+    flex: 1 1 10rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;

@@ -357,7 +357,8 @@ return [
 
         // === NUEVO: CSS global para TODAS LAS VISTAS ===
         'AppTheme' => [
-            'active' => true,
+            // Loaded once by the base layout with file-version cache busting.
+            'active' => false,
             'files' => [
                 ['type' => 'css', 'asset' => true, 'location' => 'css/custom.css'],
             ],
@@ -402,7 +403,6 @@ return [
     */
     'livewire' => false,
 ];
-
 
 
 

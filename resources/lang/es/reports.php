@@ -111,6 +111,7 @@ return [
             'lock_label' => 'Bloquear proporción',
         ],
         'alerts' => [
+            'success_title' => 'Correcto',
             'errors_title' => 'Revisá los errores:',
             'close' => 'Cerrar',
         ],

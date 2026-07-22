@@ -8,6 +8,7 @@ use App\Models\Group;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ReportAccessService
 {
@@ -116,4 +117,3 @@ class ReportAccessService
             ->all();
     }
 }
-use Illuminate\Support\Facades\DB;

@@ -52,6 +52,7 @@ return [
             'details' => 'Detalhes',
         ],
         'empty' => 'Sem registros',
+        'no_details' => 'Sem detalhes disponíveis',
     ],
 
     'schedule' => [
@@ -77,6 +78,8 @@ return [
             'state_active' => 'Ativo',
             'state_inactive' => 'Inativo',
             'toggle' => 'Alternar status',
+            'activate' => 'Ativar',
+            'deactivate' => 'Desativar',
             'delete' => 'Excluir',
             'delete_confirm' => 'Excluir este agendamento local?',
             'new_title' => 'Adicionar agendamento local',

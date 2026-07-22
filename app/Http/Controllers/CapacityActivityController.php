@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Capacity;
+use App\Models\Report;
 use App\Services\PowerBiCapacityService;
+use App\Services\ReportAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class CapacityActivityController extends Controller
 {
-    public function __construct(private readonly PowerBiCapacityService $svc)
-    {
-    }
+    public function __construct(
+        private readonly PowerBiCapacityService $svc,
+        private readonly ReportAccessService $access,
+    ) {}
 
     /**
      * Mark activity for the capacity and resume it when rules allow (schedule/hard rules).
@@ -24,6 +27,19 @@ class CapacityActivityController extends Controller
      */
     public function ping(Request $request, Capacity $capacity): JsonResponse
     {
+        $validated = $request->validate([
+            'report_uuid' => ['required', 'uuid'],
+            'resume' => ['sometimes', 'boolean'],
+        ]);
+
+        $report = Report::query()->with('workspace')->findOrFail($validated['report_uuid']);
+        $user = $request->user();
+        abort_unless($user && ($user->hasRole('admin') || $this->access->userCanAccessReport($user, $report)), 403);
+        abort_unless(
+            $report->workspace && hash_equals((string) $capacity->capacity_uuid, (string) $report->workspace->capacity_id),
+            404
+        );
+
         $resume = (bool) $request->boolean('resume', true);
 
         // 1) Record activity immediately
@@ -52,13 +68,7 @@ class CapacityActivityController extends Controller
 
             // Does the report allow resuming outside the schedule window?
             $allowOutside = false;
-            $reportUuid = (string) $request->input('report_uuid', '');
-            if ($reportUuid !== '') {
-                try {
-                    $report = \App\Models\Report::query()->find($reportUuid);
-                    $allowOutside = (bool) ($report?->allow_resume_outside_window ?? false);
-                } catch (\Throwable) {}
-            }
+            $allowOutside = (bool) $report->allow_resume_outside_window;
 
             // Allowing an outside-window resume requires schedules to be active
             $schedulingActive = $capacity->force_shutdown_on_schedule && $hasEnabledSchedules;

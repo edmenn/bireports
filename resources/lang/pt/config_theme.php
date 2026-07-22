@@ -32,7 +32,7 @@ return [
                 'site_logo' => [
                     'label' => 'Logo principal',
                     'placeholder' => 'Escolher arquivo...',
-                    'help' => 'PNG/JPG/SVG. Recomenda-se fundo transparente e altura ≤ 60 px.',
+                    'help' => 'PNG ou JPG, até 2 MB. Recomenda-se fundo transparente e altura ≤ 60 px.',
                     'tooltip' => 'Exibido no cabeçalho. Use um arquivo leve para melhorar o carregamento.',
                     'preview_alt' => 'Logo principal',
                 ],
@@ -96,6 +96,9 @@ return [
                         'text' => 'Texto',
                     ],
                 ],
+                'icons' => [
+                    'title' => 'Ícones',
+                ],
                 'accents' => [
                     'title' => 'Acentos e Botões',
                     'tooltip' => 'Destaques e botões: estados normal, hover e ativo.',
@@ -117,6 +120,11 @@ return [
     ],
     'buttons' => [
         'save_as' => 'Salvar como...',
+    ],
+    'errors' => [
+        'file_too_large' => 'O arquivo excede o limite de :max MB.',
+        'invalid_file_type' => 'Formato não suportado. Use PNG ou JPG; o favicon também aceita ICO.',
+        'invalid_image' => 'Não foi possível ler a imagem. Escolha outro arquivo.',
     ],
     'modal' => [
         'save' => [

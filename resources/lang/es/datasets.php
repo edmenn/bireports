@@ -52,6 +52,7 @@ return [
             'details' => 'Detalles',
         ],
         'empty' => 'Sin registros',
+        'no_details' => 'Sin detalles disponibles',
     ],
 
     'schedule' => [
@@ -77,6 +78,8 @@ return [
             'state_active' => 'Activa',
             'state_inactive' => 'Inactiva',
             'toggle' => 'Alternar estado',
+            'activate' => 'Activar',
+            'deactivate' => 'Desactivar',
             'delete' => 'Eliminar',
             'delete_confirm' => '¿Eliminar esta programación local?',
             'new_title' => 'Agregar programación local',

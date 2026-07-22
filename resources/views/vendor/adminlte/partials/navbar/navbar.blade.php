@@ -40,7 +40,7 @@
                 @foreach(config('app.supported_locales', ['en','es','pt']) as $code)
                     <li>
                         <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('lang.switch', $code) }}">
-                            <img src="{{ asset('storage/lang/'.$code.'.png') }}" alt="{{ $code }}" width="18" height="12" class="mr-2"/>
+                            <img src="{{ asset('lang/'.$code.'.svg') }}" alt="{{ __('language.'.$code) }}" width="24" height="16" class="mr-2 rounded-sm"/>
                             <span>{{ __('language.'.$code) }}</span>
                         </a>
                     </li>

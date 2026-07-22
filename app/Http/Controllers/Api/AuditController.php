@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AuditService;
+use App\Models\Report;
+use App\Services\ReportAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -17,10 +19,10 @@ final class AuditController extends Controller
      * Dependency-inject the audit service.
      * The route is defined in web.php with ['auth'] middleware.
      */
-    public function __construct(private readonly AuditService $service)
-    {
-        // Middleware could be enforced here if required: $this->middleware(['auth']);
-    }
+    public function __construct(
+        private readonly AuditService $service,
+        private readonly ReportAccessService $access,
+    ) {}
 
     /**
      * Register an audit event originating from the report viewer.
@@ -53,7 +55,7 @@ final class AuditController extends Controller
             'bookmark'       => ['nullable','string','max:128'],
             'duration_ms'    => ['nullable','integer','min:0','max:86400000'],
             'success'        => ['nullable','boolean'],
-            'error_message'  => ['nullable','string'],
+            'error_message'  => ['nullable','string','max:1000'],
             'occurred_at'    => ['nullable','date'],
         ]);
 
@@ -65,6 +67,15 @@ final class AuditController extends Controller
         }
 
         $data = $validator->validated();
+
+        $report = Report::query()->findOrFail($data['report_uuid']);
+        $user = $request->user();
+        abort_unless($user && ($user->hasRole('admin') || $this->access->userCanAccessReport($user, $report)), 403);
+        if (! empty($data['workspace_uuid'])) {
+            abort_unless(hash_equals((string) $report->workspace_id, (string) $data['workspace_uuid']), 422);
+        }
+        $data['workspace_uuid'] = (string) $report->workspace_id;
+        $data['dataset_uuid'] = $report->dataset_id ? (string) $report->dataset_id : null;
 
         // Light normalisation:
         // - Force 'action' to lowercase
@@ -88,12 +99,10 @@ final class AuditController extends Controller
         } catch (Throwable $e) {
             // Internal log for diagnostics
             Log::error('Audit.store failed', [
-                'error'   => $e->getMessage(),
-                'trace'   => $e->getTraceAsString(),
-                'payload' => $data,
+                'exception' => get_class($e),
+                'report_uuid' => $data['report_uuid'] ?? null,
+                'action' => $data['action'] ?? null,
                 'user_id' => optional($request->user())->id,
-                'ip'      => $request->ip(),
-                'agent'   => $request->header('User-Agent'),
             ]);
 
             // Generic response to avoid leaking internal details

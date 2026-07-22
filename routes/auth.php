@@ -22,20 +22,24 @@ Route::middleware('guest')->group(function () {
 
     // Microsoft OAuth
     Route::get('login/microsoft', [\App\Http\Controllers\Auth\MicrosoftController::class, 'redirect'])
+        ->middleware('throttle:10,1')
         ->name('auth.microsoft.redirect');
     Route::get('login/microsoft/callback', [\App\Http\Controllers\Auth\MicrosoftController::class, 'callback'])
+        ->middleware('throttle:20,1')
         ->name('auth.microsoft.callback');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:5,1')
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->middleware('throttle:5,1')
         ->name('password.store');
 });
 
@@ -63,4 +67,3 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
-

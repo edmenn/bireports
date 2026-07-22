@@ -52,6 +52,7 @@ return [
             'details' => 'Details',
         ],
         'empty' => 'No records',
+        'no_details' => 'No details available',
     ],
 
     'schedule' => [
@@ -77,6 +78,8 @@ return [
             'state_active' => 'Active',
             'state_inactive' => 'Inactive',
             'toggle' => 'Toggle status',
+            'activate' => 'Activate',
+            'deactivate' => 'Deactivate',
             'delete' => 'Delete',
             'delete_confirm' => 'Delete this local schedule?',
             'new_title' => 'Add local schedule',

@@ -48,7 +48,8 @@
     gap:.5rem;
     flex-wrap:wrap;
     align-items:center;
-    background:#fff;
+    background:var(--app-card-bg, #fff);
+    color:var(--app-card-text, inherit);
     padding:.75rem;
     border:1px solid rgba(148,163,184,.15);
     border-radius:12px;

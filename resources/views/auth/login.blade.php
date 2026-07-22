@@ -93,14 +93,14 @@
     <div class="login-card p-3 p-md-4">
         <div class="text-center mb-2">
             @if($appCfg && $appCfg->login_logo_path)
-                <img src="{{ Storage::disk('public')->url($appCfg->login_logo_path) }}" alt="Logo" class="mb-1 brand-logo">
+                <img src="{{ Storage::disk('public')->url($appCfg->login_logo_path) }}" alt="{{ __('auth.logo_alt') }}" class="mb-1 brand-logo">
             @elseif($appCfg && $appCfg->site_logo_path)
                 <img src="{{ Storage::disk('public')->url($appCfg->site_logo_path) }}" alt="Logo" class="mb-1 brand-logo">
             @endif
         </div>
 
         @if (session('status'))
-            <div class="alert alert-success small">{{ session('status') }}</div>
+            <div class="alert alert-warning small">{{ session('status') }}</div>
         @endif
 
         @if($allowLocal)
@@ -109,11 +109,11 @@
 
             {{-- Email --}}
             <div class="mb-3">
-                <label for="email" class="form-label small text-muted mb-1">{{ __('Email') }}</label>
+                <label for="email" class="form-label small text-muted mb-1">{{ __('auth.email') }}</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                     <input id="email" type="email" name="email" class="form-control"
-                           value="{{ old('email') }}" placeholder="you@company.com"
+                           value="{{ old('email') }}" placeholder="{{ __('auth.email_placeholder') }}"
                            required autofocus autocomplete="username">
                 </div>
                 @error('email')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -121,7 +121,7 @@
 
             {{-- Password --}}
             <div class="mb-3">
-                <label for="password" class="form-label small text-muted mb-1">{{ __('Password') }}</label>
+                <label for="password" class="form-label small text-muted mb-1">{{ __('auth.password_label') }}</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
                     <input id="password" type="password" name="password" class="form-control"
@@ -133,25 +133,25 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="remember" id="remember">
-                    <label class="form-check-label small" for="remember">{{ __('Remember me') }}</label>
+                    <label class="form-check-label small" for="remember">{{ __('auth.remember') }}</label>
                 </div>
                 @if (Route::has('password.request'))
-                    <a class="small" href="{{ route('password.request') }}">{{ __('Forgot your password?') }}</a>
+                    <a class="small" href="{{ route('password.request') }}">{{ __('auth.forgot_password') }}</a>
                 @endif
             </div>
 
             <button type="submit" class="btn btn-brand w-100">
-                {{ __('Log in') }}
+                {{ __('auth.login') }}
             </button>
         </form>
         @endif
 
         @if($allowMicrosoft)
             @if($allowLocal)
-                <!--<div class="text-center my-3 text-muted small">- o -</div>-->
+                <div class="text-center my-3 text-muted small">{{ __('auth.or') }}</div>
             @endif
             <a href="{{ route('auth.microsoft.redirect') }}" class="btn btn-outline-primary w-100 btn-microsoft">
-                <i class="fab fa-microsoft me-1"></i> {{ __('Microsoft') }}
+                <i class="fab fa-microsoft me-1"></i> {{ __('auth.continue_microsoft') }}
             </a>
         @endif
     </div>

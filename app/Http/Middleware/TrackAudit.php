@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Services\AuditService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TrackAudit
 {
@@ -30,8 +31,12 @@ class TrackAudit
                     // Registrar SIEMPRE en UTC para evitar desfases por tz del host/BD
                     'occurred_at' => now()->utc(),
                 ]);
-            } catch (\Throwable) {
-                // silencioso
+            } catch (\Throwable $e) {
+                Log::warning('Automatic audit tracking failed', [
+                    'report_uuid' => (string) $reportUuid,
+                    'user_id' => $request->user()?->id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 

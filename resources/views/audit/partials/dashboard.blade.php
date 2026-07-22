@@ -66,7 +66,7 @@
     </div>
 </div>
 
-{{-- Heatmap area: no inner scroll, totals highlighted, accessible hover/focus --}}
+{{-- Heatmap area: responsive horizontal scroll, totals highlighted, accessible hover/focus --}}
 <div class="row mt-3">
     <div class="col-12 mb-3">
         <div class="portal-card portal-dashboard-card dash-card">
@@ -125,16 +125,15 @@
 }
 .dash-head{
     display:flex; align-items:baseline; justify-content:space-between; gap:.5rem;
-    padding:.9rem 1rem; color:#fff;
-    background: radial-gradient(900px 400px at 90% -10%, rgba(255,255,255,.2), transparent 60%),
-                linear-gradient(135deg, var(--bs-primary), #22d3ee);
-    border-bottom:1px solid rgba(255,255,255,.25);
+    padding:.9rem 1rem; color:var(--app-btn-text);
+    background:linear-gradient(135deg, var(--app-btn-bg), var(--app-btn-hover));
+    border-bottom:1px solid color-mix(in srgb, var(--app-btn-text) 25%, transparent);
 }
-.dash-head.violet{ background: linear-gradient(135deg, #7c3aed, #06b6d4); }
-.dash-head.green { background: linear-gradient(135deg, #059669, #10b981); }
-.dash-head.orange{ background: linear-gradient(135deg, #ea580c, #f59e0b); }
-.dash-head.slate { background: linear-gradient(135deg, #334155, #64748b); }
-.dash-head.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+.dash-head.violet,
+.dash-head.green,
+.dash-head.orange,
+.dash-head.slate,
+.dash-head.blue{ background:linear-gradient(135deg, var(--app-btn-bg), var(--app-btn-hover)); }
 .dash-title{ font-weight:800; letter-spacing:.2px; }
 .dash-sub{ font-size:1rem; opacity:.9; }
 .dash-body{ padding:1rem; }
@@ -144,18 +143,24 @@
 @media (max-width:576px){ .chart-wrap{ min-height: 260px; } }
 
 /* --- Heatmap --- */
-.heat-wrap{ border:1px solid rgba(0,0,0,.06); border-radius:12px; padding:1rem; background:#fff; }
-.heat-guard{ position: relative; overflow: hidden; }
+.heat-wrap{ border:1px solid var(--app-card-alt-bg); border-radius:12px; padding:1rem; background:var(--app-card-bg); }
+.heat-guard{
+    position:relative;
+    overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+}
 
 .hm-table{
     border-collapse:separate;
     border-spacing:4px;
     table-layout: fixed;
     width:100%;
+    min-width:720px;
 }
 .hm-table thead th, .hm-table tfoot th{
     text-align:center;
-    color:#334155;
+    color:var(--app-card-text);
     font-weight:700;
     font-size:1rem;
     white-space:nowrap;
@@ -165,7 +170,7 @@
     text-align:center;
     padding:.38rem;
     border-radius:10px;
-    border:1px solid rgba(0,0,0,.06);
+    border:1px solid var(--app-card-alt-bg);
     font-size:1rem;
     line-height:1.05;
     vertical-align:middle;
@@ -190,25 +195,25 @@
 
 
 /* Paleta 0..7 */
-.hm-0{ background:#f8fafc; color:#94a3b8; }
-.hm-1{ background:#e6f0ff; color:#1f3d70; }
-.hm-2{ background:#d6e8ff; color:#1d3767; }
-.hm-3{ background:#c6e0ff; color:#1a325e; }
-.hm-4{ background:#b6d8ff; color:#172d55; }
-.hm-5{ background:#a6d0ff; color:#14284d; }
-.hm-6{ background:#96c8ff; color:#122443; }
-.hm-7{ background:#86c0ff; color:#101f3a; }
+.hm-0{ background:var(--app-card-alt-bg); color:var(--app-card-text); }
+.hm-1{ background:color-mix(in srgb, var(--app-btn-bg) 12%, var(--app-card-bg)); color:var(--app-card-text); }
+.hm-2{ background:color-mix(in srgb, var(--app-btn-bg) 24%, var(--app-card-bg)); color:var(--app-card-text); }
+.hm-3{ background:color-mix(in srgb, var(--app-btn-bg) 36%, var(--app-card-bg)); color:var(--app-card-text); }
+.hm-4{ background:color-mix(in srgb, var(--app-btn-bg) 48%, var(--app-card-bg)); color:var(--app-card-text); }
+.hm-5{ background:color-mix(in srgb, var(--app-btn-bg) 60%, var(--app-card-bg)); color:var(--app-btn-text); }
+.hm-6{ background:color-mix(in srgb, var(--app-btn-bg) 78%, var(--app-card-bg)); color:var(--app-btn-text); }
+.hm-7{ background:var(--app-btn-bg); color:var(--app-btn-text); }
 
 /* Totales */
 .hm-table .total-col,
 .hm-table .total-row{
-    background:#eef2ff; border-color:#c7d2fe; color:#3730a3; font-weight:800;
+    background:var(--app-icon-bg); border-color:var(--app-card-alt-bg); color:var(--app-icon-text); font-weight:800;
 }
-#heatGrandTotal.total-col{ background:#e0e7ff; }
+#heatGrandTotal.total-col{ background:var(--app-hi-bg); color:var(--app-hi-text); }
 
 /* Hover fila/columna */
 .hm-table tr.is-hover-row > th, .hm-table tr.is-hover-row > td{
-    box-shadow: inset 0 0 0 9999px rgba(99,102,241,.10);
+    box-shadow:inset 0 0 0 9999px color-mix(in srgb, var(--app-btn-bg) 10%, transparent);
 }
 .hm-table.hover-col-1 [data-col="1"],
 .hm-table.hover-col-2 [data-col="2"],
@@ -218,17 +223,22 @@
 .hm-table.hover-col-6 [data-col="6"],
 .hm-table.hover-col-7 [data-col="7"],
 .hm-table.hover-col-T [data-col="T"]{
-    box-shadow: inset 0 0 0 9999px rgba(99,102,241,.10);
+    box-shadow:inset 0 0 0 9999px color-mix(in srgb, var(--app-btn-bg) 10%, transparent);
 }
 .hm-table td.is-focus, .hm-table th.is-focus{
-    box-shadow: inset 0 0 0 9999px rgba(99,102,241,.18);
+    box-shadow:inset 0 0 0 9999px color-mix(in srgb, var(--app-btn-bg) 18%, transparent);
     outline: 0; /* evitamos doble foco junto al .is-focus */
 }
 
 /* Accesibilidad: foco por teclado visible en celdas */
 .hm-table td:focus, .hm-table th:focus{
-    outline: 2px solid rgba(79,70,229,.6);
+    outline:2px solid color-mix(in srgb, var(--app-btn-bg) 60%, transparent);
     outline-offset: 2px;
+}
+@media (max-width:576px){
+    .dash-body{ padding:.75rem; }
+    .heat-wrap{ padding:.5rem; }
+    .hm-table th,.hm-table td{ font-size:.875rem; }
 }
 </style>
 @endpush
@@ -249,9 +259,9 @@ document.addEventListener('DOMContentLoaded', function(){
     // === Tema Chart.js usando variables Bootstrap/AdminLTE ===
     const styles = getComputedStyle(document.documentElement);
     const cPrimary  = styles.getPropertyValue('--bs-primary').trim() || '#4f46e5';
-    const cInfo     = styles.getPropertyValue('--bs-info').trim()    || '#0ea5e9';
-    const cGray700  = '#334155';
-    const gridColor = 'rgba(148,163,184,.35)';
+    const cInfo     = styles.getPropertyValue('--app-hi-bg').trim() || cPrimary;
+    const cGray700  = styles.getPropertyValue('--app-card-text').trim() || '#334155';
+    const gridColor = styles.getPropertyValue('--app-card-alt-bg').trim() || 'rgba(148,163,184,.35)';
 
     // Utilidad: degradado para líneas
     function makeGradient(ctx, from, to){
@@ -302,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function(){
     (function(){
         const el = document.getElementById('chartDaily');
         const ctx = el.getContext('2d');
-        const grad = makeGradient(ctx, cInfo, 'rgba(14,165,233,0.08)');
+        const grad = makeGradient(ctx, cInfo, gridColor);
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -513,5 +523,3 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 @endpush
-
-

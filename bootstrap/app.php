@@ -2,24 +2,43 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\AutoCapacityActivity;
+use App\Http\Middleware\EnsureUserIsNotBlocked;
+use App\Http\Middleware\SetAdminlteTheme;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TrackAudit;
+use App\Providers\MenuServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '127.0.0.1'))
+        ))));
+
         // Aliases de Spatie Permission (roles/permisos)
         $middleware->alias([
-            'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
 
-        // Middleware de localización en el grupo web
-        $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
+        $middleware->appendToGroup('web', [
+            EnsureUserIsNotBlocked::class,
+            SetLocale::class,
+            SetAdminlteTheme::class,
+            TrackAudit::class,
+            AutoCapacityActivity::class,
+        ]);
     })
     ->withProviders([
-        App\Providers\MenuServiceProvider::class,
+        MenuServiceProvider::class,
     ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

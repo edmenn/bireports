@@ -111,6 +111,7 @@ return [
             'lock_label' => 'Lock aspect ratio',
         ],
         'alerts' => [
+            'success_title' => 'Success',
             'errors_title' => 'Please review the errors:',
             'close' => 'Close',
         ],

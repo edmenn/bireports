@@ -58,6 +58,12 @@ class ConfigurationsController extends Controller
             'email_locale'                  => 'es',
             'powerbi_scope'                 => 'https://analysis.windows.net/powerbi/api/.default',
             'powerbi_token_refresh_minutes' => 0,
+            'site_logo_width'               => 120,
+            'site_logo_height'              => 40,
+            'site_logo_compact_width'       => 40,
+            'site_logo_compact_height'      => 40,
+            'preloader_logo_width'          => 60,
+            'preloader_logo_height'         => 60,
         ];
     }
 
@@ -83,6 +89,8 @@ class ConfigurationsController extends Controller
             'container_bg' => '#ffffff',
             'container_alt_bg' => '#f8fafc',
             'container_text' => '#111111',
+            'icon_bg' => '#e5e7eb',
+            'icon_text' => '#111111',
             'highlight_bg' => '#6b7280',
             'highlight_text' => '#ffffff',
             'btn_bg' => '#6b7280',
@@ -405,7 +413,20 @@ class ConfigurationsController extends Controller
             $themeConfig['login_logo_height'] = (int) $request->input('login_logo_height');
         }
 
-        return array_filter($themeConfig, fn($v) => $v !== null && $v !== '');
+        $themeConfig = array_filter(
+            $themeConfig,
+            fn($value, $key) => str_starts_with($key, 'login_logo_')
+                || (is_string($value) && preg_match('/^#[0-9a-fA-F]{6}$/', $value)),
+            ARRAY_FILTER_USE_BOTH
+        );
+
+        foreach (['login_logo_width', 'login_logo_height'] as $key) {
+            if (isset($themeConfig[$key])) {
+                $themeConfig[$key] = max(16, min(512, (int) $themeConfig[$key]));
+            }
+        }
+
+        return $themeConfig;
     }
 
     public function testMail(Request $request): JsonResponse

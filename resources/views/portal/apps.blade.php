@@ -3,10 +3,7 @@
 @section('title', __('applications.portal.title'))
 
 @section('content_header')
-    {{-- Standard blue header line, same as other modules --}}
-    <x-page-header :title="__('applications.portal.title')" icon="fas fa-th-large">
-        <small class="text-muted">{{ __('applications.portal.subtitle') }}</small>
-    </x-page-header>
+    <x-page-header :title="__('applications.portal.title')" :subtitle="__('applications.portal.subtitle')" icon="fas fa-th-large" />
 @stop
 
 @section('content')
@@ -82,7 +79,7 @@
 .application-card {
     border-radius: .75rem !important;
     transition: all .15s ease-in-out;
-    background-color: #fff;
+    background-color: var(--app-card-bg);
 }
 .application-card:hover {
     transform: translateY(-3px);
@@ -98,7 +95,7 @@
 /* Card title */
 .application-card h2 {
     font-size: 1rem;
-    color: #333;
+    color: var(--app-card-text);
 }
 
 /* Status badge */

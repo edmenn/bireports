@@ -15,10 +15,13 @@ use RuntimeException;
 class PowerBiCapacityService
 {
     private Client $http;
+
     private string $baseMyOrg = 'https://api.powerbi.com/v1.0/myorg';
 
     private string $tenantId;
+
     private string $clientId;
+
     private string $clientSecret;
 
     public function __construct()
@@ -26,20 +29,12 @@ class PowerBiCapacityService
         // Leemos SIEMPRE desde configurations (no del .env),
         // para gestionar las credenciales centralizadas por instancia.
         $cfg = Configuration::query()->first();
-        if (!$cfg) {
-            throw new RuntimeException('No existe fila en "configurations". Abre /configurations para crearla.');
-        }
-
-        $this->tenantId     = (string) ($cfg->powerbi_tenant_id ?? '');
-        $this->clientId     = (string) ($cfg->powerbi_client_id ?? '');
+        $this->tenantId = (string) ($cfg->powerbi_tenant_id ?? '');
+        $this->clientId = (string) ($cfg->powerbi_client_id ?? '');
         $this->clientSecret = (string) ($cfg->powerbi_client_secret ?? '');
 
-        if ($this->tenantId === '' || $this->clientId === '' || $this->clientSecret === '') {
-            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configurations.');
-        }
-
         $this->http = new Client([
-            'timeout'     => 30,
+            'timeout' => 30,
             'http_errors' => false,
         ]);
     }
@@ -58,31 +53,36 @@ class PowerBiCapacityService
 
     private function issueToken(string $scope): string
     {
+        if ($this->tenantId === '' || $this->clientId === '' || $this->clientSecret === '') {
+            throw new RuntimeException('Power BI credentials missing (tenant/client/secret) en configurations.');
+        }
+
         $url = "https://login.microsoftonline.com/{$this->tenantId}/oauth2/v2.0/token";
 
         $resp = $this->http->post($url, [
             'form_params' => [
-                'client_id'     => $this->clientId,
+                'client_id' => $this->clientId,
                 'client_secret' => $this->clientSecret,
-                'grant_type'    => 'client_credentials',
-                'scope'         => $scope,
+                'grant_type' => 'client_credentials',
+                'scope' => $scope,
             ],
         ]);
 
         if ($resp->getStatusCode() !== 200) {
             Log::error('OAuth failed', [
                 'scope' => $scope,
-                'code'  => $resp->getStatusCode(),
-                'body'  => (string) $resp->getBody(),
+                'code' => $resp->getStatusCode(),
+                'body' => (string) $resp->getBody(),
             ]);
-            throw new RuntimeException('OAuth failed for scope ' . $scope);
+            throw new RuntimeException('OAuth failed for scope '.$scope);
         }
 
-        $json  = json_decode((string) $resp->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $json = json_decode((string) $resp->getBody(), true, 512, JSON_THROW_ON_ERROR);
         $token = (string) ($json['access_token'] ?? '');
         if ($token === '') {
-            throw new RuntimeException('OAuth returned empty token for ' . $scope);
+            throw new RuntimeException('OAuth returned empty token for '.$scope);
         }
+
         return $token;
     }
 
@@ -90,13 +90,14 @@ class PowerBiCapacityService
 
     /**
      * Llama a Power BI (myorg).
+     *
      * @return array<string,mixed>|null
      */
     private function pbiApi(string $method, string $path, array $opts = []): ?array
     {
         $token = $this->getPbiToken();
         $opts['headers']['Authorization'] = "Bearer {$token}";
-        $opts['headers']['Content-Type']  = $opts['headers']['Content-Type'] ?? 'application/json';
+        $opts['headers']['Content-Type'] = $opts['headers']['Content-Type'] ?? 'application/json';
 
         $attempts = 0;
 
@@ -105,7 +106,7 @@ class PowerBiCapacityService
             try {
                 $resp = $this->http->request(
                     $method,
-                    rtrim($this->baseMyOrg, '/') . '/' . ltrim($path, '/'),
+                    rtrim($this->baseMyOrg, '/').'/'.ltrim($path, '/'),
                     $opts
                 );
 
@@ -113,28 +114,31 @@ class PowerBiCapacityService
 
                 if ($code >= 200 && $code < 300) {
                     $body = (string) $resp->getBody();
+
                     return $body !== '' ? json_decode($body, true) : null;
                 }
 
                 if (in_array($code, [429, 500, 502, 503, 504], true) && $attempts < 4) {
                     sleep(2 ** $attempts);
+
                     continue;
                 }
 
                 Log::error('PowerBi myorg API error', [
                     'method' => $method,
-                    'path'   => $path,
-                    'code'   => $code,
-                    'body'   => (string) $resp->getBody(),
+                    'path' => $path,
+                    'code' => $code,
+                    'body' => (string) $resp->getBody(),
                 ]);
                 throw new RuntimeException("PowerBi myorg API error {$code}");
             } catch (GuzzleException $e) {
                 if ($attempts < 4) {
                     sleep(2 ** $attempts);
+
                     continue;
                 }
                 Log::error('PowerBi myorg exception', ['path' => $path, 'ex' => $e->getMessage()]);
-                throw new RuntimeException('PowerBi myorg exception: ' . $e->getMessage(), 0, $e);
+                throw new RuntimeException('PowerBi myorg exception: '.$e->getMessage(), 0, $e);
             }
         }
     }
@@ -142,18 +146,19 @@ class PowerBiCapacityService
     /**
      * Llama a ARM.
      * Devuelve el código HTTP y el cuerpo parseado si aplica.
+     *
      * @return array{code:int, json:array<string,mixed>|null, raw:string}
      */
     private function armRequest(string $method, string $url, array $opts = []): array
     {
         $token = $this->getArmToken();
         $opts['headers']['Authorization'] = "Bearer {$token}";
-        $opts['headers']['Content-Type']  = $opts['headers']['Content-Type'] ?? 'application/json';
+        $opts['headers']['Content-Type'] = $opts['headers']['Content-Type'] ?? 'application/json';
 
         try {
             $resp = $this->http->request($method, $url, $opts);
             $code = $resp->getStatusCode();
-            $raw  = (string) $resp->getBody();
+            $raw = (string) $resp->getBody();
             $json = null;
             if ($raw !== '') {
                 try {
@@ -162,10 +167,11 @@ class PowerBiCapacityService
                     // cuerpo no JSON -> ignoramos parseo
                 }
             }
+
             return ['code' => $code, 'json' => is_array($json) ? $json : null, 'raw' => $raw];
         } catch (GuzzleException $e) {
             Log::error('ARM request exception', ['url' => $url, 'ex' => $e->getMessage()]);
-            throw new RuntimeException('ARM request exception: ' . $e->getMessage(), 0, $e);
+            throw new RuntimeException('ARM request exception: '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -177,6 +183,7 @@ class PowerBiCapacityService
     public function listCapacities(): array
     {
         $json = $this->pbiApi('GET', 'capacities');
+
         return (array) ($json['value'] ?? []);
     }
 
@@ -190,11 +197,12 @@ class PowerBiCapacityService
 
     /**
      * Importa/actualiza capacidades desde myorg en BD.
+     *
      * @return array{created:int, updated:int}
      */
     public function importCapacities(): array
     {
-        $rows    = $this->listCapacities();
+        $rows = $this->listCapacities();
         $created = 0;
         $updated = 0;
 
@@ -205,10 +213,10 @@ class PowerBiCapacityService
             }
 
             $display = (string) ($r['displayName'] ?? $r['name'] ?? $uuid);
-            $sku     = (string) ($r['sku'] ?? ($r['administration']['sku'] ?? ''));
-            $region  = (string) ($r['region'] ?? '');
-            $state   = (string) ($r['state'] ?? ''); // Active | Suspended
-            $type    = (string) ($r['type'] ?? 'Fabric');
+            $sku = (string) ($r['sku'] ?? ($r['administration']['sku'] ?? ''));
+            $region = (string) ($r['region'] ?? '');
+            $state = (string) ($r['state'] ?? ''); // Active | Suspended
+            $type = (string) ($r['type'] ?? 'Fabric');
 
             $supportsPause = ! str_contains(strtoupper($sku), 'PPU');
 
@@ -216,20 +224,20 @@ class PowerBiCapacityService
             $cap = Capacity::query()->where('capacity_uuid', $uuid)->first();
 
             $payload = [
-                'capacity_uuid'        => $uuid,
-                'display_name'         => $display,
-                'sku'                  => $sku,
-                'type'                 => $type,
-                'region'               => $region,
-                'supports_pause'       => $supportsPause,
-                'is_active'            => strtoupper($state) === 'ACTIVE',
+                'capacity_uuid' => $uuid,
+                'display_name' => $display,
+                'sku' => $sku,
+                'type' => $type,
+                'region' => $region,
+                'supports_pause' => $supportsPause,
+                'is_active' => strtoupper($state) === 'ACTIVE',
                 'last_state_change_at' => null,
             ];
 
             if ($cap === null) {
                 $cap = Capacity::query()->create($payload);
                 $cap->activity()->create([
-                    'last_seen_at'     => null,
+                    'last_seen_at' => null,
                     'hits_last_window' => 0,
                 ]);
                 $created++;
@@ -268,6 +276,7 @@ class PowerBiCapacityService
         if (str_starts_with($u, 'A') || str_starts_with($u, 'EM')) {
             return 'Microsoft.PowerBIDedicated';
         }
+
         // por defecto Fabric
         return 'Microsoft.Fabric';
     }
@@ -287,19 +296,19 @@ class PowerBiCapacityService
     {
         /** @var Configuration|null $cfg */
         $cfg = Configuration::query()->first();
-        if (!$cfg) {
+        if (! $cfg) {
             throw new RuntimeException('No existe fila de configurations.');
         }
 
         $subId = (string) ($cfg->azure_subscription_id ?? '');
-        $rg    = (string) ($cfg->azure_resource_group ?? '');
+        $rg = (string) ($cfg->azure_resource_group ?? '');
 
         if ($subId === '' || $rg === '') {
             throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configurations.');
         }
 
         $provider = $this->detectProviderBySku((string) $cap->sku);
-        $api      = $this->providerApiVersion($provider);
+        $api = $this->providerApiVersion($provider);
 
         // ARM usa el nombre del recurso, no el display ni el GUID de myorg.
         $name = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
@@ -328,20 +337,20 @@ class PowerBiCapacityService
     {
         /** @var Configuration|null $cfg */
         $cfg = Configuration::query()->first();
-        if (!$cfg) {
+        if (! $cfg) {
             throw new RuntimeException('No existe fila de configurations.');
         }
 
         $subId = (string) ($cfg->azure_subscription_id ?? '');
-        $rg    = (string) ($cfg->azure_resource_group ?? '');
+        $rg = (string) ($cfg->azure_resource_group ?? '');
 
         if ($subId === '' || $rg === '') {
             throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configurations.');
         }
 
         $provider = $this->detectProviderBySku((string) $cap->sku);
-        $api      = $this->providerApiVersion($provider);
-        $name     = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
+        $api = $this->providerApiVersion($provider);
+        $name = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
         if ($name === '') {
             throw new RuntimeException('arm_resource_name/display_name vacío en la capacidad.');
         }
@@ -380,7 +389,7 @@ class PowerBiCapacityService
             if ($res['code'] >= 200 && $res['code'] < 300) {
                 $state = strtoupper((string) ($res['json']['properties']['state'] ?? $res['json']['state'] ?? ''));
                 if ($state !== '') {
-                    return in_array($state, ['ACTIVE','RUNNING','READY'], true);
+                    return in_array($state, ['ACTIVE', 'RUNNING', 'READY'], true);
                 }
             }
         } catch (\Throwable $e) {
@@ -395,7 +404,7 @@ class PowerBiCapacityService
      */
     public function pause(Capacity $cap): void
     {
-        if (!$cap->supports_pause) {
+        if (! $cap->supports_pause) {
             throw new RuntimeException('Esta capacidad no soporta pausa (SKU PPU u otra restricción).');
         }
 
@@ -403,7 +412,7 @@ class PowerBiCapacityService
         $res = $this->armRequest('POST', $url);
 
         // ARM suele responder 202 (accepted) o 200/204.
-        if (!in_array($res['code'], [200, 202, 204], true)) {
+        if (! in_array($res['code'], [200, 202, 204], true)) {
             Log::error('ARM suspend error', ['url' => $url, 'code' => $res['code'], 'raw' => $res['raw']]);
             if ($res['code'] === 404) {
                 throw new RuntimeException('404 ARM: nombre de recurso / RG / suscripción / provider incorrecto.');
@@ -423,7 +432,7 @@ class PowerBiCapacityService
         $url = $this->buildArmActionUrl($cap, 'resume');
         $res = $this->armRequest('POST', $url);
 
-        if (!in_array($res['code'], [200, 202, 204], true)) {
+        if (! in_array($res['code'], [200, 202, 204], true)) {
             Log::error('ARM resume error', ['url' => $url, 'code' => $res['code'], 'raw' => $res['raw']]);
             if ($res['code'] === 404) {
                 throw new RuntimeException('404 ARM: nombre de recurso / RG / suscripción / provider incorrecto.');
@@ -447,18 +456,18 @@ class PowerBiCapacityService
     {
         /** @var Configuration|null $cfg */
         $cfg = Configuration::query()->first();
-        if (!$cfg) {
+        if (! $cfg) {
             throw new RuntimeException('No existe fila de configurations.');
         }
 
         $subId = (string) ($cfg->azure_subscription_id ?? '');
-        $rg    = (string) ($cfg->azure_resource_group ?? '');
+        $rg = (string) ($cfg->azure_resource_group ?? '');
         if ($subId === '' || $rg === '') {
             throw new RuntimeException('Falta azure_subscription_id o azure_resource_group en configurations.');
         }
 
         $provider = $this->detectProviderBySku((string) $cap->sku); // Microsoft.Fabric | Microsoft.PowerBIDedicated
-        $name     = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
+        $name = trim((string) ($cap->arm_resource_name ?: $cap->display_name));
         if ($name === '') {
             throw new RuntimeException('arm_resource_name/display_name vacío en la capacidad.');
         }
@@ -472,7 +481,7 @@ class PowerBiCapacityService
         );
 
         $from = $from ?: Carbon::now()->subDays(14);
-        $to   = $to   ?: Carbon::now();
+        $to = $to ?: Carbon::now();
 
         // Filtro: por ventana de tiempo, resourceUri y operaciones (suspend/resume) para ambos providers.
         $ops = [
@@ -485,7 +494,7 @@ class PowerBiCapacityService
             'Microsoft.PowerBIDedicated/capacities/resume/action',
         ];
 
-        $opFilter = '(' . implode(' or ', array_map(fn($v) => "operationName/value eq '$v'", array_unique($ops))) . ')';
+        $opFilter = '('.implode(' or ', array_map(fn ($v) => "operationName/value eq '$v'", array_unique($ops))).')';
 
         $filter = sprintf(
             "eventTimestamp ge '%s' and eventTimestamp le '%s' and resourceUri eq '%s' and %s",
@@ -504,6 +513,7 @@ class PowerBiCapacityService
         $res = $this->armRequest('GET', $url);
         if ($res['code'] < 200 || $res['code'] >= 300) {
             Log::warning('ActivityLogs query failed', ['code' => $res['code'], 'raw' => $res['raw']]);
+
             return [];
         }
 
@@ -513,6 +523,7 @@ class PowerBiCapacityService
         usort($value, function ($a, $b) {
             $ta = strtotime((string) ($a['eventTimestamp'] ?? '')) ?: 0;
             $tb = strtotime((string) ($b['eventTimestamp'] ?? '')) ?: 0;
+
             return $tb <=> $ta;
         });
 

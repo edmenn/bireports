@@ -291,7 +291,7 @@
             </button>
             <form action="{{ route('subscriptions.send', $subscription) }}" method="post" class="d-inline-block mr-2">
                 @csrf
-                <button type="submit" class="btn btn-success btn-sm">
+                <button type="submit" class="btn btn-primary btn-sm">
                     <i class="fas fa-paper-plane mr-1"></i> {{ __('subscriptions.actions.send_now') }}
                 </button>
             </form>
@@ -529,7 +529,11 @@
                 </div>
             </div>
             <div class="portal-email-preview">
-                {!! $subscription->mail_body ?: '<span class="text-muted">'.__('subscriptions.labels.body_default').'</span>' !!}
+                @if($subscription->mail_body)
+                    {!! nl2br(e($subscription->mail_body)) !!}
+                @else
+                    <span class="text-muted">{{ __('subscriptions.labels.body_default') }}</span>
+                @endif
             </div>
         </div>
     </div>
@@ -661,4 +665,3 @@
 @include('subscriptions.partials.script', [
     'subscriptionSnippetOptions' => $subscriptionSnippetOptions ?? [],
 ])
-

@@ -6,10 +6,8 @@ return [
     'spanish' => 'Spanish',
     'portuguese' => 'Portuguese',
     'russian' => 'Russian',
-    'turkish' => 'Turkish',
     'en' => 'English',
     'es' => 'Spanish',
     'pt' => 'Portuguese',
     'ru' => 'Russian',
-    'tr' => 'Turkish',
 ];

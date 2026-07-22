@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Models\EntityAudit;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Facades\Log;
 
 final class LogSpatiePermissionEvents
 {
@@ -49,7 +50,8 @@ final class LogSpatiePermissionEvents
                 'changes' => null,
                 'meta'    => $meta,
             ]);
-        } catch (\Throwable) {}
+        } catch (\Throwable $e) {
+            Log::error('Permission change audit failed', ['error' => $e->getMessage()]);
+        }
     }
 }
-

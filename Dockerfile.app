@@ -44,9 +44,11 @@ RUN composer install \
 # Copiar el código fuente completo
 COPY . .
 
-# Dump autoload + discover (no fatal si falla)
-RUN composer dump-autoload -o \
- && php artisan package:discover --ansi || true
+# Never reuse package manifests generated with development-only dependencies.
+# Discovery is part of the build gate: a broken provider must fail the image.
+RUN rm -f bootstrap/cache/*.php \
+ && composer dump-autoload -o \
+ && php artisan package:discover --ansi
 
 
 

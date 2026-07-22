@@ -94,6 +94,7 @@ return [
             'confirm' => 'Confirmar',
         ],
         'confirm' => [
+            'delete' => 'Eliminar',
             'title' => 'Confirmar acción',
             'general' => '¿Confirmas esta acción?',
             'delete_user' => '¿Eliminar usuario :name?',

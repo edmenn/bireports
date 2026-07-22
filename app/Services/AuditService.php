@@ -103,12 +103,14 @@ final class AuditService
         try {
             return Audit::create($payload);
         } catch (Throwable $e) {
-            // En caso de fallo de escritura, registramos un evento "error" para no perder señal.
             Log::error('Error registrando auditoría', [
-                'error'   => $e->getMessage(),
-                'payload' => $payload,
+                'exception' => get_class($e),
+                'report_uuid' => $reportUuid,
+                'action' => $action,
+                'user_id' => $userId,
             ]);
 
+            // Best-effort fallback without persisting exception details or user payloads.
             return Audit::create([
                 'user_id'       => $userId,
                 'report_uuid'   => $reportUuid,
@@ -117,7 +119,7 @@ final class AuditService
 
                 'action'        => 'error',
                 'success'       => false,
-                'error_message' => 'Audit write failed: ' . $e->getMessage(),
+                'error_message' => 'Audit write failed',
 
                 'ip'            => $ip,
                 'user_agent'    => $userAgent,

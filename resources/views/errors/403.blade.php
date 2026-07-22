@@ -4,10 +4,7 @@
 @section('title', __('errors.forbidden.title'))
 
 @section('content_header')
-    <div class="d-flex align-items-center">
-        <i class="fas fa-lock text-danger mr-2"></i>
-        <h1 class="mb-0 text-danger">{{ __('errors.forbidden.title') }}</h1>
-    </div>
+    <x-page-header :title="__('errors.forbidden.title')" icon="fas fa-lock" />
 @endsection
 
 @section('content')
@@ -28,4 +25,3 @@
         </div>
     </div>
 @endsection
-

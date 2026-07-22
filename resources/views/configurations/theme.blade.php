@@ -114,35 +114,36 @@
                             <div class="grid-logos">
                                 {{-- Logo principal --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_logo" label="{{ __('config_theme.cards.branding.fields.site_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo.placeholder') }}" accept="image/*">
+                                    <x-adminlte-input-file name="site_logo" label="{{ __('config_theme.cards.branding.fields.site_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo.placeholder') }}" accept="image/png,image/jpeg">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_logo.help') }}
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_logo.tooltip') }}"></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
-                                    @php($siteLogoH = (int) (old('site_logo_height', $config->site_logo_height ?? 60)))
+                                    @php($siteLogoW = (int) (old('site_logo_width', $config->site_logo_width ?: 120)))
+                                    @php($siteLogoH = (int) (old('site_logo_height', $config->site_logo_height ?: 40)))
                                     @if($config->site_logo_path)
                                         <img id="site-logo-preview" src="{{ Storage::disk('public')->url($config->site_logo_path) }}" alt="{{ __('config_theme.cards.branding.fields.site_logo.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px;">
                                     @else
                                         <img id="site-logo-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_logo.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px; display:none;">
                                     @endif
                                     <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
-                                        <x-adminlte-input name="site_logo_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_width', $config->site_logo_width) }}"/>
+                                        <x-adminlte-input name="site_logo_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ $siteLogoW }}"/>
                                         <x-adminlte-input name="site_logo_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoH }}"/>
                                     </div>
                                 </div>
 
                                 {{-- Icono de Preloader (centro al refrescar) --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="preloader_logo" label="{{ __('config_theme.cards.branding.fields.preloader_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.preloader_logo.placeholder') }}" accept="image/*">
+                                    <x-adminlte-input-file name="preloader_logo" label="{{ __('config_theme.cards.branding.fields.preloader_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.preloader_logo.placeholder') }}" accept="image/png,image/jpeg">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.preloader_logo.help') }}</small></x-slot>
                                     </x-adminlte-input-file>
 
                                     <div class="d-flex align-items-end gap-2">
                                         <div>
-                                            @php($pw = (int) (old('preloader_logo_width', $config->preloader_logo_width ?? 60)))
-                                            @php($ph = (int) (old('preloader_logo_height', $config->preloader_logo_height ?? 60)))
+                                            @php($pw = (int) (old('preloader_logo_width', $config->preloader_logo_width ?: 60)))
+                                            @php($ph = (int) (old('preloader_logo_height', $config->preloader_logo_height ?: 60)))
                                             <label class="form-label mb-1">{{ __('config_theme.cards.branding.fields.preloader_logo.size_label') }}</label>
                                             <div class="d-flex align-items-center" style="gap:.5rem; max-width: 260px;">
                                                 <input type="number" name="preloader_logo_width" class="form-control" min="16" max="512" step="1" value="{{ $pw }}" style="width:100px" />
@@ -162,20 +163,21 @@
 
                                 {{-- Logo reducido --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_logo_compact" label="{{ __('config_theme.cards.branding.fields.site_logo_compact.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo_compact.placeholder') }}" accept="image/*">
+                                    <x-adminlte-input-file name="site_logo_compact" label="{{ __('config_theme.cards.branding.fields.site_logo_compact.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo_compact.placeholder') }}" accept="image/png,image/jpeg">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_logo_compact.help') }}
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_logo_compact.tooltip') }}"></i>
                                         </small></x-slot>
                                     </x-adminlte-input-file>
-                                    @php($siteLogoCH = (int) (old('site_logo_compact_height', $config->site_logo_compact_height ?? 60)))
+                                    @php($siteLogoCW = (int) (old('site_logo_compact_width', $config->site_logo_compact_width ?: 40)))
+                                    @php($siteLogoCH = (int) (old('site_logo_compact_height', $config->site_logo_compact_height ?: 40)))
                                     @if($config->site_logo_compact_path)
                                         <img id="site-logo-compact-preview" src="{{ Storage::disk('public')->url($config->site_logo_compact_path) }}" alt="{{ __('config_theme.cards.branding.fields.site_logo_compact.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px;">
                                     @else
                                         <img id="site-logo-compact-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_logo_compact.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px; display:none;">
                                     @endif
                                     <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
-                                        <x-adminlte-input name="site_logo_compact_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ old('site_logo_compact_width', $config->site_logo_compact_width) }}"/>
+                                        <x-adminlte-input name="site_logo_compact_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ $siteLogoCW }}"/>
                                         <x-adminlte-input name="site_logo_compact_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoCH }}"/>
                                     </div>
                                 </div>
@@ -256,6 +258,14 @@
                                         <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_active') }}</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#1e40af' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
                                     </div>
                                 </div>
+
+                                <div class="color-card">
+                                    <div class="color-card__header"><i class="fas fa-icons mr-1 text-muted"></i> {{ __('config_theme.cards.palette.groups.icons.title') }}</div>
+                                    <div class="color-grid">
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_icon_bg" value="{{ $t['icon_bg'] ?? '#e5e7eb' }}" class="color-item__swatch js-color" data-var="--app-icon-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_icon_text" value="{{ $t['icon_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-icon-text"></label>
+                                    </div>
+                                </div>
                             </div>
                         </x-adminlte-card>
                     </div>
@@ -267,7 +277,7 @@
 
                         <x-adminlte-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue" class="mb-3">
                             <div class="d-flex flex-column">
-                                <x-adminlte-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg,image/svg+xml"/>
+                                <x-adminlte-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg"/>
                                 <x-adminlte-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/png,image/jpeg">
                                     <x-slot name="bottom">
                                         <small class="text-muted">{{ __('settings.login.cards.uploads.fields.background.help') }}</small>
@@ -310,10 +320,10 @@
                             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
                             <div class="row g-2">
                                 <div class="col-md-3">
-                                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ old('login_logo_width', $t['login_logo_width'] ?? '') }}"/>
+                                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ max(16, (int) old('login_logo_width', $t['login_logo_width'] ?? 180)) }}"/>
                                 </div>
                                 <div class="col-md-3">
-                                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ old('login_logo_height', $t['login_logo_height'] ?? '') }}"/>
+                                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ max(16, (int) old('login_logo_height', $t['login_logo_height'] ?? 64)) }}"/>
                                 </div>
                                 <div class="col-md-6 d-flex align-items-end">
                                     <small class="text-muted">{{ __('settings.login.cards.size.hint') }}</small>
@@ -328,7 +338,7 @@
 
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex flex-wrap" style="gap: 0.75rem; width: 100%; max-width: 480px;">
+                <div class="theme-form-actions">
                     <x-adminlte-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <button type="button" class="btn btn-outline-primary btn-eq" data-toggle="modal" data-target="#presetSaveModal">
                         <i class="fas fa-clone"></i> {{ __('config_theme.buttons.save_as') }}
@@ -381,23 +391,6 @@
 <style>
 /* ====== Ajustes para tabs y grillas ====== */
 
-.portal-theme-tabs .nav-link{
-    border: 1px solid transparent;
-    border-radius: .6rem;
-    color: #334155;
-    background-color: #edf2f8;
-    margin-right: .5rem;
-    transition: all .15s ease-in-out;
-}
-.portal-theme-tabs .nav-link i{
-    font-size: .9rem;
-}
-.portal-theme-tabs .nav-link.active{
-    background-color: #0d6efd;
-    color: #fff;
-    box-shadow: 0 1rem 1.6rem rgba(13, 110, 253, .18);
-}
-
 #theme_name.form-control{
     font-size: .9rem;
     line-height: 1.35;
@@ -420,7 +413,12 @@
 @media (max-width: 767.98px){
     .grid-logos{ grid-template-columns: 1fr; }
 }
-.logo-block .img-thumbnail{ max-width: 100%; }
+.logo-block .img-thumbnail{ max-width: 100%; max-height: 96px; object-fit: contain; }
+.logo-block{ min-width: 0; overflow: hidden; }
+.logo-block .d-flex[style*="max-width"]{ max-width: none !important; gap: .5rem; }
+.logo-block .d-flex[style*="max-width"] > *{ flex: 1 1 0; min-width: 0; }
+.logo-block #preloader-logo-preview{ max-height: 96px; max-width: 100%; object-fit: contain; }
+.upload-feedback{ margin-top:.35rem; font-size:.82rem; }
 
 /* Paleta: contenedor con 2 columnas auto-wrap (secciones parejas) */
 .grid-colors-2{
@@ -434,11 +432,11 @@
 
 /* ====== Estilos existentes para color pickers (se mantienen) ====== */
 .color-card {
-    background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: .75rem;
+    background-color: var(--app-card-alt-bg); border: 1px solid var(--bs-border-color); border-radius: .75rem;
     padding: .75rem;
 }
 .color-card__header {
-    font-weight: 600; color: #475569; margin-bottom: .75rem; font-size: .9rem;
+    font-weight: 600; color: var(--app-card-text); margin-bottom: .75rem; font-size: .9rem;
     text-transform: uppercase; letter-spacing: .05em;
 }
 .color-grid {
@@ -446,13 +444,15 @@
 }
 .color-item {
     display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-    background-color: #fff; border: 1px solid #e2e8f0; border-radius: .5rem;
-    padding: .35rem .6rem; font-size: .875rem; color: #334155;
+    background-color: var(--app-card-bg); border: 1px solid var(--bs-border-color); border-radius: .5rem;
+    padding: .35rem .6rem; font-size: .875rem; color: var(--app-card-text);
     transition: all 0.2s ease-in-out;
 }
 .color-item:hover {
-    box-shadow: 0 0 0 1px #cbd5e1; border-color: #cbd5e1;
+    box-shadow: 0 0 0 1px var(--app-highlight-bg); border-color: var(--app-highlight-bg);
 }
+.theme-form-actions{ display:flex; flex-wrap:wrap; gap:.75rem; width:100%; max-width:640px; }
+.theme-form-actions .btn{ flex:1 1 160px; white-space:nowrap; }
 .color-item__swatch {
     width: 28px; height: 28px; padding: 0; border: none; border-radius: .375rem;
     cursor: pointer; background: transparent; -webkit-appearance: none;
@@ -487,6 +487,8 @@
             container_bg:'#ffffff',
             container_alt_bg:'#f8fafc',
             container_text:'#111111',
+            icon_bg:'#e5e7eb',
+            icon_text:'#111111',
             highlight_bg:'#6b7280',
             highlight_text:'#ffffff',
             btn_bg:'#6b7280',
@@ -692,25 +694,76 @@
         updatePreviewFromInputs();
         updatePresetControls();
 
+        const uploadRules = {
+            site_logo: { maxMb: 2, types: ['image/png', 'image/jpeg'] },
+            preloader_logo: { maxMb: 1, types: ['image/png', 'image/jpeg'] },
+            site_logo_compact: { maxMb: 1, types: ['image/png', 'image/jpeg'] },
+            site_favicon: { maxMb: 1, types: ['image/png', 'image/x-icon', 'image/vnd.microsoft.icon'] },
+            login_logo: { maxMb: 2, types: ['image/png', 'image/jpeg'] },
+            login_bg: { maxMb: 2, types: ['image/png', 'image/jpeg'] },
+        };
+        const uploadMessages = {
+            size: @json(__('config_theme.errors.file_too_large')),
+            type: @json(__('config_theme.errors.invalid_file_type')),
+            image: @json(__('config_theme.errors.invalid_image')),
+        };
+
         function setupImagePreview(inputId, previewId) {
             const inputElement = document.querySelector(`input[name="${inputId}"]`);
             const previewElement = document.getElementById(previewId);
             if (!inputElement || !previewElement) return;
 
+            const feedback = document.createElement('div');
+            feedback.className = 'upload-feedback text-danger';
+            feedback.setAttribute('role', 'alert');
+            feedback.setAttribute('aria-live', 'polite');
+            inputElement.closest('.form-group')?.appendChild(feedback);
+
             inputElement.addEventListener('change', function(event) {
                 const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
+                const rule = uploadRules[inputId];
+                feedback.textContent = '';
+                inputElement.setCustomValidity('');
+                if (!file) return;
+
+                let message = '';
+                if (rule && file.size > rule.maxMb * 1024 * 1024) {
+                    message = uploadMessages.size.replace(':max', String(rule.maxMb));
+                } else if (rule && !rule.types.includes(file.type)) {
+                    message = uploadMessages.type;
+                }
+                if (message) {
+                    feedback.textContent = message;
+                    inputElement.setCustomValidity(message);
+                    inputElement.value = '';
+                    inputElement.reportValidity();
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const probe = new Image();
+                    probe.onload = function () {
                         previewElement.src = e.target.result;
                         previewElement.style.display = 'block';
                         const cont = previewElement.parentElement;
                         if (cont && cont.classList && cont.classList.contains('text-muted')) {
                             Array.from(cont.childNodes).forEach(n => { if(n.nodeType === Node.TEXT_NODE) n.textContent = ''; });
                         }
-                    }
-                    reader.readAsDataURL(file);
-                }
+                    };
+                    probe.onerror = function () {
+                        feedback.textContent = uploadMessages.image;
+                        inputElement.setCustomValidity(uploadMessages.image);
+                        inputElement.value = '';
+                    };
+                    probe.src = e.target.result;
+                };
+                reader.onerror = function () {
+                    feedback.textContent = uploadMessages.image;
+                    inputElement.setCustomValidity(uploadMessages.image);
+                    inputElement.value = '';
+                };
+                reader.readAsDataURL(file);
             });
         }
 

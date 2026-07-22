@@ -36,8 +36,8 @@
                 <div class="up-avatar rounded-circle d-flex align-items-center justify-content-center">
                     {{ $initials }}
                 </div>
-                <div class="text-dark">
-                    <div class="h5 fw-bold mb-1 text-primary">{{ $uname !== '' ? $uname : __('audit.user_profile.user_without_name') }}</div>
+                <div>
+                    <div class="h5 fw-bold mb-1">{{ $uname !== '' ? $uname : __('audit.user_profile.user_without_name') }}</div>
                     <div class="small opacity-90 d-flex flex-wrap align-items-center gap-2 text-muted">
                         <span><i class="far fa-id-badge me-1"></i>{{ __('audit.user_profile.id_label') }}: <code class="text-muted">{{ $uid }}</code></span>
                         @if($mail !== '')
@@ -221,34 +221,33 @@
 
     /* Header */
     .up-header{
-        background: linear-gradient(180deg, #f8fafc, #eef2f7);
-        color:#1f2d3d;
-        border-bottom:1px solid rgba(15,34,58,.08);
+        background:var(--app-card-alt-bg);
+        color:var(--app-card-text);
+        border-bottom:1px solid var(--app-card-alt-bg);
     }
 
     .up-avatar{
         width:56px;height:56px;
         font-weight:800;font-size:1.05rem;
-        color:#1f2d3d;background:#e2e8f0;
-        border:1px solid rgba(15,34,58,.12);
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,.65);
+        color:var(--app-icon-text);background:var(--app-icon-bg);
+        border:1px solid var(--app-card-alt-bg);
     }
 
     /* KPIs */
     .up-kpi{
-        position:relative;border-radius:14px;padding:.9rem 1rem;background:#fff;overflow:hidden;
-        border:1px solid rgba(0,0,0,.06);box-shadow:0 .35rem 1rem rgba(0,0,0,.06);
+        position:relative;border-radius:14px;padding:.9rem 1rem;background:var(--app-card-bg);overflow:hidden;
+        border:1px solid var(--app-card-alt-bg);box-shadow:0 .35rem 1rem rgba(0,0,0,.06);
     }
     .up-kpi-icon{ position:absolute;right:.75rem;top:.6rem;opacity:.15;font-size:1.6rem; }
     .up-kpi-value{ font-size:1.35rem;font-weight:800;line-height:1; }
-    .up-kpi-label{ font-size:.85rem;color:#6b7280;margin-top:.25rem; }
-    .up-kpi-blue   { background: linear-gradient(180deg, #eff6ff, #ffffff); }
-    .up-kpi-violet { background: linear-gradient(180deg, #f3e8ff, #ffffff); }
-    .up-kpi-green  { background: linear-gradient(180deg, #ecfdf5, #ffffff); }
-    .up-kpi-orange { background: linear-gradient(180deg, #fff7ed, #ffffff); }
+    .up-kpi-label{ font-size:.85rem;color:var(--app-card-text);opacity:.72;margin-top:.25rem; }
+    .up-kpi-blue,
+    .up-kpi-violet,
+    .up-kpi-green,
+    .up-kpi-orange { background:var(--app-card-bg); }
 
     /* Heatmap */
-    .up-heat{ border-radius:14px; padding:.75rem; background:#fff; }
+    .up-heat{ border-radius:14px; padding:.75rem; background:var(--app-card-bg); }
     .up-hm-wrapper{
         overflow-x:auto;
     }
@@ -263,7 +262,7 @@
     .up-hm-table .sticky-col{
         position:sticky;
         left:0;
-        background:#fff;
+        background:var(--app-card-bg);
         z-index:2;
         width:12.5%;
     }
@@ -277,7 +276,7 @@
         height:2.1rem;
         border-radius:6px;
         margin:auto;
-        border:1px solid rgba(0,0,0,.05);
+        border:1px solid var(--app-card-alt-bg);
         display:flex;
         align-items:center;
         justify-content:center;
@@ -289,46 +288,46 @@
         font-size:.78rem;
         font-weight:600;
         line-height:1;
-        color:#0f172a;
+        color:var(--app-card-text);
         white-space:nowrap;
     }
     .up-hm-0 .up-hm-value,
     .up-hm-1 .up-hm-value,
-    .up-hm-2 .up-hm-value{ color:#1e293b; }
+    .up-hm-2 .up-hm-value{ color:var(--app-card-text); }
     .up-hm-3 .up-hm-value,
-    .up-hm-4 .up-hm-value{ color:#102a50; }
+    .up-hm-4 .up-hm-value{ color:var(--app-card-text); }
     .up-hm-5 .up-hm-value,
     .up-hm-6 .up-hm-value,
-    .up-hm-7 .up-hm-value{ color:#ffffff; }
+    .up-hm-7 .up-hm-value{ color:var(--app-btn-text); }
     /* Paleta */
-    .up-hm-0{ background:#f8fafc; }
-    .up-hm-1{ background:#e6f0ff; }
-    .up-hm-2{ background:#d6e8ff; }
-    .up-hm-3{ background:#c6e0ff; }
-    .up-hm-4{ background:#b6d8ff; }
-    .up-hm-5{ background:#a6d0ff; }
-    .up-hm-6{ background:#96c8ff; }
-    .up-hm-7{ background:#86c0ff; }
+    .up-hm-0{ background:var(--app-card-alt-bg); }
+    .up-hm-1{ background:color-mix(in srgb, var(--app-btn-bg) 12%, var(--app-card-bg)); }
+    .up-hm-2{ background:color-mix(in srgb, var(--app-btn-bg) 24%, var(--app-card-bg)); }
+    .up-hm-3{ background:color-mix(in srgb, var(--app-btn-bg) 36%, var(--app-card-bg)); }
+    .up-hm-4{ background:color-mix(in srgb, var(--app-btn-bg) 48%, var(--app-card-bg)); }
+    .up-hm-5{ background:color-mix(in srgb, var(--app-btn-bg) 60%, var(--app-card-bg)); }
+    .up-hm-6{ background:color-mix(in srgb, var(--app-btn-bg) 78%, var(--app-card-bg)); }
+    .up-hm-7{ background:var(--app-btn-bg); }
 
     .up-legend{
         display:inline-block; width:18px; height:10px; border-radius:3px; margin:0 .1rem; vertical-align:middle;
-        border:1px solid rgba(0,0,0,.06);
+        border:1px solid var(--app-card-alt-bg);
     }
 
     /* Top reportes */
-    .up-top-item{ border:1px solid rgba(0,0,0,.06); border-radius:12px; padding:.6rem .75rem; background:#fff; }
-    .up-progress{ height:6px; background:#eef2f7; }
-    .up-progress .progress-bar{ background: linear-gradient(90deg, #6366f1, #22d3ee); }
+    .up-top-item{ border:1px solid var(--app-card-alt-bg); border-radius:12px; padding:.6rem .75rem; background:var(--app-card-bg); }
+    .up-progress{ height:6px; background:var(--app-card-alt-bg); }
+    .up-progress .progress-bar{ background:var(--app-btn-bg); }
 
     /* Feed */
     .up-feed{ position:relative; padding-left:1.25rem; }
     .up-feed:before{
-        content:""; position:absolute; left:.6rem; top:.4rem; bottom:.4rem; width:2px; background:#e5e7eb;
+        content:""; position:absolute; left:.6rem; top:.4rem; bottom:.4rem; width:2px; background:var(--app-card-alt-bg);
     }
     .up-feed-item{ position:relative; margin-bottom:1rem; }
     .up-feed-dot{
         position:absolute; left:-.05rem; top:.35rem; width:10px; height:10px; border-radius:50%;
-        border:2px solid #fff; box-shadow:0 0 0 2px #e5e7eb; background:#9ca3af;
+        border:2px solid var(--app-card-bg); box-shadow:0 0 0 2px var(--app-card-alt-bg); background:var(--app-icon-bg);
     }
     .up-feed-dot.ok{ background:#10b981; }
     .up-feed-dot.warn{ background:#6b7280; }
@@ -338,8 +337,6 @@
     .opacity-90{ opacity:.9; }
 </style>
 @endpush
-
-
 
 
 

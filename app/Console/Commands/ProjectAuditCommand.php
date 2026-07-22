@@ -14,34 +14,35 @@ use ReflectionClass;
 final class ProjectAuditCommand extends Command
 {
     protected $signature = 'project:audit {--json : Salida en JSON}';
+
     protected $description = 'Audita consistencia multicliente, permisos, rutas, auditoría e i18n del proyecto.';
 
     public function handle(): int
     {
         $report = [
-            'models'        => $this->inspectModels(),
-            'migrations'    => $this->inspectMigrations(),
-            'routes'        => $this->inspectRoutes(),
-            'controllers'   => $this->inspectControllers(),
-            'views'         => $this->inspectViews(),
-            'translations'  => $this->inspectTranslations(),
-            'bi_services'   => $this->inspectBiServices(),
-            'audits'        => $this->inspectAudits(),
-            'summary'       => [],
+            'models' => $this->inspectModels(),
+            'migrations' => $this->inspectMigrations(),
+            'routes' => $this->inspectRoutes(),
+            'controllers' => $this->inspectControllers(),
+            'views' => $this->inspectViews(),
+            'translations' => $this->inspectTranslations(),
+            'bi_services' => $this->inspectBiServices(),
+            'audits' => $this->inspectAudits(),
+            'summary' => [],
         ];
 
         // Resumen
         $report['summary'] = [
-            'models_without_tenant_trait'    => count($report['models']['without_tenant_trait'] ?? []),
-            'models_without_client_id_cast'  => count($report['models']['without_client_id_cast'] ?? []),
-            'migrations_missing_client_id'   => count($report['migrations']['missing_client_id'] ?? []),
-            'routes_without_auth'            => count($report['routes']['without_auth'] ?? []),
-            'routes_without_can'             => count($report['routes']['without_can'] ?? []),
-            'controllers_without_authorize'  => count($report['controllers']['without_authorize_resource'] ?? []),
-            'views_suspected_cross_tenant'   => count($report['views']['suspected_cross_tenant'] ?? []),
-            'missing_translation_keys'       => count($report['translations']['missing_keys'] ?? []),
-            'bi_services_warnings'           => count($report['bi_services']['warnings'] ?? []),
-            'audits_warnings'                => count($report['audits']['warnings'] ?? []),
+            'models_without_tenant_trait' => count($report['models']['without_tenant_trait'] ?? []),
+            'models_without_client_id_cast' => count($report['models']['without_client_id_cast'] ?? []),
+            'migrations_missing_client_id' => count($report['migrations']['missing_client_id'] ?? []),
+            'routes_without_auth' => count($report['routes']['without_auth'] ?? []),
+            'routes_without_can' => count($report['routes']['without_can'] ?? []),
+            'controllers_without_authorize' => count($report['controllers']['without_authorize_resource'] ?? []),
+            'views_suspected_cross_tenant' => count($report['views']['suspected_cross_tenant'] ?? []),
+            'missing_translation_keys' => count($report['translations']['missing_keys'] ?? []),
+            'bi_services_warnings' => count($report['bi_services']['warnings'] ?? []),
+            'audits_warnings' => count($report['audits']['warnings'] ?? []),
         ];
 
         if ($this->option('json')) {
@@ -64,30 +65,38 @@ final class ProjectAuditCommand extends Command
         $all = [];
 
         foreach ($files as $f) {
-            if ($f->getExtension() !== 'php') continue;
+            if ($f->getExtension() !== 'php') {
+                continue;
+            }
             $fqcn = $this->fqcnFromFile($f->getRealPath());
-            if (!$fqcn) continue;
+            if (! $fqcn) {
+                continue;
+            }
 
             try {
-                if (!is_subclass_of($fqcn, Model::class)) continue;
+                if (! is_subclass_of($fqcn, Model::class)) {
+                    continue;
+                }
 
                 $rc = new ReflectionClass($fqcn);
-                if ($rc->isAbstract()) continue;
+                if ($rc->isAbstract()) {
+                    continue;
+                }
 
                 $all[] = $fqcn;
 
                 $src = File::get($f->getRealPath());
-                $hasTenantTrait = (bool)preg_match('/use\s+[^;]*BelongsToTenant[^;]*;/', $src);
-                if (!$hasTenantTrait && $this->shouldBeTenant($fqcn)) {
+                $hasTenantTrait = (bool) preg_match('/use\s+[^;]*BelongsToTenant[^;]*;/', $src);
+                if (! $hasTenantTrait && $this->shouldBeTenant($fqcn)) {
                     $withoutTenantTrait[] = $fqcn;
                 }
 
                 // Busca $fillable/$casts para client_id (no es infalible, pero útil)
-                $hasClientIdCast = (bool)preg_match('/protected\s+\$fillable[^;]*client_id/s', $src)
-                    || (bool)preg_match('/protected\s+\$casts[^;]*client_id/s', $src)
-                    || (bool)preg_match('/function\s+client\(\)/', $src);
+                $hasClientIdCast = (bool) preg_match('/protected\s+\$fillable[^;]*client_id/s', $src)
+                    || (bool) preg_match('/protected\s+\$casts[^;]*client_id/s', $src)
+                    || (bool) preg_match('/function\s+client\(\)/', $src);
 
-                if (!$hasClientIdCast && $this->shouldBeTenant($fqcn)) {
+                if (! $hasClientIdCast && $this->shouldBeTenant($fqcn)) {
                     $withoutClientIdCast[] = $fqcn;
                 }
 
@@ -97,9 +106,9 @@ final class ProjectAuditCommand extends Command
         }
 
         return [
-            'all'                   => $all,
-            'without_tenant_trait'  => $withoutTenantTrait,
-            'without_client_id_cast'=> $withoutClientIdCast,
+            'all' => $all,
+            'without_tenant_trait' => $withoutTenantTrait,
+            'without_client_id_cast' => $withoutClientIdCast,
         ];
     }
 
@@ -108,14 +117,17 @@ final class ProjectAuditCommand extends Command
         // Heurística simple: modelos que por naming suelen ser tenanciables
         $name = class_basename($fqcn);
         $candidates = [
-            'Company','Branch','Workspace','Report','Dataset','Audit','UserSetting','Role','Permission',
-            'Customer','ClientSetting','Invoice','Subscription','Capacity','Log','Event'
+            'Company', 'Branch', 'Workspace', 'Report', 'Dataset', 'Audit', 'UserSetting', 'Role', 'Permission',
+            'Customer', 'ClientSetting', 'Invoice', 'Subscription', 'Capacity', 'Log', 'Event',
         ];
         foreach ($candidates as $cand) {
-            if (str_contains($name, $cand)) return true;
+            if (str_contains($name, $cand)) {
+                return true;
+            }
         }
+
         // fallback: la mayoría de modelos del negocio (excepto Client y SuperAdmin-only)
-        return !in_array($name, ['Client']);
+        return ! in_array($name, ['Client']);
     }
 
     /* ===================== MIGRACIONES ===================== */
@@ -129,16 +141,18 @@ final class ProjectAuditCommand extends Command
         foreach ($files as $f) {
             $txt = File::get($f->getRealPath());
             // Busca create o table->uuid/bigInteger('client_id')
-            $createsTable = preg_match('/Schema::create\(\'([^\']+)\'/',$txt,$m) ? $m[1] : null;
-            if (!$createsTable) continue;
+            $createsTable = preg_match('/Schema::create\(\'([^\']+)\'/', $txt, $m) ? $m[1] : null;
+            if (! $createsTable) {
+                continue;
+            }
 
-            $tenancyCandidate = !preg_match('/\bclients\b/', $createsTable); // no exigir en clients
+            $tenancyCandidate = ! preg_match('/\bclients\b/', $createsTable); // no exigir en clients
             if ($tenancyCandidate) {
                 $hasClientId = preg_match('/\$table->.*(uuid|unsignedBigInteger|foreignId)\(\s*[\'"]client_id[\'"]\s*\)/', $txt);
-                if (!$hasClientId) {
+                if (! $hasClientId) {
                     $missingClientId[] = [
                         'table' => $createsTable,
-                        'file'  => $f->getRelativePathname(),
+                        'file' => $f->getRelativePathname(),
                     ];
                 }
             }
@@ -153,7 +167,7 @@ final class ProjectAuditCommand extends Command
     {
         $routes = Route::getRoutes();
         $withoutAuth = [];
-        $withoutCan  = [];
+        $withoutCan = [];
 
         foreach ($routes as $r) {
             $action = $r->getAction();
@@ -164,35 +178,44 @@ final class ProjectAuditCommand extends Command
             // Ignorar rutas públicas típicas (login, password.*)
             $publicOk = preg_match('/^(login|logout|password|sanctum|telescope|horizon|_debugbar)/', $uri);
 
-            if (!$publicOk && !$this->hasAny($middlewares, ['auth','verified'])) {
+            if (! $publicOk && ! $this->hasAny($middlewares, ['auth', 'verified'])) {
                 $withoutAuth[] = ['uri' => $uri, 'name' => $name, 'methods' => $r->methods(), 'middleware' => $middlewares];
             }
 
             // Busca can:* o policy en rutas protegidas
             $hasCan = $this->hasPrefix($middlewares, 'can:');
-            if (!$publicOk && $this->hasAny($middlewares, ['auth','verified']) && !$hasCan) {
+            if (! $publicOk && $this->hasAny($middlewares, ['auth', 'verified']) && ! $hasCan) {
                 $withoutCan[] = ['uri' => $uri, 'name' => $name];
             }
         }
 
-        return compact('withoutAuth','withoutCan');
+        return [
+            'without_auth' => $withoutAuth,
+            'without_can' => $withoutCan,
+        ];
     }
 
     private function hasAny(array $list, array $needles): bool
     {
         foreach ($needles as $n) {
             foreach ($list as $m) {
-                if (str_contains((string)$m, $n)) return true;
+                if (str_contains((string) $m, $n)) {
+                    return true;
+                }
             }
         }
+
         return false;
     }
 
     private function hasPrefix(array $list, string $prefix): bool
     {
         foreach ($list as $m) {
-            if (str_starts_with((string)$m, $prefix)) return true;
+            if (str_starts_with((string) $m, $prefix)) {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -205,16 +228,18 @@ final class ProjectAuditCommand extends Command
         $withoutAuthorizeResource = [];
 
         foreach ($files as $f) {
-            if ($f->getExtension() !== 'php') continue;
+            if ($f->getExtension() !== 'php') {
+                continue;
+            }
             $src = File::get($f->getRealPath());
             // Heurística: buscar $this->authorizeResource( o this->authorize(
             $hasAuthorize = preg_match('/->authorizeResource\(/', $src) || preg_match('/\$this->authorize\(/', $src);
-            if (!$hasAuthorize) {
+            if (! $hasAuthorize) {
                 $withoutAuthorizeResource[] = $f->getRelativePathname();
             }
         }
 
-        return compact('withoutAuthorizeResource');
+        return ['without_authorize_resource' => $withoutAuthorizeResource];
     }
 
     /* ===================== VISTAS ===================== */
@@ -233,7 +258,7 @@ final class ProjectAuditCommand extends Command
             }
         }
 
-        return compact('suspectedCrossTenant');
+        return ['suspected_cross_tenant' => $suspectedCrossTenant];
     }
 
     /* ===================== TRADUCCIONES ===================== */
@@ -247,7 +272,9 @@ final class ProjectAuditCommand extends Command
         // Buscar __() y @lang en vistas/controladores
         $scanDirs = [resource_path('views'), app_path('Http/Controllers')];
         foreach ($scanDirs as $dir) {
-            if (!File::exists($dir)) continue;
+            if (! File::exists($dir)) {
+                continue;
+            }
             foreach (File::allFiles($dir) as $f) {
                 $txt = File::get($f->getRealPath());
                 preg_match_all('/__\([\'"]([^\'"]+)[\'"]\)/', $txt, $m1);
@@ -257,6 +284,10 @@ final class ProjectAuditCommand extends Command
         }
 
         $foundKeys = array_values(array_unique($foundKeys));
+        $foundKeys = array_values(array_filter(
+            $foundKeys,
+            fn (string $key): bool => ! str_contains($key, '::') && ! str_ends_with($key, '.')
+        ));
 
         // Cargar diccionarios existentes (es/en/pt…)
         $available = [];
@@ -269,7 +300,7 @@ final class ProjectAuditCommand extends Command
 
         foreach ($foundKeys as $key) {
             foreach ($available as $locale => $entries) {
-                if (!array_key_exists($key, $entries)) {
+                if (! array_key_exists($key, $entries)) {
                     $missingKeys[] = ['key' => $key, 'locale' => $locale];
                 }
             }
@@ -282,14 +313,26 @@ final class ProjectAuditCommand extends Command
     {
         $base = resource_path('lang/'.$locale);
         $acc = [];
-        if (!File::exists($base)) return $acc;
+        if (! File::exists($base)) {
+            return $acc;
+        }
 
         foreach (File::allFiles($base) as $f) {
-            if ($f->getExtension() !== 'php') continue;
+            if ($f->getExtension() !== 'php') {
+                continue;
+            }
             $arr = @include $f->getRealPath();
-            if (!is_array($arr)) continue;
-            $this->dotify($arr, '', $acc);
+            if (! is_array($arr)) {
+                continue;
+            }
+            $this->dotify($arr, $f->getFilenameWithoutExtension(), $acc);
         }
+
+        $json = resource_path("lang/{$locale}.json");
+        if (File::exists($json)) {
+            $acc += json_decode(File::get($json), true, 512, JSON_THROW_ON_ERROR);
+        }
+
         return $acc;
     }
 
@@ -298,6 +341,7 @@ final class ProjectAuditCommand extends Command
         foreach ($arr as $k => $v) {
             $key = $prefix === '' ? $k : $prefix.'.'.$k;
             if (is_array($v)) {
+                $acc[$key] = $v;
                 $this->dotify($v, $key, $acc);
             } else {
                 $acc[$key] = $v;
@@ -314,18 +358,20 @@ final class ProjectAuditCommand extends Command
         $warnings = [];
 
         foreach ($files as $f) {
-            if ($f->getExtension() !== 'php') continue;
+            if ($f->getExtension() !== 'php') {
+                continue;
+            }
             $txt = File::get($f->getRealPath());
             if (preg_match('/PowerBi|Fabric/i', $txt)) {
                 // Heurísticas: falta try/catch, timeout Guzzle, logs insuficientes, no cache token
-                if (!preg_match('/try\s*{/', $txt)) {
-                    $warnings[] = $f->getRelativePathname()." → posible falta de manejo de errores (try/catch).";
+                if (! preg_match('/try\s*{/', $txt)) {
+                    $warnings[] = $f->getRelativePathname().' → posible falta de manejo de errores (try/catch).';
                 }
-                if (preg_match('/GuzzleHttp\\\Client/', $txt) && !preg_match('/timeout\s*=>\s*\d+/', $txt)) {
-                    $warnings[] = $f->getRelativePathname()." → Guzzle sin timeout explícito.";
+                if (preg_match('/GuzzleHttp\\\Client/', $txt) && ! preg_match('/timeout\s*=>\s*\d+/', $txt)) {
+                    $warnings[] = $f->getRelativePathname().' → Guzzle sin timeout explícito.';
                 }
-                if (preg_match('/getAccessToken/i', $txt) && !preg_match('/cache|Cache::remember/i', $txt)) {
-                    $warnings[] = $f->getRelativePathname()." → AccessToken sin cache.";
+                if (preg_match('/getAccessToken/i', $txt) && ! preg_match('/cache|Cache::remember/i', $txt)) {
+                    $warnings[] = $f->getRelativePathname().' → AccessToken sin cache.';
                 }
             }
         }
@@ -342,13 +388,15 @@ final class ProjectAuditCommand extends Command
         $warnings = [];
 
         foreach ($files as $f) {
-            if ($f->getExtension() !== 'php') continue;
+            if ($f->getExtension() !== 'php') {
+                continue;
+            }
             $txt = File::get($f->getRealPath());
             if (preg_match('/Audit/i', $txt)) {
                 // Requeridos mínimos
-                foreach (['client_id','user_id','report_uuid','action'] as $field) {
-                    if (!preg_match('/'.$field.'/', $txt)) {
-                        $warnings[] = $f->getRelativePathname()." → auditoría podría no registrar ".$field.".";
+                foreach (['client_id', 'user_id', 'report_uuid', 'action'] as $field) {
+                    if (! preg_match('/'.$field.'/', $txt)) {
+                        $warnings[] = $f->getRelativePathname().' → auditoría podría no registrar '.$field.'.';
                     }
                 }
             }
@@ -368,8 +416,10 @@ final class ProjectAuditCommand extends Command
         }
         if (preg_match('/class\s+([A-Za-z0-9_]+)/', $src, $m)) {
             $cls = trim($m[1]);
+
             return $ns ? $ns.'\\'.$cls : $cls;
         }
+
         return null;
     }
 
@@ -378,38 +428,58 @@ final class ProjectAuditCommand extends Command
         $this->info('=== PROJECT AUDIT ===');
 
         $this->section('MODELOS sin Tenancy');
-        foreach ($report['models']['without_tenant_trait'] as $m) $this->line(" - ".$m);
+        foreach ($report['models']['without_tenant_trait'] as $m) {
+            $this->line(' - '.$m);
+        }
 
         $this->section('MODELOS sin client_id/casts/relación');
-        foreach ($report['models']['without_client_id_cast'] as $m) $this->line(" - ".$m);
+        foreach ($report['models']['without_client_id_cast'] as $m) {
+            $this->line(' - '.$m);
+        }
 
         $this->section('MIGRACIONES sin client_id');
-        foreach ($report['migrations']['missing_client_id'] as $m) $this->line(" - {$m['table']} ({$m['file']})");
+        foreach ($report['migrations']['missing_client_id'] as $m) {
+            $this->line(" - {$m['table']} ({$m['file']})");
+        }
 
         $this->section('RUTAS sin auth');
-        foreach ($report['routes']['without_auth'] as $r) $this->line(" - {$r['uri']} [".implode(',',$r['methods'])."]");
+        foreach ($report['routes']['without_auth'] as $r) {
+            $this->line(" - {$r['uri']} [".implode(',', $r['methods']).']');
+        }
 
         $this->section('RUTAS sin can:*');
-        foreach ($report['routes']['without_can'] as $r) $this->line(" - {$r['uri']} ({$r['name']})");
+        foreach ($report['routes']['without_can'] as $r) {
+            $this->line(" - {$r['uri']} ({$r['name']})");
+        }
 
         $this->section('CONTROLADORES sin authorize/authorizeResource');
-        foreach ($report['controllers']['without_authorize_resource'] as $c) $this->line(" - ".$c);
+        foreach ($report['controllers']['without_authorize_resource'] as $c) {
+            $this->line(' - '.$c);
+        }
 
         $this->section('VISTAS sospechosas cross-tenant');
-        foreach ($report['views']['suspected_cross_tenant'] as $v) $this->line(" - ".$v);
+        foreach ($report['views']['suspected_cross_tenant'] as $v) {
+            $this->line(' - '.$v);
+        }
 
         $this->section('Traducciones faltantes');
-        foreach ($report['translations']['missing_keys'] as $t) $this->line(" - {$t['locale']}: {$t['key']}");
+        foreach ($report['translations']['missing_keys'] as $t) {
+            $this->line(" - {$t['locale']}: {$t['key']}");
+        }
 
         $this->section('BI Services Warnings');
-        foreach ($report['bi_services']['warnings'] as $w) $this->line(" - ".$w);
+        foreach ($report['bi_services']['warnings'] as $w) {
+            $this->line(' - '.$w);
+        }
 
         $this->section('Auditoría Warnings');
-        foreach ($report['audits']['warnings'] as $w) $this->line(" - ".$w);
+        foreach ($report['audits']['warnings'] as $w) {
+            $this->line(' - '.$w);
+        }
 
         $this->section('RESUMEN');
         foreach ($report['summary'] as $k => $v) {
-            $this->line(sprintf(" - %-35s %5d", $k, $v));
+            $this->line(sprintf(' - %-35s %5d', $k, $v));
         }
     }
 

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Throwable;
@@ -105,15 +106,13 @@ class MicrosoftController extends Controller
                 return redirect()->route('login')->with('status', __('auth.microsoft.missing_id_token'));
             }
 
-            // Decode the JWT (without verifying the signature) to read basic claims
-            $claims = $this->decodeJwt($idToken);
+            $claims = $this->verifyMicrosoftIdToken($idToken, $tenant, $clientId);
             if (! $claims) {
                 return redirect()->route('login')->with('status', __('auth.microsoft.invalid_token'));
             }
 
-            // Validate nonce when we have it stored
             $nonceExpected = (string) $request->session()->pull('ms_oauth_nonce');
-            if (! empty($claims['nonce']) && $nonceExpected && $claims['nonce'] !== $nonceExpected) {
+            if ($nonceExpected === '' || ! hash_equals($nonceExpected, (string) ($claims['nonce'] ?? ''))) {
                 return redirect()->route('login')->with('status', __('auth.microsoft.invalid_nonce'));
             }
 
@@ -267,20 +266,81 @@ class MicrosoftController extends Controller
         }
     }
 
-    private function decodeJwt(string $jwt): ?array
+    /** Verify signature and OIDC security claims before trusting Microsoft identity data. */
+    private function verifyMicrosoftIdToken(string $jwt, string $tenant, string $clientId): ?array
     {
         $parts = explode('.', $jwt);
-        if (count($parts) < 2) {
+        if (count($parts) !== 3) {
             return null;
         }
-        $payload = $parts[1] ?? '';
-        $payload = strtr($payload, '-_', '+/');
-        $payload .= str_repeat('=', (4 - strlen($payload) % 4) % 4);
-        $json = base64_decode($payload, true);
-        if ($json === false) {
+
+        $header = $this->decodeJwtPart($parts[0]);
+        $claims = $this->decodeJwtPart($parts[1]);
+        $signature = $this->decodeBase64Url($parts[2]);
+        if (! $header || ! $claims || $signature === null || ($header['alg'] ?? null) !== 'RS256') {
             return null;
         }
-        return json_decode($json, true);
+
+        try {
+            $http = new \GuzzleHttp\Client(['timeout' => 10]);
+            $cacheKey = 'microsoft-oidc-' . hash('sha256', $tenant);
+            $metadata = Cache::remember($cacheKey . '-metadata', now()->addHours(12), function () use ($http, $tenant): array {
+                $url = sprintf('https://login.microsoftonline.com/%s/v2.0/.well-known/openid-configuration', rawurlencode($tenant));
+                return json_decode((string) $http->get($url, ['headers' => ['Accept' => 'application/json']])->getBody(), true) ?: [];
+            });
+            $jwksUri = (string) ($metadata['jwks_uri'] ?? '');
+            $issuer = (string) ($metadata['issuer'] ?? '');
+            if ($jwksUri === '' || $issuer === '' || ! str_starts_with($jwksUri, 'https://login.microsoftonline.com/')) {
+                return null;
+            }
+
+            $keys = Cache::remember($cacheKey . '-keys', now()->addHours(12), function () use ($http, $jwksUri): array {
+                return json_decode((string) $http->get($jwksUri, ['headers' => ['Accept' => 'application/json']])->getBody(), true)['keys'] ?? [];
+            });
+            $kid = (string) ($header['kid'] ?? '');
+            $key = collect($keys)->first(fn ($candidate) => is_array($candidate) && hash_equals((string) ($candidate['kid'] ?? ''), $kid));
+            $certificate = is_array($key) ? (string) ($key['x5c'][0] ?? '') : '';
+            if ($certificate === '') {
+                return null;
+            }
+            $pem = "-----BEGIN CERTIFICATE-----\n" . chunk_split($certificate, 64, "\n") . "-----END CERTIFICATE-----\n";
+            if (openssl_verify($parts[0] . '.' . $parts[1], $signature, $pem, OPENSSL_ALGO_SHA256) !== 1) {
+                return null;
+            }
+
+            $now = time();
+            $audience = $claims['aud'] ?? null;
+            $audienceValid = is_array($audience)
+                ? in_array($clientId, $audience, true)
+                : hash_equals($clientId, (string) $audience);
+
+            return $audienceValid
+                && hash_equals($issuer, (string) ($claims['iss'] ?? ''))
+                && (int) ($claims['exp'] ?? 0) >= $now - 60
+                && (int) ($claims['nbf'] ?? 0) <= $now + 60
+                    ? $claims
+                    : null;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    private function decodeJwtPart(string $part): ?array
+    {
+        $decoded = $this->decodeBase64Url($part);
+        if ($decoded === null) {
+            return null;
+        }
+        $value = json_decode($decoded, true);
+        return is_array($value) ? $value : null;
+    }
+
+    private function decodeBase64Url(string $value): ?string
+    {
+        $value = strtr($value, '-_', '+/');
+        $value .= str_repeat('=', (4 - strlen($value) % 4) % 4);
+        $decoded = base64_decode($value, true);
+        return $decoded === false ? null : $decoded;
     }
 
     private function applyLocalePreference(Request $request, User $user): void

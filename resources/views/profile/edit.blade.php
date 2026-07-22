@@ -3,7 +3,7 @@
 @section('title', __('Profile'))
 
 @section('content_header')
-    <h1>{{ __('Profile') }}</h1>
+    <x-page-header :title="__('Profile')" icon="fas fa-user-circle" />
 @endsection
 
 @section('content')

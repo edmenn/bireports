@@ -136,6 +136,9 @@ return [
         'show' => [
             'title' => 'Workspace: :name',
             'empty' => 'This workspace has no imported reports.',
+            'empty_hint' => 'Import metadata to display reports here.',
+            'list_title' => 'Workspace reports',
+            'no_capacity' => 'No capacity assigned',
             'table' => [
                 'title' => 'Title',
                 'dataset' => 'Dataset ID',

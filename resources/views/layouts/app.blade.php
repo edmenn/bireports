@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.21.0/tabler-icons.min.css">
 
     {{-- CSS propio centralizado --}}
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}?v={{ @filemtime(public_path('css/custom.css')) ?: '1' }}">
 
     {{-- Vite (si tu proyecto ya lo usa para otros assets) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])

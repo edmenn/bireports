@@ -85,10 +85,10 @@
             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
             <div class="row">
                 <div class="col-md-4">
-                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ old('login_logo_width', $t['login_logo_width'] ?? '') }}"/>
+                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ max(16, (int) old('login_logo_width', $t['login_logo_width'] ?? 180)) }}"/>
                 </div>
                 <div class="col-md-4">
-                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ old('login_logo_height', $t['login_logo_height'] ?? '') }}"/>
+                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ max(16, (int) old('login_logo_height', $t['login_logo_height'] ?? 64)) }}"/>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <small class="text-muted">{{ __('settings.login.cards.size.hint') }}</small>

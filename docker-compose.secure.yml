@@ -64,18 +64,23 @@ services:
       - .env
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: ${PRODUCTION_APP_URL:-https://biportal.sarcom.com.py}
+      SESSION_SECURE_COOKIE: "true"
+      TRUSTED_PROXIES: "172.16.0.0/12"
     depends_on: [pgsql]
     volumes:
       - app_code:/var/www/html:ro
       - app_storage:/var/www/html/storage
-      - app_cache:/var/www/html/bootstrap/cache
+      - secure_app_cache:/var/www/html/bootstrap/cache
     read_only: true
     tmpfs:
       - /tmp
       - /var/run
       - /usr/local/var/run
     healthcheck:
-      test: ["CMD", "php", "-v"]
+      test: ["CMD", "php", "scripts/healthcheck.php"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -95,10 +100,12 @@ services:
       - .env
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
+      APP_ENV: production
+      APP_DEBUG: "false"
     volumes:
       - app_code:/var/www/html:ro
       - app_storage:/var/www/html/storage
-      - app_cache:/var/www/html/bootstrap/cache
+      - secure_app_cache:/var/www/html/bootstrap/cache
     tmpfs:
       - /tmp
       - /var/run
@@ -120,10 +127,12 @@ services:
       - .env
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
+      APP_ENV: production
+      APP_DEBUG: "false"
     volumes:
       - app_code:/var/www/html:ro
       - app_storage:/var/www/html/storage
-      - app_cache:/var/www/html/bootstrap/cache
+      - secure_app_cache:/var/www/html/bootstrap/cache
     tmpfs:
       - /tmp
       - /var/run
@@ -177,14 +186,14 @@ services:
       - |
         set -e
         apk add --no-cache rsync >/dev/null
-        rsync -av --delete \
+        rsync -av --checksum --delete \
           --chown=1000:1000 \
-          --exclude='.git/' \
-          --exclude='.github/' \
-          --exclude='node_modules/' \
-          --exclude='vendor/' \
-          --exclude='storage/' \
-          --exclude='bootstrap/cache/' \
+          --exclude='/.git/' \
+          --exclude='/.github/' \
+          --exclude='/node_modules/' \
+          --exclude='/vendor/' \
+          --exclude='/storage/' \
+          --exclude='/bootstrap/cache/' \
           --exclude='.env*' \
           --exclude='docker-compose*.yml' \
           /src/ /dest/
@@ -194,7 +203,7 @@ services:
 
 volumes:
   app_storage: {}
-  app_cache: {}
+  secure_app_cache: {}
   caddy_data: {}
   caddy_config: {}
   pgdata: {}

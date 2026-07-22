@@ -156,7 +156,7 @@
         {{-- Card: Actions --}}
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex" style="gap: .75rem; width: 320px;">
+                <div class="form-actions w-100">
                     <x-adminlte-button type="submit" theme="primary" label="{{ __('folders.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <x-adminlte-button :href="route('folders.index')" theme="secondary" label="{{ __('folders.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq"/>
                 </div>

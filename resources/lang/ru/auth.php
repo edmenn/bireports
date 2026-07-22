@@ -1,6 +1,19 @@
 <?php
 
 return [
+    'failed' => 'Указанные учетные данные неверны.',
+    'password' => 'Указан неверный пароль.',
+    'throttle' => 'Слишком много попыток входа. Повторите через :seconds секунд.',
+    'email' => 'Электронная почта',
+    'email_placeholder' => 'user@company.com',
+    'password_label' => 'Пароль',
+    'remember' => 'Запомнить меня',
+    'forgot_password' => 'Забыли пароль?',
+    'login' => 'Войти',
+    'or' => 'или',
+    'continue_microsoft' => 'Продолжить с Microsoft',
+    'logo_alt' => 'Логотип компании',
+    'blocked' => 'Ваша учетная запись заблокирована. Обратитесь к администратору.',
     'microsoft' => [
         'not_configured'             => 'Вход через Microsoft не настроен.',
         'config_missing'             => 'Отсутствует конфигурация.',

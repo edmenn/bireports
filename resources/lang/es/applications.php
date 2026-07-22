@@ -59,6 +59,7 @@ return [
         'reports' => 'Reportes',
         'users' => 'Usuarios',
         'groups' => 'Grupos',
+        'roles' => 'Perfiles',
         'updated_at' => 'Última actualización',
         'actions' => 'Acciones',
         'reports_count' => 'Reportes',
@@ -70,9 +71,12 @@ return [
         'report_name' => 'Reporte',
     ],
     'placeholders' => [
+        'name' => 'Nombre de la aplicación',
+        'description' => 'Descripción opcional',
         'slug' => 'Dejar vacío para autogenerar',
         'section_name' => 'Nombre de la sección',
     ],
+    'alerts' => ['success' => 'Operación completada correctamente.'],
     'cards' => [
         'details_title' => 'Detalles de la aplicación',
         'assignments_title' => 'Asignaciones de acceso',

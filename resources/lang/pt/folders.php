@@ -24,6 +24,10 @@ return [
         'users_label' => 'Usuários',
         'groups_label' => 'Grupos',
         'reports_label' => 'Relatórios',
+        'select_all_users' => 'Selecionar todos',
+        'select_all_groups' => 'Selecionar todos',
+        'select_all_reports' => 'Selecionar todos',
+        'sort_alpha' => 'Ordenar de A a Z',
         'buttons' => [
             'back' => 'Voltar',
             'save' => 'Salvar',
@@ -132,6 +136,9 @@ return [
         'show' => [
             'title' => 'Workspace: :name',
             'empty' => 'Este workspace não possui relatórios importados.',
+            'empty_hint' => 'Importe os metadados para exibir relatórios aqui.',
+            'list_title' => 'Relatórios do workspace',
+            'no_capacity' => 'Sem capacidade atribuída',
             'table' => [
                 'title' => 'Título',
                 'dataset' => 'Dataset ID',

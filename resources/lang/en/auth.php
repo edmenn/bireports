@@ -1,6 +1,19 @@
 <?php
 
 return [
+    'failed' => 'These credentials do not match our records.',
+    'password' => 'The provided password is incorrect.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'email' => 'Email',
+    'email_placeholder' => 'you@company.com',
+    'password_label' => 'Password',
+    'remember' => 'Remember me',
+    'forgot_password' => 'Forgot your password?',
+    'login' => 'Log in',
+    'or' => 'or',
+    'continue_microsoft' => 'Continue with Microsoft',
+    'logo_alt' => 'Company logo',
+    'blocked' => 'Your account is blocked. Contact the administrator.',
     'microsoft' => [
         'not_configured'             => 'Microsoft login is not configured.',
         'config_missing'             => 'Missing configuration.',

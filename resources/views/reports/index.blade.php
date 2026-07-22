@@ -52,7 +52,7 @@
                 </div>
                 <h5 class="font-weight-bold mb-2">{{ __('reports.index.empty.title') }}</h5>
                 <p class="text-muted mb-4">{{ __('reports.index.empty.hint') }}</p>
-                <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary btn-lg">
+                <a href="{{ route('powerbi.import.run') }}" class="btn btn-primary">
                     <i class="fas fa-sync"></i> {{ __('reports.index.empty.action') }}
                 </a>
             </div>

@@ -7,15 +7,15 @@
     @include('portal.partials.home-card-styles')
     <style>
         .portal-table thead th {
-            background-color: #eef2f7;
+            background-color: var(--app-card-alt-bg);
             font-weight: 600;
             font-size: .9rem;
-            color: #1f2d3d;
+            color: var(--app-card-text);
             border-bottom: none;
         }
 
         .portal-table tbody tr:hover {
-            background-color: rgba(13, 110, 253, .04);
+            background-color: var(--app-card-alt-bg);
         }
 
         .portal-table th,

@@ -7,6 +7,20 @@ $vendorPath = function_exists('base_path')
 $vendor = file_exists($vendorPath) ? require $vendorPath : [];
 
 return array_merge($vendor, [
+    'main_navigation' => 'NAVEGAÇÃO PRINCIPAL',
+    'blog' => 'Blog',
+    'pages' => 'Páginas',
+    'account_settings' => 'CONFIGURAÇÕES DA CONTA',
+    'profile' => 'Perfil',
+    'change_password' => 'Alterar senha',
+    'multilevel' => 'Multinível',
+    'level_one' => 'Nível 1',
+    'level_two' => 'Nível 2',
+    'level_three' => 'Nível 3',
+    'labels' => 'RÓTULOS',
+    'important' => 'Importante',
+    'warning' => 'Aviso',
+    'information' => 'Informação',
     'search' => 'Pesquisar',
     'nav' => [
         'portal' => 'Meu espaço',

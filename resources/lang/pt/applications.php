@@ -59,6 +59,7 @@ return [
         'reports' => 'Relatórios',
         'users' => 'Usuários',
         'groups' => 'Grupos',
+        'roles' => 'Perfis',
         'updated_at' => 'Última atualização',
         'actions' => 'Ações',
         'reports_count' => 'Relatórios',
@@ -70,9 +71,12 @@ return [
         'report_name' => 'Relatório',
     ],
     'placeholders' => [
+        'name' => 'Nome do aplicativo',
+        'description' => 'Descrição opcional',
         'slug' => 'Deixe em branco para gerar automaticamente',
         'section_name' => 'Nome da seção',
     ],
+    'alerts' => ['success' => 'Operação concluída com sucesso.'],
     'cards' => [
         'details_title' => 'Detalhes da aplicação',
         'assignments_title' => 'Atribuições de acesso',

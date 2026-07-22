@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Private files are never exposed through framework-generated HTTP routes.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

@@ -58,7 +58,7 @@
     @endif
 
     {{-- Custom design system --}}
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}?v={{ @filemtime(public_path('css/custom.css')) ?: '1' }}">
 
     {{-- Extra Configured Plugins Stylesheets --}}
     @include('adminlte::plugins', ['type' => 'css'])
@@ -137,6 +137,23 @@
             <livewire:scripts />
         @endif
     @endif
+
+    <script>
+        window.bsCustomFileInput ??= {
+            init() {
+                document.querySelectorAll('.custom-file input[type="file"]').forEach(input => {
+                    if (input.dataset.fileLabelBound) return;
+                    const label = input.parentElement?.querySelector('.custom-file-label');
+                    if (!label) return;
+                    label.dataset.defaultText ||= label.textContent.trim();
+                    input.addEventListener('change', () => {
+                        label.textContent = input.files?.[0]?.name || label.dataset.defaultText;
+                    });
+                    input.dataset.fileLabelBound = '1';
+                });
+            }
+        };
+    </script>
 
     {{-- Custom Scripts --}}
     @yield('adminlte_js')

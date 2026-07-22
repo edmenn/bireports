@@ -71,6 +71,11 @@ return [
         ],
     ],
 
+    'prewarm' => [
+        'title' => 'Pré-aquecimento de datasets',
+        'description' => 'Atualiza automaticamente os datasets configurados antes do horário de uso.',
+    ],
+
     'mail' => [
         'card_title' => 'Configuracao de envio de email',
         'fields' => [

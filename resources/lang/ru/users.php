@@ -29,6 +29,7 @@ return [
     'index' => [
         'card_title' => 'Список пользователей',
         'filters' => [
+            'search_label' => 'Поиск',
             'role_label' => 'Роль',
             'search_placeholder' => 'Поиск по имени или email',
             'status_label' => 'Статус',
@@ -52,6 +53,7 @@ return [
             'name_description' => 'Имя и описание',
             'name' => 'Имя',
             'email' => 'Email',
+            'position' => 'Должность',
             'status' => 'Статус',
             'role' => 'Роль',
             'actions' => 'Действия',
@@ -64,6 +66,7 @@ return [
             'no_email' => 'Нет email',
             'no_name' => 'Нет имени',
             'inactive' => 'Неактивен',
+            'no_position' => 'Без должности',
         ],
         'messages' => [
             'empty' => 'Пользователи не найдены.',
@@ -76,6 +79,9 @@ return [
             'entra_status_error' => 'Ошибка при запросе Microsoft Graph',
             'entra_status_loaded' => 'Загружено пользователей: :count',
             'entra_status_loaded_more' => 'Загружено пользователей: :count (доступны еще)',
+            'entra_status_loaded_all' => 'Загружено пользователей: :count (все)',
+            'entra_status_truncated' => 'Загружено пользователей: :count (достигнут лимит)',
+            'entra_list_count' => 'Показано: :count',
         ],
         'buttons' => [
             'edit' => 'Редактировать',
@@ -88,6 +94,7 @@ return [
             'confirm' => 'Подтвердить',
         ],
         'confirm' => [
+            'delete' => 'Удалить',
             'title' => 'Подтверждение действия',
             'general' => 'Подтверждаете действие?',
             'delete_user' => 'Удалить пользователя :name?',
@@ -105,6 +112,15 @@ return [
             'domain_label' => 'Только домен',
             'domain_placeholder' => 'company.com',
             'only_active' => 'Только активные пользователи',
+            'only_new' => 'Только еще не добавленные',
+            'sort_label' => 'Сортировка',
+            'sort_name_asc' => 'Имя (А–Я)',
+            'sort_name_desc' => 'Имя (Я–А)',
+            'sort_position_asc' => 'Должность (А–Я)',
+            'sort_position_desc' => 'Должность (Я–А)',
+            'filter_name' => 'Фильтр по имени',
+            'filter_position' => 'Фильтр по должности',
+            'filter_email' => 'Фильтр по email',
             'assign_role' => 'Назначить роль',
             'select_all' => 'Выбрать всех',
         ],
@@ -168,4 +184,3 @@ return [
         'self_block' => 'Нельзя заблокировать собственную учетную запись.',
     ],
 ];
-

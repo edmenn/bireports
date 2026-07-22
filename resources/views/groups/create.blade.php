@@ -88,7 +88,7 @@
         {{-- CARD 3: Actions --}}
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex gap-3" style="width: 320px;">
+                <div class="form-actions w-100">
                     {{-- Save first --}}
                     <x-adminlte-button type="submit" theme="primary"
                         label="{{ __('groups.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>

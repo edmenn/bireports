@@ -22,6 +22,8 @@ return [
         'description_label' => 'Описание (необязательно)',
         'description_placeholder' => 'Опишите назначение группы.',
         'users_label' => 'Участники группы',
+        'select_all_users' => 'Выбрать всех',
+        'sort_alpha' => 'Сортировать от А до Я',
         'buttons' => [
             'back' => 'Назад',
             'save' => 'Сохранить',

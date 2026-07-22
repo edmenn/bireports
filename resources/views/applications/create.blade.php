@@ -204,7 +204,7 @@
         {{-- CARD 4: Actions --}}
         <x-adminlte-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
-                <div class="d-flex gap-3" style="width: 320px;">
+                <div class="form-actions w-100">
                     <x-adminlte-button type="submit" theme="primary"
                         label="{{ __('applications.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <button type="button" class="btn btn-secondary btn-eq" data-cancel-button

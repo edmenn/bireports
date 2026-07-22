@@ -3,15 +3,11 @@
 @section('title', __('settings.audit.page.title'))
 
 @section('content_header')
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div>
-            <h1 class="m-0">{{ __('settings.audit.page.title') }}</h1>
-            <small class="text-muted">{{ __('settings.audit.page.subtitle') }}</small>
-        </div>
+    <x-page-header :title="__('settings.audit.page.title')" :subtitle="__('settings.audit.page.subtitle')" icon="fas fa-history">
         <a href="{{ route('configurations.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> {{ __('settings.audit.actions.back') }}
         </a>
-    </div>
+    </x-page-header>
 @stop
 
 @section('content')
@@ -81,4 +77,3 @@
         @endif
     </div>
 @stop
-

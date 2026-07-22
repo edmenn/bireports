@@ -59,6 +59,7 @@ return [
         'reports' => 'Reports',
         'users' => 'Users',
         'groups' => 'Groups',
+        'roles' => 'Roles',
         'updated_at' => 'Last update',
         'actions' => 'Actions',
         'reports_count' => 'Reports',
@@ -70,9 +71,12 @@ return [
         'report_name' => 'Report',
     ],
     'placeholders' => [
+        'name' => 'Application name',
+        'description' => 'Optional description',
         'slug' => 'Leave blank to auto-generate',
         'section_name' => 'Section name',
     ],
+    'alerts' => ['success' => 'Operation completed successfully.'],
     'cards' => [
         'details_title' => 'Application details',
         'assignments_title' => 'Access assignments',

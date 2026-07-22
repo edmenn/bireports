@@ -3,7 +3,7 @@
 @section('title', 'Importación Power BI')
 
 @section('content_header')
-    <h1>Importación desde Power BI</h1>
+    <x-page-header title="Importación desde Power BI" icon="fas fa-file-import" />
 @stop
 
 @section('content')

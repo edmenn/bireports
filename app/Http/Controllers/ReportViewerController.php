@@ -24,7 +24,7 @@ class ReportViewerController extends Controller
 
     /**
      * Render the embedded report view with the variables required by the JS layer.
-     * Expects: report_uuid (route), workspace_uuid (query), dataset_uuid (optional query).
+     * Expects: report_uuid (route), workspace_uuid (query).
      */
     public function show(Request $request, string $report_uuid): View
     {
@@ -33,15 +33,11 @@ class ReportViewerController extends Controller
             [
                 'report_uuid'    => 'required|uuid',
                 'workspace_uuid' => 'required|uuid',  // necesitamos groupId para el embed
-                'dataset_uuid'   => 'nullable|uuid',
-                'rls_role'       => 'nullable|string|max:128',
             ]
         )->validate();
 
         $reportUuid    = (string) $v['report_uuid'];
         $workspaceUuid = (string) $v['workspace_uuid'];
-        $datasetUuid   = $v['dataset_uuid'] ?? null;
-        $rlsRole       = $v['rls_role'] ?? null;
 
         $report = Report::query()->with('workspace')->findOrFail($reportUuid);
 
@@ -58,9 +54,7 @@ class ReportViewerController extends Controller
             abort(403);
         }
 
-        if ($datasetUuid === null) {
-            $datasetUuid = $report->dataset_id;
-        }
+        $datasetUuid = $report->dataset_id;
 
         // When configuration is incomplete, render the view with empty data (avoid 500s)
         $hasConfig = Configuration::query()
@@ -69,15 +63,21 @@ class ReportViewerController extends Controller
             ->whereNotNull('powerbi_client_secret')->where('powerbi_client_secret', '!=', '')
             ->exists();
 
+        $embed = [];
         if (! $hasConfig) {
             $accessToken = null;
         } else {
-            // Acquire an AAD token (Service Principal) via PowerBiService::getAccessToken()
-            $accessToken = $this->pbi->getAccessToken();
+            $embed = $this->pbi->generateReportEmbedToken(
+                workspaceId: $workspaceUuid,
+                reportId: $reportUuid,
+                datasetId: $datasetUuid,
+                rlsUser: null,
+                rlsRoles: [],
+            );
+            $accessToken = $embed['token'] ?? null;
         }
 
-        // Standard embed URL for reports
-        $embedUrl = "https://app.powerbi.com/reportEmbed?reportId={$reportUuid}&groupId={$workspaceUuid}";
+        $embedUrl = $embed['embedUrl'] ?? "https://app.powerbi.com/reportEmbed?reportId={$reportUuid}&groupId={$workspaceUuid}";
 
         $embed = [
             'embedUrl'    => $embedUrl,

@@ -11,4 +11,4 @@ docker-compose*.yml
 .env.*
 .DS_Store
 vendor/
-
+bootstrap/cache/*.php

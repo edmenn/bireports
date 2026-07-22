@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Configuration;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\View\View;
 
@@ -18,20 +19,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        $cfg = \App\Models\Configuration::query()->first();
-
-        $allowMicrosoft = (bool) ($cfg
-            && $cfg->microsoft_login_enabled
-            && $cfg->powerbi_client_id
-            && $cfg->powerbi_client_secret
-            && $cfg->powerbi_tenant_id);
-
-        $envOverrideLocal = (bool) config('auth.allow_local_login', false);
-        $allowLocal = (bool) ($envOverrideLocal || ($cfg->local_login_enabled ?? true));
-
-        if (! $allowLocal && ! $allowMicrosoft) {
-            $allowLocal = true; // fallback para evitar bloqueo total
-        }
+        $cfg = Configuration::query()->first();
+        $allowMicrosoft = $this->microsoftLoginAvailable($cfg);
+        $allowLocal = $this->localLoginAvailable($cfg);
 
         return view('auth.login', compact('allowLocal', 'allowMicrosoft'));
     }
@@ -41,6 +31,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        abort_unless($this->localLoginAvailable(Configuration::query()->first()), 403);
+
         $request->authenticate();
 
         $request->session()->regenerate();
@@ -83,5 +75,20 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function microsoftLoginAvailable(?Configuration $cfg): bool
+    {
+        return (bool) ($cfg?->microsoft_login_enabled
+            && $cfg->powerbi_client_id
+            && $cfg->powerbi_client_secret
+            && $cfg->powerbi_tenant_id);
+    }
+
+    private function localLoginAvailable(?Configuration $cfg): bool
+    {
+        return (bool) config('auth.allow_local_login', false)
+            || (bool) ($cfg?->local_login_enabled ?? true)
+            || ! $this->microsoftLoginAvailable($cfg);
     }
 }

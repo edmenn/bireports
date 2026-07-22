@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,7 +24,7 @@ class LoginRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -35,25 +37,24 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
         // Bloqueo: impedir autenticación si el usuario está bloqueado localmente
+        $user = null;
         try {
-            $email = (string) $this->input('email');
-            if ($email !== '') {
-                $u = \App\Models\User::query()->where('email', $email)->first();
-                if ($u && (bool)($u->is_blocked ?? false)) {
-                    throw ValidationException::withMessages([
-                        'email' => 'Tu cuenta está bloqueada. Contacta al administrador.',
-                    ]);
-                }
-            }
+            $user = User::query()->where('email', (string) $this->input('email'))->first();
         } catch (\Throwable) {
-            // Si algo falla, continuar con autenticación normal
+            // Authentication still provides the generic failure when the lookup is unavailable.
+        }
+
+        if ($user && (bool) ($user->is_blocked ?? false)) {
+            throw ValidationException::withMessages([
+                'email' => trans('auth.blocked'),
+            ]);
         }
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
@@ -70,7 +71,7 @@ class LoginRequest extends FormRequest
     /**
      * Ensure the login request is not rate limited.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function ensureIsNotRateLimited(): void
     {

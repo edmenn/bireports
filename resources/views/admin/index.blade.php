@@ -3,7 +3,7 @@
 @section('title', __('admin.title'))
 
 @section('content_header')
-    <h1>{{ __('admin.title') }}</h1>
+    <x-page-header :title="__('admin.title')" icon="fas fa-user-shield" />
 @stop
 
 @section('content')
@@ -13,4 +13,3 @@
         </div>
     </div>
 @stop
-

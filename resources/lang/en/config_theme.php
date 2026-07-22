@@ -32,7 +32,7 @@ return [
                 'site_logo' => [
                     'label' => 'Main logo',
                     'placeholder' => 'Choose a file...',
-                    'help' => 'PNG/JPG/SVG. Transparent background and height ≤ 60px recommended.',
+                    'help' => 'PNG or JPG, up to 2 MB. Transparent background and height ≤ 60 px recommended.',
                     'tooltip' => 'Shown on the header. Use a lightweight file for faster loading.',
                     'preview_alt' => 'Main logo',
                 ],
@@ -96,6 +96,9 @@ return [
                         'text' => 'Text',
                     ],
                 ],
+                'icons' => [
+                    'title' => 'Icons',
+                ],
                 'accents' => [
                     'title' => 'Accents & Buttons',
                     'tooltip' => 'Highlights and buttons: normal, hover, and active states.',
@@ -117,6 +120,11 @@ return [
     ],
     'buttons' => [
         'save_as' => 'Save as...',
+    ],
+    'errors' => [
+        'file_too_large' => 'The file exceeds the :max MB limit.',
+        'invalid_file_type' => 'Unsupported format. Use PNG or JPG; favicons may also use ICO.',
+        'invalid_image' => 'The image could not be read. Choose another file.',
     ],
     'modal' => [
         'save' => [

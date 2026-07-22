@@ -20,8 +20,8 @@
             padding: .55rem 1rem;
             border-radius: .6rem;
             font-size: .875rem;
-            color: #334155;
-            background-color: #f8fafd;
+            color: var(--app-card-text);
+            background-color: var(--app-card-alt-bg);
             border: 1px solid transparent;
             transition: all .15s ease-in-out;
             text-decoration: none;
@@ -35,7 +35,7 @@
             font-size: .75rem;
             font-weight: 600;
             padding: .2rem .5rem;
-            background-color: rgba(15, 34, 58, .08);
+            background-color: var(--app-icon-bg);
             color: inherit;
         }
 
@@ -48,28 +48,29 @@
         }
 
         .portal-folder-link.active {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-            color: #fff;
-            box-shadow: 0 1rem 1.6rem rgba(13, 110, 253, .2);
+            background-color: var(--app-hi-bg);
+            border-color: var(--app-hi-bg);
+            color: var(--app-hi-text);
+            box-shadow: 0 .65rem 1.2rem color-mix(in srgb, var(--app-hi-bg) 24%, transparent);
         }
 
         .portal-folder-link.active .badge {
             background-color: rgba(255, 255, 255, .25);
-            color: #fff;
+            color: var(--app-hi-text);
         }
 
         .portal-folder-link:not(.active):hover {
-            background-color: rgba(13, 110, 253, .12);
-            color: #0d6efd;
+            background-color: var(--app-icon-bg);
+            color: var(--app-icon-text);
         }
 
         .portal-folder-link:not(.active):hover .badge {
-            background-color: rgba(13, 110, 253, .18);
+            background-color: var(--app-card-bg);
         }
 
         .portal-folders-empty {
-            color: #6c757d;
+            color: var(--app-card-text);
+            opacity: .72;
             padding: .5rem 0;
         }
 

@@ -77,7 +77,7 @@ Open [http://localhost:8000](http://localhost:8000) to view it in your browser.
 ## 📦 Installation
 
 ### Prerequisites
-- PHP 7.4+
+- PHP 8.2+ (PHP 8.3 is used by the production image)
 - Composer
 - A web server (e.g., Apache, Nginx)
 - PowerBI account with necessary permissions
