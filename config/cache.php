@@ -105,4 +105,16 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | Refuse to unserialize PHP objects from cache by default. Cache payloads in
+    | this application are scalars and arrays, so no class allow-list is needed.
+    |
+    */
+
+    'serializable_classes' => false,
+
 ];

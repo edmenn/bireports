@@ -419,8 +419,8 @@ class CapacityController extends Controller
     private function syncWithThrottle(PowerBiCapacityService $svc, int $windowSeconds = 120): void
     {
         try {
-            $last = Cache::get('capacities:last_sync_at');
-            if ($last && now()->diffInSeconds($last) < $windowSeconds) {
+            $last = (int) Cache::get('capacities:last_sync_at', 0);
+            if ($last > 0 && (time() - $last) < $windowSeconds) {
                 // Inside the time window: skip sync
                 return;
             }
@@ -432,7 +432,7 @@ class CapacityController extends Controller
                 try {
                     $svc->importCapacities(); // Actual sync against Fabric/Power BI
                     // Record the last sync only when the import succeeded
-                    Cache::put('capacities:last_sync_at', now(), $windowSeconds);
+                    Cache::put('capacities:last_sync_at', time(), $windowSeconds);
                 } finally {
                     optional($lock)->release();
                 }
