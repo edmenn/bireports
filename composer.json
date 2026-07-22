@@ -6,7 +6,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.5",
         "dragonmantank/cron-expression": "^3.4",
         "guzzlehttp/guzzle": "^7.10",
         "jeroennoten/laravel-adminlte": "^3.15",
@@ -70,7 +70,7 @@
     "config": {
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.3.32"
+            "php": "8.5.6"
         },
         "preferred-install": "dist",
         "sort-packages": true,

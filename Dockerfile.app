@@ -1,7 +1,7 @@
 # -----------------------------------------------------------
-#  Stage 1: builder (PHP 8.3 CLI + Composer + vendors)
+#  Stage 1: builder (PHP 8.5 CLI + Composer + vendors)
 # -----------------------------------------------------------
-FROM php:8.3-cli-alpine AS vendor
+FROM php:8.5-cli-alpine AS vendor
 WORKDIR /app
 
 # Paquetes necesarios para extensiones y Composer
@@ -53,9 +53,9 @@ RUN rm -f bootstrap/cache/*.php \
 
 
 # -----------------------------------------------------------
-#  Stage 2: runtime (PHP 8.3 FPM Alpine)
+#  Stage 2: runtime (PHP 8.5 FPM Alpine)
 # -----------------------------------------------------------
-FROM php:8.3-fpm-alpine
+FROM php:8.5-fpm-alpine
 
 # Extensiones necesarias
 RUN set -eux; \
