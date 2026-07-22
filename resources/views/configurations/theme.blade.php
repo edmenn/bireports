@@ -219,8 +219,8 @@
                                         <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.navbar.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid">
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#111111' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_navbar_bg" value="{{ $t['navbar_bg'] ?? '#374151' }}" class="color-item__swatch js-color" data-var="--app-navbar-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_navbar_text" value="{{ $t['navbar_text'] ?? '#f9fafb' }}" class="color-item__swatch js-color" data-var="--app-navbar-text"></label>
                                     </div>
                                 </div>
 
@@ -229,8 +229,8 @@
                                         <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.sidebar.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid">
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#343a40' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#c2c7d0' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.background') }}</span><input type="color" name="color_menu_bg" value="{{ $t['menu_bg'] ?? '#1f2d37' }}" class="color-item__swatch js-color" data-var="--app-menu-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.common.text') }}</span><input type="color" name="color_menu_text" value="{{ $t['menu_text'] ?? '#d1d5db' }}" class="color-item__swatch js-color" data-var="--app-menu-text"></label>
                                     </div>
                                 </div>
 
@@ -250,12 +250,12 @@
                                         <i class="far fa-question-circle ms-1 text-muted" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.palette.groups.accents.tooltip') }}"></i>
                                     </div>
                                     <div class="color-grid" style="grid-template-columns: repeat(2, 1fr);">
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.highlight') }}</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.highlight') }}</span><input type="color" name="color_highlight_bg" value="{{ $t['highlight_bg'] ?? '#6b7280' }}" class="color-item__swatch js-color" data-var="--app-hi-bg"></label>
                                         <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.highlight_text') }}</span><input type="color" name="color_highlight_text" value="{{ $t['highlight_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-hi-text"></label>
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button') }}</span><input type="color" name="color_btn_bg" value="{{ $t['btn_bg'] ?? '#2563eb' }}" class="color-item__swatch js-color" data-var="--app-btn-bg"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button') }}</span><input type="color" name="color_btn_bg" value="{{ $t['btn_bg'] ?? '#6b7280' }}" class="color-item__swatch js-color" data-var="--app-btn-bg"></label>
                                         <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_text') }}</span><input type="color" name="color_btn_text" value="{{ $t['btn_text'] ?? '#ffffff' }}" class="color-item__swatch js-color" data-var="--app-btn-text"></label>
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_hover') }}</span><input type="color" name="color_btn_hover" value="{{ $t['btn_hover'] ?? '#1d4ed8' }}" class="color-item__swatch js-color" data-var="--app-btn-hover"></label>
-                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_active') }}</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#1e40af' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_hover') }}</span><input type="color" name="color_btn_hover" value="{{ $t['btn_hover'] ?? '#4b5563' }}" class="color-item__swatch js-color" data-var="--app-btn-hover"></label>
+                                        <label class="color-item"><span>{{ __('config_theme.cards.palette.groups.accents.fields.button_active') }}</span><input type="color" name="color_btn_active" value="{{ $t['btn_active'] ?? '#374151' }}" class="color-item__swatch js-color" data-var="--app-btn-active"></label>
                                     </div>
                                 </div>
 

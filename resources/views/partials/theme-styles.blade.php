@@ -60,8 +60,14 @@
     body:not(.dark-mode) .main-header.navbar .nav-link, body:not(.dark-mode) .main-header .navbar-nav .nav-link { color: var(--app-navbar-text) !important; }
     body:not(.dark-mode) .main-sidebar{ background-color: var(--app-menu-bg) !important; color: var(--app-menu-text) !important; }
     body:not(.dark-mode) .main-sidebar .brand-link{ background-color: var(--app-menu-bg) !important; color: var(--app-menu-text) !important; }
-    body:not(.dark-mode) .sidebar .nav-link{ color: var(--app-menu-text) !important; }
-    body:not(.dark-mode) .sidebar .nav-link.active, body:not(.dark-mode) .sidebar .nav-link:hover{ background-color: var(--app-hi-bg) !important; color: var(--app-hi-text) !important; }
+    .app-sidebar .nav-link{ color: var(--app-menu-text) !important; }
+    .app-sidebar .nav-link:hover,
+    .app-sidebar .nav-link:focus,
+    .app-sidebar .nav-link.active,
+    .app-sidebar .nav-item.active > .nav-link{
+        background-color: var(--app-hi-bg) !important;
+        color: var(--app-hi-text) !important;
+    }
     body:not(.dark-mode) .card{ background-color: var(--app-card-bg) !important; color: var(--app-card-text); }
     body:not(.dark-mode) .card .card-header,
     body:not(.dark-mode) .card .card-footer{ background-color: var(--app-card-alt-bg) !important; color: var(--app-card-text); }
@@ -155,58 +161,76 @@
     }
     body:not(.dark-mode) .login-card .input-group { border-color: var(--app-card-alt-bg) !important; }
     body:not(.dark-mode) .login-page::before { background: var(--app-main-bg) !important; opacity: .28; }
-    body:not(.dark-mode) .btn-brand {
+    .btn-brand {
         background-color: var(--app-btn-bg) !important;
         color: var(--app-btn-text) !important;
         border-color: var(--app-btn-bg) !important;
     }
-    body:not(.dark-mode) .btn-brand:hover { background-color: var(--app-btn-hover) !important; }
-    body:not(.dark-mode) .btn-primary,
-    body:not(.dark-mode) .btn-default,
-    body:not(.dark-mode) .btn-secondary{
-        background-color: var(--app-btn-bg);
-        color: var(--app-btn-text);
-        border-color: var(--app-btn-bg);
+    .btn-brand:hover { background-color: var(--app-btn-hover) !important; }
+    body .btn-primary,
+    body .btn-default,
+    body .btn-secondary,
+    body .btn-success,
+    body .btn-info,
+    body .btn-warning{
+        background-color: var(--app-btn-bg) !important;
+        color: var(--app-btn-text) !important;
+        border-color: var(--app-btn-bg) !important;
     }
-    body:not(.dark-mode) .btn-primary:hover,
-    body:not(.dark-mode) .btn-default:hover,
-    body:not(.dark-mode) .btn-secondary:hover{
-        background-color: var(--app-btn-hover);
-        color: var(--app-btn-text);
+    body .btn-primary:hover,
+    body .btn-default:hover,
+    body .btn-secondary:hover,
+    body .btn-success:hover,
+    body .btn-info:hover,
+    body .btn-warning:hover{
+        background-color: var(--app-btn-hover) !important;
+        color: var(--app-btn-text) !important;
+        border-color: var(--app-btn-hover) !important;
     }
-    body:not(.dark-mode) .btn-primary:active,
-    body:not(.dark-mode) .btn-primary.active,
-    body:not(.dark-mode) .btn-default:active,
-    body:not(.dark-mode) .btn-default.active,
-    body:not(.dark-mode) .btn-secondary:active,
-    body:not(.dark-mode) .btn-secondary.active{
-        background-color: var(--app-btn-active);
-        color: var(--app-btn-text);
+    body .btn-primary:active,
+    body .btn-primary.active,
+    body .btn-default:active,
+    body .btn-default.active,
+    body .btn-secondary:active,
+    body .btn-secondary.active,
+    body .btn-success:active,
+    body .btn-success.active,
+    body .btn-info:active,
+    body .btn-info.active,
+    body .btn-warning:active,
+    body .btn-warning.active{
+        background-color: var(--app-btn-active) !important;
+        color: var(--app-btn-text) !important;
+        border-color: var(--app-btn-active) !important;
     }
     /* Outline buttons adapt to theme colors */
-    body:not(.dark-mode) .btn-outline-primary{
+    body .btn-outline-primary,
+    body .btn-outline-secondary,
+    body .btn-outline-success,
+    body .btn-outline-info,
+    body .btn-outline-warning{
         color: var(--app-btn-bg);
         border-color: var(--app-btn-bg);
         background-color: transparent;
     }
-    body:not(.dark-mode) .btn-outline-primary:hover,
-    body:not(.dark-mode) .btn-outline-primary:focus,
-    body:not(.dark-mode) .btn-outline-primary:active{
-        color: var(--app-btn-text);
-        background-color: var(--app-btn-bg);
-        border-color: var(--app-btn-bg);
-    }
-    body:not(.dark-mode) .btn-outline-secondary{
-        color: var(--app-main-text);
-        border-color: var(--app-main-text);
-        background-color: transparent;
-    }
-    body:not(.dark-mode) .btn-outline-secondary:hover,
-    body:not(.dark-mode) .btn-outline-secondary:focus,
-    body:not(.dark-mode) .btn-outline-secondary:active{
-        color: var(--app-btn-text);
-        background-color: var(--app-btn-bg);
-        border-color: var(--app-btn-bg);
+    body .btn-outline-primary:hover,
+    body .btn-outline-primary:focus,
+    body .btn-outline-primary:active,
+    body .btn-outline-secondary:hover,
+    body .btn-outline-secondary:focus,
+    body .btn-outline-secondary:active,
+    body .btn-outline-success:hover,
+    body .btn-outline-success:focus,
+    body .btn-outline-success:active,
+    body .btn-outline-info:hover,
+    body .btn-outline-info:focus,
+    body .btn-outline-info:active,
+    body .btn-outline-warning:hover,
+    body .btn-outline-warning:focus,
+    body .btn-outline-warning:active{
+        color: var(--app-btn-text) !important;
+        background-color: var(--app-btn-hover) !important;
+        border-color: var(--app-btn-hover) !important;
     }
 
     /* Footer corporativo integrado (solo en claro; en oscuro hereda Tabler) */
