@@ -18,6 +18,7 @@ check "$css" 'gap: 0;'
 check "$css" '.page-body { flex: 1 0 auto; margin-bottom: 0; padding: 0; }'
 check "$css" 'margin: 0; background: var(--app-navbar-bg'
 check "$css" '.main-footer { position: sticky; bottom: 0;'
+check "$css" 'min-height: 0; display: flex; align-items: center; font-size: .875em;'
 check "$theme" '.app-sidebar .nav-item.active > .nav-link'
 check "$theme" 'background-color: var(--app-btn-bg) !important;'
 
