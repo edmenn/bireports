@@ -4,6 +4,7 @@ return [
     'search' => 'Поиск',
     'navigation_label' => 'Основная навигация',
     'toggle_navigation' => 'Показать или скрыть навигацию',
+    'toggle_sidebar_size' => 'Изменить ширину бокового меню',
     'nav' => [
         'portal' => 'Мое пространство',
         'portal_home' => 'Главная',

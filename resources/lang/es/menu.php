@@ -4,6 +4,7 @@ return [
     'search' => 'Buscar',
     'navigation_label' => 'Navegación principal',
     'toggle_navigation' => 'Mostrar u ocultar navegación',
+    'toggle_sidebar_size' => 'Alternar ancho del menú lateral',
     'nav' => [
         'portal' => 'Mi espacio',
         'portal_home' => 'Inicio',

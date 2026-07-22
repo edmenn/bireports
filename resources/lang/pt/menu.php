@@ -18,6 +18,7 @@ return [
     'search' => 'Pesquisar',
     'navigation_label' => 'Navegação principal',
     'toggle_navigation' => 'Mostrar ou ocultar navegação',
+    'toggle_sidebar_size' => 'Alternar largura do menu lateral',
     'nav' => [
         'portal' => 'Meu espaço',
         'portal_home' => 'Início',

@@ -4,8 +4,12 @@
     $isDark = optional(auth()->user())->theme === 'dark' || session('theme') === 'dark';
     $theme = is_array($appCfg?->theme_config) ? $appCfg->theme_config : (json_decode((string) $appCfg?->theme_config, true) ?: []);
     $title = $appCfg?->site_title ?: config('app.name', 'BI Portal');
-    $logo = $appCfg?->site_logo_path ? Storage::disk('public')->url($appCfg->site_logo_path) : null;
+    $logo = $appCfg?->site_logo_path ? Storage::disk('public')->url($appCfg->site_logo_path) : asset('favicon.ico');
     $compactLogo = $appCfg?->site_logo_compact_path ? Storage::disk('public')->url($appCfg->site_logo_compact_path) : $logo;
+    $logoWidth = max(16, (int) ($appCfg?->site_logo_width ?: 120));
+    $logoHeight = max(16, (int) ($appCfg?->site_logo_height ?: 40));
+    $compactLogoWidth = max(16, (int) ($appCfg?->site_logo_compact_width ?: 40));
+    $compactLogoHeight = max(16, (int) ($appCfg?->site_logo_compact_height ?: 40));
     $favicon = $appCfg?->site_favicon_path ? Storage::disk('public')->url($appCfg->site_favicon_path) : asset('favicon.ico');
     $nextTheme = $isDark ? 'light' : 'dark';
 @endphp
@@ -31,7 +35,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand navbar-brand-autodark brand-link" href="{{ route('portal.index') }}">
-                @if($logo)<img src="{{ $logo }}" alt="{{ $title }}" class="navbar-brand-image brand-image">@endif
+                <img src="{{ $logo }}" alt="{{ $title }}" class="navbar-brand-image brand-image brand-logo-full" style="--brand-width:{{ $logoWidth }}px;--brand-height:{{ $logoHeight }}px">
+                <img src="{{ $compactLogo }}" alt="" class="navbar-brand-image brand-image brand-logo-compact" style="--brand-width:{{ $compactLogoWidth }}px;--brand-height:{{ $compactLogoHeight }}px">
                 <span class="brand-text">{{ $title }}</span>
             </a>
             <div class="collapse navbar-collapse" id="app-sidebar-menu">
@@ -48,6 +53,7 @@
         <header class="navbar navbar-expand-md app-header main-header d-print-none">
             <div class="container-fluid">
                 <button class="btn btn-icon d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#app-sidebar-menu" aria-label="{{ __('menu.toggle_navigation') }}"><i class="fas fa-bars"></i></button>
+                <button class="btn btn-icon d-none d-lg-inline-flex" id="sidebar-size-toggle" type="button" aria-label="{{ __('menu.toggle_sidebar_size') }}" aria-pressed="false"><i class="fas fa-bars"></i></button>
                 <div class="navbar-nav flex-row order-md-last ms-auto align-items-center gap-1">
                     <span id="navbar-current-datetime" class="nav-link d-none d-xl-flex" data-locale="{{ str_replace('_', '-', app()->getLocale()) }}"></span>
                     <div class="nav-item dropdown">

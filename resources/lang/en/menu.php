@@ -4,6 +4,7 @@ return [
     'search' => 'Search',
     'navigation_label' => 'Main navigation',
     'toggle_navigation' => 'Toggle navigation',
+    'toggle_sidebar_size' => 'Toggle sidebar width',
     'nav' => [
         'portal' => 'My Space',
         'portal_home' => 'Home',
