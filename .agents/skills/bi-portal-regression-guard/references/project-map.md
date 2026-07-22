@@ -19,6 +19,8 @@
 
 ## Locked visual invariants
 
+- Change-isolation contract: behavior outside the explicit request is frozen. Record a baseline before editing and compare after; shared selectors/components require verification of every affected consumer.
+
 - Sidebar widths: expanded `16rem` (256 px), compact `4.5rem` (72 px).
 - Sidebar and page wrapper remain in one non-wrapping flex row: the sidebar is sticky and the wrapper width is `100% - --app-sidebar-width`, so their shared edge stays exact in both desktop states and on pages with vertical scrollbars.
 - Sidebar has no right border or inset shadow. Page wrapper has no border, radius, shadow, padding-bottom, or flex gap. Footer has zero margin and no border/radius.
