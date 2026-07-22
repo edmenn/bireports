@@ -1,5 +1,5 @@
 {{-- resources/views/folders/workspaces.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('folders.workspaces.page.title'))
 

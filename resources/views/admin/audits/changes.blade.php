@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('changes.page.title'))
 
@@ -9,7 +9,7 @@
 @stop
 
 @section('content')
-    <x-adminlte-card title="{{ __('changes.cards.filters.title') }}" icon="fas fa-filter text-lightblue" theme="primary" theme-mode="outline">
+    <x-ui-card title="{{ __('changes.cards.filters.title') }}" icon="fas fa-filter text-lightblue" theme="primary" theme-mode="outline">
         <form method="GET" class="form-inline" role="search">
             <div class="form-row w-100">
                 <div class="form-group col-md-3 mb-2">
@@ -34,9 +34,9 @@
                 </div>
             </div>
         </form>
-    </x-adminlte-card>
+    </x-ui-card>
 
-    <x-adminlte-card title="{{ __('changes.cards.events.title') }}" icon="fas fa-list text-lightblue" theme="primary" theme-mode="outline" body-class="p-0">
+    <x-ui-card title="{{ __('changes.cards.events.title') }}" icon="fas fa-list text-lightblue" theme="primary" theme-mode="outline" body-class="p-0">
         @php $queryParams = request()->except(['per_page', 'page']); @endphp
         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-end px-3 pt-3 pb-2">
             <form method="GET" class="form-inline justify-content-md-end">
@@ -193,7 +193,7 @@
                 </nav>
             </div>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @endsection
 
 @push('css')

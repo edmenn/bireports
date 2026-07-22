@@ -6,9 +6,9 @@
 
     @php($isEntra = isset($user) && (method_exists($user, 'isEntra') ? $user->isEntra() : strtolower((string)($user->auth_provider ?? '')) === 'entra'))
     @if($isEntra)
-        <x-adminlte-alert theme="info" title="{{ __('profiles.alerts.entra.title') }}" class="mb-2">
+        <x-ui-alert theme="info" title="{{ __('profiles.alerts.entra.title') }}" class="mb-2">
             {{ __('profiles.alerts.entra.profile_message') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">

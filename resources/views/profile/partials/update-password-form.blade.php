@@ -6,9 +6,9 @@
 
     @php($isEntra = isset($user) && strtolower((string)($user->auth_provider ?? '')) === 'entra')
     @if($isEntra)
-        <x-adminlte-alert theme="info" title="{{ __('profiles.alerts.entra.title') }}" class="mb-2">
+        <x-ui-alert theme="info" title="{{ __('profiles.alerts.entra.title') }}" class="mb-2">
             {{ __('profiles.alerts.entra.password_message') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
         <fieldset disabled>
             <div class="form-group mb-3">
                 <label>{{ __('Current Password') }}</label>

@@ -1,4 +1,4 @@
-@extends('adminlte::auth.auth-page', ['authType' => 'login'])
+@extends('layouts.auth')
 
 @section('title', __('Verify Email'))
 

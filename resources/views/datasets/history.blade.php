@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('datasets.history.title'))
 
@@ -24,7 +24,7 @@
 @section('content')
     @php $history = is_array($history ?? null) ? $history : []; @endphp
 
-    <x-adminlte-card theme="primary" theme-mode="outline" class="shadow-sm">
+    <x-ui-card theme="primary" theme-mode="outline" class="shadow-sm">
         <div class="table-responsive datasets-table-wrap">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -106,7 +106,7 @@
                 </tbody>
             </table>
         </div>
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 {{-- =========================

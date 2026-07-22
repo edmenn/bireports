@@ -13,35 +13,35 @@
     ])->all()));
 @endphp
 
-<x-adminlte-card title="{{ __('applications.cards.details_title') }}" icon="fas fa-layer-group text-primary" theme="lightblue" theme-mode="outline">
+<x-ui-card title="{{ __('applications.cards.details_title') }}" icon="fas fa-layer-group text-primary" theme="lightblue" theme-mode="outline">
     <div class="row g-3">
         <div class="col-md-6">
             <label class="form-label d-inline-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.name') }}">
                 {{ __('applications.fields.name') }}
                 <i class="fas fa-question-circle ms-1 text-muted"></i>
             </label>
-            <x-adminlte-input name="name" value="{{ old('name', $application->name ?? null) }}" required />
+            <x-ui-input name="name" value="{{ old('name', $application->name ?? null) }}" required />
         </div>
         <div class="col-md-6">
             <label class="form-label d-inline-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.slug') }}">
                 {{ __('applications.fields.slug') }}
                 <i class="fas fa-question-circle ms-1 text-muted"></i>
             </label>
-            <x-adminlte-input name="slug" value="{{ old('slug', $application->slug ?? null) }}" placeholder="{{ __('applications.placeholders.slug') }}" />
+            <x-ui-input name="slug" value="{{ old('slug', $application->slug ?? null) }}" placeholder="{{ __('applications.placeholders.slug') }}" />
         </div>
         <div class="col-12">
             <label class="form-label d-inline-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.description') }}">
                 {{ __('applications.fields.description') }}
                 <i class="fas fa-question-circle ms-1 text-muted"></i>
             </label>
-            <x-adminlte-textarea name="description" rows="3">{{ old('description', $application->description ?? null) }}</x-adminlte-textarea>
+            <x-ui-textarea name="description" rows="3">{{ old('description', $application->description ?? null) }}</x-ui-textarea>
         </div>
         <div class="col-md-4">
             <label class="form-label d-inline-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.display_order') }}">
                 {{ __('applications.fields.display_order') }}
                 <i class="fas fa-question-circle ms-1 text-muted"></i>
             </label>
-            <x-adminlte-input name="display_order" type="number" min="0" value="{{ old('display_order', $application->display_order ?? null) }}" />
+            <x-ui-input name="display_order" type="number" min="0" value="{{ old('display_order', $application->display_order ?? null) }}" />
         </div>
         <div class="col-md-4 d-flex align-items-center mt-4">
             <div class="form-check form-switch" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.is_active') }}">
@@ -50,9 +50,9 @@
             </div>
         </div>
     </div>
-</x-adminlte-card>
+</x-ui-card>
 
-<x-adminlte-card title="{{ __('applications.cards.assignments_title') }}" icon="fas fa-users text-primary" theme="lightblue" theme-mode="outline">
+<x-ui-card title="{{ __('applications.cards.assignments_title') }}" icon="fas fa-users text-primary" theme="lightblue" theme-mode="outline">
     <div class="row g-3">
         <div class="col-md-6">
             <label class="form-label d-inline-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.users') }}">
@@ -81,9 +81,9 @@
             </select>
         </div>
     </div>
-</x-adminlte-card>
+</x-ui-card>
 
-<x-adminlte-card title="{{ __('applications.cards.reports_title') }}" icon="fas fa-chart-bar text-primary" theme="lightblue" theme-mode="outline">
+<x-ui-card title="{{ __('applications.cards.reports_title') }}" icon="fas fa-chart-bar text-primary" theme="lightblue" theme-mode="outline">
     <label class="form-label d-inline-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.reports') }}">
         {{ __('applications.fields.reports') }}
         <i class="fas fa-question-circle ms-1 text-muted"></i>
@@ -95,10 +95,10 @@
             </option>
         @endforeach
     </select>
-</x-adminlte-card>
+</x-ui-card>
 
 @if ($application && $application->exists && $assignedReports->isNotEmpty())
-    <x-adminlte-card title="{{ __('applications.cards.report_sections_title') }}" icon="fas fa-stream text-primary" theme="lightblue" theme-mode="outline">
+    <x-ui-card title="{{ __('applications.cards.report_sections_title') }}" icon="fas fa-stream text-primary" theme="lightblue" theme-mode="outline">
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>
@@ -126,10 +126,10 @@
                 </tbody>
             </table>
         </div>
-    </x-adminlte-card>
+    </x-ui-card>
 @endif
 
-<x-adminlte-card title="{{ __('applications.cards.sections_title') }}" icon="fas fa-sitemap text-primary" theme="lightblue" theme-mode="outline">
+<x-ui-card title="{{ __('applications.cards.sections_title') }}" icon="fas fa-sitemap text-primary" theme="lightblue" theme-mode="outline">
     @if ($existingSectionsSorted->isNotEmpty())
         <div class="table-responsive mb-4">
             <table class="table table-sm align-middle">
@@ -167,7 +167,7 @@
     <button class="btn btn-sm btn-outline-primary mt-3" type="button" id="add-section-input" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('applications.tooltips.add_section') }}">
         <i class="fas fa-plus"></i> {{ __('applications.actions.add_section') }}
     </button>
-</x-adminlte-card>
+</x-ui-card>
 
 @push('js')
 <script>

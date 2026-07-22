@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('config_theme.title'))
 
@@ -20,18 +20,18 @@
     @php($savedPresetIds = $savedPresets->mapWithKeys(fn($preset) => [$preset->name => $preset->id])->all())
     @php($selectedPresetId = old('theme_preset_id', $selectedThemeName && isset($savedPresetIds[$selectedThemeName]) ? $savedPresetIds[$selectedThemeName] : null))
     @if(session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('settings.alerts.success') }}" dismissable>
+        <x-ui-alert theme="success" title="{{ __('settings.alerts.success') }}" dismissable>
             {{ session('success') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
     @if ($errors->any())
-        <x-adminlte-alert theme="danger" title="{{ __('settings.alerts.validation') }}" dismissable>
+        <x-ui-alert theme="danger" title="{{ __('settings.alerts.validation') }}" dismissable>
             <ul class="mb-0 ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     <form method="POST" action="{{ route('configurations.update', $config->id) }}" enctype="multipart/form-data" novalidate id="theme-form">
@@ -73,18 +73,18 @@
                     <div class="tab-pane fade {{ $active === 'pagina' ? 'show active' : '' }}" id="pane-pagina" role="tabpanel" aria-labelledby="tab-pagina">
 
                         {{-- Configuración General (mantengo dos campos lado a lado en pantallas grandes) --}}
-                        <x-adminlte-card title="{{ __('config_theme.cards.general.title') }}" icon="fas fa-cog text-lightblue" class="mb-3">
+                        <x-ui-card title="{{ __('config_theme.cards.general.title') }}" icon="fas fa-cog text-lightblue" class="mb-3">
                             <div class="form-row">
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-input name="site_title" label="{{ __('config_theme.cards.general.fields.site_title.label') }}" placeholder="{{ __('config_theme.cards.general.fields.site_title.placeholder') }}" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
+                                    <x-ui-input name="site_title" label="{{ __('config_theme.cards.general.fields.site_title.label') }}" placeholder="{{ __('config_theme.cards.general.fields.site_title.placeholder') }}" fgroup-class="mb-3" value="{{ old('site_title', $config->site_title) }}">
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.general.fields.site_title.help') }}</small></x-slot>
-                                    </x-adminlte-input>
+                                    </x-ui-input>
                                     <small class="text-muted d-inline-block ms-1">
                                         <i class="far fa-question-circle" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.general.fields.site_title.tooltip') }}"></i>
                                     </small>
                                 </div>
                                 <div class="form-group col-12 col-lg-6">
-                                    <x-adminlte-select name="theme_name" id="theme_name" label="{{ __('config_theme.cards.general.fields.theme_name.label') }}">
+                                    <x-ui-select name="theme_name" id="theme_name" label="{{ __('config_theme.cards.general.fields.theme_name.label') }}">
                                         <option value="" @selected($selectedThemeName === null || $selectedThemeName === '')> {{ __('config_theme.cards.general.fields.theme_name.default') }}</option>
                                         @if($savedPresets->isNotEmpty())
                                             @foreach($savedPresets as $preset)
@@ -95,7 +95,7 @@
                                             <option value="Personalizado" selected> {{ __('config_theme.cards.general.fields.theme_name.custom') }}</option>
                                         @endif
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.general.fields.theme_name.help') }}</small></x-slot>
-                                     </x-adminlte-select>
+                                     </x-ui-select>
                                     <input type="hidden" name="theme_preset_id" id="theme_preset_id" value="{{ $selectedPresetId }}">
                                     <small class="text-muted d-inline-block ms-1">
                                         <i class="far fa-question-circle" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.general.fields.theme_name.tooltip') }}"></i>
@@ -107,19 +107,19 @@
                                     </button>
                                 </div>
                             </div>
-                        </x-adminlte-card>
+                        </x-ui-card>
 
                         {{-- Logos y Favicon (grilla 3→2→1 columnas) --}}
-                        <x-adminlte-card title="{{ __('config_theme.cards.branding.title') }}" icon="far fa-images text-lightblue" class="mb-3">
+                        <x-ui-card title="{{ __('config_theme.cards.branding.title') }}" icon="far fa-images text-lightblue" class="mb-3">
                             <div class="grid-logos">
                                 {{-- Logo principal --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_logo" label="{{ __('config_theme.cards.branding.fields.site_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo.placeholder') }}" accept="image/png,image/jpeg">
+                                    <x-ui-input-file name="site_logo" label="{{ __('config_theme.cards.branding.fields.site_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo.placeholder') }}" accept="image/png,image/jpeg">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_logo.help') }}
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_logo.tooltip') }}"></i>
                                         </small></x-slot>
-                                    </x-adminlte-input-file>
+                                    </x-ui-input-file>
                                     @php($siteLogoW = (int) (old('site_logo_width', $config->site_logo_width ?: 120)))
                                     @php($siteLogoH = (int) (old('site_logo_height', $config->site_logo_height ?: 40)))
                                     @if($config->site_logo_path)
@@ -128,17 +128,17 @@
                                         <img id="site-logo-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_logo.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoH }}px; display:none;">
                                     @endif
                                     <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
-                                        <x-adminlte-input name="site_logo_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ $siteLogoW }}"/>
-                                        <x-adminlte-input name="site_logo_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoH }}"/>
+                                        <x-ui-input name="site_logo_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ $siteLogoW }}"/>
+                                        <x-ui-input name="site_logo_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoH }}"/>
                                     </div>
                                 </div>
 
                                 {{-- Icono de Preloader (centro al refrescar) --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="preloader_logo" label="{{ __('config_theme.cards.branding.fields.preloader_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.preloader_logo.placeholder') }}" accept="image/png,image/jpeg">
+                                    <x-ui-input-file name="preloader_logo" label="{{ __('config_theme.cards.branding.fields.preloader_logo.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.preloader_logo.placeholder') }}" accept="image/png,image/jpeg">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.preloader_logo.help') }}</small></x-slot>
-                                    </x-adminlte-input-file>
+                                    </x-ui-input-file>
 
                                     <div class="d-flex align-items-end gap-2">
                                         <div>
@@ -163,12 +163,12 @@
 
                                 {{-- Logo reducido --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_logo_compact" label="{{ __('config_theme.cards.branding.fields.site_logo_compact.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo_compact.placeholder') }}" accept="image/png,image/jpeg">
+                                    <x-ui-input-file name="site_logo_compact" label="{{ __('config_theme.cards.branding.fields.site_logo_compact.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_logo_compact.placeholder') }}" accept="image/png,image/jpeg">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_logo_compact.help') }}
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_logo_compact.tooltip') }}"></i>
                                         </small></x-slot>
-                                    </x-adminlte-input-file>
+                                    </x-ui-input-file>
                                     @php($siteLogoCW = (int) (old('site_logo_compact_width', $config->site_logo_compact_width ?: 40)))
                                     @php($siteLogoCH = (int) (old('site_logo_compact_height', $config->site_logo_compact_height ?: 40)))
                                     @if($config->site_logo_compact_path)
@@ -177,19 +177,19 @@
                                         <img id="site-logo-compact-preview" src="" alt="{{ __('config_theme.cards.branding.fields.site_logo_compact.preview_alt') }}" class="img-thumbnail mt-1" style="max-height: {{ $siteLogoCH }}px; display:none;">
                                     @endif
                                     <div class="d-flex align-items-center gap-2 mt-2" style="max-width: 260px;">
-                                        <x-adminlte-input name="site_logo_compact_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ $siteLogoCW }}"/>
-                                        <x-adminlte-input name="site_logo_compact_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoCH }}"/>
+                                        <x-ui-input name="site_logo_compact_width" label="{{ __('settings.login.cards.size.width_label') }}" type="number" min="16" max="256" fgroup-class="mb-0" value="{{ $siteLogoCW }}"/>
+                                        <x-ui-input name="site_logo_compact_height" label="{{ __('settings.login.cards.size.height_label') }}" type="number" min="16" max="128" fgroup-class="mb-0" value="{{ $siteLogoCH }}"/>
                                     </div>
                                 </div>
 
                                 {{-- Favicon --}}
                                 <div class="logo-block">
-                                    <x-adminlte-input-file name="site_favicon" label="{{ __('config_theme.cards.branding.fields.site_favicon.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_favicon.placeholder') }}" accept="image/x-icon,image/png">
+                                    <x-ui-input-file name="site_favicon" label="{{ __('config_theme.cards.branding.fields.site_favicon.label') }}" placeholder="{{ __('config_theme.cards.branding.fields.site_favicon.placeholder') }}" accept="image/x-icon,image/png">
                                         <x-slot name="prependSlot"><div class="input-group-text bg-lightblue"><i class="fas fa-upload"></i></div></x-slot>
                                         <x-slot name="bottom"><small class="text-muted">{{ __('config_theme.cards.branding.fields.site_favicon.help') }}
                                             <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('config_theme.cards.branding.fields.site_favicon.tooltip') }}"></i>
                                         </small></x-slot>
-                                    </x-adminlte-input-file>
+                                    </x-ui-input-file>
                                     @if($config->site_favicon_path)
                                         <img id="site-favicon-preview" src="{{ Storage::disk('public')->url($config->site_favicon_path) }}" alt="{{ __('config_theme.cards.branding.fields.site_favicon.preview_alt') }}" class="img-thumbnail mt-1" style="height: 32px; width: 32px;">
                                     @else
@@ -197,10 +197,10 @@
                                     @endif
                                 </div>
                             </div>
-                        </x-adminlte-card>
+                        </x-ui-card>
 
                         {{-- Paleta de colores (sub-secciones en 2 columnas, auto-wrap) --}}
-                        <x-adminlte-card title="{{ __('config_theme.cards.palette.title') }}" icon="fas fa-palette text-lightblue" class="mb-1">
+                        <x-ui-card title="{{ __('config_theme.cards.palette.title') }}" icon="fas fa-palette text-lightblue" class="mb-1">
                             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
 
                             <div class="grid-colors-2">
@@ -267,7 +267,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </x-adminlte-card>
+                        </x-ui-card>
                     </div>
 
                     {{-- ============================================= --}}
@@ -275,18 +275,18 @@
                     {{-- ============================================= --}}
                     <div class="tab-pane fade {{ $active === 'login' ? 'show active' : '' }}" id="pane-login" role="tabpanel" aria-labelledby="tab-login">
 
-                        <x-adminlte-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue" class="mb-3">
+                        <x-ui-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue" class="mb-3">
                             <div class="d-flex flex-column">
-                                <x-adminlte-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg"/>
-                                <x-adminlte-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/png,image/jpeg">
+                                <x-ui-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg"/>
+                                <x-ui-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/png,image/jpeg">
                                     <x-slot name="bottom">
                                         <small class="text-muted">{{ __('settings.login.cards.uploads.fields.background.help') }}</small>
                                     </x-slot>
-                                </x-adminlte-input-file>
+                                </x-ui-input-file>
                             </div>
-                        </x-adminlte-card>
+                        </x-ui-card>
 
-                        <x-adminlte-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="mb-1">
+                        <x-ui-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="mb-1">
                             @if($config->login_logo_path ?? false)
                                 <div class="mb-3">
                                     <p class="mb-1 text-secondary">{{ __('settings.login.cards.preview.logo_heading') }}</p>
@@ -314,32 +314,32 @@
                                     <img src="" alt="{{ __('settings.login.cards.preview.background_alt') }}" style="width: 100%; height: 180px; object-fit: cover; display: none;" id="bg-preview" class="border rounded mt-2">
                                 </div>
                             @endif
-                        </x-adminlte-card>
+                        </x-ui-card>
 
-                        <x-adminlte-card title="{{ __('settings.login.cards.size.title') }}" icon="fas fa-ruler-combined text-lightblue" class="mb-3">
+                        <x-ui-card title="{{ __('settings.login.cards.size.title') }}" icon="fas fa-ruler-combined text-lightblue" class="mb-3">
                             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
                             <div class="row g-2">
                                 <div class="col-md-3">
-                                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ max(16, (int) old('login_logo_width', $t['login_logo_width'] ?? 180)) }}"/>
+                                    <x-ui-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ max(16, (int) old('login_logo_width', $t['login_logo_width'] ?? 180)) }}"/>
                                 </div>
                                 <div class="col-md-3">
-                                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ max(16, (int) old('login_logo_height', $t['login_logo_height'] ?? 64)) }}"/>
+                                    <x-ui-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ max(16, (int) old('login_logo_height', $t['login_logo_height'] ?? 64)) }}"/>
                                 </div>
                                 <div class="col-md-6 d-flex align-items-end">
                                     <small class="text-muted">{{ __('settings.login.cards.size.hint') }}</small>
                                 </div>
                             </div>
-                        </x-adminlte-card>
+                        </x-ui-card>
                     </div>
 
                 </div>
             </div>
         </div>
 
-        <x-adminlte-card theme="primary" theme-mode="outline">
+        <x-ui-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="theme-form-actions">
-                    <x-adminlte-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
+                    <x-ui-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <button type="button" class="btn btn-outline-primary btn-eq" data-toggle="modal" data-target="#presetSaveModal">
                         <i class="fas fa-clone"></i> {{ __('config_theme.buttons.save_as') }}
                     </button>
@@ -348,7 +348,7 @@
                     </button>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
             </div>
         </div>
     </form>

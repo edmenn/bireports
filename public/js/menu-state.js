@@ -1,34 +1,20 @@
 (() => {
-  const key = 'app:sidebar:openIdxs';
-  const sidebar = document.querySelector('.main-sidebar, .nav-sidebar');
-  if (!sidebar) return;
+  const key = 'app:sidebar:openGroups';
+  const groups = Array.from(document.querySelectorAll('#app-sidebar-menu .collapse[id]'));
+  if (!groups.length || typeof bootstrap === 'undefined') return;
 
-  const items = Array.from(document.querySelectorAll('.nav-sidebar > li.nav-item.has-treeview'));
-  if (!items.length) return;
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) {}
 
-  // Restore previously open groups
-  try {
-    const saved = JSON.parse(localStorage.getItem(key) || '[]');
-    saved.forEach((idx) => {
-      if (items[idx]) items[idx].classList.add('menu-open');
-    });
-  } catch (_) {}
+  groups.forEach((group) => {
+    if (saved.includes(group.id)) bootstrap.Collapse.getOrCreateInstance(group, { toggle: false }).show();
+    group.addEventListener('shown.bs.collapse', save);
+    group.addEventListener('hidden.bs.collapse', save);
+  });
 
-  const save = () => {
+  function save() {
     try {
-      const openIdxs = items.reduce((acc, li, i) => {
-        if (li.classList.contains('menu-open')) acc.push(i);
-        return acc;
-      }, []);
-      localStorage.setItem(key, JSON.stringify(openIdxs));
+      localStorage.setItem(key, JSON.stringify(groups.filter((group) => group.classList.contains('show')).map((group) => group.id)));
     } catch (_) {}
-  };
-
-  // Observe class changes to persist state
-  const mo = new MutationObserver(() => save());
-  items.forEach((li) => mo.observe(li, { attributes: true, attributeFilter: ['class'] }));
-
-  // Persist when navigating (safety)
-  window.addEventListener('beforeunload', save);
+  }
 })();
-

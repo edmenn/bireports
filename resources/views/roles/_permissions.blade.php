@@ -38,7 +38,7 @@
         $domId = 'sec-' . $slugify($sectionKey !== '' ? $sectionKey : (string) $index, 'sec-' . $index);
     @endphp
 
-    <x-adminlte-card theme="light" theme-mode="outline" class="mb-3">
+    <x-ui-card theme="light" theme-mode="outline" class="mb-3">
         {{-- Header: title left, buttons right --}}
         <div class="d-flex justify-content-between align-items-center flex-wrap mb-3 px-1">
             <h5 class="m-0 d-flex align-items-center text-primary">
@@ -90,7 +90,7 @@
                 </div>
             @endforeach
         </div>
-    </x-adminlte-card>
+    </x-ui-card>
 @endforeach
 
 @push('css')

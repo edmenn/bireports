@@ -41,7 +41,7 @@
         --app-btn-text: {{ $theme['btn_text'] }};
         --app-btn-hover: {{ $theme['btn_hover'] }};
         --app-btn-active: {{ $theme['btn_active'] }};
-        /* Bootstrap/AdminLTE 3 compatibility aliases used by shared components. */
+        /* Bootstrap/legacy layout compatibility aliases used by shared components. */
         --bs-body-bg: var(--app-card-bg);
         --bs-body-color: var(--app-card-text);
         --bs-emphasis-color: var(--app-card-text);
@@ -209,7 +209,7 @@
         border-color: var(--app-btn-bg);
     }
 
-    /* Footer corporativo integrado (solo en claro; en oscuro hereda AdminLTE) */
+    /* Footer corporativo integrado (solo en claro; en oscuro hereda Tabler) */
     body:not(.dark-mode) .main-footer{ background: var(--app-navbar-bg) !important; color: var(--app-navbar-text) !important; text-align:center; }
 
     /* Asegurar tonos oscuros cuando está activo el Dark Mode */

@@ -2,26 +2,26 @@
 
     {{-- COLUMNA IZQUIERDA: ACCIONES (SUBIR ARCHIVOS) --}}
     <div class="col-md-7 d-flex">
-        <x-adminlte-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue" class="flex-grow-1">
+        <x-ui-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue" class="flex-grow-1">
             
             <div class="d-flex flex-column justify-content-around h-100">
                 {{-- Campo para el Logo --}}
-                <x-adminlte-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg"/>
+                <x-ui-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/png,image/jpeg"/>
                 
                 {{-- Campo para la Imagen de Fondo --}}
-                <x-adminlte-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/png,image/jpeg">
+                <x-ui-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/png,image/jpeg">
                     <x-slot name="bottom">
                         <small class="text-muted">{{ __('settings.login.cards.uploads.fields.background.help') }}</small>
                     </x-slot>
-                </x-adminlte-input-file>
+                </x-ui-input-file>
             </div>
 
-        </x-adminlte-card>
+        </x-ui-card>
     </div>
 
     {{-- COLUMNA DERECHA: VISTAS PREVIA --}}
     <div class="col-md-5 d-flex">
-        <x-adminlte-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="flex-grow-1">
+        <x-ui-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="flex-grow-1">
 
             {{-- Vista Previa del Logo --}}
             @if($config->login_logo_path ?? false)
@@ -59,6 +59,6 @@
                 </div>
             @endif
 
-        </x-adminlte-card>
+        </x-ui-card>
     </div>
 </div>

@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('datasets.schedules.title'))
 
@@ -46,7 +46,7 @@
     @endphp
 
     {{-- ======================== FILTERS CARD ======================== --}}
-    <x-adminlte-card title="{{ __('datasets.schedules.filters.title') }}"
+    <x-ui-card title="{{ __('datasets.schedules.filters.title') }}"
                      icon="fas fa-sliders-h text-lightblue"
                      theme="primary" theme-mode="outline"
                      class="mb-3">
@@ -93,10 +93,10 @@
                 </a>
             </div>
         </form>
-    </x-adminlte-card>
+    </x-ui-card>
 
     {{-- ======================== TABLE CARD ======================== --}}
-    <x-adminlte-card title="{{ __('datasets.schedules.table_title') }}"
+    <x-ui-card title="{{ __('datasets.schedules.table_title') }}"
                      icon="fas fa-list-alt text-lightblue"
                      theme="primary" theme-mode="outline"
                      body-class="p-0">
@@ -168,7 +168,7 @@
                 </table>
             </div>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

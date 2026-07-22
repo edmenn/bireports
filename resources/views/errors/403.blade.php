@@ -1,5 +1,5 @@
 {{-- resources/views/errors/403.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('errors.forbidden.title'))
 

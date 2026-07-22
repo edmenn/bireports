@@ -1,12 +1,6 @@
 <?php
 
-$vendorPath = function_exists('base_path')
-    ? base_path('vendor/jeroennoten/laravel-adminlte/resources/lang/pt/menu.php')
-    : dirname(__DIR__, 3) . '/vendor/jeroennoten/laravel-adminlte/resources/lang/pt/menu.php';
-
-$vendor = file_exists($vendorPath) ? require $vendorPath : [];
-
-return array_merge($vendor, [
+return [
     'main_navigation' => 'NAVEGAÇÃO PRINCIPAL',
     'blog' => 'Blog',
     'pages' => 'Páginas',
@@ -22,6 +16,8 @@ return array_merge($vendor, [
     'warning' => 'Aviso',
     'information' => 'Informação',
     'search' => 'Pesquisar',
+    'navigation_label' => 'Navegação principal',
+    'toggle_navigation' => 'Mostrar ou ocultar navegação',
     'nav' => [
         'portal' => 'Meu espaço',
         'portal_home' => 'Início',
@@ -52,4 +48,4 @@ return array_merge($vendor, [
         'profile' => 'Perfil',
         'logout' => 'Sair',
     ],
-]);
+];

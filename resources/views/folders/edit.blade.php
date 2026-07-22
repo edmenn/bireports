@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('folders.page.edit'))
 
@@ -19,11 +19,11 @@
         @method('PUT')
 
         {{-- Card: Folder details --}}
-        <x-adminlte-card title="{{ __('folders.cards.details.title') }}" icon="fas fa-folder text-lightblue"
+        <x-ui-card title="{{ __('folders.cards.details.title') }}" icon="fas fa-folder text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <x-adminlte-input
+                    <x-ui-input
                         name="name"
                         label="{{ __('folders.form.name_label') }}"
                         placeholder="{{ __('folders.form.name_placeholder') }}"
@@ -35,20 +35,20 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <x-adminlte-textarea
+                    <x-ui-textarea
                         name="description"
                         label="{{ __('folders.form.description_label') }}"
                         rows="1"
                         placeholder="{{ __('folders.form.description_placeholder') }}"
                         class="no-validation @error('description') is-invalid @enderror"
-                    >{{ old('description', $folder->description) }}</x-adminlte-textarea>
+                    >{{ old('description', $folder->description) }}</x-ui-textarea>
                     @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- Card: Assignments --}}
-        <x-adminlte-card title="{{ __('folders.cards.assignments.title') }}" icon="fas fa-users text-lightblue"
+        <x-ui-card title="{{ __('folders.cards.assignments.title') }}" icon="fas fa-users text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row g-3">
 
@@ -151,17 +151,17 @@
                     </div>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- Card: Actions --}}
-        <x-adminlte-card theme="primary" theme-mode="outline">
+        <x-ui-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="form-actions w-100">
-                    <x-adminlte-button type="submit" theme="primary" label="{{ __('folders.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
-                    <x-adminlte-button :href="route('folders.index')" theme="secondary" label="{{ __('folders.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq"/>
+                    <x-ui-button type="submit" theme="primary" label="{{ __('folders.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
+                    <x-ui-button :href="route('folders.index')" theme="secondary" label="{{ __('folders.form.buttons.cancel') }}" icon="fas fa-times" class="btn-eq"/>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </form>
 @stop
 

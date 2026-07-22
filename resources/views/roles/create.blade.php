@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('roles.page.create'))
 
@@ -16,20 +16,20 @@
 @section('content')
     {{-- Validation errors --}}
     @if ($errors->any())
-        <x-adminlte-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable class="mb-3">
+        <x-ui-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable class="mb-3">
             <ul class="mb-0 pl-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     <form method="POST" action="{{ route('roles.store') }}" novalidate>
         @csrf
 
         {{-- Card 1: Role details --}}
-        <x-adminlte-card title="{{ __('roles.form.card_title') }}" icon="fas fa-id-badge text-lightblue"
+        <x-ui-card title="{{ __('roles.form.card_title') }}" icon="fas fa-id-badge text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
                 {{-- Name --}}
@@ -65,23 +65,23 @@
                            value="{{ old('badge_text', '#4338ca') }}">
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- Card 2: Permissions --}}
         @include('roles._permissions', ['sections' => $sections, 'current' => old('permissions', [])])
 
         {{-- Card 3: Action buttons --}}
-        <x-adminlte-card theme="primary" theme-mode="outline" class="mt-3">
+        <x-ui-card theme="primary" theme-mode="outline" class="mt-3">
             <div class="d-flex justify-content-center align-items-center">
                 <div class="actions-group">
-                    <x-adminlte-button type="submit" theme="primary"
+                    <x-ui-button type="submit" theme="primary"
                         label="{{ __('roles.form.buttons.save') }}" icon="fas fa-save" class="btn-eq action-btn"/>
                     <button type="button" onclick="history.back()" class="btn btn-secondary btn-eq action-btn">
                         <i class="fas fa-times mr-1"></i>{{ __('roles.form.buttons.cancel') }}
                     </button>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </form>
 @stop
 

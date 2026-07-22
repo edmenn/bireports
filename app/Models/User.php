@@ -55,30 +55,6 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * === Metodos esperados por AdminLTE ===
-     */
-
-    public function adminlte_profile_url(): string
-    {
-        // Devolver nombre de ruta si AdminLTE usa route();
-        // caso contrario, devolver el slug para url().
-        if (config('adminlte.use_route_url', false)) {
-            return 'profile.edit'; // nombre de la ruta
-        }
-        return 'profile'; // slug relativo (url('profile') => /profile)
-    }
-
-    public function adminlte_image(): ?string
-    {
-        return null;
-    }
-
-    public function adminlte_desc(): ?string
-    {
-        return null;
-    }
-
     public function groups()
     {
         return $this->belongsToMany(\App\Models\Group::class);

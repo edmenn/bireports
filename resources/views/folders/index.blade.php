@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('folders.page.title'))
 
@@ -15,9 +15,9 @@
 
 @section('content')
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('folders.alerts.success_title') }}" dismissable class="mb-2">
+        <x-ui-alert theme="success" title="{{ __('folders.alerts.success_title') }}" dismissable class="mb-2">
             {{ session('success') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     @php
@@ -25,7 +25,7 @@
         $hasQuery = strlen(trim($q)) > 0;
     @endphp
 
-    <x-adminlte-card title="{{ __('folders.index.card_title') }}" icon="fas fa-folder text-lightblue"
+    <x-ui-card title="{{ __('folders.index.card_title') }}" icon="fas fa-folder text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
         {{-- Search bar --}}
@@ -125,7 +125,7 @@
                 </div>
             </x-slot>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

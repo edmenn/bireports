@@ -1,5 +1,5 @@
 {{-- resources/views/capacities/index.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('capacities.page.title'))
 
@@ -307,7 +307,7 @@
 <script>
 (function(){
     // 1. JS MANUAL PARA ASEGURAR EL CONTAINER BODY
-    // Esto sobreescribe cualquier conflicto con AdminLTE
+    // Esto sobreescribe cualquier conflicto con Tabler
     $(document).ready(function() {
         $('.cap-table .dropdown-toggle').each(function() {
             // Forzamos la opción container: 'body' a nivel de datos de jQuery

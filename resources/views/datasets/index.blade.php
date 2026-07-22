@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('datasets.page.title'))
 
@@ -30,14 +30,14 @@
 @section('content')
     {{-- Flash alerts --}}
     @if(session('status'))
-        <x-adminlte-alert theme="success" icon="fas fa-check-circle">
+        <x-ui-alert theme="success" icon="fas fa-check-circle">
             {{ session('status') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
     @if(session('error'))
-        <x-adminlte-alert theme="danger" icon="fas fa-times-circle">
+        <x-ui-alert theme="danger" icon="fas fa-times-circle">
             {{ session('error') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     <p class="text-muted small mb-3">{{ __('datasets.index.tip_reload_metadata') }}</p>
@@ -48,14 +48,14 @@
 
     @if($total === 0)
         {{-- Empty state --}}
-        <x-adminlte-card theme="light" class="text-center py-5">
+        <x-ui-card theme="light" class="text-center py-5">
             <div class="mb-3"><i class="fas fa-inbox fa-3x text-muted"></i></div>
             <h5 class="fw-semibold mb-2">{{ __('datasets.index.empty.title') }}</h5>
             <p class="text-muted mb-0">{{ __('datasets.index.empty.hint') }}</p>
-        </x-adminlte-card>
+        </x-ui-card>
     @else
         {{-- Dataset list --}}
-        <x-adminlte-card theme="primary" theme-mode="outline" class="shadow-sm datasets-card-wrap">
+        <x-ui-card theme="primary" theme-mode="outline" class="shadow-sm datasets-card-wrap">
             
             {{-- 
                SOLUCIÓN: 'datasets-table-wrap' controlará el overflow mediante CSS
@@ -145,7 +145,7 @@
                     {{ $datasets->links() }}
                 </div>
             @endif
-        </x-adminlte-card>
+        </x-ui-card>
     @endif
 @stop
 

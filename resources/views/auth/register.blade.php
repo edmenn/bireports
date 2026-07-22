@@ -1,4 +1,4 @@
-@extends('adminlte::auth.auth-page', ['authType' => 'register'])
+@extends('layouts.auth')
 
 @section('title', __('Register'))
 

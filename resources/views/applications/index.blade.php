@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('applications.index.title'))
 
@@ -24,12 +24,12 @@
 @section('content')
     {{-- Flash messages --}}
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('applications.alerts.success') }}" dismissable class="mb-2">
+        <x-ui-alert theme="success" title="{{ __('applications.alerts.success') }}" dismissable class="mb-2">
             {{ session('success') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
-    <x-adminlte-card icon="fas fa-th-large text-lightblue"
+    <x-ui-card icon="fas fa-th-large text-lightblue"
                      theme="primary" theme-mode="outline"
                      class="mt-3" body-class="p-0">
 
@@ -119,7 +119,7 @@
                 <div class="mb-0">{{ $applications->appends(request()->except('page'))->links() }}</div>
             </div>
         </x-slot>
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 {{-- =========================

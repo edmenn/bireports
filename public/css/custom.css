@@ -1,5 +1,5 @@
 /* ======================================================================
-   PowerBIDash - modern "theme-safe" CSS (Bootstrap 5 + AdminLTE 4)
+   PowerBIDash - modern "theme-safe" CSS (Bootstrap 5 + Tabler)
    Respects the active theme colors (light/dark) and avoids unnecessary !important rules.
    ====================================================================== */
 
@@ -47,7 +47,7 @@ body {
 
 /* ===========================================================
    THEME VARIABLES (use data-bs-theme="light" | "dark")
-   If your AdminLTE build still toggles .dark-mode, see the fallback block below.
+   If your Tabler build still toggles .dark-mode, see the fallback block below.
    =========================================================== */
 
 /* -----------------
@@ -114,7 +114,7 @@ body {
 }
 
 /* ==============================================================
-   FALLBACK for AdminLTE 3/4 using .dark-mode (if applicable)
+   FALLBACK for legacy dark mode using .dark-mode (if applicable)
    ============================================================== */
 .dark-mode {
   --bs-body-bg: #343a40;
@@ -131,7 +131,7 @@ body {
   --pbd-footer-muted: #adb5bd;
 }
 
-/* AdminLTE 3 activates dark mode with a body class. Cover custom neutral
+/* legacy layout activates dark mode with a body class. Cover custom neutral
    surfaces that Bootstrap cannot theme automatically. Semantic status colors
    and report canvases intentionally keep their own palette. */
 body.dark-mode .card,

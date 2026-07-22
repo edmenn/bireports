@@ -1,5 +1,5 @@
 {{-- resources/views/capacities/schedule.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('capacities.schedule.page_title'))
 
@@ -42,7 +42,7 @@
     <div class="row mt-3 align-bottom-cards">
         {{-- Add Schedule --}}
         <div class="col-lg-6 mb-3 d-flex">
-            <x-adminlte-card title="{{ __('capacities.schedule.form.title') }}"
+            <x-ui-card title="{{ __('capacities.schedule.form.title') }}"
                              icon="fas fa-plus-circle text-lightblue"
                              theme="primary" theme-mode="outline"
                              class="flex-fill d-flex flex-column"
@@ -80,12 +80,12 @@
                         </button>
                     </div>
                 </form>
-            </x-adminlte-card>
+            </x-ui-card>
         </div>
 
         {{-- Options --}}
         <div class="col-lg-6 mb-3 d-flex">
-            <x-adminlte-card title="{{ __('capacities.schedule.options.title') }}"
+            <x-ui-card title="{{ __('capacities.schedule.options.title') }}"
                              icon="fas fa-cogs text-lightblue"
                              theme="primary" theme-mode="outline"
                              class="flex-fill d-flex flex-column"
@@ -124,12 +124,12 @@
                         </button>
                     </div>
                 </form>
-            </x-adminlte-card>
+            </x-ui-card>
         </div>
     </div>
 
     {{-- ====================== CARD 2: Schedule List (BOTTOM) ====================== --}}
-    <x-adminlte-card title="{{ __('capacities.schedule.list') }}"
+    <x-ui-card title="{{ __('capacities.schedule.list') }}"
                      icon="fas fa-calendar-alt text-lightblue"
                      theme="primary" theme-mode="outline"
                      class="mt-3 mb-3"
@@ -186,7 +186,7 @@
                 </table>
             </div>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

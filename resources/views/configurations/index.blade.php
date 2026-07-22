@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('settings.page.title'))
 
@@ -25,23 +25,23 @@
 @section('content')
     {{-- Mensajes --}}
     @if(session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('settings.alerts.success') }}" dismissable>
+        <x-ui-alert theme="success" title="{{ __('settings.alerts.success') }}" dismissable>
             {{ session('success') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
     @if(session('error'))
-        <x-adminlte-alert theme="danger" title="{{ __('settings.alerts.error') }}" dismissable>
+        <x-ui-alert theme="danger" title="{{ __('settings.alerts.error') }}" dismissable>
             {{ session('error') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
     @if ($errors->any())
-        <x-adminlte-alert theme="danger" title="{{ __('settings.alerts.validation') }}" dismissable>
+        <x-ui-alert theme="danger" title="{{ __('settings.alerts.validation') }}" dismissable>
             <ul class="mb-0 ps-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     <div class="portal-card mt-3">
@@ -54,7 +54,7 @@
         <div class="row">
             {{-- COLUMNA IZQUIERDA: FORMULARIO PRINCIPAL --}}
             <div class="col-lg-6 d-flex">
-                <x-adminlte-card title="{{ __('settings.service_principal.card_title') }}" icon="fas fa-key text-lightblue"
+                <x-ui-card title="{{ __('settings.service_principal.card_title') }}" icon="fas fa-key text-lightblue"
                                  theme="primary" theme-mode="outline" class="flex-grow-1">
                     
                     <p class="text-muted">
@@ -63,33 +63,33 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <x-adminlte-input name="powerbi_client_id" label="{{ __('settings.service_principal.fields.client_id.label') }}" placeholder="{{ __('settings.service_principal.fields.client_id.placeholder') }}" value="{{ old('powerbi_client_id', $config->powerbi_client_id) }}">
+                            <x-ui-input name="powerbi_client_id" label="{{ __('settings.service_principal.fields.client_id.label') }}" placeholder="{{ __('settings.service_principal.fields.client_id.placeholder') }}" value="{{ old('powerbi_client_id', $config->powerbi_client_id) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-id-badge"></i></div></x-slot>
                                 {{-- Tooltip: dónde encontrar el Client ID en Entra ID --}}
                                 <x-slot name="bottom"><small class="text-muted">{{ __('settings.service_principal.fields.client_id.help') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.service_principal.fields.client_id.tooltip') }}"></i></small></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="powerbi_tenant_id" label="{{ __('settings.service_principal.fields.tenant_id.label') }}" placeholder="{{ __('settings.service_principal.fields.tenant_id.placeholder') }}" value="{{ old('powerbi_tenant_id', $config->powerbi_tenant_id) }}">
+                            <x-ui-input name="powerbi_tenant_id" label="{{ __('settings.service_principal.fields.tenant_id.label') }}" placeholder="{{ __('settings.service_principal.fields.tenant_id.placeholder') }}" value="{{ old('powerbi_tenant_id', $config->powerbi_tenant_id) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-building"></i></div></x-slot>
                                 {{-- Tooltip: dónde ver el Tenant ID --}}
                                 <x-slot name="bottom"><small class="text-muted">{{ __('settings.service_principal.fields.tenant_id.help') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.service_principal.fields.tenant_id.tooltip') }}"></i></small></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="powerbi_client_secret" id="field_client_secret" type="password" label="{{ __('settings.service_principal.fields.client_secret.label') }}" placeholder="{{ __('settings.service_principal.fields.client_secret.placeholder') }}" value="{{ old('powerbi_client_secret', $config->powerbi_client_secret) }}">
+                            <x-ui-input name="powerbi_client_secret" id="field_client_secret" type="password" label="{{ __('settings.service_principal.fields.client_secret.label') }}" placeholder="{{ __('settings.service_principal.fields.client_secret.placeholder') }}" value="{{ old('powerbi_client_secret', $config->powerbi_client_secret) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-key"></i></div></x-slot>
                                 {{-- Tooltip: cómo gestionar el secreto --}}
                                 <x-slot name="bottom"><small class="text-muted">{{ __('settings.service_principal.fields.client_secret.help') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="Genera el secreto en Azure Entra ID → Certificates & secrets. Evita pegar valores enmascarados."></i></small></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         {{-- Redirect URI y Scope removidos de la UI (scope via .env) --}}
                         <div class="col-md-6">
-                            <x-adminlte-input name="powerbi_token_refresh_minutes" type="number" min="0" step="1" label="{{ __('settings.service_principal.fields.refresh_minutes.label') }}" placeholder="{{ __('settings.service_principal.fields.refresh_minutes.placeholder') }}" value="{{ old('powerbi_token_refresh_minutes', $config->powerbi_token_refresh_minutes ?? 0) }}">
+                            <x-ui-input name="powerbi_token_refresh_minutes" type="number" min="0" step="1" label="{{ __('settings.service_principal.fields.refresh_minutes.label') }}" placeholder="{{ __('settings.service_principal.fields.refresh_minutes.placeholder') }}" value="{{ old('powerbi_token_refresh_minutes', $config->powerbi_token_refresh_minutes ?? 0) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
                                 {{-- Tooltip: política de refresco del token --}}
                                 <x-slot name="bottom"><small class="text-muted">{{ __('settings.service_principal.fields.refresh_minutes.help') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.service_principal.fields.refresh_minutes.tooltip') }}"></i></small></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ __('settings.service_principal.fields.timezone.label') }} <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.service_principal.fields.timezone.tooltip') }}"></i></label>
@@ -170,12 +170,12 @@
                     </div>
 
 
-                </x-adminlte-card>
+                </x-ui-card>
             </div>
 
             {{-- COLUMNA DERECHA: GUÍA Y AYUDA --}}
             <div class="col-lg-6 d-flex">
-                <x-adminlte-card title="{{ __('settings.guide.title') }}" icon="fas fa-info-circle text-lightblue"
+                <x-ui-card title="{{ __('settings.guide.title') }}" icon="fas fa-info-circle text-lightblue"
                                  theme="primary" theme-mode="outline" class="flex-grow-1">
                     <div class="d-flex flex-column h-100 gap-3">
                         <div class="callout callout-info flex-grow-1 mb-0">
@@ -195,7 +195,7 @@
                             </ul>
                         </div>
                     </div>
-                </x-adminlte-card>
+                </x-ui-card>
             </div>
         </div>
 
@@ -204,7 +204,7 @@
         {{-- ========================================================== --}}
         <div class="row mt-3">
             <div class="col-12 d-flex">
-                <x-adminlte-card title="{{ __('settings.mail.card_title') }}" icon="fas fa-envelope text-primary"
+                <x-ui-card title="{{ __('settings.mail.card_title') }}" icon="fas fa-envelope text-primary"
                                  theme="primary" theme-mode="outline" class="flex-grow-1">
                     <x-slot name="toolsSlot">
                         <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#mailTestModal" data-bs-toggle="modal" data-bs-target="#mailTestModal">
@@ -229,17 +229,17 @@
                             <small class="text-muted">{{ __('settings.mail.fields.driver.help') }}</small>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="mail_host" label="{{ __('settings.mail.fields.host.label') }}"
+                            <x-ui-input name="mail_host" label="{{ __('settings.mail.fields.host.label') }}"
                                               placeholder="{{ __('settings.mail.fields.host.placeholder') }}"
                                               value="{{ old('mail_host', $config->mail_host) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-server"></i></div></x-slot>
                                 <x-slot name="bottom">
                                     <small class="text-muted">{{ __('settings.mail.fields.host.help') }}</small>
                                 </x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="mail_port" type="number" min="1" max="65535"
+                            <x-ui-input name="mail_port" type="number" min="1" max="65535"
                                               label="{{ __('settings.mail.fields.port.label') }}"
                                               placeholder="{{ __('settings.mail.fields.port.placeholder') }}"
                                               value="{{ old('mail_port', $config->mail_port) }}">
@@ -247,7 +247,7 @@
                                 <x-slot name="bottom">
                                     <small class="text-muted">{{ __('settings.mail.fields.port.help') }}</small>
                                 </x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
                             <label for="mail_encryption" class="form-label">{{ __('settings.mail.fields.encryption.label') }}</label>
@@ -266,17 +266,17 @@
                             <small class="text-muted">{{ __('settings.mail.fields.encryption.help') }}</small>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="mail_username" label="{{ __('settings.mail.fields.username.label') }}"
+                            <x-ui-input name="mail_username" label="{{ __('settings.mail.fields.username.label') }}"
                                               placeholder="{{ __('settings.mail.fields.username.placeholder') }}"
                                               value="{{ old('mail_username', $config->mail_username) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-user"></i></div></x-slot>
                                 <x-slot name="bottom">
                                     <small class="text-muted">{{ __('settings.mail.fields.username.help') }}</small>
                                 </x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="mail_password" type="password"
+                            <x-ui-input name="mail_password" type="password"
                                               label="{{ __('settings.mail.fields.password.label') }}"
                                               placeholder="{{ __('settings.mail.fields.password.placeholder') }}"
                                               value="{{ old('mail_password', $config->mail_password) }}">
@@ -284,26 +284,26 @@
                                 <x-slot name="bottom">
                                     <small class="text-muted">{{ __('settings.mail.fields.password.help') }}</small>
                                 </x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="mail_from_address" type="email"
+                            <x-ui-input name="mail_from_address" type="email"
                                               label="{{ __('settings.mail.fields.from_address.label') }}"
                                               placeholder="{{ __('settings.mail.fields.from_address.placeholder') }}"
                                               value="{{ old('mail_from_address', $config->mail_from_address) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-at"></i></div></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="mail_from_name"
+                            <x-ui-input name="mail_from_name"
                                               label="{{ __('settings.mail.fields.from_name.label') }}"
                                               placeholder="{{ __('settings.mail.fields.from_name.placeholder') }}"
                                               value="{{ old('mail_from_name', $config->mail_from_name) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-id-card"></i></div></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                         </div>
                     </div>
-                </x-adminlte-card>
+                </x-ui-card>
             </div>
         </div>
         {{-- ========================================================== --}}
@@ -311,7 +311,7 @@
         {{-- ========================================================== --}}
         <div class="row mt-3">
             <div class="col-12 d-flex">
-                <x-adminlte-card title="{{ __('settings.viewer.card_title') }}" icon="fas fa-bolt text-lightblue"
+                <x-ui-card title="{{ __('settings.viewer.card_title') }}" icon="fas fa-bolt text-lightblue"
                                  theme="primary" theme-mode="outline" class="flex-grow-1">
                     {{-- [Minimalista] Estos parámetros controlan el comportamiento del viewer cuando la capacidad está en pausa.
                          - Encendido on‑demand: si está en true, el viewer intenta encender la capacidad automáticamente
@@ -342,11 +342,11 @@
                             </small>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="capacity_on_demand_message" label="{{ __('settings.viewer.fields.message.label') }}"
+                            <x-ui-input name="capacity_on_demand_message" label="{{ __('settings.viewer.fields.message.label') }}"
                                               placeholder="{{ __('settings.viewer.fields.message.placeholder') }}"
                                               value="{{ old('capacity_on_demand_message', $config->capacity_on_demand_message ?? __('settings.viewer.fields.message.default')) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-comment"></i></div></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                             <small class="text-muted">{{ __('settings.viewer.fields.message.help') }}
                                 {{-- Tooltip: alcance del mensaje --}}
                                 <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
@@ -355,11 +355,11 @@
                             </small>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="capacity_start_timeout_sec" type="number" min="10" max="600" step="5"
+                            <x-ui-input name="capacity_start_timeout_sec" type="number" min="10" max="600" step="5"
                                               label="{{ __('settings.viewer.fields.start_timeout.label') }}"
                                               value="{{ old('capacity_start_timeout_sec', $config->capacity_start_timeout_sec ?? 120) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                             <small class="text-muted">{{ __('settings.viewer.fields.start_timeout.help') }}
                                 {{-- Tooltip: qué pasa al vencer el timeout --}}
                                 <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
@@ -368,11 +368,11 @@
                             </small>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="capacity_start_poll_interval_sec" type="number" min="1" max="60" step="1"
+                            <x-ui-input name="capacity_start_poll_interval_sec" type="number" min="1" max="60" step="1"
                                               label="{{ __('settings.viewer.fields.poll_interval.label') }}"
                                               value="{{ old('capacity_start_poll_interval_sec', $config->capacity_start_poll_interval_sec ?? 5) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="fas fa-sync"></i></div></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                             <small class="text-muted">{{ __('settings.viewer.fields.poll_interval.help') }}
                                 {{-- Tooltip: impacto del intervalo --}}
                                 <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
@@ -381,11 +381,11 @@
                             </small>
                         </div>
                         <div class="col-md-6">
-                            <x-adminlte-input name="report_load_timeout_sec" type="number" min="5" max="300" step="1"
+                            <x-ui-input name="report_load_timeout_sec" type="number" min="5" max="300" step="1"
                                               label="{{ __('settings.viewer.fields.report_timeout.label') }}"
                                               value="{{ old('report_load_timeout_sec', $config->report_load_timeout_sec ?? 10) }}">
                                 <x-slot name="prependSlot"><div class="input-group-text"><i class="far fa-clock"></i></div></x-slot>
-                            </x-adminlte-input>
+                            </x-ui-input>
                             <small class="text-muted">{{ __('settings.viewer.fields.report_timeout.help') }}
                                 <i class="far fa-question-circle ms-1 text-muted" tabindex="0"
                                    data-bs-toggle="tooltip"
@@ -393,21 +393,21 @@
                             </small>
                         </div>
                     </div>
-                </x-adminlte-card>
+                </x-ui-card>
             </div>
         </div>
 
         {{-- ========================================================== --}}
         {{--           NUEVA TARJETA DE ACCIONES PARA BOTONES           --}}
         {{-- ========================================================== --}}
-        <x-adminlte-card theme="primary" theme-mode="outline">
+        <x-ui-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="d-flex flex-column flex-sm-row gap-3">
-                    <x-adminlte-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
-                    <x-adminlte-button type="button" theme="secondary" label="{{ __('settings.actions.cancel') }}" icon="fas fa-times" class="btn-eq" onclick="window.history.back()"/>
+                    <x-ui-button type="submit" theme="primary" label="{{ __('settings.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
+                    <x-ui-button type="button" theme="secondary" label="{{ __('settings.actions.cancel') }}" icon="fas fa-times" class="btn-eq" onclick="window.history.back()"/>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
             </form>
 
@@ -512,7 +512,7 @@
         font-size: .75rem;
     }
 
-    .x-adminlte-card .card-body label,
+    .x-ui-card .card-body label,
     .card-body .form-label {
         margin-top: .5rem;
     }

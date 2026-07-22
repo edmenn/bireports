@@ -1,5 +1,5 @@
 {{-- resources/views/capacities/audit.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('capacities.audit.title'))
 
@@ -25,7 +25,7 @@
 @stop
 
 @section('content')
-    <x-adminlte-card title="{{ __('capacities.audit.title') }}"
+    <x-ui-card title="{{ __('capacities.audit.title') }}"
                      icon="fas fa-clipboard-list text-lightblue"
                      theme="primary" theme-mode="outline"
                      class="mt-3"
@@ -92,7 +92,7 @@
                 </tbody>
             </table>
         </div>
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

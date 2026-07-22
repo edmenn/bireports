@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('applications.portal.title'))
 
@@ -7,7 +7,7 @@
 @stop
 
 @section('content')
-    <x-adminlte-card title="{{ __('applications.portal.card_title') }}" icon="fas fa-th-large text-lightblue"
+    <x-ui-card title="{{ __('applications.portal.card_title') }}" icon="fas fa-th-large text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-4">
 
         @if ($applications->isEmpty())
@@ -70,7 +70,7 @@
                 @endforeach
             </div>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

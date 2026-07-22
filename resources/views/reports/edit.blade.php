@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @include('portal.partials.report-card-styles')
 
@@ -22,22 +22,22 @@
 
 @section('content')
     @if(session('status'))
-        <x-adminlte-alert theme="success" title="{{ __('reports.edit.alerts.success_title') }}" dismissable class="mb-2">
+        <x-ui-alert theme="success" title="{{ __('reports.edit.alerts.success_title') }}" dismissable class="mb-2">
             {{ session('status') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     @if($errors->any())
-        <x-adminlte-alert theme="danger" title="{{ __('reports.edit.alerts.errors_title') }}" dismissable class="mb-2">
+        <x-ui-alert theme="danger" title="{{ __('reports.edit.alerts.errors_title') }}" dismissable class="mb-2">
             <ul class="mb-0">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
-    <x-adminlte-card title="{{ __('reports.edit.card_title') }}" icon="fas fa-edit text-lightblue"
+    <x-ui-card title="{{ __('reports.edit.card_title') }}" icon="fas fa-edit text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-3">
 
         <form method="post" action="{{ route('reports.update', $report) }}" enctype="multipart/form-data">
@@ -277,7 +277,7 @@
                 </a>
             </div>
         </form>
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

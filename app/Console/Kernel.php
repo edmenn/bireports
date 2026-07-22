@@ -8,8 +8,6 @@ use App\Console\Commands\DispatchReportSubscriptions;
 use App\Console\Commands\ProjectAuditCommand;
 use App\Console\Commands\ResetAudit;
 use App\Console\Commands\SyncEntraUsers;
-use App\Console\Commands\UiAudit;
-use App\Console\Commands\UiPlan;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -23,8 +21,6 @@ final class Kernel extends ConsoleKernel
         DispatchReportSubscriptions::class,
         ResetAudit::class,
         SyncEntraUsers::class, // Entra sync command (if present in the installation)
-        UiAudit::class,        // UI stack audit (AdminLTE/Bootstrap/jQuery/plugins)
-        UiPlan::class,         // Migration plan to Argon (Bootstrap 5) based on ui_audit.json
     ];
 
     /**

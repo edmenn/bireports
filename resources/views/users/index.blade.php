@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('users.page.title'))
 
@@ -6,7 +6,7 @@
      HEADER
      ========================= --}}
 @section('content_header')
-    {{-- Header with title on the left and compact, evenly spaced actions on the right (Bootstrap 4 + AdminLTE 3) --}}
+    {{-- Header with title on the left and compact, evenly spaced actions on the right (Tabler and Bootstrap 5) --}}
     <x-page-header :title="__('users.page.title')" icon="fas fa-users">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
             {{-- New user --}}
@@ -44,9 +44,9 @@
      ========================= --}}
 @section('content')
     {{-- Flash messages --}}
-    @if (session('success')) <x-adminlte-alert theme="success" title="{{ __('users.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-adminlte-alert> @endif
-    @if (session('warning')) <x-adminlte-alert theme="warning" title="{{ __('users.alerts.warning') }}" dismissable class="mb-2">{{ session('warning') }}</x-adminlte-alert> @endif
-    @if (session('error'))   <x-adminlte-alert theme="danger"  title="{{ __('users.alerts.error') }}"    dismissable class="mb-2">{{ session('error') }}</x-adminlte-alert>   @endif
+    @if (session('success')) <x-ui-alert theme="success" title="{{ __('users.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-ui-alert> @endif
+    @if (session('warning')) <x-ui-alert theme="warning" title="{{ __('users.alerts.warning') }}" dismissable class="mb-2">{{ session('warning') }}</x-ui-alert> @endif
+    @if (session('error'))   <x-ui-alert theme="danger"  title="{{ __('users.alerts.error') }}"    dismissable class="mb-2">{{ session('error') }}</x-ui-alert>   @endif
 
     @php
         // Keep original data loading and dynamic role palettes
@@ -84,7 +84,7 @@
         @endif
     @endpush
 
-    <x-adminlte-card title="{{ __('users.index.card_title') }}" icon="fas fa-users text-lightblue"
+    <x-ui-card title="{{ __('users.index.card_title') }}" icon="fas fa-users text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
         {{-- =========================
@@ -293,7 +293,7 @@
                 </div>
             </div>
         </x-slot>
-    </x-adminlte-card>
+    </x-ui-card>
 
     {{-- =========================
          MODAL: Microsoft Entra import
@@ -422,7 +422,7 @@
 @stop
 
 {{-- =========================
-     VIEW-SPECIFIC CSS (keeps BS4/AdminLTE3)
+     VIEW-SPECIFIC CSS (keeps BS4/Tabler3)
      ========================= --}}
 @push('css')
 <style>

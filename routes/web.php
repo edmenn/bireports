@@ -35,7 +35,7 @@ use App\Http\Middleware\ForbidExternalPasswordChange;
 
 /*
 |--------------------------------------------------------------------------
-| Rutas web (AdminLTE + Breeze)
+| Rutas web (Tabler + Breeze)
 |--------------------------------------------------------------------------
 */
 

@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const daily   = @json($daily);
     const auditLabels = @json($auditChartLabels);
 
-    // === Tema Chart.js usando variables Bootstrap/AdminLTE ===
+    // === Tema Chart.js usando variables Bootstrap/Tabler ===
     const styles = getComputedStyle(document.documentElement);
     const cPrimary  = styles.getPropertyValue('--bs-primary').trim() || '#4f46e5';
     const cInfo     = styles.getPropertyValue('--app-hi-bg').trim() || cPrimary;

@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('roles.page.title'))
 
@@ -16,16 +16,16 @@
 @section('content')
     {{-- Flash alerts --}}
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('roles.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-adminlte-alert>
+        <x-ui-alert theme="success" title="{{ __('roles.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-ui-alert>
     @endif
     @if (session('warning'))
-        <x-adminlte-alert theme="warning" title="{{ __('roles.alerts.warning') }}" dismissable class="mb-2">{{ session('warning') }}</x-adminlte-alert>
+        <x-ui-alert theme="warning" title="{{ __('roles.alerts.warning') }}" dismissable class="mb-2">{{ session('warning') }}</x-ui-alert>
     @endif
     @if (session('error'))
-        <x-adminlte-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable class="mb-2">{{ session('error') }}</x-adminlte-alert>
+        <x-ui-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable class="mb-2">{{ session('error') }}</x-ui-alert>
     @endif
 
-    <x-adminlte-card title="{{ __('roles.index.list_title') }}" icon="fas fa-user-shield text-lightblue"
+    <x-ui-card title="{{ __('roles.index.list_title') }}" icon="fas fa-user-shield text-lightblue"
                      theme="primary" theme-mode="outline" class="mt-3" body-class="p-0">
 
         {{-- Search bar --}}
@@ -120,7 +120,7 @@
                 </div>
             </x-slot>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

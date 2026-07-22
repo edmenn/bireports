@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('subscriptions.show.title', ['name' => $subscription->name]))
 

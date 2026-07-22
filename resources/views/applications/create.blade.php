@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('applications.create.title'))
 
@@ -35,12 +35,12 @@
         @csrf
 
         {{-- CARD 1: Application details --}}
-        <x-adminlte-card title="{{ __('applications.cards.details_title') }}" icon="fas fa-plug text-lightblue"
+        <x-ui-card title="{{ __('applications.cards.details_title') }}" icon="fas fa-plug text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
                 {{-- Name --}}
                 <div class="col-md-6 mb-3">
-                    <x-adminlte-input name="name"
+                    <x-ui-input name="name"
                         label="{{ __('applications.fields.name') }}"
                         placeholder="{{ __('applications.placeholders.name') }}"
                         value="{{ old('name', $application->name ?? null) }}"
@@ -51,7 +51,7 @@
 
                 {{-- Slug --}}
                 <div class="col-md-6 mb-3">
-                    <x-adminlte-input name="slug"
+                    <x-ui-input name="slug"
                         label="{{ __('applications.fields.slug') }}"
                         placeholder="{{ __('applications.placeholders.slug') }}"
                         value="{{ old('slug', $application->slug ?? null) }}"
@@ -61,17 +61,17 @@
 
                 {{-- Description --}}
                 <div class="col-12 mb-3">
-                    <x-adminlte-textarea name="description"
+                    <x-ui-textarea name="description"
                         label="{{ __('applications.fields.description') }}"
                         rows="2"
                         placeholder="{{ __('applications.placeholders.description') }}"
-                        class="@error('description') is-invalid @enderror">{{ old('description', $application->description ?? null) }}</x-adminlte-textarea>
+                        class="@error('description') is-invalid @enderror">{{ old('description', $application->description ?? null) }}</x-ui-textarea>
                     @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
 
                 {{-- Display order --}}
                 <div class="col-md-4 mb-3">
-                    <x-adminlte-input type="number" name="display_order" min="0"
+                    <x-ui-input type="number" name="display_order" min="0"
                         label="{{ __('applications.fields.display_order') }}"
                         value="{{ old('display_order', $application->display_order ?? null) }}"
                         class="@error('display_order') is-invalid @enderror"/>
@@ -87,10 +87,10 @@
                     </div>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- CARD 2: Assignments --}}
-        <x-adminlte-card title="{{ __('applications.cards.assignments_title') }}" icon="fas fa-users text-lightblue"
+        <x-ui-card title="{{ __('applications.cards.assignments_title') }}" icon="fas fa-users text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row g-3">
                 {{-- Users --}}
@@ -146,10 +146,10 @@
                     </div>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- CARD 3: Sections --}}
-        <x-adminlte-card title="{{ __('applications.cards.sections_title') }}" icon="fas fa-sitemap text-lightblue"
+        <x-ui-card title="{{ __('applications.cards.sections_title') }}" icon="fas fa-sitemap text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             @if ($existingSectionsSorted->isNotEmpty())
                 <div class="table-responsive mb-4">
@@ -199,13 +199,13 @@
                     <i class="fas fa-minus mr-1"></i> {{ __('applications.actions.delete') }}
                 </button>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- CARD 4: Actions --}}
-        <x-adminlte-card theme="primary" theme-mode="outline">
+        <x-ui-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="form-actions w-100">
-                    <x-adminlte-button type="submit" theme="primary"
+                    <x-ui-button type="submit" theme="primary"
                         label="{{ __('applications.actions.save') }}" icon="fas fa-save" class="btn-eq"/>
                     <button type="button" class="btn btn-secondary btn-eq" data-cancel-button
                         data-message="{{ __('applications.confirm.cancel') }}"
@@ -215,7 +215,7 @@
                     </button>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </form>
 @stop
 

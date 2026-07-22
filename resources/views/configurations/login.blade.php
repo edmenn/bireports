@@ -6,10 +6,10 @@
 
     {{-- COLUMNA IZQUIERDA: ACCIONES (SUBIR ARCHIVOS) --}}
     <div class="col-md-7">
-        <x-adminlte-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue">
+        <x-ui-card title="{{ __('settings.login.cards.uploads.title') }}" icon="fas fa-upload text-lightblue">
 
             {{-- Campo para el Logo --}}
-            <x-adminlte-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/*">
+            <x-ui-input-file name="login_logo" label="{{ __('settings.login.cards.uploads.fields.logo.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.logo.placeholder') }}" accept="image/*">
                 <x-slot name="prependSlot">
                     <div class="input-group-text bg-lightblue">
                         <i class="fas fa-image"></i>
@@ -21,12 +21,12 @@
                         <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.login.cards.uploads.fields.logo.tooltip') }}"></i>
                     </small>
                 </x-slot>
-            </x-adminlte-input-file>
+            </x-ui-input-file>
 
             <hr>
 
             {{-- Campo para la Imagen de Fondo --}}
-            <x-adminlte-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/jpeg,image/png">
+            <x-ui-input-file name="login_bg" label="{{ __('settings.login.cards.uploads.fields.background.label') }}" placeholder="{{ __('settings.login.cards.uploads.fields.background.placeholder') }}" accept="image/jpeg,image/png">
                 <x-slot name="prependSlot">
                     <div class="input-group-text bg-lightblue">
                         <i class="fas fa-image"></i>
@@ -37,15 +37,15 @@
                         <i class="far fa-question-circle ms-1" data-bs-toggle="tooltip" title="{{ __('settings.login.cards.uploads.fields.background.tooltip') }}"></i>
                     </small>
                 </x-slot>
-            </x-adminlte-input-file>
+            </x-ui-input-file>
 
-        </x-adminlte-card>
+        </x-ui-card>
     </div>
 
     {{-- COLUMNA DERECHA: VISTAS PREVIA --}}
     <div class="col-md-5 d-flex">
         <div class="w-100">
-            <x-adminlte-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="h-100">
+            <x-ui-card title="{{ __('settings.login.cards.preview.title') }}" icon="fas fa-eye text-lightblue" class="h-100">
 
                 {{-- Vista Previa del Logo --}}
                 @if($config->login_logo_path)
@@ -73,7 +73,7 @@
                     <div class="text-muted text-center py-5 @if($config->login_logo_path) border-top mt-3 pt-3 @endif">{{ __('settings.login.cards.preview.no_background') }}</div>
                 @endif
 
-            </x-adminlte-card>
+            </x-ui-card>
         </div>
     </div>
 </div>
@@ -81,20 +81,20 @@
 {{-- Tamaño del logo de login (opcional) --}}
 <div class="row mt-3">
     <div class="col-md-7">
-        <x-adminlte-card title="{{ __('settings.login.cards.size.title') }}" icon="fas fa-ruler-combined text-lightblue">
+        <x-ui-card title="{{ __('settings.login.cards.size.title') }}" icon="fas fa-ruler-combined text-lightblue">
             @php($t = is_array($config->theme_config) ? $config->theme_config : (is_string($config->theme_config) ? json_decode($config->theme_config, true) : []))
             <div class="row">
                 <div class="col-md-4">
-                    <x-adminlte-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ max(16, (int) old('login_logo_width', $t['login_logo_width'] ?? 180)) }}"/>
+                    <x-ui-input name="login_logo_width" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.width_label') }}" value="{{ max(16, (int) old('login_logo_width', $t['login_logo_width'] ?? 180)) }}"/>
                 </div>
                 <div class="col-md-4">
-                    <x-adminlte-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ max(16, (int) old('login_logo_height', $t['login_logo_height'] ?? 64)) }}"/>
+                    <x-ui-input name="login_logo_height" type="number" min="16" max="512" label="{{ __('settings.login.cards.size.height_label') }}" value="{{ max(16, (int) old('login_logo_height', $t['login_logo_height'] ?? 64)) }}"/>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <small class="text-muted">{{ __('settings.login.cards.size.hint') }}</small>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </div>
 </div>
 

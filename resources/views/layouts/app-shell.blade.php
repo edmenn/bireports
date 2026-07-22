@@ -1,5 +1,5 @@
 {{-- resources/views/layouts/app-shell.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 {{-- Título de la pestaña (usa el de la vista si existe) --}}
 @section('title', trim($__env->yieldContent('title')) ?: config('app.name'))

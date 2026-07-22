@@ -1,5 +1,5 @@
 {{-- resources/views/reports/show.blade.php --}}
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', $report->name ?? __('reports.show.title_fallback'))
 
@@ -106,7 +106,7 @@
     }
 
     /* ============================= */
-    /* Header actions (AdminLTE 3 UI)
+    /* Header actions (Tabler UI)
        Consistent visual style for header buttons */
     /* ============================= */
     .header-actions {
@@ -152,7 +152,7 @@
 {{-- REPLACE the whole content_header section with this --}}
 @section('content_header')
     @if (! $embedded)
-        {{-- Header with centered title and aligned actions (Bootstrap 4 + AdminLTE 3) --}}
+        {{-- Header with centered title and aligned actions (Tabler and Bootstrap 5) --}}
         <x-page-header :title="$report->name ?? __('reports.show.title_fallback')" icon="fas fa-chart-line">
             <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
                 <button type="button"

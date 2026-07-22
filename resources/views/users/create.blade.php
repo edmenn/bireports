@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('users.page.create'))
 
@@ -17,17 +17,17 @@
 @section('content')
     {{-- Flash messages --}}
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('users.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-adminlte-alert>
+        <x-ui-alert theme="success" title="{{ __('users.alerts.success') }}" dismissable class="mb-2">{{ session('success') }}</x-ui-alert>
     @endif
     @if (session('error'))
-        <x-adminlte-alert theme="danger" title="{{ __('users.alerts.error') }}" dismissable class="mb-2">{{ session('error') }}</x-adminlte-alert>
+        <x-ui-alert theme="danger" title="{{ __('users.alerts.error') }}" dismissable class="mb-2">{{ session('error') }}</x-ui-alert>
     @endif
 
     <form action="{{ route('users.store') }}" method="POST" novalidate>
         @csrf
 
         {{-- Card 1: User Details --}}
-        <x-adminlte-card title="{{ __('users.page.create') }}" icon="fas fa-user-plus text-lightblue"
+        <x-ui-card title="{{ __('users.page.create') }}" icon="fas fa-user-plus text-lightblue"
                          theme="primary" theme-mode="outline" class="mt-3" body-class="pb-2">
 
             {{-- Name --}}
@@ -81,21 +81,21 @@
                 </select>
                 @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- Card 2: Action Buttons --}}
-        <x-adminlte-card theme="primary" theme-mode="outline" class="mt-3">
+        <x-ui-card theme="primary" theme-mode="outline" class="mt-3">
             <div class="d-flex justify-content-center align-items-center">
                 <div class="actions-group">
                     {{-- Save first --}}
-                    <x-adminlte-button type="submit" theme="primary" label="{{ __('users.form.buttons.save') }}" icon="fas fa-save" class="btn-eq action-btn"/>
+                    <x-ui-button type="submit" theme="primary" label="{{ __('users.form.buttons.save') }}" icon="fas fa-save" class="btn-eq action-btn"/>
                     {{-- Cancel goes back --}}
                     <button type="button" onclick="history.back()" class="btn btn-secondary action-btn">
                         <i class="fas fa-times mr-1"></i>{{ __('users.form.buttons.cancel') }}
                     </button>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </form>
 @stop
 

@@ -33,7 +33,6 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\EnsureUserIsNotBlocked::class,
             \App\Http\Middleware\SetLocale::class,
-            \App\Http\Middleware\SetAdminlteTheme::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class,

@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('groups.page.edit'))
 
@@ -20,12 +20,12 @@
         @method('PUT')
 
         {{-- CARD 1: Group details --}}
-        <x-adminlte-card title="{{ __('groups.cards.details.title') }}" icon="fas fa-users text-lightblue"
+        <x-ui-card title="{{ __('groups.cards.details.title') }}" icon="fas fa-users text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
                 {{-- Name --}}
                 <div class="col-md-6 mb-3">
-                    <x-adminlte-input name="name"
+                    <x-ui-input name="name"
                         label="{{ __('groups.form.name_label') }}"
                         placeholder="{{ __('groups.form.name_placeholder') }}"
                         value="{{ old('name', $group->name) }}"
@@ -36,19 +36,19 @@
 
                 {{-- Description --}}
                 <div class="col-md-6 mb-3">
-                    <x-adminlte-textarea name="description"
+                    <x-ui-textarea name="description"
                         label="{{ __('groups.form.description_label') }}"
                         rows="1"
                         placeholder="{{ __('groups.form.description_placeholder') }}"
                         class="@error('description') is-invalid @enderror"
-                        data-no-required="true">{{ old('description', $group->description) }}</x-adminlte-textarea>
+                        data-no-required="true">{{ old('description', $group->description) }}</x-ui-textarea>
                     @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- CARD 2: Assignments (Users) --}}
-        <x-adminlte-card title="{{ __('groups.cards.assignments.title') }}" icon="fas fa-user-check text-lightblue"
+        <x-ui-card title="{{ __('groups.cards.assignments.title') }}" icon="fas fa-user-check text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row g-3">
                 <div class="col-md-12 d-flex flex-column">
@@ -86,14 +86,14 @@
                     </div>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- CARD 3: Actions --}}
-        <x-adminlte-card theme="primary" theme-mode="outline">
+        <x-ui-card theme="primary" theme-mode="outline">
             <div class="d-flex justify-content-center">
                 <div class="form-actions w-100">
                     {{-- Save first --}}
-                    <x-adminlte-button type="submit" theme="primary"
+                    <x-ui-button type="submit" theme="primary"
                         label="{{ __('groups.form.buttons.save') }}" icon="fas fa-save" class="btn-eq"/>
                     {{-- Cancel goes back --}}
                     <button type="button" onclick="history.back()" class="btn btn-secondary btn-eq">
@@ -101,7 +101,7 @@
                     </button>
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </form>
 @stop
 

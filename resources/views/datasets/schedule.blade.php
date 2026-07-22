@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('datasets.schedule.title'))
 
@@ -18,17 +18,17 @@
 @section('content')
     {{-- Flash alerts --}}
     @if(session('status'))
-        <x-adminlte-alert theme="success" icon="fas fa-check-circle">{{ session('status') }}</x-adminlte-alert>
+        <x-ui-alert theme="success" icon="fas fa-check-circle">{{ session('status') }}</x-ui-alert>
     @endif
     @if(session('error'))
-        <x-adminlte-alert theme="danger" icon="fas fa-times-circle">{{ session('error') }}</x-adminlte-alert>
+        <x-ui-alert theme="danger" icon="fas fa-times-circle">{{ session('error') }}</x-ui-alert>
     @endif
 
     {{-- ====================== ROW: Fabric summary + Add schedule ====================== --}}
     <div class="row mt-3 align-bottom-cards">
         {{-- Fabric Schedule Summary --}}
         <div class="col-lg-6 mb-3 d-flex">
-            <x-adminlte-card title="{{ __('datasets.schedule.fabric.title') }}"
+            <x-ui-card title="{{ __('datasets.schedule.fabric.title') }}"
                              icon="fas fa-calendar-alt text-lightblue"
                              theme="primary" theme-mode="outline"
                              class="flex-fill d-flex flex-column"
@@ -68,12 +68,12 @@
                         </div>
                     @endif
                 </div>
-            </x-adminlte-card>
+            </x-ui-card>
         </div>
 
         {{-- Add Local Schedule --}}
         <div class="col-lg-6 mb-3 d-flex">
-            <x-adminlte-card title="{{ __('datasets.schedule.local.new_title') }}"
+            <x-ui-card title="{{ __('datasets.schedule.local.new_title') }}"
                              icon="fas fa-plus-circle text-lightblue"
                              theme="primary" theme-mode="outline"
                              class="flex-fill d-flex flex-column"
@@ -122,19 +122,19 @@
                         </button>
                     </div>
                 </form>
-            </x-adminlte-card>
+            </x-ui-card>
         </div>
     </div>
 
     {{-- ====================== CARD: Local Schedule List ====================== --}}
-    <x-adminlte-card title="{{ __('datasets.schedule.local.title') }}"
+    <x-ui-card title="{{ __('datasets.schedule.local.title') }}"
                      icon="fas fa-list-alt text-lightblue"
                      theme="primary" theme-mode="outline"
                      class="mt-3 mb-3"
                      body-class="pb-2">
 
         @if(session('warning'))
-            <x-adminlte-alert theme="warning" icon="fas fa-exclamation-triangle">{{ session('warning') }}</x-adminlte-alert>
+            <x-ui-alert theme="warning" icon="fas fa-exclamation-triangle">{{ session('warning') }}</x-ui-alert>
         @endif
 
         @php $localSchedules = $localSchedules ?? collect(); @endphp
@@ -193,7 +193,7 @@
                 </table>
             </div>
         @endif
-    </x-adminlte-card>
+    </x-ui-card>
 @stop
 
 @push('css')

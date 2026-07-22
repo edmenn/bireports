@@ -1,4 +1,4 @@
-@extends('adminlte::page')
+@extends('layouts.app')
 
 @section('title', __('roles.page.edit'))
 
@@ -16,30 +16,30 @@
 @section('content')
     {{-- Alerts --}}
     @if (session('success'))
-        <x-adminlte-alert theme="success" title="{{ __('roles.alerts.success') }}" dismissable class="mb-2">
+        <x-ui-alert theme="success" title="{{ __('roles.alerts.success') }}" dismissable class="mb-2">
             {{ session('success') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
     @if (session('warning'))
-        <x-adminlte-alert theme="warning" title="{{ __('roles.alerts.warning') }}" dismissable class="mb-2">
+        <x-ui-alert theme="warning" title="{{ __('roles.alerts.warning') }}" dismissable class="mb-2">
             {{ session('warning') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
     @if (session('error'))
-        <x-adminlte-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable class="mb-2">
+        <x-ui-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable class="mb-2">
             {{ session('error') }}
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     {{-- Validation errors --}}
     @if ($errors->any())
-        <x-adminlte-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable>
+        <x-ui-alert theme="danger" title="{{ __('roles.alerts.error') }}" dismissable>
             <ul class="mb-0 pl-3">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </x-adminlte-alert>
+        </x-ui-alert>
     @endif
 
     <form method="POST" action="{{ route('roles.update', $role) }}" novalidate>
@@ -47,7 +47,7 @@
         @method('PUT')
 
         {{-- Card 1: Role details --}}
-        <x-adminlte-card title="{{ __('roles.form.card_title') }}" icon="fas fa-id-badge text-lightblue"
+        <x-ui-card title="{{ __('roles.form.card_title') }}" icon="fas fa-id-badge text-lightblue"
                          theme="primary" theme-mode="outline" class="mb-3">
             <div class="row">
                 {{-- Name --}}
@@ -75,25 +75,25 @@
                            value="{{ old('badge_text', $role->badge_text ?: '#4338ca') }}">
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
 
         {{-- Card 2: Permissions --}}
         @php $sel = old('permissions', $current ?? []); @endphp
         @if(!empty($isAdmin))
-            <x-adminlte-alert theme="info" title="{{ __('roles.alerts.warning') }}" class="mb-2">
+            <x-ui-alert theme="info" title="{{ __('roles.alerts.warning') }}" class="mb-2">
                 {!! __('roles.alerts.protected') !!}
-            </x-adminlte-alert>
+            </x-ui-alert>
             @include('roles._permissions', ['sections' => $sections, 'current' => $sel, 'disableInputs' => true])
         @else
             @include('roles._permissions', ['sections' => $sections, 'current' => $sel])
         @endif
 
         {{-- Card 3: Action buttons --}}
-        <x-adminlte-card theme="primary" theme-mode="outline" class="mt-3">
+        <x-ui-card theme="primary" theme-mode="outline" class="mt-3">
             <div class="d-flex justify-content-center align-items-center">
                 <div class="actions-group">
                     {{-- Save --}}
-                    <x-adminlte-button type="submit" theme="primary"
+                    <x-ui-button type="submit" theme="primary"
                         label="{{ __('roles.form.buttons.save') }}" icon="fas fa-save" class="btn-eq action-btn"/>
                     {{-- Cancel --}}
                     <button type="button" onclick="history.back()" class="btn btn-secondary btn-eq action-btn">
@@ -108,7 +108,7 @@
                     @endif
                 </div>
             </div>
-        </x-adminlte-card>
+        </x-ui-card>
     </form>
 
     {{-- Hidden delete form --}}

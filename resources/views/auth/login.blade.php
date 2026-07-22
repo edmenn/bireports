@@ -1,4 +1,4 @@
-@extends('adminlte::auth.auth-page', ['authType' => 'login'])
+@extends('layouts.auth')
 
 @section('title', __('Log in'))
 
@@ -66,8 +66,8 @@
         .login-box{ max-width: 380px; width: 100%; }
         .login-logo{ display:none; }
 
-@php($loginLogoW = (int) config('adminlte.auth_logo.img.width'))
-@php($loginLogoH = (int) config('adminlte.auth_logo.img.height'))
+@php($loginLogoW = max(16, (int) ($theme['login_logo_width'] ?? 180)))
+@php($loginLogoH = max(16, (int) ($theme['login_logo_height'] ?? 64)))
 
         .brand-logo{
 @if($loginLogoW > 0)

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use App\Http\Middleware\AutoCapacityActivity;
 use App\Http\Middleware\EnsureUserIsNotBlocked;
-use App\Http\Middleware\SetAdminlteTheme;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackAudit;
-use App\Providers\MenuServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,14 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [
             EnsureUserIsNotBlocked::class,
             SetLocale::class,
-            SetAdminlteTheme::class,
             TrackAudit::class,
             AutoCapacityActivity::class,
         ]);
     })
-    ->withProviders([
-        MenuServiceProvider::class,
-    ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
