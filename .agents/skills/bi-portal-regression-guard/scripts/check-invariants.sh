@@ -34,6 +34,8 @@ check "$css" 'min-height: 0; display: flex; align-items: center; font-size: .875
 check "$css" 'border-radius: 0 0 1rem 0;'
 check "$css" 'border-radius: 0 1rem 0 0;'
 check "$theme" '.app-sidebar .nav-item.active > .nav-link'
+check "$theme" '.app-sidebar .nav-item:not(.active) > .nav-link:not(.active):focus:not(:hover)'
+check "$theme" '.app-sidebar .nav-link:focus-visible'
 check "$theme" 'background-color: var(--app-btn-bg) !important;'
 check "$theme" 'color: var(--app-btn-bg) !important;'
 check "$theme" 'border-color: var(--app-btn-bg) !important;'

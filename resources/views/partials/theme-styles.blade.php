@@ -62,11 +62,18 @@
     body:not(.dark-mode) .main-sidebar .brand-link{ background-color: var(--app-menu-bg) !important; color: var(--app-menu-text) !important; }
     .app-sidebar .nav-link{ color: var(--app-menu-text) !important; }
     .app-sidebar .nav-link:hover,
-    .app-sidebar .nav-link:focus,
     .app-sidebar .nav-link.active,
     .app-sidebar .nav-item.active > .nav-link{
         background-color: var(--app-hi-bg) !important;
         color: var(--app-hi-text) !important;
+    }
+    .app-sidebar .nav-item:not(.active) > .nav-link:not(.active):focus:not(:hover){
+        background-color: transparent !important;
+        color: var(--app-menu-text) !important;
+    }
+    .app-sidebar .nav-link:focus-visible{
+        outline: 2px solid var(--app-hi-bg);
+        outline-offset: -2px;
     }
     body:not(.dark-mode) .card{ background-color: var(--app-card-bg) !important; color: var(--app-card-text); }
     body:not(.dark-mode) .card .card-header,

@@ -39,6 +39,7 @@
 - `menu-state.js` initializes on `DOMContentLoaded`, after the deferred Vite module exposes Bootstrap, so open groups persist across navigation and reload.
 - Mobile has no reserved sidebar strip and no horizontal overflow.
 - Active/hover menu states use `--app-hi-bg` / `--app-hi-text`.
+- Mouse focus alone never looks selected: inactive sidebar links keep a transparent background after click, while `:focus-visible` retains a themed keyboard outline.
 - Primary, secondary, default, success, info, and warning action buttons use `--app-btn-bg`, `--app-btn-hover`, `--app-btn-active`, and `--app-btn-text` in light and dark modes. Danger remains semantic red.
 - Theme defaults must match in controller, theme partial, editor inputs, and editor JavaScript.
 
@@ -60,6 +61,7 @@
 - 2026-07-22: keep disabled outline actions on theme colors instead of allowing Tabler's default blue state to override them.
 - 2026-07-22: standardize the Metrics header divider by moving its tabs into page content; remove redundant Back/Home header actions from authenticated views.
 - 2026-07-22: allow compact sidebar groups in `show`/`collapsing` state to override the closed-group `display:none` rule.
+- 2026-07-22: separate persistent mouse focus from active/hover sidebar colors so opened groups do not look selected.
 
 ## Required visual matrix
 
