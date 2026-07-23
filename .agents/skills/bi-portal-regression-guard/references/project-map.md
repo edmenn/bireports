@@ -35,6 +35,8 @@
 - Shared `page-actions` rely on the page header's `justify-content: space-between`; they must not use `margin-left: auto`, which forces actions onto a second row on desktop.
 - The shared component uses `.app-page-header`, not Tabler's `.page-header`; the latter forces a column layout and stacks desktop actions.
 - Full logo is visible expanded; compact logo is visible at 40x40 reduced. Desktop toggle switches icon-only vs icon-and-text navigation and persists locally.
+- In compact mode, clicking a parent icon keeps its Bootstrap collapse open and reveals the child icons; only closed groups remain hidden.
+- `menu-state.js` initializes on `DOMContentLoaded`, after the deferred Vite module exposes Bootstrap, so open groups persist across navigation and reload.
 - Mobile has no reserved sidebar strip and no horizontal overflow.
 - Active/hover menu states use `--app-hi-bg` / `--app-hi-text`.
 - Primary, secondary, default, success, info, and warning action buttons use `--app-btn-bg`, `--app-btn-hover`, `--app-btn-active`, and `--app-btn-text` in light and dark modes. Danger remains semantic red.
@@ -57,6 +59,7 @@
 - 2026-07-22: route user block/unblock actions through theme colors and remove the last eager jQuery dependency from the capacities view.
 - 2026-07-22: keep disabled outline actions on theme colors instead of allowing Tabler's default blue state to override them.
 - 2026-07-22: standardize the Metrics header divider by moving its tabs into page content; remove redundant Back/Home header actions from authenticated views.
+- 2026-07-22: allow compact sidebar groups in `show`/`collapsing` state to override the closed-group `display:none` rule.
 
 ## Required visual matrix
 

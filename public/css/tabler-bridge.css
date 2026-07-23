@@ -71,6 +71,8 @@ body.dark-mode .text-muted { color: #9ca3af !important; }
   body.sidebar-compact .app-sidebar .nav-link { justify-content: center; padding-inline: .625rem; }
   body.sidebar-compact .app-sidebar .nav-link-icon { margin: 0; }
   body.sidebar-compact .app-sidebar .nav-item > .collapse { display: none !important; }
+  body.sidebar-compact .app-sidebar .nav-item > .collapse.show,
+  body.sidebar-compact .app-sidebar .nav-item > .collapsing { display: block !important; }
 }
 @media (max-width: 991.98px) {
   .app-sidebar { width: 0; min-width: 0; height: 0; overflow: visible; }

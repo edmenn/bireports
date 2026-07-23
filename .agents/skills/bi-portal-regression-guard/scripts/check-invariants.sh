@@ -7,6 +7,7 @@ theme_view=resources/views/configurations/theme.blade.php
 settings_view=resources/views/configurations/index.blade.php
 users_view=resources/views/users/index.blade.php
 capacities_view=resources/views/capacities/index.blade.php
+menu_state=public/js/menu-state.js
 
 check() {
   grep -Fq "$2" "$1" || { echo "Missing invariant in $1: $2" >&2; exit 1; }
@@ -14,6 +15,9 @@ check() {
 
 check "$css" '.app-sidebar.navbar-vertical { border-right: 0 !important; box-shadow: none !important; }'
 check "$css" 'body.sidebar-compact { --app-sidebar-width: 4.5rem; }'
+check "$css" 'body.sidebar-compact .app-sidebar .nav-item > .collapse.show,'
+check "$css" 'body.sidebar-compact .app-sidebar .nav-item > .collapsing { display: block !important; }'
+check "$menu_state" "document.addEventListener('DOMContentLoaded', init, { once: true })"
 check "$css" 'position: sticky; flex: 0 0 var(--app-sidebar-width);'
 check "$css" 'overflow: hidden; flex-direction: row; flex-wrap: nowrap;'
 check "$css" 'body.app-shell { height: 100vh; overflow: hidden; }'

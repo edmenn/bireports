@@ -1,4 +1,5 @@
 (() => {
+  const init = () => {
   const body = document.body;
   const sizeToggle = document.getElementById('sidebar-size-toggle');
   const compactKey = 'app:sidebar:compact';
@@ -32,4 +33,8 @@
       localStorage.setItem(key, JSON.stringify(groups.filter((group) => group.classList.contains('show')).map((group) => group.id)));
     } catch (_) {}
   }
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
 })();
