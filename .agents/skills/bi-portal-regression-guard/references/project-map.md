@@ -2,7 +2,7 @@
 
 ## Runtime and deployment
 
-- Branch: `upgrade/tabler`.
+- Official branch: `main`; release: `v2.0.0`.
 - Stack: Laravel 13, PHP 8.5, PostgreSQL 18, Tabler UI.
 - Main compose file: `docker-compose.secure.yml`; application image: `birentable/php-app:prod`.
 - Browser preview: `http://localhost:8080`, container `bireports-preview`, same PostgreSQL data as the main environment.
