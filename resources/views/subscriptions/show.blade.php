@@ -283,9 +283,6 @@
 @section('content_header')
     <x-page-header :title="$subscription->name" icon="fas fa-calendar-check">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end">
-            <a href="{{ route('subscriptions.index') }}" class="btn btn-outline-secondary btn-sm mr-2">
-                <i class="fas fa-arrow-left mr-1"></i> {{ __('subscriptions.actions.back') }}
-            </a>
             <button type="button" class="btn btn-primary btn-sm mr-2" data-subscription-edit="{{ $subscription->id }}">
                 <i class="fas fa-edit mr-1"></i> {{ __('subscriptions.actions.edit') }}
             </button>

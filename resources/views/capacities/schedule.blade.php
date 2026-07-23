@@ -5,12 +5,6 @@
 
 @section('content_header')
     <x-page-header :title="__('capacities.schedule.title', ['name' => $capacity->display_name])" icon="fas fa-clock">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('capacities.index') }}" class="btn btn-primary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('common.back') }}</span>
-            </a>
-        </div>
         <x-slot name="subtitle">
             <small class="text-muted">
                 {{ __('capacities.shared.sku_region', ['sku' => $capacity->sku, 'region' => $capacity->region]) }}

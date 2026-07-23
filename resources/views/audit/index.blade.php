@@ -17,64 +17,24 @@
         </div>
     </x-page-header>
 
-    @php($tab = $tab ?? 'dashboard')
-
-    {{-- Scrollable tabs --}}
-    <div class="portal-tabs-wrapper mt-3">
-        <ul class="portal-tabs" role="tablist">
-            <li>
-                <a class="{{ $tab==='dashboard'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'dashboard']) }}">
-                    <i class="fas fa-chart-line"></i>{{ __('audit.tabs.dashboard') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='users-most'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'users-most']) }}">
-                    <i class="fas fa-user-plus"></i>{{ __('audit.tabs.users_most') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='users-least'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'users-least']) }}">
-                    <i class="fas fa-user-minus"></i>{{ __('audit.tabs.users_least') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='users-inactive'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'users-inactive']) }}">
-                    <i class="fas fa-user-clock"></i>{{ __('audit.tabs.users_inactive') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='reports-most'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'reports-most']) }}">
-                    <i class="fas fa-file-alt"></i>{{ __('audit.tabs.reports_most') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='reports-least'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'reports-least']) }}">
-                    <i class="fas fa-file-medical-alt"></i>{{ __('audit.tabs.reports_least') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='reports-inactive'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'reports-inactive']) }}">
-                    <i class="fas fa-file-excel"></i>{{ __('audit.tabs.reports_inactive') }}
-                </a>
-            </li>
-            <li>
-                <a class="{{ $tab==='user-profile'?'active':'' }}"
-                   href="{{ route('audit.index', ['tab'=>'user-profile']) }}">
-                    <i class="fas fa-id-badge"></i>{{ __('audit.tabs.user_profile') }}
-                </a>
-            </li>
-        </ul>
-    </div>
 @stop
 
 @section('content')
+@php($tab = $tab ?? 'dashboard')
+
+{{-- Scrollable tabs belong to page content, keeping the shared header divider consistent. --}}
+<div class="portal-tabs-wrapper">
+    <ul class="portal-tabs" role="tablist">
+        <li><a class="{{ $tab==='dashboard'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'dashboard']) }}"><i class="fas fa-chart-line"></i>{{ __('audit.tabs.dashboard') }}</a></li>
+        <li><a class="{{ $tab==='users-most'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'users-most']) }}"><i class="fas fa-user-plus"></i>{{ __('audit.tabs.users_most') }}</a></li>
+        <li><a class="{{ $tab==='users-least'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'users-least']) }}"><i class="fas fa-user-minus"></i>{{ __('audit.tabs.users_least') }}</a></li>
+        <li><a class="{{ $tab==='users-inactive'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'users-inactive']) }}"><i class="fas fa-user-clock"></i>{{ __('audit.tabs.users_inactive') }}</a></li>
+        <li><a class="{{ $tab==='reports-most'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'reports-most']) }}"><i class="fas fa-file-alt"></i>{{ __('audit.tabs.reports_most') }}</a></li>
+        <li><a class="{{ $tab==='reports-least'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'reports-least']) }}"><i class="fas fa-file-medical-alt"></i>{{ __('audit.tabs.reports_least') }}</a></li>
+        <li><a class="{{ $tab==='reports-inactive'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'reports-inactive']) }}"><i class="fas fa-file-excel"></i>{{ __('audit.tabs.reports_inactive') }}</a></li>
+        <li><a class="{{ $tab==='user-profile'?'active':'' }}" href="{{ route('audit.index', ['tab'=>'user-profile']) }}"><i class="fas fa-id-badge"></i>{{ __('audit.tabs.user_profile') }}</a></li>
+    </ul>
+</div>
 
 {{-- Filter form only for "User profile" --}}
 @if($tab === 'user-profile')

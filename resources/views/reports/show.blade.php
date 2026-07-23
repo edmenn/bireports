@@ -165,10 +165,6 @@
                     <i class="fas fa-expand"></i>
                     <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
-                <a href="{{ url()->previous() }}" class="btn btn-primary btn-sm header-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>{{ __('common.back') }}</span>
-                </a>
             </div>
         </x-page-header>
     @endif

@@ -7,14 +7,7 @@
      ========================= --}}
 @section('content_header')
     <x-page-header :title="__('applications.edit.title', ['name' => $application->name])"
-                   :subtitle="__('applications.edit.subtitle')" icon="fas fa-plug">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('applications.index') }}" class="btn btn-secondary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('applications.actions.back') }}</span>
-            </a>
-        </div>
-    </x-page-header>
+                   :subtitle="__('applications.edit.subtitle')" icon="fas fa-plug" />
 @stop
 
 {{-- =========================

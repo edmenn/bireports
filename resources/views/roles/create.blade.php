@@ -3,14 +3,7 @@
 @section('title', __('roles.page.create'))
 
 @section('content_header')
-    <x-page-header :title="__('roles.page.create')" icon="fas fa-user-shield">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('roles.index') }}" class="btn btn-secondary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('roles.form.buttons.back') }}</span>
-            </a>
-        </div>
-    </x-page-header>
+    <x-page-header :title="__('roles.page.create')" icon="fas fa-user-shield" />
 @stop
 
 @section('content')

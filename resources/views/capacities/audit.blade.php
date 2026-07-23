@@ -12,9 +12,6 @@
                     <i class="fas fa-sync-alt"></i> {{ __('common.refresh') }}
                 </button>
             </form>
-            <a href="{{ route('capacities.index') }}" class="btn btn-primary btn-sm">
-                <i class="fas fa-arrow-left"></i> {{ __('common.back') }}
-            </a>
         </div>
         <x-slot name="subtitle">
             <small class="text-muted">

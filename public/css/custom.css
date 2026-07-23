@@ -326,14 +326,19 @@ body.layout-navbar-fixed.text-sm .wrapper .main-header.text-sm ~ .content-wrappe
   color: var(--bs-secondary-color);
 }
 .content-header .actions,
-.content-header .header-actions,
-.content-header .page-actions {
+.content-header .header-actions {
   display: flex;
   flex-wrap: wrap;
   gap: .75rem;
   margin-left: auto;
 }
-.page-header {
+.content-header .page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-left: 0;
+}
+.app-page-header {
   width: 100%;
 }
 .page-header__icon {

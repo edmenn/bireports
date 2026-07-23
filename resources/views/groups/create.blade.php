@@ -3,14 +3,7 @@
 @section('title', __('groups.page.create'))
 
 @section('content_header')
-    <x-page-header :title="__('groups.page.create')" icon="fas fa-users">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('groups.index') }}" class="btn btn-secondary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('groups.form.buttons.back') }}</span>
-            </a>
-        </div>
-    </x-page-header>
+    <x-page-header :title="__('groups.page.create')" icon="fas fa-users" />
 @stop
 
 @section('content')

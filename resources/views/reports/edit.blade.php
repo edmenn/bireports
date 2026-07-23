@@ -8,10 +8,6 @@
     {{-- Unified header with title, icon, and aligned actions --}}
     <x-page-header :title="__('reports.edit.title')" icon="fas fa-edit">
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('reports.index') }}" class="btn btn-primary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('common.back') }}</span>
-            </a>
             <a href="{{ route('reports.show', [$report->workspace_id, $report->id]) }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-chart-line"></i>
                 <span>{{ __('reports.edit.view_report') }}</span>

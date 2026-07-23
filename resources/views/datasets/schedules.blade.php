@@ -8,10 +8,6 @@
             <small class="text-muted">{{ __('datasets.schedules.subtitle') }}</small>
         </x-slot>
         <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('datasets.index') }}" class="btn btn-primary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('datasets.schedules.back') }}</span>
-            </a>
             <a href="{{ route('datasets.schedules.index', array_merge(request()->query(), ['type'=>'local'])) }}" class="btn btn-primary btn-sm header-btn">
                 <i class="fas fa-filter"></i>
                 <span>{{ __('datasets.schedules.show_only_local') }}</span>

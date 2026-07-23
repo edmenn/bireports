@@ -6,12 +6,6 @@
     <x-page-header :title="__('datasets.schedule.title')"
                    :subtitle="__('datasets.schedule.subtitle', ['workspace' => $workspace->name ?? $workspace->id, 'dataset' => $datasetId])"
                    icon="fas fa-clock">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('datasets.index') }}" class="btn btn-primary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('datasets.schedule.back') }}</span>
-            </a>
-        </div>
     </x-page-header>
 @stop
 

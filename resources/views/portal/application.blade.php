@@ -181,14 +181,6 @@
                     <span>{{ __('reports.show.fullscreen_enter') }}</span>
                 </button>
             @endif
-            <a href="{{ route('portal.apps') }}" class="btn btn-primary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('applications.actions.exit_application') }}</span>
-            </a>
-            <a href="{{ route('portal.index') }}" class="btn btn-outline-primary btn-sm header-btn">
-                <i class="fas fa-home"></i>
-                <span>{{ __('applications.actions.go_home') }}</span>
-            </a>
         </div>
     </x-page-header>
 @stop

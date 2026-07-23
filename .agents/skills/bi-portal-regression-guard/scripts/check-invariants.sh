@@ -21,6 +21,9 @@ check "$css" 'height: 100vh; min-height: 0; margin-left: 0 !important; overflow-
 check "$css" 'gap: 0;'
 check "$css" '.page-body { flex: 1 0 auto; margin-bottom: 0; padding: 0; }'
 check "$css" '.content-header { flex: 0 0 auto; padding: 1rem 0 .5rem; }'
+check public/css/custom.css '.content-header .page-actions {'
+check public/css/custom.css 'margin-left: 0;'
+check resources/views/components/page-header.blade.php 'app-page-header d-flex'
 check "$css" 'margin: 0; background: var(--app-navbar-bg'
 check "$css" '.main-footer { position: sticky; bottom: 0;'
 check "$css" 'min-height: 0; display: flex; align-items: center; font-size: .875em;'
@@ -50,6 +53,25 @@ source = Path(sys.argv[1]).read_text()
 stray = "</x-ui-card>\n            </div>\n        </div>\n    </form>"
 if stray in source:
     raise SystemExit("Malformed theme layout: stray closing containers before </form>")
+PY
+
+python3 - <<'PY'
+from pathlib import Path
+
+views = Path('resources/views')
+for path in views.rglob('*.blade.php'):
+    if path.parts[-2] in {'auth', 'errors'}:
+        continue
+    source = path.read_text()
+    if 'fa-arrow-left' in source or 'fa-home' in source:
+        raise SystemExit(f'Redundant Back/Home navigation outside auth or error views: {path}')
+
+audit = (views / 'audit/index.blade.php').read_text()
+header_end = audit.index('@stop', audit.index("@section('content_header')"))
+tabs = audit.index('portal-tabs-wrapper')
+content = audit.index("@section('content')")
+if tabs < header_end or tabs < content:
+    raise SystemExit('Metrics tabs must render below the shared content-header divider')
 PY
 
 echo 'BI Portal invariants: OK'

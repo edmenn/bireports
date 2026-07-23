@@ -6,12 +6,6 @@
 @section('content_header')
     {{-- Unified header --}}
     <x-page-header :title="__('folders.workspaces.show.title', ['name' => $workspace->name])" icon="fas fa-chart-bar">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('workspaces.index') }}" class="btn btn-primary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('common.back') }}</span>
-            </a>
-        </div>
         <x-slot name="subtitle">
             <small class="text-muted">
                 {{ __('folders.workspaces.show.subtitle', [

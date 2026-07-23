@@ -4,7 +4,7 @@
     'icon' => null,
 ])
 
-<div {{ $attributes->class(['page-header d-flex flex-wrap gap-3 align-items-start align-items-md-center justify-content-between']) }}>
+<div {{ $attributes->class(['app-page-header d-flex flex-wrap gap-3 align-items-start align-items-md-center justify-content-between']) }}>
     <div class="d-flex align-items-start gap-3">
         @if($icon)
             <span class="page-header__icon rounded-circle d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary">

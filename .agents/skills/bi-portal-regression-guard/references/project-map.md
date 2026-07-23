@@ -6,6 +6,7 @@
 - Stack: Laravel 13, PHP 8.5, PostgreSQL 18, Tabler UI.
 - Main compose file: `docker-compose.secure.yml`; application image: `birentable/php-app:prod`.
 - Browser preview: `http://localhost:8080`, container `bireports-preview`, same PostgreSQL data as the main environment.
+- Recreate `bireports-preview` after rebuilding `birentable/php-app:prod`; `docker restart` keeps the old image ID.
 - Build with `docker build -f Dockerfile.app -t birentable/php-app:tabler .`, tag as `birentable/php-app:prod`, run `code_sync`, recreate `app queue_worker scheduler web`, then `php artisan optimize`.
 
 ## Shared UI ownership
@@ -29,6 +30,10 @@
 - Footer reproduces the compact AdminLTE metrics: no forced minimum height, `.875em` text, `line-height: 1.1`, and `.25rem` vertical padding. It stays pinned with `position: sticky; bottom: 0` on short and long pages.
 - In every rendered view, `.main-footer` must remain a direct child of `.page-wrapper`; a footer moved under `<body>` indicates malformed view markup and invalidates geometry checks.
 - `.content-header` is a non-shrinking flex child so wrapped header actions never overlap or get covered by `.page-body` cards.
+- The shared `.content-header` bottom border is the divider on every internal view. Page-specific tabs and filters render in `content`, below that divider.
+- Authenticated page headers do not duplicate sidebar navigation with Back or Home buttons. Auth recovery and error-page escape links are exempt.
+- Shared `page-actions` rely on the page header's `justify-content: space-between`; they must not use `margin-left: auto`, which forces actions onto a second row on desktop.
+- The shared component uses `.app-page-header`, not Tabler's `.page-header`; the latter forces a column layout and stacks desktop actions.
 - Full logo is visible expanded; compact logo is visible at 40x40 reduced. Desktop toggle switches icon-only vs icon-and-text navigation and persists locally.
 - Mobile has no reserved sidebar strip and no horizontal overflow.
 - Active/hover menu states use `--app-hi-bg` / `--app-hi-text`.
@@ -51,6 +56,7 @@
 - 2026-07-22: prevent flex shrink from collapsing content headers over their page cards.
 - 2026-07-22: route user block/unblock actions through theme colors and remove the last eager jQuery dependency from the capacities view.
 - 2026-07-22: keep disabled outline actions on theme colors instead of allowing Tabler's default blue state to override them.
+- 2026-07-22: standardize the Metrics header divider by moving its tabs into page content; remove redundant Back/Home header actions from authenticated views.
 
 ## Required visual matrix
 

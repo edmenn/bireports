@@ -10,15 +10,7 @@
             : (($user->auth_provider ?? null) === 'entra');
     @endphp
 
-    {{-- Header with title and back button --}}
-    <x-page-header :title="__('users.page.edit')" icon="fas fa-user-edit">
-        <div class="d-flex flex-wrap align-items-center justify-content-start justify-content-lg-end header-actions">
-            <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm header-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>{{ __('users.form.buttons.back') }}</span>
-            </a>
-        </div>
-    </x-page-header>
+    <x-page-header :title="__('users.page.edit')" icon="fas fa-user-edit" />
 @stop
 
 @section('content')

@@ -16,7 +16,7 @@ description: Preserve BI Portal architecture, UI decisions, theme behavior, depl
 7. Compare the post-change result with the captured baseline. Reject any unrelated difference in size, position, spacing, color, state, content, behavior, permissions, validation, or error handling.
 8. For visual changes, verify desktop expanded, desktop compact, mobile, light, and dark. Check the touched view plus `/portal`, `/users`, `/audit`, and `/configurations/theme` when theme or layout is involved.
    On every checked route, assert that `.main-footer.parentElement` is `.page-wrapper`; CSS measurements are invalid if the browser repaired malformed HTML and moved layout elements.
-9. Rebuild and restart the real Docker environment and preview; health-check both.
+9. Rebuild and recreate the real Docker environment and preview; a restart does not adopt a rebuilt image. Health-check both.
 10. Update `references/project-map.md` in the same commit whenever an invariant, architecture decision, route, dependency, runtime, credential procedure, or deployment command changes.
 
 ## Non-negotiable UI rules
@@ -29,6 +29,8 @@ description: Preserve BI Portal architecture, UI decisions, theme behavior, depl
 - Destructive actions remain red; semantic status badges may retain status colors.
 - Shared forms and action buttons keep consistent heights, widths, gaps, wrapping, and responsive behavior.
 - Content headers cannot shrink inside `.page-wrapper`; their actions must remain fully above `.page-body` at every viewport width.
+- Every internal view uses the shared page header divider. Tabs and filters belong to page content, never inside `content_header`.
+- Do not add Back or Home actions to authenticated page headers; the persistent sidebar owns that navigation. Keep recovery links on auth and error pages.
 - Adding, removing, or changing one component must not restyle its siblings. Example: adding one button cannot alter existing button dimensions, wrapping, spacing, colors, or alignment unless the user explicitly requests that broader change.
 - A change to one view must not alter other views through a broad CSS selector, shared component, JavaScript listener, translation key, configuration default, middleware, or database mutation without explicit scope and regression coverage.
 - Translation strings containing trusted formatting must use unescaped Blade output consistently; user-controlled values must always remain escaped. Literal `<code>`, `<em>`, or similar tags must never appear in rendered UI text.

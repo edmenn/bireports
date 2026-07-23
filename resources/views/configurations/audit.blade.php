@@ -3,11 +3,7 @@
 @section('title', __('settings.audit.page.title'))
 
 @section('content_header')
-    <x-page-header :title="__('settings.audit.page.title')" :subtitle="__('settings.audit.page.subtitle')" icon="fas fa-history">
-        <a href="{{ route('configurations.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> {{ __('settings.audit.actions.back') }}
-        </a>
-    </x-page-header>
+    <x-page-header :title="__('settings.audit.page.title')" :subtitle="__('settings.audit.page.subtitle')" icon="fas fa-history" />
 @stop
 
 @section('content')
