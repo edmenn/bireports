@@ -209,9 +209,9 @@
     body .btn-outline-success,
     body .btn-outline-info,
     body .btn-outline-warning{
-        color: var(--app-btn-bg);
-        border-color: var(--app-btn-bg);
-        background-color: transparent;
+        color: var(--app-btn-bg) !important;
+        border-color: var(--app-btn-bg) !important;
+        background-color: transparent !important;
     }
     body .btn-outline-primary:hover,
     body .btn-outline-primary:focus,

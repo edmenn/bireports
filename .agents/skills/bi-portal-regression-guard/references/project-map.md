@@ -28,6 +28,7 @@
 - Header and footer use the same `--app-navbar-bg` and `--app-navbar-text` values.
 - Footer reproduces the compact AdminLTE metrics: no forced minimum height, `.875em` text, `line-height: 1.1`, and `.25rem` vertical padding. It stays pinned with `position: sticky; bottom: 0` on short and long pages.
 - In every rendered view, `.main-footer` must remain a direct child of `.page-wrapper`; a footer moved under `<body>` indicates malformed view markup and invalidates geometry checks.
+- `.content-header` is a non-shrinking flex child so wrapped header actions never overlap or get covered by `.page-body` cards.
 - Full logo is visible expanded; compact logo is visible at 40x40 reduced. Desktop toggle switches icon-only vs icon-and-text navigation and persists locally.
 - Mobile has no reserved sidebar strip and no horizontal overflow.
 - Active/hover menu states use `--app-hi-bg` / `--app-hi-text`.
@@ -46,6 +47,10 @@
 - 2026-07-22: restore the compact pre-Tabler footer sizing instead of forcing the Tabler 56 px navbar height.
 - 2026-07-22: isolate desktop scrolling in `.page-wrapper` so the sidebar remains immobile without changing mobile document scrolling.
 - 2026-07-22: restore the AdminLTE lower-right header radius and upper-right footer radius.
+- 2026-07-22: render the trusted formatted settings guide consistently so HTML tags never appear as literal interface text.
+- 2026-07-22: prevent flex shrink from collapsing content headers over their page cards.
+- 2026-07-22: route user block/unblock actions through theme colors and remove the last eager jQuery dependency from the capacities view.
+- 2026-07-22: keep disabled outline actions on theme colors instead of allowing Tabler's default blue state to override them.
 
 ## Required visual matrix
 

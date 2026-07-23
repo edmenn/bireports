@@ -40,10 +40,14 @@ return new class extends Migration {
             $table->index(['user_id', 'report_uuid']);
         });
 
+        $dayOfWeekExpression = DB::getDriverName() === 'sqlite'
+            ? "CASE strftime('%w', occurred_at) WHEN '0' THEN 7 ELSE CAST(strftime('%w', occurred_at) AS INTEGER) END"
+            : 'EXTRACT(ISODOW FROM occurred_at)';
+
         DB::statement("
             CREATE VIEW audits_dayofweek AS
             SELECT id,
-                   EXTRACT(ISODOW FROM occurred_at) AS dow_iso,
+                   {$dayOfWeekExpression} AS dow_iso,
                    occurred_at
             FROM audits
         ");

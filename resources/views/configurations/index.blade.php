@@ -182,7 +182,7 @@
                             <h5 class="mb-2"><i class="fas fa-shield-alt mr-1"></i> {{ __('settings.guide.permissions.title') }}</h5>
                             <ul class="mb-0 ps-3">
                                 <li>{!! __('settings.guide.permissions.items.assign') !!}</li>
-                                <li>{{ __('settings.guide.permissions.items.roles') }}</li>
+                                <li>{!! __('settings.guide.permissions.items.roles') !!}</li>
                                 <li>{!! __('settings.guide.permissions.items.access') !!}</li>
                             </ul>
                         </div>

@@ -28,8 +28,10 @@ description: Preserve BI Portal architecture, UI decisions, theme behavior, depl
 - Theme configuration is the single color source. Menu active/hover and non-destructive buttons use its variables in light and dark modes.
 - Destructive actions remain red; semantic status badges may retain status colors.
 - Shared forms and action buttons keep consistent heights, widths, gaps, wrapping, and responsive behavior.
+- Content headers cannot shrink inside `.page-wrapper`; their actions must remain fully above `.page-body` at every viewport width.
 - Adding, removing, or changing one component must not restyle its siblings. Example: adding one button cannot alter existing button dimensions, wrapping, spacing, colors, or alignment unless the user explicitly requests that broader change.
 - A change to one view must not alter other views through a broad CSS selector, shared component, JavaScript listener, translation key, configuration default, middleware, or database mutation without explicit scope and regression coverage.
+- Translation strings containing trusted formatting must use unescaped Blade output consistently; user-controlled values must always remain escaped. Literal `<code>`, `<em>`, or similar tags must never appear in rendered UI text.
 - Never deploy a visual change based only on compilation or one screenshot.
 
 ## Stop conditions

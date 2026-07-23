@@ -306,14 +306,8 @@
 @push('js')
 <script>
 (function(){
-    // 1. JS MANUAL PARA ASEGURAR EL CONTAINER BODY
-    // Esto sobreescribe cualquier conflicto con Tabler
-    $(document).ready(function() {
-        $('.cap-table .dropdown-toggle').each(function() {
-            // Forzamos la opción container: 'body' a nivel de datos de jQuery
-            $(this).data('container', 'body');
-            $(this).data('boundary', 'window');
-        });
+    document.querySelectorAll('.cap-table .dropdown-toggle').forEach(toggle => {
+        toggle.dataset.bsBoundary = 'window';
     });
 
     const copyFailMsg = @json(__('capacities.messages.copy_fail'));

@@ -142,10 +142,10 @@
                     {{ __('users.index.bulk.selected_prefix') }} <span id="selCountUsers">0</span>
                 </small>
                 <div class="btn-group bulk-actions" role="group" aria-label="{{ __('users.index.bulk.actions_aria') }}">
-                    <button id="btnBulkBlock" type="button" class="btn btn-sm btn-outline-warning" disabled>
+                    <button id="btnBulkBlock" type="button" class="btn btn-sm btn-outline-primary" disabled>
                         <i class="fas fa-user-lock"></i> {{ __('users.index.bulk.block') }}
                     </button>
-                    <button id="btnBulkUnblock" type="button" class="btn btn-sm btn-outline-success" disabled>
+                    <button id="btnBulkUnblock" type="button" class="btn btn-sm btn-outline-primary" disabled>
                         <i class="fas fa-user-check"></i> {{ __('users.index.bulk.unblock') }}
                     </button>
                     <button id="btnBulkDelete" type="button" class="btn btn-sm btn-danger" disabled>
@@ -243,7 +243,7 @@
                                         <form action="{{ route('users.toggle-block', ['user' => $u->id]) }}" method="POST" class="m-0 js-confirm-delete-form">
                                             @csrf
                                             <button type="submit"
-                                                    class="btn btn-icon {{ (bool)($u->is_blocked ?? false) ? 'btn-outline-success' : 'btn-outline-warning' }}"
+                                                    class="btn btn-icon btn-outline-primary"
                                                     title="{{ (bool)($u->is_blocked ?? false) ? __('users.index.buttons.unblock') : __('users.index.buttons.block') }}">
                                                 <i class="fas {{ (bool)($u->is_blocked ?? false) ? 'fa-unlock' : 'fa-user-lock' }}"></i>
                                             </button>
