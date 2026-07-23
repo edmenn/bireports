@@ -21,7 +21,7 @@ description: Preserve BI Portal architecture, UI decisions, theme behavior, depl
 
 ## Non-negotiable UI rules
 
-- Header, sidebar, page wrapper, and footer touch with no border, shadow, gap, radius, or blank strip at their shared edges.
+- Header, sidebar, page wrapper, and footer touch with no border, shadow, gap, or blank strip at their shared edges. Preserve the original AdminLTE outer radii: header lower-right `1rem`, footer upper-right `1rem`; shared left edges remain square.
 - Expanded sidebar is 256 px; compact sidebar is 72 px. Header and footer left edges must equal the sidebar right edge in both states.
 - On desktop, only `.page-wrapper` may scroll; `body`, `.page`, and the sidebar stay viewport-locked. Scrolling content must never move the sidebar.
 - Footer remains pinned to the viewport bottom with `position: sticky; bottom: 0`, including long pages, without changing sidebar/header widths or covering the final content.
