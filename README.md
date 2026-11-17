@@ -138,5 +138,10 @@ Useful production options are shown by:
 
 ## License
 
-No license is declared in this repository. Do not infer licensing terms from
-this README.
+This project is released under the [Apache License 2.0](LICENSE).
+
+You may use, modify and redistribute the project, including commercially, as
+long as you preserve the license and copyright notices, include the `NOTICE`
+file, and identify significant changes. Edgar Menna is the principal author.
+The license does not require permission before making changes, but contact the
+principal author if you want to coordinate upstream contributions.
