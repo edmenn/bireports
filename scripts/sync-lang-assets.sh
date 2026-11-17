@@ -13,7 +13,8 @@ mkdir -p public/lang
 copied=0
 # 1) Prefer storage/app/public/lang as the source-of-truth if present
 if [ -d storage/app/public/lang ]; then
-  rsync -a --delete storage/app/public/lang/ public/lang/
+  # Keep the public SVG flags; storage contains separate PNG copies.
+  rsync -a storage/app/public/lang/ public/lang/
   copied=$(($(find storage/app/public/lang -type f | wc -l)))
 else
   # 2) Fallback: copy image files found under resources/lang/<locale>

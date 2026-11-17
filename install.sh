@@ -7,7 +7,6 @@ APP_SERVICE="${APP_SERVICE:-birentable}"
 DB_SERVICE="${DB_SERVICE:-pgsql}"
 NODE_SERVICE="${NODE_SERVICE:-node}"
 NODE_IMAGE="${NODE_IMAGE:-node:20}"
-NPM_MODE="${NPM_MODE:-dev}"
 SKIP_NODE="${SKIP_NODE:-no}"
 NODE_RUNNER="docker-run"
 SCHEDULER_SERVICE="${SCHEDULER_SERVICE:-scheduler}"
@@ -21,15 +20,13 @@ err()  { printf '\033[1;31m[ERR] %s\033[0m\n' "$*"; }
 
 usage() {
   cat <<'EOF'
-Uso: install.sh [--fresh] [--seed] [--refresh] [--refresh-nobuild] [--sync] [--dev] [--build]
+Uso: ./install.sh [--fresh] [--seed] [--refresh] [--refresh-nobuild] [--sync]
   --sync            Sincroniza contenedores (sin npm) y corre migraciones
   (sin argumentos)  Modo interactivo
   --fresh           php artisan migrate:fresh --seed --force (BORRA datos)
   --seed            php artisan db:seed --force tras migracion normal
   --refresh         Rebuild del servicio app y recreacion de contenedores
   --refresh-nobuild Recrea contenedores sin rebuild
-  --dev             Fuerza npm run dev (modo predeterminado)
-  --build           Ejecuta npm run build (override del modo dev por defecto)
 EOF
 }
 
@@ -46,8 +43,6 @@ for arg in "$@"; do
     --refresh) DO_REFRESH="yes" ;;
     --refresh-nobuild) DO_REFRESH_NOBUILD="yes" ;;
     --sync) DO_SYNC_ONLY="yes" ;;
-    --dev) NPM_MODE="dev" ;;
-    --build) NPM_MODE="build" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; exit 2 ;;
   esac
@@ -68,7 +63,7 @@ fi
 if [[ $# -eq 0 ]]; then
   if [[ -t 0 ]]; then
     echo "Selecciona una accion para entorno de desarrollo:" >&2
-    echo "  1) Instalacion completa (npm dev + migrar) [default]" >&2
+    echo "  1) Instalacion completa (npm build + migrar) [default]" >&2
     echo "  2) Refresh (build contenedor + reinstalar deps)" >&2
     echo "  3) Refresh rapido (recrear contenedores sin build)" >&2
     echo "  4) Fresh (migrate:fresh --seed --force) [BORRA DATOS]" >&2
@@ -273,7 +268,7 @@ storage_link() {
 }
 
 sync_lang_assets() {
-  if [[ -x scripts/sync-lang-assets.sh ]]; then
+  if [[ -f scripts/sync-lang-assets.sh ]]; then
     log "Sincronizando assets de idiomas..."
     bash scripts/sync-lang-assets.sh || true
     ok "Assets de idiomas sincronizados."
@@ -314,20 +309,9 @@ handle_node_assets() {
   run_node npm ci
   ok "Dependencias Node instaladas."
 
-  if [[ "$NPM_MODE" == "dev" ]]; then
-    log "Ejecutando npm run dev (una vez para verificar)."
-    if [[ "$NODE_RUNNER" == "compose" ]]; then
-      warn "Para dejar Vite activo ejecuta: ${COMPOSE_HUMAN} run --rm -T ${NODE_SERVICE} npm run dev"
-    else
-      warn "Para dejar Vite activo ejecuta: docker run --rm -u \"$(id -u):$(id -g)\" -v \"$PWD:/app\" -w /app ${NODE_IMAGE} npm run dev"
-    fi
-    run_node npm run dev -- --debug --force --host || true
-    ok "npm run dev ejecutado (revisa salida)."
-  else
-    log "Compilando assets (npm run build)..."
-    run_node npm run build
-    ok "Build de assets completado."
-  fi
+  log "Compilando assets (npm run build)..."
+  run_node npm run build
+  ok "Build de assets completado."
 }
 
 clear_caches() {

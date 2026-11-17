@@ -23,6 +23,7 @@ A web system to view PowerBI dashboards from Fabric or Power Embedded. Empowerin
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
+- [Fabric tenant setup guides](#fabric-tenant-setup-guides)
 - [Project Structure](#project-structure)
 - [Contributing](#contributing)
 - [Testing](#testing)
@@ -51,77 +52,74 @@ Key technologies include PHP for server-side logic, HTML/CSS for the user interf
 
 ## 🎬 Demo
 
-🔗 **Live Demo**: [https://your-demo-url.com](https://your-demo-url.com)
-
-### Screenshots
-![Main Interface](screenshots/main-interface.png)
-*Main application interface showing PowerBI dashboards*
-
-![Dashboard View](screenshots/dashboard.png)  
-*User dashboard displaying key PowerBI reports*
+There is no public demo configured in this repository. Run the local Docker
+stack below to access the portal.
 
 ## 🚀 Quick Start
 
-Clone and run locally:
+### Recommended: automated Docker installer
+
+Use the repository installer. It creates `.env` when needed, generates the
+application key, starts Laravel/PostgreSQL/queue/scheduler, installs PHP and
+Node dependencies, runs migrations, seeds the local administrator, and builds
+the frontend assets.
 
 ```bash
 git clone https://github.com/edmenn/bireports.git
 cd bireports
-composer install
-npm install
 cp .env.example .env
-php artisan key:generate
-# Configure PostgreSQL and Power BI settings in .env
-php artisan migrate
-npm run build
-php artisan serve
+./install.sh
 ```
 
-Open [http://localhost:8000](http://localhost:8000) to view it in your browser.
+For a non-interactive refresh after code or dependency changes:
+
+```bash
+./install.sh --refresh
+```
+
+Use `./install.sh --help` for the data-destructive `--fresh` option and the
+faster synchronization mode. The installer builds assets by default; it does
+not start a long-running Vite development process.
+
+Open [http://localhost](http://localhost) to view it in your browser. The local
+Compose mapping is `${APP_PORT:-80}:80`, so the default URL uses port 80, not
+8000 or 8080. Set `APP_PORT` in `.env` if you intentionally change the host
+port.
+
+To stop the local environment:
+
+```bash
+docker compose down
+```
+
+### Local login
+
+After running the seeder, use this development administrator:
+
+```text
+User: admin@birentable.com
+Password: XH6cdURvPXk2uOhTm3K8
+```
+
+These credentials are for local development only. Change them before using the
+application in production.
 
 ## 📦 Installation
 
 ### Prerequisites
-- PHP 8.5+
-- Composer
-- PostgreSQL 18 (or Docker Desktop with Docker Compose)
-- Node.js and npm
-- PowerBI account with necessary permissions
+- Docker Desktop with Docker Compose
+- PowerBI/Fabric account with the required permissions for integration
 
-### From Source
-
-```bash
-# Clone repository
-git clone https://github.com/edmenn/bireports.git
-cd bireports
-
-# Install dependencies
-composer install
-
-# Configure your environment (.env file)
-cp .env.example .env
-php artisan key:generate
-# Edit .env with your PostgreSQL and Power BI settings
-php artisan migrate
-npm install
-npm run build
-
-# Set up your web server to point to the 'public' directory
-# Example for Apache:
-# <VirtualHost *:80>
-#     DocumentRoot /path/to/bireports/public
-#     <Directory /path/to/bireports/public>
-#         AllowOverride All
-#         Require all granted
-#     </Directory>
-# </VirtualHost>
-```
+The supported local installation path is Docker plus `install.sh`. A native
+PHP/PostgreSQL installation is not maintained by the project scripts.
 
 ## 💻 Usage
 
 ### Basic Usage
 
-1.  **Configure your `.env` file** with your database credentials and PowerBI API keys.
+1.  **Configure your `.env` file** with your Power BI/Fabric settings. For Docker,
+    keep `DB_HOST=pgsql`; `127.0.0.1` refers to the host, not the database
+    container.
 2.  **Access the web application** through your web browser.
 3.  **Navigate** through the available dashboards.
 4.  **Interact** with the dashboards as you would in PowerBI.
@@ -137,9 +135,9 @@ npm run build
 Create a `.env` file in the root directory (copy `.env.example`):
 
 ```env
-# Database
+# Database values for docker-compose.yml
 DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
+DB_HOST=pgsql
 DB_PORT=5432
 DB_DATABASE=birentabledb
 DB_USERNAME=birentable
@@ -151,6 +149,20 @@ POWERBI_CLIENT_SECRET=your_powerbi_client_secret
 POWERBI_TENANT_ID=your_powerbi_tenant_id
 POWERBI_WORKSPACE_ID=your_powerbi_workspace_id
 ```
+
+## Fabric tenant setup guides
+
+Before configuring the Power BI/Fabric values in `.env` or using the portal's
+Power BI features, review the tenant and permissions guide that matches your
+language:
+
+- [Microsoft Fabric permissions and setup guide (English)](BI_Portal_Permisos_Fabric_EN.pdf)
+- [Guía de permisos y configuración de Microsoft Fabric (Español)](BI_Portal_Permisos_Fabric_ES.pdf)
+
+These guides explain the Entra ID application, Microsoft Graph consent, Fabric
+tenant settings, workspace access, Azure RBAC for capacity operations, and the
+minimum permissions required by each portal feature. They are configuration
+guides, not substitutes for validating permissions in the target tenant.
 
 ## 📁 Project Structure
 
@@ -191,17 +203,17 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### Development Setup
 
 ```bash
-# Fork and clone the repo
-git clone https://github.com/yourusername/bireports.git
-
-# Install dependencies
-composer install
+# Clone the repository
+git clone https://github.com/edmenn/bireports.git
 
 # Create a new branch
 git checkout -b feature/your-feature-name
 
-# Make your changes and test
-# (Add testing instructions here)
+# Synchronize the Docker development environment
+./install.sh --sync
+
+# Run tests inside the application container
+docker compose exec birentable composer test
 
 # Commit and push
 git commit -m "Description of changes"
@@ -216,12 +228,19 @@ git push origin feature/your-feature-name
 
 ## Testing
 
-Run the Laravel test suite with `composer test`.
+Run the Laravel test suite inside Docker with:
+
+```bash
+docker compose exec birentable composer test
+```
 
 ## Deployment
 
-For the production-oriented Docker stack, review `docker-compose.secure.yml` and use
-`deploy.sh`. Do not use `--fresh` against a database containing real data.
+For production, configure the real `.env` first, review `docker-compose.secure.yml`,
+and use `./deploy.sh`. It builds the production image, populates the protected
+code volume, migrates, and starts Caddy, Nginx, the app, scheduler, queue, and
+database. The secure stack exposes HTTP/HTTPS through Caddy, not the local port
+mapping. Do not use `--fresh` against a database containing real data.
 
 ## FAQ
 
@@ -242,9 +261,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💬 Support
 
--   📧 **Email**: your.email@example.com
 -   🐛 **Issues**: [GitHub Issues](https://github.com/edmenn/bireports/issues)
--   📖 **Documentation**: [Full Documentation](https://docs.your-site.com) (Create a documentation site)
 
 ## 🙏 Acknowledgments
 
