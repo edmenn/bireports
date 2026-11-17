@@ -12,12 +12,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed default administrator if it does not already exist
         User::firstOrCreate(
             ['email' => 'admin@birentable.com'], // lookup condition
             [
                 'name'     => 'Administrator',
-                'password' => bcrypt('XH6cdURvPXk2uOhTm3K8'), // default password
+                'password' => bcrypt('XH6cdURvPXk2uOhTm3K8'), // local development password
             ]
         );
 

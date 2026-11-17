@@ -19,6 +19,14 @@
 /storage/*.key
 /storage/pail
 /graphify-out/cache/
+/graphify-out/
+/AGENTS.md
+/.agents/
+/.codex/
+/COM.BAK
+/Intelephense
+/..schema_audit.json
+/-
 /vendor
 Homestead.json
 Homestead.yaml

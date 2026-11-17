@@ -1,4 +1,0 @@
-interface:
-  display_name: "BI Portal Regression Guard"
-  short_description: "Preserva decisiones e invariantes del BI Portal"
-  default_prompt: "Usa $bi-portal-regression-guard para cambiar BI Portal sin reintroducir regresiones."
