@@ -1,68 +1,11 @@
-```markdown
-# 📊 BI Reports Web System 
-A web system to view PowerBI dashboards from Fabric or Power Embedded. Empowering data-driven decisions with seamless PowerBI integration.
+# BI Portal
 
-![License](https://img.shields.io/github/license/edmenn/bireports)
-![GitHub stars](https://img.shields.io/github/stars/edmenn/bireports?style=social)
-![GitHub forks](https://img.shields.io/github/forks/edmenn/bireports?style=social)
-![GitHub issues](https://img.shields.io/github/issues/edmenn/bireports)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/edmenn/bireports)
-![GitHub last commit](https://img.shields.io/github/last-commit/edmenn/bireports)
+Laravel portal for managing and displaying Power BI/Fabric reports, datasets,
+workspaces, users, groups, subscriptions and capacities.
 
-![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+## Local installation
 
-## 📋 Table of Contents
-
-- [About](#about)
-- [Features](#features)
-- [Demo](#demo)
-- [Quick Start](#quick-start)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Fabric tenant setup guides](#fabric-tenant-setup-guides)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [FAQ](#faq)
-- [License](#license)
-- [Support](#support)
-- [Acknowledgments](#acknowledgments)
-
-## About
-
-The BI Reports Web System is a PHP-based application designed to facilitate the viewing of PowerBI dashboards, whether sourced from Microsoft Fabric or PowerBI Embedded. This system addresses the need for a centralized and easily accessible platform to consume PowerBI reports, eliminating the complexities of direct PowerBI access for end-users. It provides a streamlined interface for interacting with critical business intelligence data.
-
-This project aims to bridge the gap between PowerBI's powerful reporting capabilities and the need for a simplified, web-based viewing experience. It's ideal for organizations that want to distribute PowerBI dashboards to a wider audience without requiring extensive PowerBI training or licensing for every user. The system is built using PHP, HTML, CSS, and JavaScript, providing a flexible and customizable foundation.
-
-Key technologies include PHP for server-side logic, HTML/CSS for the user interface, and JavaScript for enhancing interactivity. The architecture focuses on retrieving and displaying PowerBI dashboards through the PowerBI REST API, ensuring data is always up-to-date and accurate. A unique selling point is its ease of integration with existing web infrastructure, allowing for a seamless addition to any organization's data ecosystem.
-
-## ✨ Features
-
-- 🎯 **Dashboard Integration**: Seamlessly integrates PowerBI dashboards from Fabric and Power Embedded.
-- ⚡ **Performance**: Optimized for fast loading and efficient data retrieval.
-- 🔒 **Security**: Secure authentication and authorization mechanisms to protect sensitive data.
-- 🎨 **UI/UX**: User-friendly interface for easy navigation and interaction with dashboards.
-- 📱 **Responsive**: Accessible on various devices, ensuring a consistent experience across platforms.
-- 🛠️ **Extensible**: Designed for customization and integration with other systems.
-
-## 🎬 Demo
-
-There is no public demo configured in this repository. Run the local Docker
-stack below to access the portal.
-
-## 🚀 Quick Start
-
-### Recommended: automated Docker installer
-
-Use the repository installer. It creates `.env` when needed, generates the
-application key, starts Laravel/PostgreSQL/queue/scheduler, installs PHP and
-Node dependencies, runs migrations, seeds the local administrator, and builds
-the frontend assets.
+Requirements: Docker Desktop with Docker Compose.
 
 ```bash
 git clone https://github.com/edmenn/bireports.git
@@ -71,203 +14,129 @@ cp .env.example .env
 ./install.sh
 ```
 
-For a non-interactive refresh after code or dependency changes:
+`install.sh` starts the local Docker services, installs PHP and Node
+dependencies, generates `APP_KEY` when needed, runs migrations and seeders, and
+builds the frontend assets. The default host mapping is port 80:
 
-```bash
-./install.sh --refresh
+```text
+http://localhost
 ```
 
-Use `./install.sh --help` for the data-destructive `--fresh` option and the
-faster synchronization mode. The installer builds assets by default; it does
-not start a long-running Vite development process.
+To use another host port, set `APP_PORT` in `.env` before running the installer.
+The database hostname inside Docker is `pgsql`; do not replace it with
+`127.0.0.1` for the Compose installation.
 
-Open [http://localhost](http://localhost) to view it in your browser. The local
-Compose mapping is `${APP_PORT:-80}:80`, so the default URL uses port 80, not
-8000 or 8080. Set `APP_PORT` in `.env` if you intentionally change the host
-port.
-
-To stop the local environment:
+Useful local commands:
 
 ```bash
-docker compose down
+./install.sh --sync       # sync dependencies, migrations and caches
+./install.sh --refresh    # rebuild the app container and recreate services
+./install.sh --help       # show all options, including the destructive --fresh
+docker compose down       # stop the local environment
 ```
 
-### Local login
+### What the scripts do
 
-After running the seeder, use this development administrator:
+The scripts are wrappers around the Compose files; users do not need to run
+the individual `composer`, `npm` or `php artisan` installation commands by
+hand.
+
+| Script | Use | Important options / behavior |
+| --- | --- | --- |
+| `install.sh` | Local development installation and synchronization using `docker-compose.yml`. | No arguments runs the interactive menu. `--sync` skips Node and synchronizes dependencies, migrations and caches. `--refresh` rebuilds and recreates the app services. `--refresh-nobuild` recreates without rebuilding. `--seed` reruns seeders. `--fresh` deletes all local database tables and reseeds them. |
+| `deploy.sh` | Production deployment using `docker-compose.secure.yml`. | No arguments runs the interactive menu. `--sync` copies code and clears caches. `--sync-migrate` also runs migrations. `--refresh` rebuilds the production image and repopulates the protected code volume. `--refresh-nobuild` restarts without rebuilding. `--cleanup` runs Docker's safe system prune without deleting volumes. |
+| `verify.sh` | Checks the production stack. | It may start missing production services, verifies extensions and writable paths, runs migrations and checks the configured HTTPS domain. It is not a local installer. |
+| `scripts/run-scheduler.sh` | Process used by the `scheduler` Compose service. | Runs Laravel scheduled tasks every 60 seconds. Do not run it on the host. |
+| `scripts/run-queue-worker.sh` | Process used by the `queue_worker` Compose service. | Runs the Laravel queue worker. Do not run it on the host. |
+| `scripts/sync-lang-assets.sh` | Copies language image assets into `public/lang`. | It is called by `install.sh`; it is normally not needed manually. |
+
+Do not use `--fresh` on a database with data you need. Do not use the local
+`install.sh` against the production stack; use `deploy.sh` there.
+
+The local seeder creates this development administrator:
 
 ```text
 User: admin@birentable.com
 Password: XH6cdURvPXk2uOhTm3K8
 ```
 
-These credentials are for local development only. Change them before using the
-application in production.
+These credentials are for local development only. Change or remove them before
+using the application outside a local environment.
 
-## 📦 Installation
+## Power BI/Fabric configuration
 
-### Prerequisites
-- Docker Desktop with Docker Compose
-- PowerBI/Fabric account with the required permissions for integration
+Power BI/Fabric credentials are stored encrypted in the application's
+`configurations` table, not in `.env`. Configure them from the administrator
+configuration screen or with Artisan:
 
-The supported local installation path is Docker plus `install.sh`. A native
-PHP/PostgreSQL installation is not maintained by the project scripts.
-
-## 💻 Usage
-
-### Basic Usage
-
-1.  **Configure your `.env` file** with your Power BI/Fabric settings. For Docker,
-    keep `DB_HOST=pgsql`; `127.0.0.1` refers to the host, not the database
-    container.
-2.  **Access the web application** through your web browser.
-3.  **Navigate** through the available dashboards.
-4.  **Interact** with the dashboards as you would in PowerBI.
-
-### Advanced Examples
-
-// More complex usage scenarios (e.g., embedding in other applications)
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory (copy `.env.example`):
-
-```env
-# Database values for docker-compose.yml
-DB_CONNECTION=pgsql
-DB_HOST=pgsql
-DB_PORT=5432
-DB_DATABASE=birentabledb
-DB_USERNAME=birentable
-DB_PASSWORD=change-me
-
-# PowerBI
-POWERBI_CLIENT_ID=your_powerbi_client_id
-POWERBI_CLIENT_SECRET=your_powerbi_client_secret
-POWERBI_TENANT_ID=your_powerbi_tenant_id
-POWERBI_WORKSPACE_ID=your_powerbi_workspace_id
+```bash
+docker compose exec birentable php artisan powerbi:credentials:set \
+  --tenant="DIRECTORY_TENANT_ID" \
+  --client="APPLICATION_CLIENT_ID" \
+  --secret="CLIENT_SECRET_VALUE" \
+  --activate
 ```
 
-## Fabric tenant setup guides
+Do not commit the secret value or put it in the README. The scope used for Power
+BI tokens is configured as:
 
-Before configuring the Power BI/Fabric values in `.env` or using the portal's
-Power BI features, review the tenant and permissions guide that matches your
-language:
+```text
+https://analysis.windows.net/powerbi/api/.default
+```
+
+Before configuring the portal, read the tenant and permissions guide for the
+appropriate language:
 
 - [Microsoft Fabric permissions and setup guide (English)](BI_Portal_Permisos_Fabric_EN.pdf)
 - [Guía de permisos y configuración de Microsoft Fabric (Español)](BI_Portal_Permisos_Fabric_ES.pdf)
 
-These guides explain the Entra ID application, Microsoft Graph consent, Fabric
-tenant settings, workspace access, Azure RBAC for capacity operations, and the
-minimum permissions required by each portal feature. They are configuration
-guides, not substitutes for validating permissions in the target tenant.
-
-## 📁 Project Structure
-
-```
-bireports/
-├── 📁 app/                   # Application logic
-│   ├── 📁 Controllers/      # Controllers for handling requests
-│   ├── 📁 Models/           # Data models
-│   ├── 📁 Providers/        # Service providers
-├── 📁 config/                # Configuration files
-├── 📁 database/              # Database migrations and seeds
-├── 📁 public/                # Publicly accessible files (CSS, JS, images)
-├── 📁 resources/             # Views (HTML templates)
-│   ├── 📁 views/           # Blade templates
-│   ├── 📁 sass/            # Sass files for styling
-├── 📁 routes/                # Route definitions
-├── 📁 storage/               # Storage for uploaded files and cache
-├── 📁 tests/                 # PHPUnit tests
-├── 📄 .env                   # Environment configuration
-├── 📄 .env.example           # Example environment configuration
-├── 📄 composer.json          # Composer dependencies
-├── 📄 README.md              # Project documentation
-└── 📄 LICENSE                # License file
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details. (Create a CONTRIBUTING.md file)
-
-### Quick Contribution Steps
-
-1.  🍴 Fork the repository
-2.  🌟 Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  ✅ Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  📤 Push to the branch (`git push origin feature/AmazingFeature`)
-5.  🔃 Open a Pull Request
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/edmenn/bireports.git
-
-# Create a new branch
-git checkout -b feature/your-feature-name
-
-# Synchronize the Docker development environment
-./install.sh --sync
-
-# Run tests inside the application container
-docker compose exec birentable composer test
-
-# Commit and push
-git commit -m "Description of changes"
-git push origin feature/your-feature-name
-```
-
-### Code Style
-
--   Follow PSR-2 coding standards.
--   Use meaningful variable and function names.
--   Write clear and concise comments.
+The guides describe the Entra application, Graph consent, Fabric tenant
+settings, workspace access and Azure permissions. Microsoft may change the
+administrative interface, so validate the final permissions in the target
+tenant.
 
 ## Testing
 
-Run the Laravel test suite inside Docker with:
+Run the Laravel test suite inside the application container:
 
 ```bash
 docker compose exec birentable composer test
 ```
 
-## Deployment
+The repository regression check is:
 
-For production, configure the real `.env` first, review `docker-compose.secure.yml`,
-and use `./deploy.sh`. It builds the production image, populates the protected
-code volume, migrates, and starts Caddy, Nginx, the app, scheduler, queue, and
-database. The secure stack exposes HTTP/HTTPS through Caddy, not the local port
-mapping. Do not use `--fresh` against a database containing real data.
-
-## FAQ
-
-// Address common questions and issues
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### License Summary
-
--   ✅ Commercial use
--   ✅ Modification
--   ✅ Distribution
--   ✅ Private use
--   ❌ Liability
--   ❌ Warranty
-
-## 💬 Support
-
--   🐛 **Issues**: [GitHub Issues](https://github.com/edmenn/bireports/issues)
-
-## 🙏 Acknowledgments
-
--   📚 **Libraries used**:
-    -   [PHP](https://www.php.net/) - Server-side scripting language
-    -   [Composer](https://getcomposer.org/) - Dependency Management
-    -   [PowerBI REST API](https://docs.microsoft.com/en-us/power-bi/developer/embedded/rest-api) - For PowerBI integration
--   👥 **Contributors**: Thanks to all [contributors](https://github.com/edmenn/bireports/contributors)
+```bash
+bash .agents/skills/bi-portal-regression-guard/scripts/check-invariants.sh
 ```
+
+## Production deployment
+
+The production stack is separate from the local stack and is defined in
+`docker-compose.secure.yml`. Review `.env`, DNS, TLS and backups before using:
+
+```bash
+./deploy.sh
+```
+
+`deploy.sh` builds the production image, populates the protected code volume,
+runs migrations and starts Caddy, Nginx, the application, scheduler, queue and
+PostgreSQL. Do not use `--fresh` on a database containing real data.
+
+Useful production options are shown by:
+
+```bash
+./deploy.sh --help
+```
+
+## Repository scripts
+
+- `install.sh`: local Docker installation and synchronization.
+- `deploy.sh`: production Docker deployment and synchronization.
+- `verify.sh`: production environment verification.
+- `scripts/run-scheduler.sh`: Laravel scheduler process.
+- `scripts/run-queue-worker.sh`: Laravel queue worker process.
+
+## License
+
+No license is declared in this repository. Do not infer licensing terms from
+this README.
