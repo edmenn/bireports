@@ -62,14 +62,19 @@ Key technologies include PHP for server-side logic, HTML/CSS for the user interf
 
 ## 🚀 Quick Start
 
-Clone and run in 3 steps:
+Clone and run locally:
 
 ```bash
 git clone https://github.com/edmenn/bireports.git
 cd bireports
 composer install
-# Configure your database and PowerBI settings in .env
-php -S localhost:8000 -t public
+npm install
+cp .env.example .env
+php artisan key:generate
+# Configure PostgreSQL and Power BI settings in .env
+php artisan migrate
+npm run build
+php artisan serve
 ```
 
 Open [http://localhost:8000](http://localhost:8000) to view it in your browser.
@@ -77,9 +82,10 @@ Open [http://localhost:8000](http://localhost:8000) to view it in your browser.
 ## 📦 Installation
 
 ### Prerequisites
-- PHP 8.2+ (PHP 8.3 is used by the production image)
+- PHP 8.5+
 - Composer
-- A web server (e.g., Apache, Nginx)
+- PostgreSQL 18 (or Docker Desktop with Docker Compose)
+- Node.js and npm
 - PowerBI account with necessary permissions
 
 ### From Source
@@ -94,7 +100,11 @@ composer install
 
 # Configure your environment (.env file)
 cp .env.example .env
-# Edit .env with your database and PowerBI settings
+php artisan key:generate
+# Edit .env with your PostgreSQL and Power BI settings
+php artisan migrate
+npm install
+npm run build
 
 # Set up your web server to point to the 'public' directory
 # Example for Apache:
@@ -128,12 +138,12 @@ Create a `.env` file in the root directory (copy `.env.example`):
 
 ```env
 # Database
-DB_CONNECTION=mysql
+DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=bireports
-DB_USERNAME=your_db_username
-DB_PASSWORD=your_db_password
+DB_PORT=5432
+DB_DATABASE=birentabledb
+DB_USERNAME=birentable
+DB_PASSWORD=change-me
 
 # PowerBI
 POWERBI_CLIENT_ID=your_powerbi_client_id
@@ -206,11 +216,12 @@ git push origin feature/your-feature-name
 
 ## Testing
 
-// Include testing instructions and commands (e.g., using PHPUnit)
+Run the Laravel test suite with `composer test`.
 
 ## Deployment
 
-// Provide deployment instructions for different platforms (e.g., Apache, Nginx, Docker)
+For the production-oriented Docker stack, review `docker-compose.secure.yml` and use
+`deploy.sh`. Do not use `--fresh` against a database containing real data.
 
 ## FAQ
 

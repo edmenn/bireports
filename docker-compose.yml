@@ -6,6 +6,8 @@ networks:
 volumes:
   sail-pgsql:
     driver: local
+  sail-vendor:
+    driver: local
 
 services:
   # ─────────────────────────────
@@ -13,12 +15,12 @@ services:
   # ─────────────────────────────
   birentable:
     build:
-      context: ./vendor/laravel/sail/runtimes/8.4
+      context: ./vendor/laravel/sail/runtimes/8.5
       dockerfile: Dockerfile
       args:
         WWWGROUP: ${WWWGROUP:-1000}
         WWWUSER: ${WWWUSER:-1000}
-    image: sail-8.4/app
+    image: sail-8.5/app
     container_name: birentable
     restart: unless-stopped
     extra_hosts:
@@ -28,17 +30,21 @@ services:
       - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
-      WWWUSER: ${WWWUSER}
+      WWWUSER: ${WWWUSER:-1000}
       LARAVEL_SAIL: 1
       XDEBUG_MODE: ${SAIL_XDEBUG_MODE:-off}
       XDEBUG_CONFIG: ${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}
       IGNITION_LOCAL_SITES_PATH: ${PWD}
     volumes:
       - .:/var/www/html
+      - sail-vendor:/var/www/html/vendor
     networks:
       - sail
     depends_on:
-      - pgsql
+      pgsql:
+        condition: service_healthy
+      vendor_init:
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
@@ -53,20 +59,22 @@ services:
   # 2️⃣ Laravel Scheduler
   # ─────────────────────────────
   scheduler:
-    image: sail-8.4/app
+    image: sail-8.5/app
     container_name: scheduler
     restart: unless-stopped
     working_dir: /var/www/html
     depends_on:
-      - birentable
+      birentable:
+        condition: service_started
     networks:
       - sail
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
-      WWWUSER: ${WWWUSER}
+      WWWUSER: ${WWWUSER:-1000}
       LARAVEL_SAIL: 1
     volumes:
       - .:/var/www/html
+      - sail-vendor:/var/www/html/vendor
     entrypoint: ["sh", "-lc"]
     command: "./scripts/run-scheduler.sh"
     deploy:
@@ -78,26 +86,40 @@ services:
   # 3️⃣ Laravel Queue Worker
   # ─────────────────────────────
   queue_worker:
-    image: sail-8.4/app
+    image: sail-8.5/app
     container_name: queue-worker
     restart: unless-stopped
     working_dir: /var/www/html
     depends_on:
-      - birentable
+      birentable:
+        condition: service_started
     networks:
       - sail
     environment:
       TZ: ${APP_TIMEZONE:-UTC}
-      WWWUSER: ${WWWUSER}
+      WWWUSER: ${WWWUSER:-1000}
       LARAVEL_SAIL: 1
     volumes:
       - .:/var/www/html
+      - sail-vendor:/var/www/html/vendor
     entrypoint: ["sh", "-lc"]
     command: "./scripts/run-queue-worker.sh"
     deploy:
       resources:
         limits:
           memory: 384M
+
+  # Keep Composer dependencies inside Docker instead of reading them from a
+  # cloud-synced host directory.
+  vendor_init:
+    image: sail-8.5/app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - sail-vendor:/var/www/html/vendor
+    entrypoint: ["composer"]
+    command: ["install", "--no-interaction", "--prefer-dist"]
+    restart: "no"
 
   # ─────────────────────────────
   # 4️⃣ PostgreSQL Database
